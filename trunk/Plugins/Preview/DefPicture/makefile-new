@@ -1,0 +1,65 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       $(BEGIN_OBJS) \
+		$(OBJDIR)/DefPicture.o \
+		$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+DEFPICTURE  =       defpicture.pvplugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(DEFPICTURE) \
+		all_subdirs
+
+##############################################################################
+
+$(DEFPICTURE): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $(DEFPICTURE) +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(DEFPICTURE)"
+	@copy $(DEFPICTURE) Scalos:Plugins/Preview/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(DEFPICTURE) $(DEFPICTURE).debug *.dump *_str.*
+
+clean:  clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

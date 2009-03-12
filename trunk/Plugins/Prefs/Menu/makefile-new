@@ -1,0 +1,82 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=      	$(BEGIN_OBJS) \
+		$(OBJDIR)/MenuPrefs.o \
+		$(OBJDIR)/DataTypesMCC.o \
+		$(OBJDIR)/DefaultMenu.o \
+		$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+MENUPREFS	=	Menu.prefsplugin
+
+##############################################################################
+
+PREFSDIR	=	../../../Prefs/Menu
+
+##############################################################################
+#
+# Some lame deps
+
+$(OBJDIR)/%.o: $(DATATYPESMCC_DIR)/%.c
+	@$(run-cc)
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(MENUPREFS)
+
+##############################################################################
+
+MenuPrefs.c DefaultMenu.c : ScalosMenu_locale.h
+
+ScalosMenu_locale.h : $(PREFSDIR)/ScalosMenu.cd
+	@$(ECHO) "CatComp $@"
+	@catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(MENUPREFS): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $@ +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(MENUPREFS)"
+	@copy $(MENUPREFS) Scalos:Prefs/ clone
+	@avail flush
+
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(MENUPREFS) $(MENUPREFS).debug *.dump *_str.* ScalosMenu_locale.h
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

@@ -1,0 +1,60 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=	$(BEGIN_OBJS) \
+		$(OBJDIR)/libfuncs.o \
+		$(END_OBJS) \
+#
+
+##############################################################################
+#
+# Targets
+#
+
+TITLEENVVAR    =       title_envvar.plugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	$(TITLEENVVAR)
+
+##############################################################################
+
+$(TITLEENVVAR): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(TITLEENVVAR)"
+	copy $(TITLEENVVAR) Scalos:Plugins/OOP clone
+
+
+clean:
+	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(TITLEENVVAR).debug $(TITLEENVVAR)
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

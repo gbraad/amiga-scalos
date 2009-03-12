@@ -1,0 +1,69 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       $(BEGIN_OBJS) \
+		$(OBJDIR)/libfuncs.o \
+		$(OBJDIR)/prefs_file.o \
+		$(END_OBJS) \
+#
+
+#############################################################################
+#
+# Project subdirectories
+#
+
+SUBDIRS	= 	prefs \
+
+##############################################################################
+#
+# Targets
+#
+
+TITLECLOCK    =	      title_clock.plugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	$(TITLECLOCK) \
+	all_subdirs
+
+##############################################################################
+
+$(TITLECLOCK): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+
+##############################################################################
+
+install:        install_subdirs
+	-@$(ECHO) "Installing $(TITLECLOCK)"
+	@copy $(TITLECLOCK) Scalos:Plugins/OOP clone
+
+
+clean:  	clean_subdirs
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(TITLECLOCK).debug $(TITLECLOCK)
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

@@ -1,0 +1,89 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       $(BEGIN_OBJS) \
+		$(OBJDIR)/ExifPicture.o \
+		$(END_OBJS) \
+#
+
+##############################################################################
+#
+# Targets
+#
+
+EXIFPICTURE  =	     exifpicture.plugin
+
+##############################################################################
+#
+# Catalogs
+#
+
+CATS		= \
+		 deutsch \
+	         français \
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS		= $(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(EXIFPICTURE) \
+		all_subdirs
+
+##############################################################################
+
+ExifPicture.c : ExifPicture_locale.h
+
+ExifPicture_locale.h : ExifPicturePlugin.cd
+	@$(ECHO) "CatComp $@"
+	@catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(EXIFPICTURE): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $(EXIFPICTURE) +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(EXIFPICTURE)"
+	@copy $(EXIFPICTURE) Scalos:Plugins/FileTypes/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(EXIFPICTURE) $(EXIFPICTURE).debug *.dump *_str.* ExifPicture_locale.h
+
+clean:  clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

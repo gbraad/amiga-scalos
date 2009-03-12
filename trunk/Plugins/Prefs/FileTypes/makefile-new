@@ -1,0 +1,93 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=      	$(BEGIN_OBJS) \
+		$(OBJDIR)/FileTypesPrefs.o \
+		$(OBJDIR)/ReadFtPrefs.o \
+		$(OBJDIR)/WriteFtPrefs.o \
+		$(OBJDIR)/DefIcons.o \
+		$(OBJDIR)/DefIconsPrefs.o \
+		$(OBJDIR)/DataTypesMCC.o \
+		$(OBJDIR)/FontSampleMCC.o \
+		$(OBJDIR)/IconobjectMCC.o \
+		$(OBJDIR)/DefaultDefIconsPrefs.o \
+		$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+FILETYPESPREFS	=	FileTypes.prefsplugin
+
+##############################################################################
+
+PREFSDIR	=	../../../Prefs/FileTypes
+
+##############################################################################
+#
+# Some lame deps
+
+$(OBJDIR)/%.o: $(DATATYPESMCC_DIR)/%.c
+	@$(run-cc)
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(FILETYPESPREFS)
+
+##############################################################################
+
+$(OBJDIR)/%.o: $(FONTSAMPLE_DIR)/%.c
+	@$(run-cc)
+
+$(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
+	@$(run-cc)
+
+FileTypesPrefs.c DefIconsPrefs.c : ScalosFileTypes_locale.h
+
+ScalosFileTypes_locale.h : $(PREFSDIR)/ScalosFileTypes.cd
+	@$(ECHO) "CatComp $@"
+	@catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(FILETYPESPREFS): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $@ +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(FILETYPESPREFS)"
+	@copy $(FILETYPESPREFS) Scalos:Prefs/ clone
+	avail flush
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug *.dump *_str.* ScalosFileTypes_locale.h
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

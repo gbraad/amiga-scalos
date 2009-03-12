@@ -1,0 +1,59 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS_PERSIST	=       	$(BEGIN_OBJS) \
+				$(OBJDIR)/persist.o \
+				$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+PERSIST		=	persist.plugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:    $(PERSIST) \
+
+##############################################################################
+
+$(PERSIST): $(OBJS_PERSIST)
+	@$(ECHO) "Link $(PERSIST)"
+	@$(CC) $(OBJS_PERSIST) $(LFLAGS2) $(DEFINES) -o$(PERSIST).debug
+	@$(STRIP) $(PERSIST).debug -o $(PERSIST)
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(PERSIST)"
+	copy $(PERSIST) Scalos:Plugins/OOP clone
+
+
+clean:
+	$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(PERSIST) $(PERSIST).debug \
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS_PERSIST:.o=.d)

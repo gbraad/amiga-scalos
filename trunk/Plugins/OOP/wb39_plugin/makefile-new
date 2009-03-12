@@ -1,0 +1,86 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS_WB39	=       	$(BEGIN_OBJS) \
+				$(OBJDIR)/wb39.o \
+				$(OBJDIR)/AppWindow.o \
+				$(OBJDIR)/WorkbenchControl.o \
+				$(OBJDIR)/VolumeGauge.o \
+				$(OBJDIR)/AppIcons.o \
+				$(OBJDIR)/Scalos_Helper.o \
+				$(END_OBJS)
+
+OBJS_TEST	=		$(OBJDIR)/test.o
+
+##############################################################################
+#
+# Targets
+#
+
+WB39		=	wb39.plugin
+TEST		=	test
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS	=	persist \
+		wbrexx \
+		volumegauge \
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(WB39) \
+	$(TEST) \
+	all_subdirs \
+
+##############################################################################
+
+$(WB39): $(OBJS_WB39)
+	-@$(ECHO) "Link $(WB39)"
+	@$(CC) $(OBJS_WB39) $(LFLAGS2) $(DEFINES) -o$(WB39).debug
+	@$(STRIP) $(WB39).debug -o $(WB39)
+
+$(TEST): $(OBJS_TEST)
+	@$(ECHO) "Link $(TEST)"
+	@$(CC) $(STARTUP) $(OBJS_TEST) $(LFLAGS) $(DEFINES) -o$(TEST).debug
+	@$(STRIP) $(TEST).debug -o $(TEST)
+	@protect $(TEST) +e
+
+##############################################################################
+
+install: install_subdirs
+	-@$(ECHO) "Installing $(WB39)"
+	@copy $(WB39) Scalos:Plugins/OOP clone
+
+
+clean: clean_subdirs
+	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(WB39) $(TEST) $(WB39).debug $(TEST).debug \
+
+nodebug: nodebug_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS_WB39:.o=.d)

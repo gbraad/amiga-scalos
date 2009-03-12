@@ -1,0 +1,102 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=      	$(BEGIN_OBJS) \
+		$(OBJDIR)/PopupMenuPrefs.o \
+		$(OBJDIR)/DataTypesMCC.o \
+                $(OBJDIR)/FrameButtonMCC.o \
+		$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+POPUPMENUPREFS	     =	     PopupMenu.prefsplugin
+
+##############################################################################
+
+PREFSDIR	=	.
+
+##############################################################################
+#
+# Catalogs
+#
+
+CATS		= deutsch \
+		  français \
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS =	$(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
+
+##############################################################################
+#
+# Some lame deps
+
+$(OBJDIR)/%.o: $(DATATYPESMCC_DIR)/%.c
+	@$(run-cc)
+
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(POPUPMENUPREFS) \
+	all_subdirs
+
+##############################################################################
+
+PopupMenuPrefs.c : PopupMenu_locale.h
+
+PopupMenu_locale.h : $(PREFSDIR)/ScalosPopupMenu.cd
+	@$(ECHO) "CatComp $@"
+	@catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(POPUPMENUPREFS): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $@ +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(POPUPMENUPREFS)"
+	@copy $(POPUPMENUPREFS) Scalos:Prefs/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(POPUPMENUPREFS) $(POPUPMENUPREFS).debug *.dump *_str.* PopupMenu_locale.h
+
+clean:  clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

@@ -1,0 +1,60 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=	$(BEGIN_OBJS) \
+		$(OBJDIR)/XTWindows.o \
+		$(END_OBJS) \
+#
+
+##############################################################################
+#
+# Targets
+#
+
+XTWINDOWS    =	     xtwindows.plugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(XTWINDOWS)
+
+##############################################################################
+
+$(XTWINDOWS): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(XTWINDOWS)"
+	copy $(XTWINDOWS) Scalos:Plugins/OOP clone
+
+
+clean:
+	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(XTWINDOWS).debug $(XTWINDOWS)
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

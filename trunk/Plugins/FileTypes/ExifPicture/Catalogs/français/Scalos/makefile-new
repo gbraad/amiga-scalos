@@ -1,0 +1,27 @@
+# makefile for ExifPicturePlugin (translated Texts : français)
+# $Date$
+
+.SUFFIXES: .ct .catalog
+.PHONY: all install clean
+
+include config.mk
+
+CATNAME	=       ExifPicturePlugin
+
+
+all:	$(CATNAME).catalog
+
+
+.ct.catalog :
+	@printf '\033[32mMake catalog: \033[31m\033[1m$(LANG)\033[0m\n'
+	CatComp ///$*.cd $*.ct CATALOG $*.catalog VB=2
+	avail flush
+
+$(CATNAME).catalog : $(CATNAME).ct ../../../$(CATNAME).cd
+
+
+clean:
+	-delete $(CATNAME).catalog
+
+install:
+	-copy $(CATNAME).catalog Locale:catalogs/$(LANG)/Scalos/ clone
