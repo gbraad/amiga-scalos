@@ -1,0 +1,26 @@
+#ifndef PROTO_PREFERENCES_H
+#define PROTO_PREFERENCES_H
+
+#include <exec/types.h>
+extern struct Library *PreferencesBase;
+#ifdef __amigaos4__
+#include <interfaces/preferences.h>
+extern struct PreferencesIFace *IPreferences;
+#endif
+
+#include <clib/preferences_protos.h>
+
+#ifdef __amigaos4__
+	#ifdef __USE_INLINE__
+		#include <inline4/preferences.h>
+	#endif
+#elif defined(__GNUC__)
+	#include <inline/preferences.h>
+#elif defined(VBCC)
+	#include <inline/preferences_protos.h>
+#else
+	#include <pragmas/preferences_pragmas.h>
+#endif /* __VBCC__ */
+
+#endif /* PROTO_PREFERENCES_H */
+
