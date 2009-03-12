@@ -1,0 +1,77 @@
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       	$(OBJDIR)/FileTypes.o
+
+
+##############################################################################
+# 
+# Subdirs
+#
+
+SUBDIRS	=       Catalogs/deutsch/Scalos		\
+		Catalogs/français/Scalos	\
+
+##############################################################################
+#
+# Some lame deps
+
+$(OBJDIR)/FileTypes.o : ScalosFileTypes_locale.h
+
+ScalosFileTypes_locale.h : ScalosFileTypes.cd
+	$(ECHO) "CatComp $@"
+	catcomp $< cfile=$@
+
+##############################################################################
+#
+# Targets
+#
+
+NAME	=	Scalos_FileTypes
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	$(NAME) \
+	all_subdirs
+
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(STARTUP) $(OBJS) $(CFLAGS) $(LFLAGS) $(DEFINES) -o$(NAME).debug
+	@$(STRIP) $(NAME).debug -o $(NAME)
+	@protect $(NAME) +e
+
+##############################################################################
+
+install: 
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) "Scalos:Prefs/Scalos FileTypes" clone
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.i \
+        	$(OBJDIR)/*.d.* $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug *.dump *_str.*
+
+clean:  clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
