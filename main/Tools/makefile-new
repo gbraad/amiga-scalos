@@ -1,0 +1,92 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS_CTRL	=       	$(OBJDIR)/ScalosCtrl.o
+
+OBJS_SEMA	=       	$(OBJDIR)/ScalosSema.o
+
+OBJS_LOADWB	=       	$(OBJDIR)/LoadWB.o
+
+OBJS_GETMSG	=       	$(OBJDIR)/GenMsgIdNames.o
+
+
+##############################################################################
+#
+# Targets
+#
+
+CTRL	=	ScalosCtrl
+SEMA	=	ScalosSema
+LOADWB	=	LoadWB.Scalos
+GETMSG	=	GenMsgIdNames
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	$(CTRL) \
+	$(SEMA) \
+	$(LOADWB) \
+	$(GETMSG) \
+	
+##############################################################################
+
+$(CTRL): $(OBJS_CTRL)
+	@$(ECHO) "Link $(CTRL)"
+	@$(CC) $(STARTUP) $(OBJS_CTRL) $(LFLAGS) $(DEFINES) -o$(CTRL).debug
+	@$(STRIP) $(CTRL).debug -o $(CTRL)
+	@protect $@ +e
+
+$(SEMA): $(OBJS_SEMA)
+	@$(ECHO) "Link $(SEMA)"
+	@$(CC) $(STARTUP) $(OBJS_SEMA) $(LFLAGS) $(DEFINES) -o$(SEMA).debug
+	@$(STRIP) $(SEMA).debug -o $(SEMA)
+	@protect $@ +e
+
+$(LOADWB): $(OBJS_LOADWB)
+	@$(ECHO) "Link $(LOADWB)"
+	@$(CC) $(STARTUP) $(OBJS_LOADWB) $(LFLAGS) $(DEFINES) -o$(LOADWB).debug
+	@$(STRIP) $(LOADWB).debug -o $(LOADWB)
+	@protect $@ +e
+
+$(GETMSG): $(OBJS_GETMSG)
+	@$(ECHO) "Link $(GETMSG)"
+	@$(CC) $(STARTUP) $(OBJS_GETMSG) $(LFLAGS) $(DEFINES) -o$(GETMSG).debug
+	@$(STRIP) $(GETMSG).debug -o $(GETMSG)
+	@protect $@ +e
+
+##############################################################################
+
+install:
+	@copy ScalosCtrl Scalos:Tools/
+	@copy LoadWB.scalos c:LoadWB
+
+
+clean:
+	@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(CTRL) $(SEMA) $(LOADWB) $(GETMSG) \
+		$(CTRL).debug $(SEMA).debug $(LOADWB).debug $(GETMSG).debug
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS_CTRL:.o=.d)
+-include $(OBJS_SEMA:.o=.d)
+-include $(OBJS_LOADWB:.o=.d)
+-include $(OBJS_GETMSG:.o=.d)
