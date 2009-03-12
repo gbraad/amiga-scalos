@@ -1,0 +1,91 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+TOPLEVEL	=	$(shell pwd)/../..
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=	$(OBJDIR)/NSD_64bit.o		\
+		$(OBJDIR)/Device_Handler.o	\
+		$(OBJDIR)/FullFormat.o		\
+		$(OBJDIR)/FormatVolume.o	\
+		$(OBJDIR)/ParseArgs.o		\
+		$(OBJDIR)/Format.o		\
+		$(OBJDIR)/GetInputFromWindow.o	\
+		$(OBJDIR)/GUI.o			\
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS	       =       Catalogs/deutsch/Scalos	       \
+	       Catalogs/français/Scalos
+
+##############################################################################
+#
+# Targets
+#
+
+NAME  =	      Format_Disk.module
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(NAME) \
+	all_subdirs
+
+##############################################################################
+
+$(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
+	$(run-cc)
+
+$(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
+	$(run-cc)
+
+Format.c : FormatDisk_Locale.h
+
+FormatDisk_Locale.h : FormatDisk.cd
+	$(ECHO) "CatComp $@"
+	catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+ifneq ($(MACHINE), ppc-amigaos)
+	@-protect $@ +e
+endif
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) Scalos:modules/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug Format_Disk_Locale.h
+
+clean:	clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
+

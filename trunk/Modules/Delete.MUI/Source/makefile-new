@@ -1,0 +1,84 @@
+# $Date$
+# $Revision$
+#############################################################
+TOPLEVEL	=	$(shell pwd)/../../..
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=      	$(OBJDIR)/Delete.module.o \
+		$(OBJDIR)/Delete.module_files.o
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS	=	Catalogs/deutsch/Scalos		\
+		Catalogs/français/Scalos
+
+##############################################################################
+#
+# Targets
+#
+
+MODULENAME  =	    Delete.module
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(MODULENAME) \
+	all_subdirs
+
+##############################################################################
+
+$(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
+	$(run-cc)
+
+$(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
+	$(run-cc)
+
+Delete.module.c : Delete_Locale.h
+
+Delete_Locale.h : Delete.cd
+	$(ECHO) "CatComp $@"
+	catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(MODULENAME): $(OBJS)
+	$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+ifneq ($(MACHINE), ppc-amigaos)
+	-@protect $@ +e
+endif
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(MODULENAME) Scalos:modules/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+		$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(MODULENAME) $(MODULENAME).debug Delete_Locale.h
+
+clean:	clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
+
