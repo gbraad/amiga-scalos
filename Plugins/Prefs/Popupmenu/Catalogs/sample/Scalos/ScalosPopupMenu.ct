@@ -1,0 +1,870 @@
+; ScalosPopupMenu.ct
+; $Date$
+; $Revision$
+## version $VER: ScalosMenu.catalog 40.16 (30 Jul 2006 10:09:08)
+## codeset 0s
+## language xxxxxx
+;
+;#arrayopts static __far
+;
+;
+;---------------------------------------------
+;
+MSGID_PLUGIN_LIST_TITLE
+PopupMenu
+;PopupMenu
+;
+;
+MSGID_TITLENAME
+Scalos PopupMenu Prefs Plugin
+;Scalos PopupMenu Prefs Plugin
+;
+;---------------------------------------------
+;
+MSGID_MENU_PROJECT_OPEN
+Open...
+;Open...
+;
+;
+MSGID_MENU_PROJECT_OPEN_SHORT
+O
+;O
+;
+;
+MSGID_MENU_PROJECT_SAVEAS
+Save As...
+;Save As...
+;
+;
+MSGID_MENU_PROJECT_SAVEAS_SHORT
+A
+;A
+;
+;
+MSGID_MENU_PROJECT_ABOUT
+About...
+;About...
+;
+;
+MSGID_MENU_PROJECT_QUIT
+Quit
+;Quit
+;
+;
+MSGID_MENU_PROJECT_QUIT_SHORT
+Q
+;Q
+;
+;
+MSGID_MENU_PROJECT
+Project
+;Project
+;
+;
+MSGID_MENU_EDIT_LASTSAVED
+Last Saved
+;Last Saved
+;
+;
+MSGID_MENU_EDIT_LASTSAVED_SHORT
+L
+;L
+;
+;
+MSGID_MENU_EDIT
+Edit
+;Edit
+;
+;
+MSGID_MENU_SETTINGS_CREATEICONS
+Create Icons?
+;Create Icons?
+;
+;
+MSGID_MENU_SETTINGS_CREATEICONS_SHORT
+I
+;I
+;
+;
+MSGID_MENU_SETTINGS
+Settings
+;Settings
+;
+;
+MSGID_MENU_EDIT_RESETTODEFAULTS
+Reset To Defaults
+;Reset To Defaults
+;
+;
+MSGID_MENU_EDIT_RESETTODEFAULTS_SHORT
+D
+;D
+;
+;
+MSGID_MENU_EDIT_RESTORE
+Restore
+;Restore
+;
+;
+MSGID_MENU_EDIT_RESTORE_SHORT
+R
+;R
+;
+;
+MSGID_MENU_PROJECT_ABOUTMUI
+About MUI...
+;About MUI...
+;
+;-----------------------------------------------------------
+;
+MSGID_ABOUTREQOK
+_OK
+;_OK
+;
+;
+MSGID_ABOUTREQFORMAT
+\33c\033bScalos PopupMenu Preferences V%ld.%ld\033n\n\
+%s\n\
+;© 2006%s The Scalos Team
+;\33c\033bScalos PopupMenu Preferences V%ld.%ld\033n\n\
+;%s\n\
+;© 2006%s The Scalos Team
+;
+;---------------------------------------------
+;
+MSGID_SHORTHELP_SAVEBUTTON
+Press this button to save \n\
+the current settings to\n\
+\"ENVARC:sys/PopupMenu.prefs\"\n\
+and make changes permanent.
+;Press this button to save \n\
+;the current settings to\n\
+;\"ENVARC:sys/PopupMenu.prefs\"\n\
+;and make changes permanent.
+;
+;
+MSGID_SHORTHELP_USEBUTTON
+Press this button to save \n\
+the current settings to\n\
+\"ENV:sys/PopupMenu.prefs\"\n\
+and keep settings until reboot.
+;Press this button to save \n\
+;the current settings to\n\
+;\"ENV:sys/PopupMenu.prefs\"\n\
+;and keep settings until reboot.
+;
+;
+MSGID_SHORTHELP_CANCELBUTTON
+Press this button to abort \n\
+and forget all changes.
+;Press this button to abort \n\
+;and forget all changes.
+;
+;---------------------------------------------
+;
+MSGID_REQTITLE_SAVEERROR
+Error writing PopupMenu preferences\n\
+file \"%s\"\n\
+%s
+;Error writing PopupMenu preferences\n\
+;file \"%s\"\n\
+;%s
+;
+;
+MSGID_REQTITLE_READERROR
+Error reading PopupMenu preferences\n\
+file \"%s\"\n\
+%s
+;Error reading PopupMenu preferences\n\
+;file \"%s\"\n\
+;%s
+;
+;---------------------------------------------
+;
+MSGID_POPUP_ASLTITLE_MENUPLUGIN
+Select Scalos PopupMenu prefs
+;Select Scalos PopupMenu prefs
+;
+;
+MSGID_SHORTHELP_LAMP_CHANGED
+This lamp indicator changes from \033bOff\033n\n\
+to \033bOk\033n when the settings have been\n\
+modified since initial loading.
+;This lamp indicator changes from \033bOff\033n\n\
+;to \033bOk\033n when the settings have been\n\
+;modified since initial loading.
+;
+;-----------------------------------------------------------
+;
+MSGID_STARTUP_FAILURE
+Scalos PopupMenu Prefs startup failed
+;Scalos PopupMenu Prefs startup failed
+;
+;
+MSGID_STARTUP_RETRY_QUIT_GAD
+Try again|Quit
+;Try again|Quit
+;
+;
+MSGID_STARTUP_MCC_NOT_FOUND
+Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+The class is not installed.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;The class is not installed.
+;
+;
+MSGID_STARTUP_OLD_MCC
+Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+\n\
+Currently installed is V%lu.%lu, please upgrade!
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;\n\
+;Currently installed is V%lu.%lu, please upgrade!
+;
+;
+MSGID_STARTUP_MCC_IN_USE
+Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+%lu.%lu is currently in use by other applications.\n\
+\n\
+Once you have installed the required version,\n\
+close all MUI programs, make sure the old class\n\
+is flushed from memory and try again.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;%lu.%lu is currently in use by other applications.\n\
+;\n\
+;Once you have installed the required version,\n\
+;close all MUI programs, make sure the old class\n\
+;is flushed from memory and try again.
+;
+;-----------------------------------------------------------
+;
+MSGID_PREFSPAGES_COLOURS
+Colours
+;Colours
+;
+;
+MSGID_PREFSPAGES_MISC
+Misc.
+;Misc.
+;
+;
+MSGID_PREFSPAGES_IMAGES
+Images
+;Images
+;
+;
+MSGID_PREFSPAGES_BORDERS
+Borders
+;Borders
+;
+;
+MSGID_PREFSPAGES_SPACING
+Spacing
+;Spacing
+;
+;
+MSGID_PREFSPAGES_TEXT
+Text
+;Text
+;
+;
+MSGID_PREFSPAGES_PULLDOWN
+Pulldown
+;Pulldown
+;
+;
+MSGID_PREFSPAGES_ADVANCED
+Advanced
+;Advanced
+;
+;
+MSGID_PREFSPAGES_TRANSPARENCY
+Transparency
+;Transparency
+;
+;-----------------------------------------------------------
+;
+MSGID_COLOURSPAGE_TITLE
+Colours
+;Colours
+;
+;
+MSGID_COLOURSPAGE_USE_DRAWINFO_PENS
+Use DrawInfo Pens?
+;Use DrawInfo Pens?
+;
+;
+MSGID_COLOURSPAGE_USE_DRAWINFO_PENS_SHORTHELP
+...
+;...
+;
+;
+MSGID_COLORNAME_TEXT
+Text
+;Text
+;
+;
+MSGID_COLORNAME_BRIGHT_EDGES
+Bright Edges
+;Bright Edges
+;
+;
+MSGID_COLORNAME_DARK_EDGES
+Dark Edges
+;Dark Edges
+;
+;
+MSGID_COLORNAME_ACTIVE_ITEM_BG
+Active Item Background
+;Active Item Background
+;
+;
+MSGID_COLORNAME_ACTIVE_ITEM_TEXT
+Active Item Text
+;Active Item Text
+;
+;
+MSGID_COLORNAME_BACKGROUND
+Background
+;Background
+;
+;
+MSGID_COLORNAME_MENUTITLES
+Menu Titles
+;Menu Titles
+;
+;
+MSGID_COLORNAME_TEXT_SHADOW
+Text Shadow/Outline
+;Text Shadow/Outline
+;
+;-----------------------------------------------------------
+;
+MSGID_MISCPAGE_TITLE
+Miscellaneous
+;Miscellaneous
+;
+;
+MSGID_MISCPAGE_ANIMATION_TYPE
+Type:
+;Type:
+;
+;
+MSGID_MISCPAGE_ANIMATION_TYPE_SHORTHELP
+...
+;...
+;
+;
+MSGID_MISCPAGE_ANIMATION
+Animation
+;Animation
+;
+;
+MSGID_MISCPAGE_ANIMATION_SPEED
+Speed:
+;Speed:
+;
+;
+MSGID_MISCPAGE_ANIMATION_SPEED_SHORTHELP
+...
+;...
+;
+;
+MSGID_MISCPAGE_DELAY_SUBMENUS
+Delay for submenus:
+;Delay for submenus:
+;
+;
+MSGID_MISCPAGE_DELAY_SUBMENUS_SHORTHELP
+...
+;...
+;
+;
+MSGID_MISCPAGE_SAME_HEIGHT
+Same Height?
+;Same Height?
+;
+;
+MSGID_MISCPAGE_SAME_HEIGHT_SHORTHELP
+...
+;...
+;
+;
+MSGID_MISCPAGE_MENUSHADOWS
+Menu Shadows?
+;Menu Shadows?
+;
+;
+MSGID_MISCPAGE_MENUSHADOWS_SHORTHELP
+...
+;...
+;
+;
+MSGID_MISCPAGE_STICKY
+Sticky?
+;Sticky?
+;
+;
+MSGID_MISCPAGE_STICKY_SHORTHELP
+...
+;...
+;
+;
+MSGID_ANIMATION_NONE
+None
+;None
+;
+;
+MSGID_ANIMATION_ZOOM
+Zoom
+;Zoom
+;
+;
+MSGID_ANIMATION_FADE
+Fade
+;Fade
+;
+;
+MSGID_ANIMATION_EXPLODE
+Explode
+;Explode
+;
+;-----------------------------------------------------------
+;
+MSGID_IMAGESPAGE_TITLE
+Images
+;Images
+;
+;
+MSGID_POPASL_LOADIMAGESET_SHORTHELP
+...
+;...
+;
+;
+MSGID_IMAGEPAGE_IMAGESET_SHORTHELP
+...
+;...
+;
+;
+MSGID_IMAGESET_SYSTEM
+System
+;System
+;
+;
+MSGID_IMAGESET_MAGICMENU_8
+MagicMenu2 8 pixels
+;MagicMenu2 8 pixels
+;
+;
+MSGID_IMAGESET_MAGICMENU_11
+MagicMenu2 11 pixels
+;MagicMenu2 11 pixels
+;
+;
+MSGID_IMAGESET_USER
+<User>
+;<User>
+;
+;
+MSGID_IMAGESET_NONE
+No images
+;No images
+;
+;-----------------------------------------------------------
+;
+MSGID_BORDERSPAGE_TITLE
+Menu Border
+;Menu Border
+;
+;
+MSGID_BORDERSPAGE_MENUBORDER
+Menu Border
+;Menu Border
+;
+;
+MSGID_BORDERSPAGE_SELECTEDITEM
+Selected Item
+;Selected Item
+;
+;
+MSGID_BORDERSPAGE_SEPARATORS
+Separators
+;Separators
+;
+;
+MSGID_BORDERSPAGE_NORMAL
+Normal
+;Normal
+;
+;
+MSGID_BORDERSPAGE_RAISED
+Raised
+;Raised
+;
+;
+MSGID_BORDERSPAGE_RECESSED
+Recessed
+;Recessed
+;
+;
+MSGID_BORDERSPAGE_NEW_LOOK
+New Look
+;New Look
+;
+;
+MSGID_BORDERSPAGE_OLD_LOOK
+Old Look
+;Old Look
+;
+;-----------------------------------------------------------
+;
+MSGID_SPACINGPAGE_TITLE
+Spacing
+;Spacing
+;
+;-----------------------------------------------------------
+;
+MSGID_TEXTPAGE_TITLE
+Text styles
+;Text styles
+;
+;
+MSGID_TEXTPAGE_MENU_TITLES
+Menu Titles
+;Menu Titles
+;
+;
+MSGID_TEXTPAGE_MENU_ITEMS
+Menu Items
+;Menu Items
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_ITALIC
+\033iItalic?\033n
+;\033iItalic?\033n
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_ITALIC_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_SHADOWED
+Shadowed?
+;Shadowed?
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_SHADOWED_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_UNDERLINED
+\033uUnderlined?\033n
+;\033uUnderlined?\033n
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_UNDERLINED_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_OUTLINED
+Outlined?
+;Outlined?
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_OUTLINED_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_BOLD
+\033bBold?\033n
+;\033bBold?\033n
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_BOLD_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_EMBOSSED
+Embossed?
+;Embossed?
+;
+;
+MSGID_TEXTPAGE_MENUTITLES_EMBOSSED_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_ITALIC
+\033iItalic?\033n
+;\033iItalic?\033n
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_ITALIC_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_SHADOWED
+Shadowed?
+;Shadowed?
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_SHADOWED_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_UNDERLINED
+\033uUnderlined?\033n
+;\033uUnderlined?\033n
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_UNDERLINED_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_OUTLINED
+Outlined?
+;Outlined?
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_OUTLINED_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_BOLD
+\033bBold?\033n
+;\033bBold?\033n
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_BOLD_SHORTHELP
+...
+;...
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_EMBOSSED
+Embossed?
+;Embossed?
+;
+;
+MSGID_TEXTPAGE_MENUITEMS_EMBOSSED_SHORTHELP
+...
+;...
+;
+;-----------------------------------------------------------
+;
+MSGID_PULLDOWNPAGE_TITLE
+Pulldown menus
+;Pulldown menus
+;
+;
+MSGID_PULLDOWNPAGE_MODE
+Mode
+;Mode
+;
+;
+MSGID_PULLDOWNPAGE_MODE_SHORTHELP
+...
+;...
+;
+;
+MSGID_PULLDOWNPAGE_APPEAR_AT
+Appear at
+;Appear at
+;
+;
+MSGID_PULLDOWN_ALWAYS
+Always pulldown
+;Always pulldown
+;
+;
+MSGID_PULLDOWN_POPUP
+Always popup
+;Always popup
+;
+;
+MSGID_PULLDOWN_POSITION_DEPENDENT
+Position dependent
+;Position dependent
+;
+;
+MSGID_PULLDOWNPAGE_APPEAR_AT_SHORTHELP
+...
+;...
+;
+;
+MSGID_APPEAR_AT_SCREENBAR
+Screen bar
+;Screen bar
+;
+;
+MSGID_APPEAR_AT_WINDOWBAR
+Window bar
+;Window bar
+;
+;-----------------------------------------------------------
+;
+MSGID_ADVANCEDPAGE_TITLE
+Advanced settings
+;Advanced settings
+;
+;
+MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION
+Colour matching precision:
+;Colour matching precision:
+;
+;
+MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION_SHORTHELP
+...
+;...
+;
+;
+MSGID_ADVANCEDPAGE_USE_WINDOWS
+Use windows?
+;Use windows?
+;
+;
+MSGID_ADVANCEDPAGE_USE_WINDOWS_SHORTHELP
+...
+;...
+;
+;
+MSGID_ADVANCEDPAGE_REALSHADOWS
+Real Shadows?
+;Real Shadows?
+;
+;
+MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP
+...
+;...
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_INTENSITY
+Shadow Intensity
+;Shadow Intensity
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_R
+Red
+;Red
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_R_SHORTHELP
+...
+;...
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_G
+Green
+;Green
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_G_SHORTHELP
+...
+;...
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_B
+Blue
+;Blue
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_B_SHORTHELP
+...
+;...
+;
+;
+MSGID_COLORMATCHING_EXACT
+Exact
+;Exact
+;
+;
+MSGID_COLORMATCHING_IMAGE
+Image
+;Image
+;
+;
+MSGID_COLORMATCHING_ICON
+Icon
+;Icon
+;
+;
+MSGID_COLORMATCHING_GUI
+GUI
+;GUI
+;
+;
+MSGID_ADVANCEDPAGE_SHADOW_NUMERIC_FORMAT
+%5ld %%
+;%5ld %%
+;
+;-----------------------------------------------------------
+;
+MSGID_TRANSPARENCYPAGE_TITLE
+Transparency
+;Transparency
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSP_NUMERIC_FORMAT
+%ld %%
+;%ld %%
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSPARENCY
+Transparency
+;Transparency
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSP_R
+Red
+;Red
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSP_R_SHORTHELP
+...
+;...
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSP_G
+Green
+;Green
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSP_G_SHORTHELP
+...
+;...
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSP_B
+Blue
+;Blue
+;
+;
+MSGID_TRANSPARENCYPAGE_TRANSP_B_SHORTHELP
+...
+;...
+;
+;
+MSGID_TRANSPARENCYPAGE_BLUR
+Blur
+;Blur
+;
+;
+MSGID_TRANSPARENCYPAGE_BLUR_SHORTHELP
+...
+;...
+;
+;
+MSGID_TRANSPARENCYPAGE_BLUR_NUMERIC_FORMAT
+%ld %%
+;%ld %%
+;
+;-----------------------------------------------------------
+;

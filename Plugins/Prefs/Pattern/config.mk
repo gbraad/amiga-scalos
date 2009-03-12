@@ -1,0 +1,66 @@
+##############################################################################
+
+include $(TOPLEVEL)/config.mk
+include $(TOPLEVEL)/rules.mk
+
+##############################################################################
+
+COMMON_DIR		= $(TOPLEVEL)/common/Plugin
+BITMAPMCC_DIR		= $(TOPLEVEL)/common/BitMapMCC
+BACKFILLMCC_DIR		= $(TOPLEVEL)/common/BackfillMCC
+DATATYPESMCC_DIR	= $(TOPLEVEL)/common/DataTypesMCC
+
+INCLUDES	+= 	-I$(COMMON_DIR) \
+			-I$(BACKFILLMCC_DIR) \
+			-I$(BITMAPMCC_DIR) \
+			-I$(DATATYPESMCC_DIR)
+
+vpath 	%.c	$(COMMON_DIR) $(BITMAPMCC_DIR) $(BACKFILLMCC_DIR) $(DATATYPESMCC_DIR)
+
+##############################################################################
+
+include $(COMMON_DIR)/config.mk
+
+##############################################################################
+# Check gcc
+
+ifeq ($(MACHINE), ppc-morphos)
+
+###############################################################################
+# MorphOS
+
+LFLAGS	+=	-nostartfiles \
+		-lmempools
+#		--verbose
+
+else
+ifeq ($(MACHINE), ppc-amigaos)
+
+###############################################################################
+# AmigaOS4
+
+LFLAGS  +=      -nostartfiles \
+#
+
+
+else
+
+###############################################################################
+# AmigaOS
+
+LFLAGS	+=	-lscalos \
+		-lpreferences \
+		-liconobject \
+		-lmempools \
+		-ldebug \
+		-lmui \
+		-lstack \
+		-lnix \
+		-lnixmain \
+		-lamiga21 \
+		-lamiga \
+		-lstubs \
+
+endif
+endif
+

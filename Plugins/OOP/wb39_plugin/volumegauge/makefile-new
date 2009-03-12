@@ -1,0 +1,61 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS_VOLGAUGE	=       	$(BEGIN_OBJS) \
+				$(OBJDIR)/vg_plugin.o \
+				$(OBJDIR)/VolumeGauge.o \
+				$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+VOLGAUGE	=	volumegauge.plugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:    $(VOLGAUGE) \
+
+##############################################################################
+
+$(VOLGAUGE): $(OBJS_VOLGAUGE)
+	@$(ECHO) "Link $(VOLGAUGE)"
+	@$(CC) $(OBJS_VOLGAUGE) $(LFLAGS2) $(DEFINES) -o$(VOLGAUGE).debug
+	@$(STRIP) $(VOLGAUGE).debug -o $(VOLGAUGE)
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(VOLGAUGE)"
+	copy $(VOLGAUGE) Scalos:Plugins/OOP clone
+
+
+clean:
+	$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(VOLGAUGE) $(VOLGAUGE).debug \
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS_VOLGAUGE:.o=.d)
+

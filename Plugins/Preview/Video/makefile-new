@@ -1,0 +1,66 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       $(BEGIN_OBJS) \
+		$(OBJDIR)/Video.o \
+		$(COMPAT_OBJS) \
+		$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+JPEGPICTURE  =       video.pvplugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(JPEGPICTURE) \
+		all_subdirs
+
+##############################################################################
+
+$(JPEGPICTURE): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $(JPEGPICTURE) +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(JPEGPICTURE)"
+	@copy $(JPEGPICTURE) Scalos:Plugins/Preview/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(JPEGPICTURE) $(JPEGPICTURE).debug *.dump *_str.*
+
+clean:  clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

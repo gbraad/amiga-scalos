@@ -1,0 +1,13 @@
+persist.plugin
+persist.plugin.debug
+wb39.plugin
+wb39.plugin.debug
+volumegauge.plugin
+volumegauge.plugin.debug
+WBRexx_plugin.asm
+RexxGetAttrs.c
+wbrexx.plugin
+wbrexx.plugin.debug
+test
+test.debug
+

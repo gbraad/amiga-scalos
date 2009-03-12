@@ -1,0 +1,87 @@
+# $Date$
+# §Revision: $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       $(BEGIN_OBJS) \
+		$(OBJDIR)/PictureDimensions.o \
+		$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+PICTUREDIMENSIONS  = picturedimensions.plugin
+
+##############################################################################
+#
+# Catalogs
+#
+
+CATS		= \
+		 deutsch \
+	         français \
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS		= $(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(PICTUREDIMENSIONS) \
+		all_subdirs
+
+##############################################################################
+
+PictureDimensions.c : PictureDimensions_locale.h
+
+PictureDimensions_locale.h : PictureDimensionsPlugin.cd
+	$(ECHO) "CatComp $@"
+	catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(PICTUREDIMENSIONS): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $(PICTUREDIMENSIONS) +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(PICTUREDIMENSIONS)"
+	@copy $(PICTUREDIMENSIONS) Scalos:Plugins/FileTypes/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(PICTUREDIMENSIONS) $(PICTUREDIMENSIONS).debug *.dump *_str.* PictureDimensions_locale.h \
+
+clean:  clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

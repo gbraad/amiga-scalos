@@ -1,0 +1,64 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS_WBREXX	=       	$(BEGIN_OBJS) \
+				$(OBJDIR)/WBRexxMain.o \
+				$(OBJDIR)/WBRexx.o \
+				$(OBJDIR)/RexxGetAttrs.o \
+				$(OBJDIR)/RexxIcon.o \
+				$(OBJDIR)/RexxCmd.o \
+				$(OBJDIR)/Scalos_Helper.o \
+				$(END_OBJS)
+
+##############################################################################
+#
+# Targets
+#
+
+WBREXX		=	wbrexx.plugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:    $(WBREXX) \
+
+##############################################################################
+
+$(WBREXX): $(OBJS_WBREXX)
+	@$(ECHO) "Link $(WBREXX)"
+	@$(CC) $(OBJS_WBREXX) $(LFLAGS2) $(DEFINES) -o$(WBREXX).debug
+	@$(STRIP) $(WBREXX).debug -o $(WBREXX)
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(WBREXX)"
+	copy $(WBREXX) Scalos:Plugins/OOP clone
+
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(WBREXX) $(WBREXX).debug \
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS_WBREXX:.o=.d)
