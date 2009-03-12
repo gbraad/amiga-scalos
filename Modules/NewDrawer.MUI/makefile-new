@@ -1,0 +1,83 @@
+# $Date$
+# $Revision$
+#############################################################
+TOPLEVEL	=	$(shell pwd)/../..
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=      	$(OBJDIR)/NewDrawer.o \
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS	=	Catalogs/deutsch/Scalos		\
+		Catalogs/français/Scalos
+
+##############################################################################
+#
+# Targets
+#
+
+NAME  =	      NewDrawer.module
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(NAME) \
+	all_subdirs
+
+##############################################################################
+
+$(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
+	@$(run-cc)
+
+$(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
+	@$(run-cc)
+
+NewDrawer.c : NewDrawer_Locale.h
+
+NewDrawer_Locale.h : NewDrawer.cd
+	@$(ECHO) "CatComp $@"
+	@catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+ifneq ($(MACHINE), ppc-amigaos)
+	-@protect $@ +e
+endif
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) Scalos:modules/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug NewDrawer_Locale.h
+
+clean:	clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
+

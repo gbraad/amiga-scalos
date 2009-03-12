@@ -1,0 +1,89 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL	=	$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=      	$(OBJDIR)/Find.o \
+                $(OBJDIR)/DefIcons.o \
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS	=	Catalogs/deutsch/Scalos		\
+		Catalogs/français/Scalos
+
+##############################################################################
+#
+# Targets
+#
+
+NAME  =	      Find.module
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(NAME) \
+	all_subdirs
+
+##############################################################################
+
+$(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
+	@$(run-cc)
+
+$(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
+	@$(run-cc)
+
+Find.c : Find_Locale.h
+
+Find_Locale.h : Find.cd
+	@$(ECHO) "CatComp $@"
+	@catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+ifneq ($(MACHINE), ppc-amigaos)
+	@protect $(NAME) +e
+endif
+
+##############################################################################
+
+install: install_subdirs
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) Scalos:modules/ clone
+	@avail flush
+
+clean:	clean_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug Find_Locale.h
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
+

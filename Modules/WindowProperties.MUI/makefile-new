@@ -1,0 +1,82 @@
+# $Date$
+# $Revision$
+#############################################################
+TOPLEVEL	=	$(shell pwd)/../..
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=      	$(OBJDIR)/WindowProperties.o \
+		$(OBJDIR)/IconobjectMCC.o \
+		$(OBJDIR)/BitMapMCC.o \
+		$(OBJDIR)/Backfill.o \
+		$(OBJDIR)/ToolTypes.o \
+
+##############################################################################
+#
+# Subdirs
+#
+
+SUBDIRS	=	Catalogs/deutsch/Scalos		\
+		Catalogs/français/Scalos
+
+##############################################################################
+#
+# Targets
+#
+
+NAME  =	      WindowProperties.module
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(NAME) \
+	all_subdirs
+
+##############################################################################
+
+WindowProperties.c : WindowProperties_Locale.h
+
+WindowProperties_Locale.h : WindowProperties.cd
+	$(ECHO) "CatComp $@"
+	catcomp $(subst ../,/,$<) cfile=$@
+
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+ifneq ($(MACHINE), ppc-amigaos)
+	@protect $@ +e
+endif
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) Scalos:modules/ clone
+	@avail flush
+
+install: install_subdirs
+
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug WindowProperties_Locale.h
+
+clean: clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
+
