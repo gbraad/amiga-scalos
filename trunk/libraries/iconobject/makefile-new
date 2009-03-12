@@ -1,0 +1,69 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+###############################################################################
+#
+# Project Object files
+#
+
+ifneq ($(MACHINE),ppc-amigaos)
+OBJS	:=	$(OBJDIR)/IconObject-classic.o
+else
+OBJS	:=	$(OBJDIR)/IconObject-aos4.o \
+		$(OBJDIR)/iconobject-aos4-68kstubs.o
+endif
+
+OBJS	+=	$(OBJDIR)/IconObject.o \
+
+
+##############################################################################
+#
+# Targets
+#
+
+NAME	=	iconobject.library
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	all_subdirs \
+	$(NAME) \
+	$(NAME_DB)
+	
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $(NAME) +e
+
+##############################################################################
+
+install: install_subdirs
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) LIBS: clone
+	@avail flush
+
+
+clean: clean_subdirs
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	 $(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug *.dump *_str.*
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

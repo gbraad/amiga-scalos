@@ -1,0 +1,34 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/..
+endif
+
+##############################################################################
+
+include		config.mk
+
+###############################################################################
+
+SUBDIRS	=	preferences	\
+		sqlite		\
+                scalosgfx	\
+                iconobject	\
+                popupmenu	\
+			
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	all_subdirs \
+	
+install: install_subdirs
+
+clean: clean_subdirs
+
+nodebug: nodebug_subdirs
+
+##############################################################################

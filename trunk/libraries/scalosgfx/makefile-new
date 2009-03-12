@@ -1,0 +1,68 @@
+# $Date$
+# $Revision$
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=	$(OBJDIR)/scalosgfx.o \
+		$(OBJDIR)/argb.o \
+		$(OBJDIR)/blit.o \
+		$(OBJDIR)/BitMapScale.o \
+		$(OBJDIR)/Dither.o \
+
+ifneq ($(MACHINE),ppc-amigaos)
+OBJS	:=	 $(OBJDIR)/scalosgfx-classic.o $(OBJS)
+else
+OBJS	:=	 $(OBJDIR)/scalosgfx-aos4.o $(OBJDIR)/scalosgfx-aos4-68kstubs.o $(OBJS)
+endif
+
+##############################################################################
+#
+# Targets
+#
+
+NAME	=	scalosgfx.library
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	$(NAME) \
+	$(NAME_DB)
+	
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $(NAME) +e
+
+##############################################################################
+
+install: 
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) LIBS: clone
+	@avail flush
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug *.dump *_str.*
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
