@@ -1,0 +1,64 @@
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+#
+# Targets
+#
+
+NAME	=	pngiconobject.datatype
+NAME_DB	=	pngiconobject.datatype.debug
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(NAME) \
+	$(NAME_DB)
+	
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=	$(OBJDIR)/PNGIconDt.o 		\
+		$(OBJDIR)/LoadPngIcon.o 	\
+		$(OBJDIR)/GetPNGPicture.o 	\
+		$(OBJDIR)/SavePngIcon.o 	\
+
+ifeq ($(MACHINE), ppc-amigaos)
+OBJS	+=	$(OBJDIR)/PNGIconDt-aos4.o
+else
+OBJS	+=	$(OBJDIR)/PNGIconDt-classic.o
+endif
+
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(NAME_DB)
+	@$(STRIP) $(NAME_DB) -o $(NAME)
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) sys:classes/datatypes
+	@avail flush
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME_DB) *.dump *_str.*
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

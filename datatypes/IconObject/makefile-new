@@ -1,0 +1,76 @@
+# $Date$
+# $Revision$
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	:=      $(OBJDIR)/iconobj.o     	\
+		$(OBJDIR)/argb.o		\
+		$(OBJDIR)/ScalosMcpGfx.o	\
+
+ifeq ($(MACHINE), ppc-amigaos)
+OBJS	:=	$(OBJDIR)/iconobj-aos4.o $(OBJS)
+else
+OBJS	:=	$(OBJDIR)/iconobj-classic.o $(OBJS)
+endif
+
+##############################################################################
+#
+# Some lame deps
+#
+
+$(OBJDIR)/%.o: $(MCPGFX_DIR)/%.c
+	@$(run-cc)
+
+##############################################################################
+#
+# Targets
+#
+
+NAME	=	iconobject.datatype
+NAME_DB	=	iconobject.datatype.debug
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(NAME) \
+	$(NAME_DB)
+	
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(NAME_DB)
+	@$(STRIP) $(NAME_DB) -o $(NAME)
+	@protect $(NAME) +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) sys:classes/datatypes
+	@avail flush
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		@$(NAME) $(NAME_DB) *.dump *_str.*
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)

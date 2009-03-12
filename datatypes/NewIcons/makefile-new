@@ -1,0 +1,57 @@
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       $(OBJDIR)/NewIconDt.o
+
+
+##############################################################################
+#
+# Targets
+#
+
+NAME	=	newiconobject.datatype
+NAME_DB	=	newiconobject.datatype.debug
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	$(NAME) \
+	$(NAME_DB)
+	
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(NAME_DB)
+	@$(STRIP) $(NAME_DB) -o $(NAME)
+	@protect $(NAME) +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(NAME) sys:classes/datatypes
+	@avail flush
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME_DB) *.dump *_str.*
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
