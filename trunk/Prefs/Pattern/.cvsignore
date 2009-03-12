@@ -1,0 +1,5 @@
+Catalogs/*/Scalos/*.catalog
+Scalos_Pattern
+Scalos_Pattern.debug
+ScalosPattern_locale.*
+gmk

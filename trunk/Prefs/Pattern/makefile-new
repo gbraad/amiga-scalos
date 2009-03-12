@@ -1,0 +1,95 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       	$(OBJDIR)/Pattern.o
+
+
+##############################################################################
+# 
+# Catalogs
+#
+
+CATS		= dansk \
+		  deutsch \
+		  español \
+		  français \
+		  italiano \
+		  svenska \
+		  ÃeÓtina
+
+##############################################################################
+# 
+# Subdirs
+#
+
+SUBDIRS 	= $(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
+
+##############################################################################
+#
+# Some lame deps
+
+$(OBJDIR)/Pattern.o : ScalosPattern_locale.h
+
+ScalosPattern_locale.h : ScalosPattern.cd
+	@$(ECHO) "CatComp $@"
+	@catcomp $< cfile=$@
+
+##############################################################################
+#
+# Targets
+#
+
+NAME	=	Scalos_Pattern
+
+##############################################################################
+
+.PHONY: all install clean bump dump
+
+all:	$(NAME) \
+	all_subdirs
+
+##############################################################################
+
+$(NAME): $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(STARTUP) $(OBJS) $(CFLAGS) $(LFLAGS) $(DEFINES) -o$(NAME).debug
+	@$(STRIP) $(NAME).debug -o $(NAME)
+	@protect $(NAME) +e
+
+##############################################################################
+
+install: 
+	-@$(ECHO) "Installing $(NAME)"
+	-@copy $(NAME) "Scalos:Prefs/Scalos Pattern" clone
+
+install: install_subdirs
+
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(NAME) $(NAME).debug *.dump *_str.* \
+		ScalosPattern_locale.h
+
+clean:  clean_subdirs
+
+##############################################################################
+#
+# Autodependencies
+#
+
+-include $(OBJS:.o=.d)
