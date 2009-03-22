@@ -8,6 +8,9 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
+41.7	20090322	jl	- Bugfix: information.module:wrong icon was displayed for all entries inside a
+				  drawer if at least one icon was left-out from this drawer to the desktop.
+
 41.6	20090304	jl	- Improvement: added support for alpha transparency on AmigaOS4 with defpicture.pvplugin.
 	20090301	jl	- Improvement: Added general support for persistent storing of sorting
 				  direction with new ddFlags values introduced by AmigaOS4.
