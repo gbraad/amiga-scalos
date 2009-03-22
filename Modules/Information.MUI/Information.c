@@ -5038,8 +5038,9 @@ static Object *GetIconObjectFromScalos(BPTR DirLock, CONST_STRPTR IconName,
 
 					GetAttr(IDTA_Text, in->in_Icon, (APTR) &Name);
 
-					if ( ((BPTR) NULL == ws->ws_Lock && in->in_Lock && LOCK_SAME == SameLock(in->in_Lock, DirLock))
-						|| (Name && 0 == Stricmp(IconName, Name)) )
+					if ( (((BPTR) NULL == ws->ws_Lock && in->in_Lock && LOCK_SAME == SameLock(in->in_Lock, DirLock))
+						|| (LOCK_SAME == SameLock(ws->ws_Lock, DirLock)))
+						&& (Name && 0 == Stricmp(IconName, Name)) )
 						{
 						struct TagItem CloneTags[1];
 
