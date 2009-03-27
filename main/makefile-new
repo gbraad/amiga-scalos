@@ -15,17 +15,17 @@ include		config.mk
 # Project Object files
 #
 
-OBJS	=		$(OBJDIR)/about.o                   \
+OBJS	=	$(OBJDIR)/about.o                   \
 			$(OBJDIR)/AppMenu.o                 \
 			$(OBJDIR)/AutoUpdate.o              \
 			$(OBJDIR)/Backdrop.o                \
-                        $(OBJDIR)/BTree.o		    \
+			$(OBJDIR)/BTree.o		    \
 			$(OBJDIR)/ButtonGadgetClass.o       \
 			$(OBJDIR)/Class.o                   \
 			$(OBJDIR)/cleanup.o                 \
 			$(OBJDIR)/CLIStart.o                \
-                        $(OBJDIR)/ControlBar.o		    \
-                        $(OBJDIR)/CycleGadgetClass.o	    \
+			$(OBJDIR)/ControlBar.o		    \
+			$(OBJDIR)/CycleGadgetClass.o	    \
 			$(OBJDIR)/DefIcons.o                \
 			$(OBJDIR)/DeviceWindowClass.o       \
 			$(OBJDIR)/DevListClass.o            \
@@ -34,36 +34,36 @@ OBJS	=		$(OBJDIR)/about.o                   \
 			$(OBJDIR)/DragDrop.o                \
 			$(OBJDIR)/DragDropBobs.o            \
 			$(OBJDIR)/DrawIcon.o                \
-                        $(OBJDIR)/DropMarks.o		    \
+			$(OBJDIR)/DropMarks.o		    \
 			$(OBJDIR)/dtimage.o                 \
 			$(OBJDIR)/DtImageClass.o            \
 			$(OBJDIR)/FileCommands.o            \
 			$(OBJDIR)/FileTransClass.o          \
 			$(OBJDIR)/filetypes.o               \
 			$(OBJDIR)/FontUtil.o                \
-                        $(OBJDIR)/FrameImageClass.o	    \
+			$(OBJDIR)/FrameImageClass.o	    \
 			$(OBJDIR)/Functions.o               \
 			$(OBJDIR)/GadgetBarClass.o          \
 			$(OBJDIR)/GadgetBarImageClass.o     \
 			$(OBJDIR)/GadgetBarTextClass.o      \
 			$(OBJDIR)/GaugeGadgetClass.o        \
-                        $(OBJDIR)/HistoryGadgetClass.o	    \
+			$(OBJDIR)/HistoryGadgetClass.o	    \
 			$(OBJDIR)/IconifyClass.o            \
 			$(OBJDIR)/IconImageClass.o          \
 			$(OBJDIR)/IconWindowClass.o         \
 			$(OBJDIR)/IconWindow_MouseMove.o    \
 			$(OBJDIR)/idcmp.o                   \
-                        $(OBJDIR)/InputHandler.o            \
+			$(OBJDIR)/InputHandler.o            \
 			$(OBJDIR)/int64.o                   \
 			$(OBJDIR)/Lasso.o                   \
 			$(OBJDIR)/LocaleStrings.o           \
-		       	$(OBJDIR)/MainWait.o                \
+			$(OBJDIR)/MainWait.o                \
 			$(OBJDIR)/Memory.o		    \
 			$(OBJDIR)/Menu.o                    \
 			$(OBJDIR)/MenuCommand.o             \
 			$(OBJDIR)/Messages.o                \
 			$(OBJDIR)/MouseIcon.o               \
-                        $(OBJDIR)/OpenDrawerByName.o	    \
+			$(OBJDIR)/OpenDrawerByName.o	    \
 			$(OBJDIR)/Patches.o                 \
 			$(OBJDIR)/Pattern.o                 \
 			$(OBJDIR)/PopupMenus.o              \
@@ -75,21 +75,21 @@ OBJS	=		$(OBJDIR)/about.o                   \
 			$(OBJDIR)/ScalosInit.o              \
 			$(OBJDIR)/ScalosMcpGfx.o	    \
 			$(OBJDIR)/ScalosLocale.o            \
-                        $(OBJDIR)/ScalosVersion.o	    \
+			$(OBJDIR)/ScalosVersion.o	    \
 			$(OBJDIR)/Scalos_Cx.o               \
 			$(OBJDIR)/ScanDir.o                 \
 			$(OBJDIR)/ScanDirText.o             \
-                        $(OBJDIR)/Semaphores.o		    \
+			$(OBJDIR)/Semaphores.o		    \
 			$(OBJDIR)/SeparatorGadgetClass.o    \
 			$(OBJDIR)/Splash.o                  \
-                        $(OBJDIR)/StatusBar.o	            \
+			$(OBJDIR)/StatusBar.o	            \
 			$(OBJDIR)/StringGadgetClass.o       \
 			$(OBJDIR)/Subroutines.o             \
 			$(OBJDIR)/TextIconClass.o           \
 			$(OBJDIR)/TextWindowClass.o         \
 			$(OBJDIR)/TitleClass.o              \
-                        $(OBJDIR)/ThumbnailCache.o	    \
-                        $(OBJDIR)/Thumbnails.o		    \
+			$(OBJDIR)/ThumbnailCache.o	    \
+			$(OBJDIR)/Thumbnails.o		    \
 			$(OBJDIR)/ToolTip.o                 \
 			$(OBJDIR)/ToolTypes.o               \
 			$(OBJDIR)/TTLayout.o                \
