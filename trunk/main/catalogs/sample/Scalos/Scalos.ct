@@ -8,27 +8,27 @@ B
 ;
 ;
 MSGID_KBYTENAME
-KB
+KiB
 ;
 ;
 MSGID_MBYTENAME
-MB
+MiB
 ;
 ;
 MSGID_GBYTENAME
-GB
+GiB
 ;
 ;
 MSGID_TBYTENAME
-TB
+TiB
 ;
 ;
 MSGID_PBYTENAME
-PB
+PiB
 ;
 ;
 MSGID_HBYTENAME
-HB
+HiB
 ;
 ;
 MSGID_REQTITLE
@@ -312,7 +312,7 @@ b2c000AMIGA is (currently) a trademark of\n\
 n2c010Amiga Inc.\n\
 b3c000For bugs, suggestions or comments contact:\n\
 n3c000The Scalos Team\n\
-n3c000E-mail: info@scalos.noname.fr\n\
+n3c000E-mail: Scalos@VFEmail.net\n\
 n3c014Web: http://scalos.noname.fr\n\
 b2c160Have fun with Scalos and feel the real Workbench power!\n
 ;
