@@ -10,23 +10,23 @@ MSGID_BYTENAME
 B
 ;
 MSGID_KBYTENAME
-KB
-;KB
+KiB
+;KiB
 ;
 MSGID_MBYTENAME
-MB
+MiB
 ;
 MSGID_GBYTENAME
-GB
+GiB
 ;
 MSGID_TBYTENAME
-TB
+TiB
 ;
 MSGID_PBYTENAME
-PB
+PiB
 ;
 MSGID_HBYTENAME
-HB
+HiB
 ;
 MSGID_REQTITLE
 Komunikat Scalosa
@@ -364,7 +364,7 @@ b2c000AMIGA jest (obecnie) markâ handlowâ\n\
 n2c010Amiga Inc.\n\
 b3c000Bîëdy, sugestie lub komentarze naleûy kierowaê do:\n\
 n3c000The Scalos Team\n\
-n3c000E-mail: info@scalos.noname.fr\n\
+n3c000E-mail: Scalos@VFEmail.net\n\
 n3c014WWW: http://scalos.noname.fr\n\
 b2c160Baw sië dobrze ze Scalosem i poczuj prawdziwâ potëgë Workbencha!\n
 ; n2c000%l\n\

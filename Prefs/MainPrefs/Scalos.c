@@ -4565,7 +4565,7 @@ static Object *GenerateAboutPage(struct SCAModule *app, CONST_STRPTR cVersion, C
 					End, //Text
 
 					Child, UrltextObject,
-						MUIA_Urltext_Text, "info@scalos.noname.fr",
+						MUIA_Urltext_Text, "Scalos@VFEmail.net",
 						MUIA_Urltext_Url,  (ULONG) urlSubject,	// +jmc+
 						MUIA_Urltext_SetMax, FALSE,
 					End, //URLText
