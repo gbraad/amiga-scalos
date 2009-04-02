@@ -91,12 +91,9 @@ int sqlite3BtreeCommitPhaseOne(Btree*, const char *zMaster);
 int sqlite3BtreeCommitPhaseTwo(Btree*);
 int sqlite3BtreeCommit(Btree*);
 int sqlite3BtreeRollback(Btree*);
-int sqlite3BtreeBeginStmt(Btree*);
-int sqlite3BtreeCommitStmt(Btree*);
-int sqlite3BtreeRollbackStmt(Btree*);
+int sqlite3BtreeBeginStmt(Btree*,int);
 int sqlite3BtreeCreateTable(Btree*, int*, int flags);
 int sqlite3BtreeIsInTrans(Btree*);
-int sqlite3BtreeIsInStmt(Btree*);
 int sqlite3BtreeIsInReadTrans(Btree*);
 int sqlite3BtreeIsInBackup(Btree*);
 void *sqlite3BtreeSchema(Btree *, int, void(*)(void *));
@@ -165,6 +162,8 @@ const void *sqlite3BtreeKeyFetch(BtCursor*, int *pAmt);
 const void *sqlite3BtreeDataFetch(BtCursor*, int *pAmt);
 int sqlite3BtreeDataSize(BtCursor*, u32 *pSize);
 int sqlite3BtreeData(BtCursor*, u32 offset, u32 amt, void*);
+void sqlite3BtreeSetCachedRowid(BtCursor*, sqlite3_int64);
+sqlite3_int64 sqlite3BtreeGetCachedRowid(BtCursor*);
 
 char *sqlite3BtreeIntegrityCheck(Btree*, int *aRoot, int nRoot, int, int*);
 struct Pager *sqlite3BtreePager(Btree*);
@@ -172,6 +171,10 @@ struct Pager *sqlite3BtreePager(Btree*);
 int sqlite3BtreePutData(BtCursor*, u32 offset, u32 amt, void*);
 void sqlite3BtreeCacheOverflow(BtCursor *);
 void sqlite3BtreeClearCursor(BtCursor *);
+
+#ifndef SQLITE_OMIT_BTREECOUNT
+int sqlite3BtreeCount(BtCursor *, i64 *);
+#endif
 
 #ifdef SQLITE_TEST
 int sqlite3BtreeCursorInfo(BtCursor*, int*, int);

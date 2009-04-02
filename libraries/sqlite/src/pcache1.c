@@ -129,7 +129,7 @@ static SQLITE_WSD struct PCacheGlobal {
 */
 void sqlite3PCacheBufferSetup(void *pBuf, int sz, int n){
   PgFreeslot *p;
-  sz &= ~7;
+  sz = ROUNDDOWN8(sz);
   pcache1.szSlot = sz;
   pcache1.pStart = pBuf;
   pcache1.pFree = 0;
@@ -516,7 +516,7 @@ static void *pcache1Fetch(sqlite3_pcache *p, unsigned int iKey, int createFlag){
   nPinned = pCache->nPage - pCache->nRecyclable;
   if( createFlag==1 && pCache->bPurgeable && (
         nPinned>=(pcache1.nMaxPage+pCache->nMin-pcache1.nMinPage)
-     || nPinned>=(pCache->nMax)
+     || nPinned>=(pCache->nMax * 9 / 10)
   )){
     goto fetch_out;
   }

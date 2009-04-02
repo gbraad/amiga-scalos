@@ -193,7 +193,7 @@ static char *whereTempTriggers(Parse *pParse, Table *pTab){
   */
   if( pTab->pSchema!=pTempSchema ){
     sqlite3 *db = pParse->db;
-    for( pTrig=pTab->pTrigger; pTrig; pTrig=pTrig->pNext ){
+    for(pTrig=sqlite3TriggerList(pParse, pTab); pTrig; pTrig=pTrig->pNext){
       if( pTrig->pSchema==pTempSchema ){
         if( !zWhere ){
           zWhere = sqlite3MPrintf(db, "name=%Q", pTrig->name);
@@ -232,7 +232,7 @@ static void reloadTableSchema(Parse *pParse, Table *pTab, const char *zName){
 
 #ifndef SQLITE_OMIT_TRIGGER
   /* Drop any table triggers from the internal schema. */
-  for(pTrig=pTab->pTrigger; pTrig; pTrig=pTrig->pNext){
+  for(pTrig=sqlite3TriggerList(pParse, pTab); pTrig; pTrig=pTrig->pNext){
     int iTrigDb = sqlite3SchemaToIndex(pParse->db, pTrig->pSchema);
     assert( iTrigDb==iDb || iTrigDb==1 );
     sqlite3VdbeAddOp4(v, OP_DropTrigger, iTrigDb, 0, 0, pTrig->name, 0);
@@ -593,7 +593,7 @@ void sqlite3AlterBeginAddColumn(Parse *pParse, SrcList *pSrc){
   if( !pNew ) goto exit_begin_add_column;
   pParse->pNewTable = pNew;
   pNew->nRef = 1;
-  pNew->db = db;
+  pNew->dbMem = pTab->dbMem;
   pNew->nCol = pTab->nCol;
   assert( pNew->nCol>0 );
   nAlloc = (((pNew->nCol-1)/8)*8)+8;
