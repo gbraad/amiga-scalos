@@ -22,6 +22,14 @@ OBJS_VOLGAUGE	=       	$(BEGIN_OBJS) \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS_VOLGAUGE:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -52,10 +60,4 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(VOLGAUGE) $(VOLGAUGE).debug \
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS_VOLGAUGE:.o=.d)
 

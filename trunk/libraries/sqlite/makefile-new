@@ -92,6 +92,14 @@ OBJS	+=	$(OBJDIR)/alter.o \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -141,8 +149,3 @@ clean: clean_subdirs
 		$(NAME) $(NAME).debug *.dump *_str.*
 
 ##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)

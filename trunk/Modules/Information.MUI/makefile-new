@@ -18,6 +18,14 @@ OBJS	=      	$(OBJDIR)/Information.o \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Subdirs
 #
 
@@ -56,24 +64,19 @@ $(NAME): $(OBJS)
 
 ##############################################################################
 
+install: install_subdirs
+
 install:
 	-@$(ECHO) "Installing $(NAME)"
 	@copy $(NAME) Scalos:modules/ clone
 	@avail flush
 
-install: install_subdirs
+clean:	clean_subdirs
 
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(NAME) $(NAME).debug Information_Locale.h
 
-clean:	clean_subdirs
-
 ##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)
 

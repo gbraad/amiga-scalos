@@ -38,6 +38,14 @@ OBJS	+=	$(OBJDIR)/PNGIconDt-classic.o
 endif
 
 ##############################################################################
+#
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
 
 $(NAME): $(OBJS)
 	@$(ECHO) "Link $(NAME)"
@@ -56,9 +64,3 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(NAME) $(NAME_DB) *.dump *_str.*
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)

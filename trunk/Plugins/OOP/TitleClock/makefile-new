@@ -21,6 +21,14 @@ OBJS	=       $(BEGIN_OBJS) \
 		$(END_OBJS) \
 #
 
+##############################################################################
+#
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
 #############################################################################
 #
 # Project subdirectories
@@ -61,9 +69,3 @@ clean:  	clean_subdirs
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(TITLECLOCK).debug $(TITLECLOCK)
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)

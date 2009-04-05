@@ -21,6 +21,14 @@ OBJS_PERSIST	=       	$(BEGIN_OBJS) \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS_PERSIST:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -51,9 +59,3 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(PERSIST) $(PERSIST).debug \
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS_PERSIST:.o=.d)

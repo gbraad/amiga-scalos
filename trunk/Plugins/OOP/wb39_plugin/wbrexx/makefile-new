@@ -26,6 +26,14 @@ OBJS_WBREXX	=       	$(BEGIN_OBJS) \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS_WBREXX:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -56,9 +64,3 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(WBREXX) $(WBREXX).debug \
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS_WBREXX:.o=.d)

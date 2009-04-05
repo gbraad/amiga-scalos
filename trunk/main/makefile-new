@@ -108,6 +108,14 @@ endif
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Some lame deps
 #
 
@@ -176,11 +184,15 @@ CATS	= 	dansk \
 
 ##############################################################################
 
+nodebug: nodebug_subdirs
+
 install: install_subdirs
 
 install:
 	-@$(ECHO) "Installing $(NAME)"
 	@copy $(NAME) Scalos: clone
+
+clean:  clean_subdirs
 
 clean:
 	@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d  $(OBJDIR)/*.d.* \
@@ -189,14 +201,4 @@ clean:
 		$(NAME) $(NAME_DB) *.dump *_str.* \
 		Scalos_Locale.h MsgIdNames.h
 
-nodebug: nodebug_subdirs
-
-clean:  clean_subdirs
-
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)
 

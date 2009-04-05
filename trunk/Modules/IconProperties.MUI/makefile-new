@@ -21,6 +21,14 @@ OBJS	=      	$(OBJDIR)/IconProperties.o \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Subdirs
 #
 
@@ -82,9 +90,4 @@ clean:
 		$(NAME) $(NAME).debug IconProperties_Locale.h
 
 ##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)
 

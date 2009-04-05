@@ -18,6 +18,14 @@ OBJS	=      	$(OBJDIR)/WindowProperties.o \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Subdirs
 #
 
@@ -74,9 +82,4 @@ clean:
 clean: clean_subdirs
 
 ##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)
 

@@ -22,6 +22,14 @@ OBJS	=      	$(OBJDIR)/title_clock_prefs.o \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -59,9 +67,3 @@ clean:
         	$(OBJDIR)/*.s $(OBJDIR)/*.d.* \
 		$(TITLECLOCKPREFS).debug $(TITLECLOCKPREFS)
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)
