@@ -54,6 +54,7 @@ OBJS	+=	$(OBJDIR)/alter.o \
 	 	$(OBJDIR)/mutex.o \
 	 	$(OBJDIR)/mutex_noop.o \
 	 	$(OBJDIR)/mutex_other.o \
+	 	$(OBJDIR)/notify.o \
                 $(OBJDIR)/opcodes.o \
                 $(OBJDIR)/os.o \
                 $(OBJDIR)/os_other.o \
