@@ -26,6 +26,17 @@ OBJS_GETMSG	=       	$(OBJDIR)/GenMsgIdNames.o
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS_CTRL:.o=.d)
+	-include $(OBJS_SEMA:.o=.d)
+	-include $(OBJS_LOADWB:.o=.d)
+	-include $(OBJS_GETMSG:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -82,11 +93,4 @@ clean:
 		$(CTRL).debug $(SEMA).debug $(LOADWB).debug $(GETMSG).debug
 
 ##############################################################################
-#
-# Autodependencies
-#
 
--include $(OBJS_CTRL:.o=.d)
--include $(OBJS_SEMA:.o=.d)
--include $(OBJS_LOADWB:.o=.d)
--include $(OBJS_GETMSG:.o=.d)

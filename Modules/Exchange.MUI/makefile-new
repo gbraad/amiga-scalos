@@ -19,6 +19,14 @@ OBJS	=      	$(OBJDIR)/Exchange.o \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Subdirs
 #
 
@@ -80,9 +88,4 @@ clean:
 		$(NAME) $(NAME).debug Exchange_Locale.h
 
 ##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)
 

@@ -28,6 +28,14 @@ OBJS_TEST	=		$(OBJDIR)/test.o
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS_WB39:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -78,9 +86,3 @@ clean: clean_subdirs
 
 nodebug: nodebug_subdirs
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS_WB39:.o=.d)

@@ -22,6 +22,14 @@ OBJS	=	$(BEGIN_OBJS) \
 
 ##############################################################################
 #
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
 # Targets
 #
 
@@ -52,9 +60,3 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(TITLEFREEPENS).debug $(TITLEFREEPENS)
 
-##############################################################################
-#
-# Autodependencies
-#
-
--include $(OBJS:.o=.d)
