@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7	20090402        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.12.
+41.7    20090410	jl	- Improvement: added smooth fade-in and fade-out for Splash and About
+				  windows (MorphOS2.x and AmigaOS4.x only).
+	20090402        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.12.
 	20090327	jl	- Bugfix: in default menu preferences, prefs drawer didn't open due to wrong path.
 	20090322	jl	- Bugfix: information.module:wrong icon was displayed for all entries inside a
 				  drawer if at least one icon was left-out from this drawer to the desktop.

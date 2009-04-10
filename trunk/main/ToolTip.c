@@ -222,8 +222,6 @@ static void outline_ellipse_antialias(struct RastPort *rp,
 	WORD Segment, UBYTE color1, UBYTE color2);
 
 static BOOL GetFileTypeFromTypeNode(struct ScaToolTipInfoHookData *ttshd);
-static void FadeIn(struct Window *win);
-static void FadeOut(struct Window *win);
 
 //----------------------------------------------------------------------------
 
@@ -904,12 +902,12 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 			break;
 
 		TTRenderWindow(&tti);
-		FadeIn(tti.tti_Window);
+		WindowFadeIn(tti.tti_Window);
 
 		// wait for signal from ttInputHandler()
 		Wait(SIGBREAKF_CTRL_C);
 
-		FadeOut(tti.tti_Window);
+		WindowFadeOut(tti.tti_Window);
 		} while (0);
 
 	d1(kprintf("%s/%s/%ld: sData = %ld, is_Data = %ld\n", __FILE__, __FUNC__, __LINE__,
@@ -3066,77 +3064,4 @@ static BOOL GetFileTypeFromTypeNode(struct ScaToolTipInfoHookData *ttshd)
 }
 
 
-static void FadeIn(struct Window *win)
-{
-#if defined(__MORPHOS__) && defined(WA_Opacity)
-	if (DOSBase->dl_lib.lib_Version >= 51)
-			{
-		ULONG n;
-
-		for (n = 0; n < 255; n += 32)
-			{
-			if (SIGBREAKF_CTRL_C & SetSignal(0l, 0l))
-				break;
-
-			SetAttrs(win,
-				WA_Opacity, (n << 24) + (n << 16) + (n << 8) + (n),
-				TAG_END);
-			Delay(1);
-			}
-		}
-#endif //defined(__MORPHOS__) && defined(WA_Opacity)
-#if defined(__amigaos4__) && defined(WA_Opaqueness)
-	{
-	ULONG n;
-
-	for (n = 0; n < 255; n += 32)
-		{
-		if (SIGBREAKF_CTRL_C & SetSignal(0l, 0l))
-			break;
-
-		SetWindowAttrs(win,
-			WA_Opaqueness,  n,
-			TAG_END);
-		Delay(1);
-		}
-
-	}
-#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
-}
-
-
-static void FadeOut(struct Window *win)
-{
-#if defined(__MORPHOS__) && defined(WA_Opacity)
-	if (DOSBase->dl_lib.lib_Version >= 51)
-		{
-		ULONG n;
-
-		for (n = 0; n < 255; n += 32)
-			{
-			UBYTE k = (255 - n);
-
-			SetAttrs(win,
-				WA_Opacity, (k << 24) + (k << 16) + (k << 8) + (k),
-				TAG_END);
-			Delay(1);
-			}
-		}
-#elif defined(__amigaos4__) && defined(WA_Opaqueness)
-	{
-	ULONG n;
-
-	for (n = 0; n < 255; n += 32)
-		{
-		UBYTE k = (255 - n);
-
-		SetWindowAttrs(win,
-			WA_Opaqueness, k,
-			TAG_END);
-		Delay(1);
-		}
-
-	}
-#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
-}
 
