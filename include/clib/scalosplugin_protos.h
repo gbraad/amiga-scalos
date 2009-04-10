@@ -1,23 +1,18 @@
-#ifndef  CLIB_SCALOSPLUGIN_PROTOS_H
-#define  CLIB_SCALOSPLUGIN_PROTOS_H
+#ifndef CLIB_SCALOSPLUGIN_PROTOS_H
+#define CLIB_SCALOSPLUGIN_PROTOS_H
+
 
 /*
-**	$Id: scalosplugin_protos.h 1702 2006-05-04 19:11:43Z juergen $
+**	$VER: scalosplugin_protos.h 5.0 (10.04.2009)
 **
 **	C prototypes. For use with 32 bit integers only.
 **
-**	©1999-2002 The Scalos Team
-**	    All Rights Reserved
+**	Copyright © 2009 ©1999-2002 The Scalos Team
+**	All Rights Reserved
 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+#include <exec/types.h>
 
-const struct ScaClassInfo *SCAGetClassInfo( VOID );
+const struct ScaClassInfo * SCAGetClassInfo(void);
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif   /* CLIB_SCALOSPLUGIN_PROTOS_H */
+#endif	/*  CLIB_SCALOSPLUGIN_PROTOS_H  */
