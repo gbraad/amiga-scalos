@@ -302,6 +302,11 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 				WA_Width, lWidest,
 				WA_Top, (iInfos.ii_Screen->Height - WindowHeight + 1)/2,
 				WA_Left, (iInfos.ii_Screen->Width - lWidest + 1)/2,
+#if defined(__MORPHOS__) && defined(WA_Opacity)
+				WA_Opacity, 0x0,
+#elif defined(__amigaos4__) && defined(WA_Opaqueness)
+				WA_Opaqueness, 0,
+#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
 				TAG_DONE);
 
 		if (NULL == abi->abi_Window)
@@ -465,6 +470,8 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 				0, 0);
 
 		HelpControl(abi->abi_Window, HC_GADGETHELP);	    // Turn on gadget help
+
+		WindowFadeIn(abi->abi_Window);
 
 		do	{
 			LONG ScrollWidth = ttBox.Width;
@@ -1680,6 +1687,7 @@ static void AboutInfoCleanup(struct AboutInfo *abi)
 
 		if (abi->abi_Window)
 			{
+			WindowFadeOut(abi->abi_Window);
 			LockedCloseWindow(abi->abi_Window);
 			}
 

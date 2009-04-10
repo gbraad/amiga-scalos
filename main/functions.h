@@ -991,6 +991,8 @@ struct WindowHistoryEntry *WindowFindHistoryEntry(struct internalScaWindowTask *
 void WindowNewPath(struct internalScaWindowTask *iwt, CONST_STRPTR path);
 void WindowCastShadow(struct Window *win, LONG ShadowWidth, LONG ShadowHeight);
 void WindowSendAppIconMsg(struct internalScaWindowTask *iwt, ULONG AppIconClass, struct ScaIconNode *in);
+void WindowFadeIn(struct Window *win);
+void WindowFadeOut(struct Window *win);
 ///
 /* ------------------------------------------------- */
 

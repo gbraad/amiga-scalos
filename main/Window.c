@@ -2532,3 +2532,84 @@ void WindowSendAppIconMsg(struct internalScaWindowTask *iwt, ULONG AppIconClass,
 
 //----------------------------------------------------------------------------
 
+void WindowFadeIn(struct Window *win)
+{
+#if defined(__MORPHOS__) && defined(WA_Opacity)
+	if (DOSBase->dl_lib.lib_Version >= 51)
+			{
+		ULONG n;
+
+		for (n = 0; n < 255; n += 32)
+			{
+			if (SIGBREAKF_CTRL_C & SetSignal(0l, 0l))
+				break;
+
+			SetAttrs(win,
+				WA_Opacity, (n << 24) + (n << 16) + (n << 8) + (n),
+				TAG_END);
+			Delay(1);
+			}
+		SetAttrs(win,
+			WA_Opacity, ~0,
+			TAG_END);
+		}
+#endif //defined(__MORPHOS__) && defined(WA_Opacity)
+#if defined(__amigaos4__) && defined(WA_Opaqueness)
+	{
+	ULONG n;
+
+	for (n = 0; n < 255; n += 32)
+		{
+		if (SIGBREAKF_CTRL_C & SetSignal(0l, 0l))
+			break;
+
+		SetWindowAttrs(win,
+			WA_Opaqueness,  n,
+			TAG_END);
+		Delay(1);
+		}
+	SetWindowAttrs(win,
+		WA_Opaqueness, 255,
+		TAG_END);
+	}
+#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
+}
+
+//----------------------------------------------------------------------------
+
+void WindowFadeOut(struct Window *win)
+{
+#if defined(__MORPHOS__) && defined(WA_Opacity)
+	if (DOSBase->dl_lib.lib_Version >= 51)
+		{
+		ULONG n;
+
+		for (n = 0; n < 255; n += 32)
+			{
+			UBYTE k = (255 - n);
+
+			SetAttrs(win,
+				WA_Opacity, (k << 24) + (k << 16) + (k << 8) + (k),
+				TAG_END);
+			Delay(1);
+			}
+		}
+#elif defined(__amigaos4__) && defined(WA_Opaqueness)
+	{
+	ULONG n;
+
+	for (n = 0; n < 255; n += 32)
+		{
+		UBYTE k = (255 - n);
+
+		SetWindowAttrs(win,
+			WA_Opaqueness, k,
+			TAG_END);
+		Delay(1);
+		}
+	}
+#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
+}
+
+//----------------------------------------------------------------------------
+

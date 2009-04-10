@@ -681,6 +681,11 @@ static BOOL OpenSplash(WORD iWidth, WORD iHeight)
 #elif defined(WA_StayTop)
 		WA_StayTop, TRUE,
 #endif /* WA_FrontWindow */
+#if defined(__MORPHOS__) && defined(WA_Opacity)
+		WA_Opacity, 0x0,
+#elif defined(__amigaos4__) && defined(WA_Opaqueness)
+		WA_Opaqueness, 0,
+#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
 		WA_IDCMP, IDCMP_CHANGEWINDOW | IDCMP_MOUSEBUTTONS,
 		WA_PubScreen, iInfos.ii_Screen,
 		TAG_END);
@@ -700,6 +705,8 @@ static BOOL OpenSplash(WORD iWidth, WORD iHeight)
 
 	RenderSplashLogo();
 
+	WindowFadeIn(SplashWindow);
+
 	return TRUE;
 ///
 }
@@ -711,6 +718,7 @@ static void CloseSplash(void)
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 	if (SplashWindow)
 		{
+		WindowFadeOut(SplashWindow);
 		SplashWindowMask = 0L;
 		LockedCloseWindow(SplashWindow);
 		SplashWindow = NULL;
