@@ -405,7 +405,7 @@ static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg)
 		ng.ng_TextAttr = &inst->ftci_TextAttr;
 		ng.ng_GadgetID = 0;
 		ng.ng_Flags = PLACETEXT_LEFT;
-		ng.ng_VisualInfo = iInfos.ii_visualinfo;
+		ng.ng_VisualInfo = iInfos.xii_iinfos.ii_visualinfo;
 		ng.ng_UserData = NULL;
 
 #ifdef SHOW_EVERY_OBJECT
@@ -449,7 +449,7 @@ static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg)
 			SCAGAUGE_Level, 0,
 			SCAGAUGE_Vertical, FALSE,
 			SCAGAUGE_WantNumber, FALSE,
-			SCAGAUGE_BarPen, iInfos.ii_DrawInfo->dri_Pens[FILLPEN],
+			SCAGAUGE_BarPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[FILLPEN],
 			TAG_END);
 
 		if (NULL == gad)
@@ -626,7 +626,7 @@ static void AddFTOp(struct FileTransClassInstance *inst,
 static void ProcessFTOps(Class *cl, Object *o)
 {
 	struct FileTransClassInstance *inst = INST_DATA(cl, o);
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
 	inst->ftci_CurrentBytes = Make64(0);
 	inst->ftci_CurrentItems = 0;
@@ -1221,7 +1221,7 @@ static SAVEDS(ULONG) FileTrans_BackFillFunc(struct Hook *bfHook, struct RastPort
 		WindowBackFill(&rpCopy, msg, inst->ftci_Background->dti_BitMap,
 			inst->ftci_Background->dti_BitMapHeader->bmh_Width,
 			inst->ftci_Background->dti_BitMapHeader->bmh_Height,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}
@@ -1229,7 +1229,7 @@ static SAVEDS(ULONG) FileTrans_BackFillFunc(struct Hook *bfHook, struct RastPort
 		{
 		WindowBackFill(&rpCopy, msg, NULL,
 			0, 0,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}

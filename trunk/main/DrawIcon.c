@@ -107,7 +107,7 @@ void DrawIconObject(struct internalScaWindowTask *iwt, Object *IconObj, ULONG Fl
 		|| BoundsTop - iwt->iwt_InnerTop > iwt->iwt_InnerHeight)
 		return;
 
-	ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+	ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 	GetAttr(IDTA_UserFlags, IconObj, &IconUserFlags);
 	GetAttr(IDTA_OverlayType, IconObj, &IconOverlayType);
@@ -612,7 +612,7 @@ static void DrawTransparentIconObject(struct internalScaWindowTask *iwt, Object 
 	Scalos_InitRastPort(&rpMask);
 	Scalos_SetFont(&rpMask, iwt->iwt_IconFont, &iwt->iwt_IconTTFont);
 
-	ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+	ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 	DrawIconObjectTransparent(iwt, IconObj, ScreenDepth, &rp, &rpMask, Transparency, TRUE);
 
@@ -640,7 +640,7 @@ static void DrawTransparentIconObjectK(struct internalScaWindowTask *iwt, Object
 	Scalos_InitRastPort(&rpMask);
 	Scalos_SetFont(&rpMask, iwt->iwt_IconFont, &iwt->iwt_IconTTFont);
 
-	ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+	ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 	DrawIconObjectK(iwt, IconObj, ScreenDepth, &rp, &rpMask, K);
 
@@ -960,7 +960,7 @@ static void DrawIconObjectDisabled(struct internalScaWindowTask *iwt, Object *Ic
 			ABC | ABNC);
 
 		SetRPAttrs(&rp,
-			RPTAG_APen, iInfos.ii_DrawInfo->dri_Pens[TEXTPEN],
+			RPTAG_APen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[TEXTPEN],
 			RPTAG_DrMd, JAM1,
 			TAG_END);
 		SetAfPt(&rp, Pattern, 1);

@@ -266,7 +266,7 @@ void IDCMPDragMouseMove(struct internalScaWindowTask *iwt, struct IntuiMessage *
 		else if (foreignWin)
 			{
 			// foreign (non-scalos) window found
-			struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 
 			iwt->iwt_ObjectUnderMouse = OUM_ForeignWindow;
 

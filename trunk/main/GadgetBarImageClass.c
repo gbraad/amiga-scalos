@@ -186,7 +186,7 @@ static ULONG GadgetBarImage_New(Class *cl, Object *o, Msg msg)
 				DTA_SourceType, DTST_FILE,
 				DTA_GroupID, GID_ANIMATION,
 				ADTA_Remap, TRUE,
-				ADTA_Screen, iInfos.ii_Screen,
+				ADTA_Screen, iInfos.xii_iinfos.ii_Screen,
 				DTA_Immediate, TRUE,
 				DTA_Repeat, TRUE,
 				DTA_ControlPanel, FALSE,

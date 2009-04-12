@@ -1382,10 +1382,10 @@ void RemoveScalosBackdropIcon(struct ScaIconNode *in)
 
 	d1(kprintf("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
-	if (NULL== iInfos.ii_MainWindowStruct)
+	if (NULL== iInfos.xii_iinfos.ii_MainWindowStruct)
 		return;
 
-	iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
 	ScalosLockIconListExclusive(iwtMain);
 
@@ -1426,7 +1426,7 @@ void RemoveScalosBackdropIcon(struct ScaIconNode *in)
 // Create <ScaBackdropIcon> entry for <in> in <DevIn->in_IconList>
 static BOOL CreateSbi(struct ScaIconNode *DevIn, struct ScaIconNode *in)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	struct ScaBackdropIcon *bdi;
 	BOOL NotifySuccess = FALSE;
 	BOOL Success = FALSE;
@@ -1519,7 +1519,7 @@ static BOOL CreateSbi(struct ScaIconNode *DevIn, struct ScaIconNode *in)
 // and create <ScaBackdropIcon> entry for <in>
 void CreateSbiForIcon(struct ScaIconNode *in)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	struct ScaIconNode *inDev;
 	BOOL Finished = FALSE;
 
@@ -1628,7 +1628,7 @@ static BOOL FindIconInDrawerWindows(BPTR dirLock, CONST_STRPTR IconName)
 		struct internalScaWindowTask *iwtx;
 		struct ScaIconNode *in;
 
-		ws = iInfos.ii_MainWindowStruct;
+		ws = iInfos.xii_iinfos.ii_MainWindowStruct;
 		iwtx = (struct internalScaWindowTask *) ws->ws_WindowTask;
 
 		ScalosLockIconListShared(iwtx);

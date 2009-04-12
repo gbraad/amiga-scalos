@@ -218,7 +218,7 @@ static void DrawIconImage(struct IconImageINST *inst, struct impDraw *Msg, struc
 		if (NULL == gg->GadgetRender)
 			{
 			DoMethod(inst->sii_IconObject, IDTM_Layout, 
-				iInfos.ii_Screen,
+				iInfos.xii_iinfos.ii_Screen,
 				rp->Layer->Window,
 				rp,
 				Msg->imp_DrInfo,
@@ -226,7 +226,7 @@ static void DrawIconImage(struct IconImageINST *inst, struct impDraw *Msg, struc
 			}
 
 		DoMethod(inst->sii_IconObject, IDTM_Draw, 
-			iInfos.ii_Screen,
+			iInfos.xii_iinfos.ii_Screen,
 			rp->Layer->Window,
 			rp,
 			Msg->imp_DrInfo,
@@ -238,7 +238,7 @@ static void DrawIconImage(struct IconImageINST *inst, struct impDraw *Msg, struc
 		if (NULL == gg->GadgetRender)
 			{
 			DoMethod(inst->sii_IconObject, IDTM_Layout, 
-				iInfos.ii_Screen,
+				iInfos.xii_iinfos.ii_Screen,
 				rp->Layer->Window,
 				rp,
 				Msg->imp_DrInfo,
@@ -246,7 +246,7 @@ static void DrawIconImage(struct IconImageINST *inst, struct impDraw *Msg, struc
 			}
 
 		DoMethod(inst->sii_IconObject, IDTM_Draw, 
-			iInfos.ii_Screen,
+			iInfos.xii_iinfos.ii_Screen,
 			rp->Layer->Window,
 			rp,
 			Msg->imp_DrInfo,

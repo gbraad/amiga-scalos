@@ -203,7 +203,7 @@ BOOL QueryObjectUnderPointer(struct internalScaWindowTask **iWinUnderPtr,
 			break;
 		}
 
-	ScreenOk = NULL != scr && scr == iInfos.ii_Screen;
+	ScreenOk = NULL != scr && scr == iInfos.xii_iinfos.ii_Screen;
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -1401,7 +1401,7 @@ VOID LockedSetWindowTitles(struct Window *win,
 	d1(kprintf("%s/%s/%ld: ScalosObtainSemaphore(&LayersSema) \n", __FILE__, __FUNC__, __LINE__));
 
 	// Make sure that <win> refers to a valid intuition window on the Scalos screen!
-	for (iwin = iInfos.ii_Screen->FirstWindow; iwin; iwin = iwin->NextWindow)
+	for (iwin = iInfos.xii_iinfos.ii_Screen->FirstWindow; iwin; iwin = iwin->NextWindow)
 		{
 		if (iwin == win)
 			{
@@ -1644,23 +1644,23 @@ ULONG DisposeScalosWindow(struct internalScaWindowTask *iwt, struct ScaWindowStr
 
 	SCA_LockWindowList(SCA_LockWindowList_Exclusiv);
 
-	if (iInfos.ii_MainWindowStruct == ws)
+	if (iInfos.xii_iinfos.ii_MainWindowStruct == ws)
 		{
-		iInfos.ii_MainWindowStruct = NULL;
+		iInfos.xii_iinfos.ii_MainWindowStruct = NULL;
 		wasMainWindow = TRUE;
 		}
-	if (iInfos.ii_AppWindowStruct== ws)
+	if (iInfos.xii_iinfos.ii_AppWindowStruct== ws)
 		{
-		iInfos.ii_AppWindowStruct= NULL;
+		iInfos.xii_iinfos.ii_AppWindowStruct= NULL;
 		}
 	
 	if (WSV_Type_DeviceWindow != ws->ws_WindowType)
 		{
 		if (ws->ws_Flags & WSV_FlagF_RootWindow)
 			{
-			if (iInfos.ii_MainWindowStruct)
+			if (iInfos.xii_iinfos.ii_MainWindowStruct)
 				{
-				struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+				struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 				struct ScaIconNode *in;
 
 				ScalosLockIconListShared(iwtx);
@@ -1716,9 +1716,9 @@ ULONG DisposeScalosWindow(struct internalScaWindowTask *iwt, struct ScaWindowStr
 						}
 					}
 
-				if (iInfos.ii_MainWindowStruct && !Found)
+				if (iInfos.xii_iinfos.ii_MainWindowStruct && !Found)
 					{
-					struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+					struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 					struct ScaIconNode *in;
 
 					ScalosLockIconListShared(iwtx);
@@ -2060,13 +2060,13 @@ void ScaUnlockLayers(struct Layer_Info *li)
 
 void ScaLockScreenLayers(void)
 {
-	ScaLockLayers(&iInfos.ii_Screen->LayerInfo);
+	ScaLockLayers(&iInfos.xii_iinfos.ii_Screen->LayerInfo);
 }
 
 
 void ScaUnlockScreenLayers(void)
 {
-	ScaUnlockLayers(&iInfos.ii_Screen->LayerInfo);
+	ScaUnlockLayers(&iInfos.xii_iinfos.ii_Screen->LayerInfo);
 }
 
 
@@ -2391,7 +2391,7 @@ static void WindowBlitTransparentShadow(struct Window *PopupWindow,
 			__FILE__, __FUNC__, __LINE__, Left, Top, Width, Height));
 
 		InitRastPort(&rp);
-		rp.BitMap = iInfos.ii_Screen->RastPort.BitMap;
+		rp.BitMap = iInfos.xii_iinfos.ii_Screen->RastPort.BitMap;
 
 		SrcARGB	= ScalosGfxCreateARGB(Width, Height, NULL);
 		d1(KPrintF("%s/%s/%ld:  SrcARGB=%08lx\n", __FILE__, __FUNC__, __LINE__, SrcARGB));

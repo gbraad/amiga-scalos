@@ -112,27 +112,31 @@ STRPTR ScreenTitleBuffer = NULL;		// +jl+ 20010831 Scalos ScreenTitle
 UBYTE IconActive = 0;
 UBYTE PopupMenuFlag = FALSE;			// Flag: Are popupmenus available +jl+ 20010303
 
-struct GlobalGadgetDef GlobalGadgetUnderPointer = 
-	{
-	NULL,
-	NULL,
-	NULL,
-	SGTT_GADGETID_unknown
-	};
 
 struct MsgPort *wbPort = NULL;			// Scalos main Message port
 
 struct MainTask *MainWindowTask = NULL;		// +jl+ 20011020 MainTask
 struct Process *MainTask = NULL;		// Scalos main process +jl+ 20010504
 
-struct ScaInternInfos iInfos =
+struct extendedScaInternInfos iInfos =
 	{
-	NULL,		// ii_iInfos.ii_MainMsgPort
-	NULL,		// ii_iInfos.ii_MainWindowStruct
-	NULL,		// ii_AppWindowStruct
-	NULL,		// ii_Screen
-	NULL,		// ii_DrawInfo
-	NULL		// ii_visualinfo
+	// ScaInternInfos
+	{
+	NULL,			// ii_iInfos.xii_iinfos.ii_MainMsgPort
+	NULL,			// ii_iInfos.xii_iinfos.ii_MainWindowStruct
+	NULL,			// ii_AppWindowStruct
+	NULL,			// ii_Screen
+	NULL,			// ii_DrawInfo
+	NULL			// ii_visualinfo
+	},
+	// GlobalGadgetUnderPointer
+	{
+	NULL,			// ggd_iwt
+	NULL,			// ggd_Gadget
+	NULL,       		// ggd_cgy
+	NULL,			// ggd_GadgetTextHook
+	SGTT_GADGETID_unknown,	// ggd_GadgetID
+	},
 	};
 
 //----------------------------------------------------------------------------
@@ -409,7 +413,7 @@ void RefreshIcons(struct internalScaWindowTask *iwt, struct Region *DrawingRegio
 
 ULONG ChipMemAttr(void)
 {
-	if (CyberGfxBase && IsCyberModeID(GetVPModeID(&iInfos.ii_Screen->ViewPort)))
+	if (CyberGfxBase && IsCyberModeID(GetVPModeID(&iInfos.xii_iinfos.ii_Screen->ViewPort)))
 		return MEMF_ANY;
 
 	if (FBlitPort)
@@ -643,7 +647,7 @@ void DisplayScreenTitleError(struct internalScaWindowTask *iwt, ULONG MsgId)
 	if (sMsg)
 		{
 		sMsg->smst_showTitle = TRUE;
-		PutMsg(iInfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
 		}
 
 	DisplayBeep(iwt ? iwt->iwt_WinScreen : NULL);

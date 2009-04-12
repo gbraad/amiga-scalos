@@ -272,7 +272,7 @@ void NewFileTypesPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *
 	if (smnp)
 		{
 		smnp->smnp_PrefsFlags = SMNPFLAGF_FILETYPESPREFS;
-		PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
@@ -636,7 +636,7 @@ static LONG FtString(struct FileTypeDef *ftd, LONG *ArgArray)
 	ULONG hAlign = GTJ_LEFT;
 	enum TTVertAlign vAlign = TTVERTALIGN_Top;
 	ULONG Style = FS_NORMAL;
-	ULONG TextPen = iInfos.ii_DrawInfo->dri_Pens[TEXTPEN];
+	ULONG TextPen = iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[TEXTPEN];
 	ULONG TitleTag, TitleData;
 	char FontName[128];
 	char *TTFontDescriptor = NULL;

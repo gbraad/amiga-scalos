@@ -173,7 +173,7 @@ static ULONG StringGadgetNew(Class *cl, Object *o, Msg msg)
 		inst->sgi_Frame = NewObject(NULL, FRAMEICLASS,
 			IA_FrameType, FRAME_RIDGE,
 			IA_EdgesOnly, TRUE,
-//			IA_DrawInfo, iInfos.ii_DrawInfo,
+//			IA_DrawInfo, iInfos.xii_iinfos.ii_DrawInfo,
 			TAG_END);
 		if (NULL == inst->sgi_Frame)
 			break;

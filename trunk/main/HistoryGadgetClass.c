@@ -257,7 +257,7 @@ static ULONG HistoryGadgetNew(Class *cl, Object *o, Msg msg)
 
 		inst->hgi_CheckImage = NewObject(NULL, SYSICLASS,
 			SYSIA_Which, MENUCHECK,
-			SYSIA_DrawInfo, iInfos.ii_DrawInfo,
+			SYSIA_DrawInfo, iInfos.xii_iinfos.ii_DrawInfo,
 			TAG_END);
 		d1(KPrintF("%s/%s/%ld:  o=%08lx  hgi_CheckImage=%08lx\n", __FILE__, __FUNC__, __LINE__, o, inst->hgi_CheckImage));
 		if (NULL == inst->hgi_CheckImage)
@@ -282,7 +282,7 @@ static ULONG HistoryGadgetNew(Class *cl, Object *o, Msg msg)
 		d1(KPrintF("%s/%s/%ld:  gg->Width=%ld  gg->Height=%ld\n", __FILE__, __FUNC__, __LINE__, ((struct Gadget *) o)->Width, ((struct Gadget *) o)->Height));
 
 		inst->hgi_PopupFont = (struct TextFont *) GetTagData(GBTDTA_TextFont,
-			(ULONG) iInfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
+			(ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
 		inst->hgi_PopupTTFont = (struct TTFontFamily *) GetTagData(GBTDTA_TTFont,
 			CurrentPrefs.pref_UseScreenTTFont ? (ULONG) &ScreenTTFont : 0, ops->ops_AttrList);
 
@@ -913,7 +913,7 @@ static void HistoryGadgetAsyncOpenPopupWindow(Class *cl, Object *o, struct Gadge
 		hpm->hpm_OurClass = cl;
 		hpm->hpm_OurGadget = o;
 
-		PutMsg(iInfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
 		}
 }
 
@@ -940,7 +940,7 @@ static void HistoryGadgetAsyncDrawPopupWindowLine(Class *cl, Object *o,
 		hpm->hpm_OurClass = cl;
 		hpm->hpm_OurGadget = o;
 
-		PutMsg(iInfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
 		}
 }
 
@@ -962,7 +962,7 @@ static void HistoryGadgetAsyncClosePopupWindow(Class *cl, Object *o)
 		hpm->hpm_OurClass = cl;
 		hpm->hpm_OurGadget = o;
 
-		PutMsg(iInfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
 		}
 }
 

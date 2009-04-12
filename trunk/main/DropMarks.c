@@ -199,8 +199,8 @@ void RedrawWindowDropMark(struct internalScaWindowTask *iwt, struct Region *clip
 	rp = *iwt->iwt_WindowTask.wt_Window->RPort;
 
 	SetABPenDrMd(&rp,
-		iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
-		iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
 		JAM2);
 
 	oldClipRegion = InstallClipRegion(iwt->iwt_WindowTask.wt_Window->WLayer, clipRegion);
@@ -280,8 +280,8 @@ static void DrawIconDropMark(struct internalScaWindowTask *iwt, struct ScaIconNo
 			break;
 
 		SetABPenDrMd(&rp,
-			iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
-			iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
 			JAM2);
 
 		rp.LinePtrn = DropMarkPattern;
@@ -343,12 +343,12 @@ static void DrawGadgetClickMark(struct internalScaWindowTask *iwt, struct ExtGad
 
 		Move(&rp, dmi->dmi_Rectangle.MinX, dmi->dmi_Rectangle.MinY);
 
-		SetAPen(&rp, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
+		SetAPen(&rp, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
 		Draw(&rp, dmi->dmi_Rectangle.MaxX, dmi->dmi_Rectangle.MinY);
-		SetAPen(&rp, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+		SetAPen(&rp, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 		Draw(&rp, dmi->dmi_Rectangle.MaxX, dmi->dmi_Rectangle.MaxY);
 		Draw(&rp, dmi->dmi_Rectangle.MinX, dmi->dmi_Rectangle.MaxY);
-		SetAPen(&rp, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
+		SetAPen(&rp, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
 		Draw(&rp, dmi->dmi_Rectangle.MinX, dmi->dmi_Rectangle.MinY);
 
 		dmi = NULL;

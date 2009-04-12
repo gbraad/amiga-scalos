@@ -171,7 +171,7 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 		ScalosObtainSemaphore(&SplashSema);
 		SemaLocked = TRUE;
 
-		if (NULL == SplashPort || NULL == iInfos.ii_Screen)
+		if (NULL == SplashPort || NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		va_start(args, NumArgs);
@@ -480,7 +480,7 @@ static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
 ///
 	d1(kprintf("%s/%s/%ld: text=<%s>\n", __FILE__, __FUNC__, __LINE__, text));
 
-	if (iInfos.ii_Screen)
+	if (iInfos.xii_iinfos.ii_Screen)
 		{
 		struct RastPort rp;
 		char VersionText[256];
@@ -496,9 +496,9 @@ static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
 			ScalosBase->scb_LibNode.lib_Revision,
 			(ULONG) ScalosBuildNr);
 
-		rp = iInfos.ii_Screen->RastPort;
+		rp = iInfos.xii_iinfos.ii_Screen->RastPort;
 
-		Scalos_SetFont(&rp, iInfos.ii_Screen->RastPort.Font, &ScreenTTFont);
+		Scalos_SetFont(&rp, iInfos.xii_iinfos.ii_Screen->RastPort.Font, &ScreenTTFont);
 
 		Scalos_SetSoftStyle(&rp, FSF_BOLD, FSF_BOLD, &ScreenTTFont);
 		Scalos_TextExtent(&rp, VersionText, strlen(VersionText), &tExtV);
@@ -510,8 +510,8 @@ static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
 		Scalos_TextExtent(&rp, text, strlen(text), &tExtT);
 
 		iWidth = max(tExtT.te_Width, max(tExtS.te_Width, tExtV.te_Width)) + 2 * tExtT.te_Height;
-		if (iWidth < iInfos.ii_Screen->Width/10)
-			iWidth = iInfos.ii_Screen->Width/10;
+		if (iWidth < iInfos.xii_iinfos.ii_Screen->Width/10)
+			iWidth = iInfos.xii_iinfos.ii_Screen->Width/10;
 		iHeight = tExtT.te_Height * 5;
 
 		d1(kprintf("%s/%s/%ld: iWidth=%ld  iHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
@@ -539,8 +539,8 @@ static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
 
 				if (NewWidth > SplashWindow->Width || NewHeight > SplashWindow->Height)
 					{
-					WORD NewLeftEdge = (iInfos.ii_Screen->Width - NewWidth) / 2;
-					WORD NewTopEdge = (iInfos.ii_Screen->Height - NewHeight) / 2;
+					WORD NewLeftEdge = (iInfos.xii_iinfos.ii_Screen->Width - NewWidth) / 2;
+					WORD NewTopEdge = (iInfos.xii_iinfos.ii_Screen->Height - NewHeight) / 2;
 
 					ChangeWindowBox(SplashWindow,
 						NewLeftEdge, NewTopEdge,
@@ -653,7 +653,7 @@ static BOOL OpenSplash(WORD iWidth, WORD iHeight)
 {
 ///
 	d1(KPrintF("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
-	d1(KPrintF("%s/%s/%ld: PubScreen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.ii_Screen));
+	d1(KPrintF("%s/%s/%ld: PubScreen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
 
 	if (ReadSplashLogo(&SplashLogo))
 		{
@@ -664,8 +664,8 @@ static BOOL OpenSplash(WORD iWidth, WORD iHeight)
 	SplashBackground = CreateDatatypesImage("THEME:SplashBackground", 0);
 
 	SplashWindow = LockedOpenWindowTags(NULL,
-		WA_Left, (iInfos.ii_Screen->Width - iWidth) / 2,
-		WA_Top, (iInfos.ii_Screen->Height - iHeight) / 2,
+		WA_Left, (iInfos.xii_iinfos.ii_Screen->Width - iWidth) / 2,
+		WA_Top, (iInfos.xii_iinfos.ii_Screen->Height - iHeight) / 2,
 		WA_Activate, FALSE,
 		WA_InnerWidth, iWidth,
 		WA_InnerHeight, iHeight,
@@ -687,7 +687,7 @@ static BOOL OpenSplash(WORD iWidth, WORD iHeight)
 		WA_Opaqueness, 0,
 #endif //defined(__amigaos4__) && defined(WA_Opaqueness)
 		WA_IDCMP, IDCMP_CHANGEWINDOW | IDCMP_MOUSEBUTTONS,
-		WA_PubScreen, iInfos.ii_Screen,
+		WA_PubScreen, iInfos.xii_iinfos.ii_Screen,
 		TAG_END);
 
 	d1(kprintf("%s/%s/%ld: SplashWindow=%08lx\n", __FILE__, __FUNC__, __LINE__, SplashWindow));
@@ -699,7 +699,7 @@ static BOOL OpenSplash(WORD iWidth, WORD iHeight)
 
 	SplashWindowMask = 1 << SplashWindow->UserPort->mp_SigBit;
 
-	Scalos_SetFont(SplashWindow->RPort, iInfos.ii_Screen->RastPort.Font, &ScreenTTFont);
+	Scalos_SetFont(SplashWindow->RPort, iInfos.xii_iinfos.ii_Screen->RastPort.Font, &ScreenTTFont);
 	SetAPen(SplashWindow->RPort, 1);
 	SetDrMd(SplashWindow->RPort, JAM1);
 
@@ -763,7 +763,7 @@ static SAVEDS(ULONG) BackFillFunc(struct Hook *bfHook, struct RastPort *rp, stru
 		WindowBackFill(&rpCopy, msg, SplashBackground->dti_BitMap,
 			SplashBackground->dti_BitMapHeader->bmh_Width,
 			SplashBackground->dti_BitMapHeader->bmh_Height,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}
@@ -771,7 +771,7 @@ static SAVEDS(ULONG) BackFillFunc(struct Hook *bfHook, struct RastPort *rp, stru
 		{
 		WindowBackFill(&rpCopy, msg, NULL,
 			0, 0,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}

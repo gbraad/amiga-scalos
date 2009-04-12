@@ -1308,6 +1308,7 @@ struct GlobalGadgetDef
 	struct Gadget *ggd_Gadget;		// the Gadget itself
 	struct ControlBarGadgetEntry *ggd_cgy;	// for control bar gadgets, this is the corresponding ControlBarGadgetEntry,
 						// only valid if ggd_GadgetID == SGTT_GADGETID_ControlBar
+	struct Hook *ggd_GadgetTextHook;	// Hook for custom gadget help texts
 	enum sgttGadgetIDs ggd_GadgetID;	// ID of the gadget
 	};
 
@@ -1326,6 +1327,15 @@ struct ScalosTextAttr
 	struct TextAttr sta_TextAttr;
 	STRPTR sta_AllocName;			// Allocated string for ta_Name
 	};
+
+//---------------------------------------------------------------
+
+// private variant of ScaInternInfos
+struct extendedScaInternInfos
+{
+	struct ScaInternInfos xii_iinfos;		// public part of ScaInternInfos
+	struct GlobalGadgetDef xii_GlobalGadgetUnderPointer;
+};
 
 //---------------------------------------------------------------
 

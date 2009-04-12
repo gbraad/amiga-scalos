@@ -667,7 +667,7 @@ static ULONG WindowClass_Ping(Class *cl, Object *o, Msg msg)
 		{
 		iwt->iwt_tRefreshCount = 0;
 
-		if (iInfos.ii_MainWindowStruct == iwt->iwt_WindowTask.mt_WindowStruct)
+		if (iInfos.xii_iinfos.ii_MainWindowStruct == iwt->iwt_WindowTask.mt_WindowStruct)
 			{
 			BOOL fNewTitle = FALSE;
 
@@ -820,7 +820,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 		}
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-	if (iInfos.ii_MainWindowStruct == ws)
+	if (iInfos.xii_iinfos.ii_MainWindowStruct == ws)
 		{
 		ws->ws_Left = CurrentPrefs.pref_WBWindowBox.Left;
 		ws->ws_Top = CurrentPrefs.pref_WBWindowBox.Top;
@@ -946,7 +946,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 		WindowToFront(win);
 
 #if !defined(__MORPHOS__)
-		if (!iwt->iwt_BackDrop && ws != iInfos.ii_AppWindowStruct)
+		if (!iwt->iwt_BackDrop && ws != iInfos.xii_iinfos.ii_AppWindowStruct)
 			{
 			// Add iconify Gadget
 			struct Gadget *gad;
@@ -1111,7 +1111,7 @@ static struct Gadget *InitWindowGadgets(struct internalScaWindowTask *iwt)
 			{
 			// Update status bar font
 			SetAttrs(iwt->iwt_StatusBarMembers[STATUSBARGADGET_StatusText],
-				GBTDTA_TextFont, (ULONG) iInfos.ii_Screen->RastPort.Font,
+				GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
 				TAG_END);
 			}
 

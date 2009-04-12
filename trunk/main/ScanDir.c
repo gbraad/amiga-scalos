@@ -785,7 +785,7 @@ static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, str
 BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropList *bdl,
 	BPTR fLock, CONST_STRPTR FileName)
 {
-	struct ScaWindowStruct *ws = iInfos.ii_MainWindowStruct;
+	struct ScaWindowStruct *ws = iInfos.xii_iinfos.ii_MainWindowStruct;
 
 	if ((BPTR)NULL == fLock)
 		return FALSE;
@@ -794,7 +794,7 @@ BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropLis
 
 	if (ws != iwt->iwt_WindowTask.mt_WindowStruct)
 		{
-		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 		struct ScaIconNode *inx;
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));

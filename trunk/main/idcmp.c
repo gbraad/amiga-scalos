@@ -282,10 +282,11 @@ static ULONG IDCMPMouseMove(struct internalScaWindowTask *iwt, struct IntuiMessa
 {
 	ResetToolTips(iwt);
 
-	GlobalGadgetUnderPointer.ggd_iwt = NULL;
-	GlobalGadgetUnderPointer.ggd_Gadget = NULL;
-	GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
-	GlobalGadgetUnderPointer.ggd_cgy = NULL;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_iwt = NULL;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_Gadget = NULL;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_cgy = NULL;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetTextHook = NULL;
 
 	switch (iwt->iwt_MoveGadId)
 		{
@@ -551,7 +552,7 @@ static ULONG IDCMPMenuPick(struct internalScaWindowTask *iwt, struct IntuiMessag
 				appMsg = AllocVec(MsgSize, MEMF_CLEAR | MEMF_PUBLIC);
 				if (appMsg)
 					{
-					appMsg->am_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+					appMsg->am_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 					appMsg->am_Message.mn_Length = MsgSize;
 					appMsg->am_Type = AMTYPE_APPMENUITEM;
 					appMsg->am_UserData = appo->appo_userdata;
@@ -1009,48 +1010,49 @@ static ULONG IDCMPGadgetHelp(struct internalScaWindowTask *iwt, struct IntuiMess
 	d1(KPrintF("%s/%s/%ld: Class=%08lx  Code=%04lx  Qual=%04lx IAddress=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iMsg->Class, iMsg->Code, iMsg->Qualifier, iMsg->IAddress));
 
-	GlobalGadgetUnderPointer.ggd_iwt = iwt;
-	GlobalGadgetUnderPointer.ggd_Gadget = gg;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetTextHook = NULL;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_iwt = iwt;
+	iInfos.xii_GlobalGadgetUnderPointer.ggd_Gadget = gg;
 
 	if (NULL == gg)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp Window\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
 		}
 	else if (gg == iwt->iwt_PropBottom)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp PropBottom\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_BottomScroller;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_BottomScroller;
 		}
 	else if (gg == iwt->iwt_PropSide)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp PropSide\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_RightScroller;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_RightScroller;
 		}
 	else if (gg == iwt->iwt_GadgetRightArrow)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp GadgetRightArrow\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_RightArrow;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_RightArrow;
 		}
 	else if (gg == iwt->iwt_GadgetLeftArrow)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp GadgetLeftArrow\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_LeftArrow;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_LeftArrow;
 		}
 	else if (gg == iwt->iwt_GadgetDownArrow)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp GadgetDownArrow\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_DownArrow;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_DownArrow;
 		}
 	else if (gg == iwt->iwt_GadgetUpArrow)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp GadgetUpArrow\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_UpArrow;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_UpArrow;
 		}
 	else if (gg == iwt->iwt_IconifyGadget)
 		{
 		d1(KPrintF("%s/%s/%ld: GadgetHelp Iconify\n", __FILE__, __FUNC__, __LINE__));
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_Iconify;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_Iconify;
 		}
 	else if (gg == iwt->iwt_StatusBar)
 		{
@@ -1068,40 +1070,40 @@ static ULONG IDCMPGadgetHelp(struct internalScaWindowTask *iwt, struct IntuiMess
 			{
 		case SBAR_GadgetID_Text:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar Text\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_Text;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_Text;
 			break;
 		case SBAR_GadgetID_PadLock:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar Padlock\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ReadOnly;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ReadOnly;
 			break;
 		case SBAR_GadgetID_Reading:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar Reading\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_Reading;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_Reading;
 			break;
 		case SBAR_GadgetID_Typing:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar Typing\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_Typing;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_Typing;
 			break;
 		case SBAR_GadgetID_ShowAll:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar ShowAll\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ShowAll;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ShowAll;
 			break;
 		case SBAR_GadgetID_ThumbnailsAlways:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar ThumbnailsAlways\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ThumbnailsAlways;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ThumbnailsAlways;
 			break;
 		case SBAR_GadgetID_ThumbnailsAsDefault:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar ThumbnailsAsDefault\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ThumbnailsAsDefault;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ThumbnailsAsDefault;
 			break;
 		case SBAR_GadgetID_ThumbnailsGenerate:
 			d1(kprintf("%s/%s/%ld: GadgetHelp StatusBar ThumbnailsGenerate\n", __FILE__, __FUNC__, __LINE__));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ThumbnailsGenerate;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_StatusBar_ThumbnailsGenerate;
 			break;
 
 		default:
 			d1(KPrintF("%s/%s/%ld: unknown StatusBar GadgetID=%ld\n", __FILE__, __FUNC__, __LINE__, Code));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
 			break;
 			}
 		}
@@ -1113,9 +1115,9 @@ static ULONG IDCMPGadgetHelp(struct internalScaWindowTask *iwt, struct IntuiMess
 
 		if (GADGETID_CONTROLBAR == Code)
 			{
-			GlobalGadgetUnderPointer.ggd_cgy = ControlBarFindGadgetByID(iwt,
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_cgy = ControlBarFindGadgetByID(iwt,
 				StatusBarQueryGadgetID(iwt, (struct ExtGadget *)gg, iMsg->MouseX, iMsg->MouseY));
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_ControlBar;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_ControlBar;
 			d1(KPrintF("%s/%s/%ld: Code=%04lx\n", __FILE__, __FUNC__, __LINE__, Code));
 			}
 		}
@@ -1129,7 +1131,7 @@ static ULONG IDCMPGadgetHelp(struct internalScaWindowTask *iwt, struct IntuiMess
 
 		d1(KPrintF("%s/%s/%ld: GadgetHelp gg=%08lx\n", __FILE__, __FUNC__, __LINE__));
 
-		GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
+		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
 		}
 
 	return 0;

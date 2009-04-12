@@ -186,6 +186,8 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 	LONG			lWidest;		/* Pixel width of widest string for gadgets */
 	LONG			lScrollwidth;		/* Width of the scrolling area of the window */
 	LONG			lScrollheight;		/* Height of the amount of scrolling that will take place */
+	UWORD 			lastGadgetID = 0;
+	ULONG 			TickCount = 0;
 	struct Gadget		*StopGadget = NULL;
 	struct Region		*rg_Region;		/* new region that we want to install for clipping the drawing commands */
 	struct Region		*rg_Oldregion;		/* region which was previously set in the window */
@@ -246,7 +248,7 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 		if (NULL == abi->abi_ttd)
 			break;
 
-		abi->abi_Font = OpenDiskFont(iInfos.ii_Screen->Font);
+		abi->abi_Font = OpenDiskFont(iInfos.xii_iinfos.ii_Screen->Font);
 
 		for (n = 0; n < Sizeof(AboutGadgets); n++)
 			{
@@ -283,9 +285,9 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 
 		/* Get widest width of formatted scroller strings and add some extra space to it */
 		lScrollwidth = lWidest;
-		lWidest += (iInfos.ii_Screen->WBorLeft + iInfos.ii_Screen->WBorRight + 14);
+		lWidest += (iInfos.xii_iinfos.ii_Screen->WBorLeft + iInfos.xii_iinfos.ii_Screen->WBorRight + 14);
 		lScrollheight = abi->abi_Font->tf_YSize * 20;
-		lScrollheight += (lScrollheight/10 + iInfos.ii_Screen->WBorBottom + iInfos.ii_Screen->WBorTop);
+		lScrollheight += (lScrollheight/10 + iInfos.xii_iinfos.ii_Screen->WBorBottom + iInfos.xii_iinfos.ii_Screen->WBorTop);
 
 		WindowHeight = lScrollheight + (2 * MaxButtonHeight);
 
@@ -294,14 +296,14 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 		/* Try to open about window */
 		abi->abi_Window = LockedOpenWindowTags(NULL,
 				WA_Title, (ULONG) GetLocString(MSGID_ABOUTNAME),
-				WA_CustomScreen, (ULONG) iInfos.ii_Screen,
-				WA_IDCMP, IDCMP_GADGETUP | IDCMP_GADGETHELP | IDCMP_MOUSEBUTTONS,
+				WA_CustomScreen, (ULONG) iInfos.xii_iinfos.ii_Screen,
+				WA_IDCMP, IDCMP_GADGETUP | IDCMP_GADGETHELP | IDCMP_MOUSEBUTTONS | IDCMP_INTUITICKS,
 				WA_Flags, WFLG_RMBTRAP|WFLG_ACTIVATE|WFLG_DEPTHGADGET|WFLG_DRAGBAR,
 				WA_HelpGroup, HelpGroupID,
 				WA_Height, WindowHeight,
 				WA_Width, lWidest,
-				WA_Top, (iInfos.ii_Screen->Height - WindowHeight + 1)/2,
-				WA_Left, (iInfos.ii_Screen->Width - lWidest + 1)/2,
+				WA_Top, (iInfos.xii_iinfos.ii_Screen->Height - WindowHeight + 1)/2,
+				WA_Left, (iInfos.xii_iinfos.ii_Screen->Width - lWidest + 1)/2,
 #if defined(__MORPHOS__) && defined(WA_Opacity)
 				WA_Opacity, 0x0,
 #elif defined(__amigaos4__) && defined(WA_Opaqueness)
@@ -418,8 +420,8 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 		ra_Regionsize.MaxX++; ra_Regionsize.MaxY++;
 		McpGfxDrawFrame(abi->abi_Window->RPort, ra_Regionsize.MinX, ra_Regionsize.MinY,
 			ra_Regionsize.MaxX, ra_Regionsize.MaxY, 
-			IA_ShadowPen, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
-			IA_HighlightPen, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+			IA_ShadowPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
+			IA_HighlightPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
 			IA_Recessed, 1,
 			IA_FrameType, MF_FRAME_BUTTON,
 			TAG_END);
@@ -517,13 +519,35 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 						}
 					break;
 
+				case IDCMP_INTUITICKS:
+					d1(KPrintF("%s/%s/%ld: IDCMP_INTUITICKS abi=%08lx\n", __FILE__, __FUNC__, __LINE__, abi));
+					if (++TickCount > 10)
+						{
+						d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+						IconWinShowGadgetToolTip((struct internalScaWindowTask *) msg->WindowTask,
+							lastGadgetID, &AboutGadgetTextHook);
+						}
+					break;
+
 				case IDCMP_GADGETHELP:
+					d1(KPrintF("%s/%s/%ld: IDCMP_GADGETHELP abi=%08lx\n", __FILE__, __FUNC__, __LINE__, abi));
 					if (pIaddress)
 						{
 						struct Gadget *gad = (struct Gadget *) pIaddress;
 						d1(KPrintF("%s/%s/%ld: IDCMP_GADGETHELP GadgetID=%ld\n", __FILE__, __FUNC__, __LINE__, gad->GadgetID));
-						IconWinShowGadgetToolTip((struct internalScaWindowTask *) msg->WindowTask,
-							gad->GadgetID, &AboutGadgetTextHook);
+
+						if (lastGadgetID != gad->GadgetID)
+							{
+							d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+							lastGadgetID = gad->GadgetID;
+							TickCount = 0;
+							}
+						}
+					else
+						{
+						d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+						lastGadgetID = 0;
+						TickCount = 0;
 						}
 					break;
 
@@ -706,7 +730,7 @@ static struct IntuiMessage *ScrollUp(struct AboutInfo *abi, LONG lLines, LONG lX
 
 			if (abi->abi_DoScroll)
 				{
-				WaitBOVP(&iInfos.ii_Screen->ViewPort);
+				WaitBOVP(&iInfos.xii_iinfos.ii_Screen->ViewPort);
 				ScrollRaster(abi->abi_Window->RPort, 0, SCROLLSPEED,
 						abi->abi_lScrollsize.MinX, 
 						abi->abi_lScrollsize.MinY, 
@@ -739,6 +763,7 @@ static struct IntuiMessage *ScrollUp(struct AboutInfo *abi, LONG lLines, LONG lX
 			case IDCMP_GADGETUP:
 			case IDCMP_MOUSEBUTTONS:
 			case IDCMP_GADGETHELP:
+			case IDCMP_INTUITICKS:
 				return(im_Msg);
 				break;
 			default:
@@ -816,7 +841,7 @@ static struct AboutGadgetInfo *AboutCreateButton(const struct AboutGadgetDef *ag
 			memset(&Extent, 0, sizeof(Extent));
 
 			InitRastPort(&rp);
-			font = OpenDiskFont(iInfos.ii_Screen->Font);
+			font = OpenDiskFont(iInfos.xii_iinfos.ii_Screen->Font);
 
 			Scalos_SetFont(&rp, font, NULL);
 
@@ -833,7 +858,7 @@ static struct AboutGadgetInfo *AboutCreateButton(const struct AboutGadgetDef *ag
 			agi->agi_Image = NewObject(NULL, FRAMEICLASS,
 					IA_Width, agi->agi_Width,
 					IA_Height, agi->agi_Height,
-					SYSIA_DrawInfo, (ULONG) iInfos.ii_DrawInfo,
+					SYSIA_DrawInfo, (ULONG) iInfos.xii_iinfos.ii_DrawInfo,
 					IA_FrameType, FRAME_BUTTON,
 					TAG_END);
 			d1(KPrintF("%s/%s/%ld: agi_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, agi->agi_Image));
@@ -1184,8 +1209,8 @@ static struct ttDef *CreateDiskPluginList(struct AboutInfo *abi)
 					TT_Item,
 					(ULONG) TT_CreateItem(TT_Title, FilePart(plug->plug_filename),
 							TT_HAlign, GTJ_LEFT,
-							TT_TextPen, iInfos.ii_DrawInfo->dri_Pens[TEXTPEN],
-							TT_Font, (ULONG) iInfos.ii_Screen->Font,
+							TT_TextPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[TEXTPEN],
+							TT_Font, (ULONG) iInfos.xii_iinfos.ii_Screen->Font,
 							TT_TTFont, abi->abi_ttDesc,
 							TT_SpaceLeft, 5,
 							End
@@ -1227,8 +1252,8 @@ static struct ttDef *CreateDiskPluginList(struct AboutInfo *abi)
 						TT_Item,
 						(ULONG) TT_CreateItem(TT_Title, ci->ci_name,
 								TT_HAlign, GTJ_LEFT,
-								TT_TextPen, iInfos.ii_DrawInfo->dri_Pens[TEXTPEN],
-								TT_Font, (ULONG) iInfos.ii_Screen->Font,
+								TT_TextPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[TEXTPEN],
+								TT_Font, (ULONG) iInfos.xii_iinfos.ii_Screen->Font,
 								TT_TTFont, abi->abi_ttDesc,
 								End
 						);
@@ -1282,9 +1307,9 @@ static struct ttDef *CreateDiskPluginList(struct AboutInfo *abi)
 						(ULONG) TT_CreateItem(TT_Title, text,
 							TT_HAlign, GTJ_LEFT,
 							TT_SpaceRight, 5,
-							TT_Font, (ULONG) iInfos.ii_Screen->Font,
+							TT_Font, (ULONG) iInfos.xii_iinfos.ii_Screen->Font,
 							TT_TTFont, abi->abi_ttDesc,
-							TT_TextPen, iInfos.ii_DrawInfo->dri_Pens[TEXTPEN], 
+							TT_TextPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[TEXTPEN],
 							End
 						);
 					}
@@ -1463,9 +1488,9 @@ static struct ttDef *CreateAboutText(struct AboutInfo *abi, ULONG MsgId)
 					TT_Members, TT_CreateItem(TT_Title, lp3Start,
 							TT_HAlign, Justification,
 							TT_TextStyle, textStyle,
-							TT_Font, (ULONG) iInfos.ii_Screen->Font,
+							TT_Font, (ULONG) iInfos.xii_iinfos.ii_Screen->Font,
 							TT_TTFont, abi->abi_ttDesc,
-							TT_TextPen, (ULONG) iInfos.ii_DrawInfo->dri_Pens[bPennum],
+							TT_TextPen, (ULONG) iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[bPennum],
 							TAG_END),
 					TAG_END)
 					);
@@ -1513,7 +1538,7 @@ static BOOL InitAboutBitMap(struct AboutBitMap *abm, LONG Width, LONG Height, st
 	abm->abm_BitMap = abm->abm_RastPort.BitMap = AllocBitMap(Width, Height,
 			windowBM->Depth,
 			BMF_MINPLANES|BMF_CLEAR,
-			(GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH) <= 8 ? NULL : windowBM));
+			(GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH) <= 8 ? NULL : windowBM));
 
 	if (NULL == abm->abm_BitMap)
 		return FALSE;
@@ -1670,7 +1695,7 @@ static void AboutBackfill(struct AboutInfo *abi)
 			abi->abi_wInnertop + abi->abi_wInnerheight - 1,
 			IA_APatSize, 1,
 			IA_APattern, (ULONG) wAboutpattern,
-			IA_FGPen, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+			IA_FGPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
 			TAG_END);
 		}
 }

@@ -887,7 +887,7 @@ BOOL ArexxToolStart(struct internalScaWindowTask *iwt, BPTR dirLock, CONST_STRPT
 			(RUNPROCFUNC) AsyncArexxToolStart,
 			sizeof(Args) / sizeof(ULONG),
 			(struct WBArg *)(APTR) &Args,
-			iInfos.ii_MainMsgPort);
+			iInfos.xii_iinfos.ii_MainMsgPort);
 		}
 
 	return Success;

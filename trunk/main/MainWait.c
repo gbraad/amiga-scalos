@@ -87,7 +87,7 @@ struct ARexxCmdEntry ARexxCommandTable[] =
 void MainWait(struct MainTask *mainTask)
 {
 	ULONG WBPortMask = (1L << wbPort->mp_SigBit);
-	ULONG MainPortMask = (1L << iInfos.ii_MainMsgPort->mp_SigBit);
+	ULONG MainPortMask = (1L << iInfos.xii_iinfos.ii_MainMsgPort->mp_SigBit);
 
 	d1(KPrintF("%s/%s/%ld: START  iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, &mainTask->mwt));
 
@@ -106,7 +106,7 @@ void MainWait(struct MainTask *mainTask)
 			//.mainwait2
 			struct Message *msg;
 
-			while (!mainTask->mwt.iwt_CloseWindow && (msg = GetMsg(iInfos.ii_MainMsgPort)))
+			while (!mainTask->mwt.iwt_CloseWindow && (msg = GetMsg(iInfos.xii_iinfos.ii_MainMsgPort)))
 				{
 				struct NotifyMessage *nMsg = (struct NotifyMessage *) msg;
 				struct RexxMsg *RxMsg = (struct RexxMsg *) msg;
@@ -312,7 +312,7 @@ static void ProcessTimerMessage(struct MainTask *mainTask)
 					d1(KPrintF("%s/%s/%ld: msg=%08lx\n", __FILE__, __FUNC__, __LINE__, msg));
 					if (msg)
 						{
-						msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+						msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 						msg->smtm_WindowStruct = ws;
 						msg->smtm_Time = Now;
 
@@ -433,7 +433,7 @@ static void ProcessRexxMessage(struct MainTask *mainTask, struct RexxMsg *RxMsg)
 					smrx->smrx_RexxMsg = RxMsg;
 					smrx->smrx_EntryPoint = ace->ace_EntryPoint;
 
-					PutMsg(iInfos.ii_MainMsgPort, &smrx->ScalosMessage.sm_Message);
+					PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smrx->ScalosMessage.sm_Message);
 					}
 				}
 			else
@@ -579,7 +579,7 @@ struct NotifyNode *AddToMainNotifyList(struct NotifyTab *nft, ULONG Flags)
 
 		non->non_NotifyRequest.nr_UserData = (ULONG) nft;
 		non->non_NotifyRequest.nr_Name = (STRPTR) nft->nft_FileName;
-		non->non_NotifyRequest.nr_stuff.nr_Msg.nr_Port = iInfos.ii_MainMsgPort;
+		non->non_NotifyRequest.nr_stuff.nr_Msg.nr_Port = iInfos.xii_iinfos.ii_MainMsgPort;
 		non->non_NotifyRequest.nr_Flags = NRF_SEND_MESSAGE | Flags;
 
 		if (!StartNotify(&non->non_NotifyRequest))

@@ -719,7 +719,7 @@ LONG WriteWBConfig(void)
 	struct WBCFChunk wbcf;
 	BOOL IffOpen = FALSE;
 	LONG Result = RETURN_OK;
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
 	memset(&prhd, 0, sizeof(prhd));
 
@@ -788,12 +788,12 @@ LONG WriteWBConfig(void)
 			}
 		else
 			{
-			wbcf.wbcf_XOffset = iInfos.ii_MainWindowStruct->ws_xoffset;
-			wbcf.wbcf_YOffset = iInfos.ii_MainWindowStruct->ws_yoffset;
-			wbcf.wbcf_LeftEdge = iInfos.ii_MainWindowStruct->ws_Left;
-			wbcf.wbcf_TopEdge = iInfos.ii_MainWindowStruct->ws_Top;
-			wbcf.wbcf_Width = iInfos.ii_MainWindowStruct->ws_Width;
-			wbcf.wbcf_Height = iInfos.ii_MainWindowStruct->ws_Height;
+			wbcf.wbcf_XOffset = iInfos.xii_iinfos.ii_MainWindowStruct->ws_xoffset;
+			wbcf.wbcf_YOffset = iInfos.xii_iinfos.ii_MainWindowStruct->ws_yoffset;
+			wbcf.wbcf_LeftEdge = iInfos.xii_iinfos.ii_MainWindowStruct->ws_Left;
+			wbcf.wbcf_TopEdge = iInfos.xii_iinfos.ii_MainWindowStruct->ws_Top;
+			wbcf.wbcf_Width = iInfos.xii_iinfos.ii_MainWindowStruct->ws_Width;
+			wbcf.wbcf_Height = iInfos.xii_iinfos.ii_MainWindowStruct->ws_Height;
 
 			wbcf.wbcf_Flags = 0;
 			}
@@ -1569,7 +1569,7 @@ void NewPatternPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *ms
 	if (smnp)
 		{
 		smnp->smnp_PrefsFlags = SMNPFLAGF_PATTERNPREFS;
-		PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 		}
 }
 
@@ -1587,7 +1587,7 @@ BOOL ChangedPatternPrefs(struct MainTask *mt)
 		NewPatternPrefsCRC != PatternPrefsCRC)
 		{
 		Changed = TRUE;
-		PatternsOff(mt, iInfos.ii_MainMsgPort);
+		PatternsOff(mt, iInfos.xii_iinfos.ii_MainMsgPort);
 		FreePatternPrefs();
 		ReadPatternPrefs();
 		PatternsOn(mt);
@@ -1607,7 +1607,7 @@ void NewMainPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *msg)
 	if (smnp)
 		{
 		smnp->smnp_PrefsFlags = SMNPFLAGF_SCALOSPREFS;
-		PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 		}
 }
 
@@ -1624,7 +1624,7 @@ BOOL ChangedMainPrefs(struct MainTask *mt)
 	if (INITIAL_CRC != NewMainPrefsCRC &&
 		NewMainPrefsCRC != MainPrefsCRC)
 		{
-		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 		BOOL oldPrefFullBenchFlag, oldPrefPopTitleFlag;
 		BOOL oldPrefMarkIconUnderMouse;
 		UWORD oldPrefActiveWindowTransparency;
@@ -1649,17 +1649,17 @@ BOOL ChangedMainPrefs(struct MainTask *mt)
 				FreeBackFill(&iwtMain->iwt_WindowTask.wt_PatternInfo);
 
 				iwtMain->iwt_WindowTask.wt_PatternInfo.ptinf_height = iwtMain->iwt_WinScreen->Height;
-				iInfos.ii_MainWindowStruct->ws_Top = 0;
-				iInfos.ii_MainWindowStruct->ws_Height = 
-					iwtMain->iwt_WinScreen->Height - iInfos.ii_MainWindowStruct->ws_Top;
+				iInfos.xii_iinfos.ii_MainWindowStruct->ws_Top = 0;
+				iInfos.xii_iinfos.ii_MainWindowStruct->ws_Height = 
+					iwtMain->iwt_WinScreen->Height - iInfos.xii_iinfos.ii_MainWindowStruct->ws_Top;
 
 				ChangeWindowBox(iwtMain->iwt_WindowTask.wt_Window,
 					iwtMain->iwt_WindowTask.wt_Window->LeftEdge,
-					iInfos.ii_MainWindowStruct->ws_Top,
+					iInfos.xii_iinfos.ii_MainWindowStruct->ws_Top,
 					iwtMain->iwt_WindowTask.wt_Window->Width,
-					iInfos.ii_MainWindowStruct->ws_Height);
+					iInfos.xii_iinfos.ii_MainWindowStruct->ws_Height);
 
-				SetBackFill(iwtMain, iInfos.ii_MainWindowStruct->ws_PatternNode,
+				SetBackFill(iwtMain, iInfos.xii_iinfos.ii_MainWindowStruct->ws_PatternNode,
 					&iwtMain->iwt_WindowTask.wt_PatternInfo,
                                         0,
 					iwtMain->iwt_WinScreen);
@@ -1671,17 +1671,17 @@ BOOL ChangedMainPrefs(struct MainTask *mt)
 				iwtMain->iwt_WindowTask.wt_PatternInfo.ptinf_height =
 					iwtMain->iwt_WinScreen->Height - iwtMain->iwt_WinScreen->BarHeight + 1;
 
-				iInfos.ii_MainWindowStruct->ws_Top = iwtMain->iwt_WinScreen->BarHeight + 1;
-				iInfos.ii_MainWindowStruct->ws_Height = 
-					iwtMain->iwt_WinScreen->Height - iInfos.ii_MainWindowStruct->ws_Top;
+				iInfos.xii_iinfos.ii_MainWindowStruct->ws_Top = iwtMain->iwt_WinScreen->BarHeight + 1;
+				iInfos.xii_iinfos.ii_MainWindowStruct->ws_Height = 
+					iwtMain->iwt_WinScreen->Height - iInfos.xii_iinfos.ii_MainWindowStruct->ws_Top;
 
 				ChangeWindowBox(iwtMain->iwt_WindowTask.wt_Window,
 					iwtMain->iwt_WindowTask.wt_Window->LeftEdge,
-					iInfos.ii_MainWindowStruct->ws_Top,
+					iInfos.xii_iinfos.ii_MainWindowStruct->ws_Top,
 					iwtMain->iwt_WindowTask.wt_Window->Width,
-					iInfos.ii_MainWindowStruct->ws_Height);
+					iInfos.xii_iinfos.ii_MainWindowStruct->ws_Height);
 
-				SetBackFill(iwtMain, iInfos.ii_MainWindowStruct->ws_PatternNode,
+				SetBackFill(iwtMain, iInfos.xii_iinfos.ii_MainWindowStruct->ws_PatternNode,
 					&iwtMain->iwt_WindowTask.wt_PatternInfo,
 					0,
 					iwtMain->iwt_WinScreen);
@@ -1793,7 +1793,7 @@ void NewPalettePrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *ms
 		if (smnp)
 			{
 			smnp->smnp_PrefsFlags = SMNPFLAGF_PALETTEPREFS;
-			PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+			PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 			}
 		}
 }
@@ -1815,7 +1815,7 @@ BOOL ChangedPalettePrefs(struct MainTask *mt)
 			NewPalettePrefsCRC != PalettePrefsCRC)
 			{
 			Changed = TRUE;
-			RunProcess(&mt->mwt.iwt_WindowTask, NewPaletteProc, 0, NULL, iInfos.ii_MainMsgPort);
+			RunProcess(&mt->mwt.iwt_WindowTask, NewPaletteProc, 0, NULL, iInfos.xii_iinfos.ii_MainMsgPort);
 			}
 		}
 
@@ -1871,7 +1871,7 @@ void NewFontPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *msg)
 	if (smnp)
 		{
 		smnp->smnp_PrefsFlags = SMNPFLAGF_FONTPREFS;
-		PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 		}
 }
 
@@ -1879,7 +1879,7 @@ void NewFontPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *msg)
 BOOL ChangedFontPrefs(struct MainTask *mt)
 {
 	ULONG NewFontPrefsCRC;
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	BOOL Changed = FALSE;
 
 	NewFontPrefsCRC = GetPrefsCRCFromName("ENV:sys/font.prefs");
@@ -1928,7 +1928,7 @@ static void ShowScreenTitle(BOOL showTitle)
 	if (sMsg)
 		{
 		sMsg->smst_showTitle = showTitle;
-		PutMsg(iInfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
 		}
 }
 

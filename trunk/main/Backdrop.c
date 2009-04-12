@@ -425,7 +425,7 @@ ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in)
 
 	if (WasChanged)
 		{
-		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 		struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 		struct ScaUpdateIcon_IW siw;
 		struct ScaWindowStruct *sw;
@@ -489,7 +489,7 @@ ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in)
 
 struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WORD PosX, WORD PosY)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	struct ScaIconNode *inMain;
 	struct DevProc *devproc;
 	BOOL IconAlreadyPresent = FALSE;
@@ -619,7 +619,7 @@ struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WOR
 
 struct ScaIconNode *FindBackdropIcon(BPTR dirLock, CONST_STRPTR iconName)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	struct ScaIconNode *in, *inFound = NULL;
 
 	if (NULL == iwtMain)
@@ -655,7 +655,7 @@ struct ScaIconNode *FindBackdropIcon(BPTR dirLock, CONST_STRPTR iconName)
 
 struct ScaIconNode *FindBackdropIconExclusive(BPTR dirLock, CONST_STRPTR iconName)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	struct ScaIconNode *in, *inFound = NULL;
 
 	if (NULL == iwtMain)
@@ -851,7 +851,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 			// If ScaIconNode lock and name = DirLock and IconName then
 			// update INF_SupportsPutAway and INF_SupportsLeaveOut flags.
 
-			struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 			struct ScaIconNode *in;
 
 			ScalosLockIconListShared(iwtMain);
@@ -1012,9 +1012,9 @@ void PutAwayIcon(struct internalScaWindowTask *iwt,
 		if (!IsPermanentBackDropIcon(iwt, &bdl, iconDirLock, IconName))
 			{
 			// +jmc+ : This is not a backdrop icon(icon dropped) then remove object from main window.
-			if (iwt->iwt_WindowTask.mt_WindowStruct == iInfos.ii_MainWindowStruct)
+			if (iwt->iwt_WindowTask.mt_WindowStruct == iInfos.xii_iinfos.ii_MainWindowStruct)
 				{
-				struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+				struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 				struct ScaIconNode *in;
 
 				UpdateIcon.ui_iw_Name = AllocCopyString(IconName);
@@ -1070,9 +1070,9 @@ void PutAwayIcon(struct internalScaWindowTask *iwt,
 				BackdropWriteFile(&bdl);
 			}
 
-		if (iwt->iwt_WindowTask.mt_WindowStruct == iInfos.ii_MainWindowStruct)
+		if (iwt->iwt_WindowTask.mt_WindowStruct == iInfos.xii_iinfos.ii_MainWindowStruct)
 			{
-			struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 			struct ScaIconNode *in;
 
 			UpdateIcon.ui_iw_Name = AllocCopyString(IconName);

@@ -336,8 +336,8 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 
 	va_start(args, FirstTag);
 
-	MouseX = iInfos.ii_Screen->MouseX;
-	MouseY = iInfos.ii_Screen->MouseY;
+	MouseX = iInfos.xii_iinfos.ii_Screen->MouseX;
+	MouseY = iInfos.xii_iinfos.ii_Screen->MouseY;
 
 	TagList = ScalosVTagList(FirstTag, args);
 	if (TagList)
@@ -434,7 +434,8 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 		if (ti)
 			{
 			ttd = CreateGadgetTooltip(iwt, ti->ti_Data,
-				(struct Hook *) GetTagData(DITT_GadgetTextHook, (ULONG) NULL, TagList));
+				(struct Hook *) GetTagData(DITT_GadgetTextHook,
+					(ULONG) iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetTextHook, TagList));
 			}
 		}
 
@@ -447,7 +448,7 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 
 		Scalos_InitRastPort(&rp);
 
-		Scalos_SetFont(&rp, iInfos.ii_Screen->RastPort.Font, &ScreenTTFont);
+		Scalos_SetFont(&rp, iInfos.xii_iinfos.ii_Screen->RastPort.Font, &ScreenTTFont);
 
 		ttu.ttshd_IconNode = in;
 		ttu.ttshd_FileLock = IS_VALID_LOCK(fLock) ? fLock : (BPTR)NULL;
@@ -468,7 +469,7 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 		d1(kprintf("%s/%s/%ld: startArg=%08lx  iwt=%08lx  ttd=%08lx\n", \
 			__FILE__, __FUNC__, __LINE__, &startArg, iwt, ttd));
 
-		if (MouseX == iInfos.ii_Screen->MouseX && MouseY == iInfos.ii_Screen->MouseY)
+		if (MouseX == iInfos.xii_iinfos.ii_Screen->MouseX && MouseY == iInfos.xii_iinfos.ii_Screen->MouseY)
 			{
 			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_RunProcess, 
 				IconToolTipProcess,
@@ -695,72 +696,75 @@ static struct ttDef *CreateGadgetTooltip(struct internalScaWindowTask *iwt,
 	CONST_STRPTR ToolTipText;
 	struct ttDef *ttd = NULL;
 
-	d1(KPrintF("%s/%s/%ld: GadgetID=%ld\n", __FILE__, __FUNC__, __LINE__, GadgetID));
+	d1(KPrintF("%s/%s/%ld: GadgetTextHook=%08lx\n", __FILE__, __FUNC__, __LINE__, GadgetTextHook));
 
-	switch (GadgetID)
+	if (GadgetTextHook)
 		{
-	case SGTT_GADGETID_RightScroller:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_RIGHTSCROLLER);
-		break;
-	case SGTT_GADGETID_BottomScroller:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_BOTTOMSCROLLER);
-		break;
-	case SGTT_GADGETID_UpArrow:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_UPARROW);
-		break;
-	case SGTT_GADGETID_DownArrow:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_DOWNARROW);
-		break;
-	case SGTT_GADGETID_RightArrow:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_RIGHTARROW);
-		break;
-	case SGTT_GADGETID_LeftArrow:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_LEFTARROW);
-		break;
-	case SGTT_GADGETID_Iconify:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_ICONIFY);
-		break;
-	case SGTT_GADGETID_StatusBar_Text:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_TEXT);
-		break;
-	case SGTT_GADGETID_StatusBar_ReadOnly:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_READONLY);
-		break;
-	case SGTT_GADGETID_StatusBar_Reading:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_READING);
-		break;
-	case SGTT_GADGETID_StatusBar_Typing:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_TYPING);
-		break;
-	case SGTT_GADGETID_StatusBar_ShowAll:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_SHOWALL);
-		break;
-	case SGTT_GADGETID_StatusBar_ThumbnailsAlways:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_ALWAYS);
-		break;
-	case SGTT_GADGETID_StatusBar_ThumbnailsAsDefault:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_ASDEFAULT);
-		break;
-	case SGTT_GADGETID_StatusBar_ThumbnailsGenerate:
-		ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_GENERATE);
-		break;
-	case SGTT_GADGETID_ControlBar:
-		if (GlobalGadgetUnderPointer.ggd_cgy)
-			ToolTipText = GlobalGadgetUnderPointer.ggd_cgy->cgy_HelpText;
-		else
-			ToolTipText = NULL;
-		break;
-	default:
-		d1(KPrintF("%s/%s/%ld: GadgetTextHook=%08lx\n", __FILE__, __FUNC__, __LINE__, GadgetTextHook));
-		if (GadgetTextHook)
+		// fetch Tooltip text from hook
+		ToolTipText = (CONST_STRPTR) CallHookPkt(GadgetTextHook, (APTR) iwt, (APTR) GadgetID);
+		}
+	else
+		{
+		// use built-in tooltip text according to gadget ID
+		d1(KPrintF("%s/%s/%ld: GadgetID=%ld\n", __FILE__, __FUNC__, __LINE__, GadgetID));
+
+		switch (GadgetID)
 			{
-			ToolTipText = (CONST_STRPTR) CallHookPkt(GadgetTextHook, (APTR) iwt, (APTR) GadgetID);
-			}
-		else
-			{
+		case SGTT_GADGETID_RightScroller:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_RIGHTSCROLLER);
+			break;
+		case SGTT_GADGETID_BottomScroller:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_BOTTOMSCROLLER);
+			break;
+		case SGTT_GADGETID_UpArrow:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_UPARROW);
+			break;
+		case SGTT_GADGETID_DownArrow:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_DOWNARROW);
+			break;
+		case SGTT_GADGETID_RightArrow:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_RIGHTARROW);
+			break;
+		case SGTT_GADGETID_LeftArrow:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_LEFTARROW);
+			break;
+		case SGTT_GADGETID_Iconify:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_ICONIFY);
+			break;
+		case SGTT_GADGETID_StatusBar_Text:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_TEXT);
+			break;
+		case SGTT_GADGETID_StatusBar_ReadOnly:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_READONLY);
+			break;
+		case SGTT_GADGETID_StatusBar_Reading:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_READING);
+			break;
+		case SGTT_GADGETID_StatusBar_Typing:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_TYPING);
+			break;
+		case SGTT_GADGETID_StatusBar_ShowAll:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_SHOWALL);
+			break;
+		case SGTT_GADGETID_StatusBar_ThumbnailsAlways:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_ALWAYS);
+			break;
+		case SGTT_GADGETID_StatusBar_ThumbnailsAsDefault:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_ASDEFAULT);
+			break;
+		case SGTT_GADGETID_StatusBar_ThumbnailsGenerate:
+			ToolTipText = GetLocString(MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_GENERATE);
+			break;
+		case SGTT_GADGETID_ControlBar:
+			if (iInfos.xii_GlobalGadgetUnderPointer.ggd_cgy)
+				ToolTipText = iInfos.xii_GlobalGadgetUnderPointer.ggd_cgy->cgy_HelpText;
+			else
+				ToolTipText = NULL;
+			break;
+		default:
 			ToolTipText = NULL;
+			break;
 			}
-		break;
 		}
 
 	d1(KPrintF("%s/%s/%ld: ToolTipText=%08lx\n", __FILE__, __FUNC__, __LINE__, ToolTipText));
@@ -805,7 +809,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 		__FILE__, __FUNC__, __LINE__, startArg, startArg->tts_WindowTask, startArg->tts_ttDef));
 
 	do	{
-		tti.tti_Font = iInfos.ii_Screen->RastPort.Font;
+		tti.tti_Font = iInfos.xii_iinfos.ii_Screen->RastPort.Font;
 		tti.tti_TTFont = ScreenTTFont;
 		tti.tti_Def = startArg->tts_ttDef;
 		tti.tti_WindowBox = startArg->tts_WindowBox;
@@ -895,7 +899,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 #elif defined(__amigaos4__) && defined(WA_Opaqueness)
 			WA_Opaqueness, 0,
 #endif //defined(__amigaos4__) && defined(WA_Opaqueness)
-			WA_PubScreen, iInfos.ii_Screen,
+			WA_PubScreen, iInfos.xii_iinfos.ii_Screen,
 			TAG_END);
 
 		if (NULL == tti.tti_Window)
@@ -998,13 +1002,13 @@ static struct BitMap *SaveTTWindowBackground(const struct IBox *ttWindowBox)
 	Scalos_InitRastPort(&rp);
 
 	rp.BitMap = AllocBitMap(ttWindowBox->Width, ttWindowBox->Height, 
-		GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH), 
+		GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH), 
 		BMF_MINPLANES,
-		iInfos.ii_Screen->RastPort.BitMap);
+		iInfos.xii_iinfos.ii_Screen->RastPort.BitMap);
 
 	if (rp.BitMap)
 		{
-		ClipBlit(&iInfos.ii_Screen->RastPort,
+		ClipBlit(&iInfos.xii_iinfos.ii_Screen->RastPort,
 			ttWindowBox->Left, ttWindowBox->Top,
 			&rp, 0, 0, 
 			ttWindowBox->Width, ttWindowBox->Height,
@@ -1033,7 +1037,7 @@ static void TTRenderWindow(struct ttInfo *tti)
 		ULONG bmFlags, bmDepth;
 		ULONG ScreenDepth;
 
-		ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+		ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 		bmWidth = (LONG) GetBitMapAttr(tti->tti_BackgroundBitMap, BMA_WIDTH);
 		bmDepth = GetBitMapAttr(tti->tti_BackgroundBitMap, BMA_DEPTH);
@@ -1172,7 +1176,7 @@ static void TTRenderWindow(struct ttInfo *tti)
 
 static void DrawTooltipShapeBorder(struct ttInfo *tti, WORD PeakLeft, WORD PeakRight, WORD PeakPoint)
 {
-	SetAPen(tti->tti_Window->RPort, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
+	SetAPen(tti->tti_Window->RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
 
 	Move(tti->tti_Window->RPort, TT_RADIUS, tti->tti_yTop);					// 1
 
@@ -1180,54 +1184,54 @@ static void DrawTooltipShapeBorder(struct ttInfo *tti, WORD PeakLeft, WORD PeakR
 		{
 		ToolTipDraw(tti->tti_Window->RPort, PeakLeft, tti->tti_yTop);
 		ToolTipDraw(tti->tti_Window->RPort, PeakPoint, 0);
-		SetAPen(tti->tti_Window->RPort, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+		SetAPen(tti->tti_Window->RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 		ToolTipDraw(tti->tti_Window->RPort, PeakRight, tti->tti_yTop);
 		}
 
-	SetAPen(tti->tti_Window->RPort, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
+	SetAPen(tti->tti_Window->RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
 	ToolTipDraw(tti->tti_Window->RPort, tti->tti_Window->Width - TT_RADIUS - 1, tti->tti_yTop);    // -> 2
 
 	ToolTopDrawEllipse(tti->tti_Window->RPort,
 		tti->tti_Window->Width - 1 - TT_RADIUS, tti->tti_yTop + TT_RADIUS,
 		TT_RADIUS, TT_RADIUS, ELLIPSE_SEGMENT_TOPRIGHT,
-		iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
-		iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);					// top right -> 3
-	SetAPen(tti->tti_Window->RPort, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);					// top right -> 3
+	SetAPen(tti->tti_Window->RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 	Move(tti->tti_Window->RPort, tti->tti_Window->Width - 1, tti->tti_yTop + TT_RADIUS);	// -> 3
 	ToolTipDraw(tti->tti_Window->RPort, tti->tti_Window->Width - 1, tti->tti_yBottom - TT_RADIUS); // -> 4
 
 	ToolTopDrawEllipse(tti->tti_Window->RPort,
 		tti->tti_Window->Width - 1 - TT_RADIUS, tti->tti_yBottom - TT_RADIUS,
 		TT_RADIUS, TT_RADIUS, ELLIPSE_SEGMENT_BOTTOMRIGHT,
-		iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
-		iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);					// bottom right -> 5
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);					// bottom right -> 5
 	Move(tti->tti_Window->RPort, tti->tti_Window->Width - TT_RADIUS - 1, tti->tti_yBottom);	// -> 5
 
 	if (tti->tti_AbovePointer)
 		{
 		ToolTipDraw(tti->tti_Window->RPort, PeakRight, tti->tti_yBottom);
 		ToolTipDraw(tti->tti_Window->RPort, PeakPoint, tti->tti_Window->Height - 1);
-		SetAPen(tti->tti_Window->RPort, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
+		SetAPen(tti->tti_Window->RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
 		ToolTipDraw(tti->tti_Window->RPort, PeakLeft, tti->tti_yBottom);
 		}
 
-	SetAPen(tti->tti_Window->RPort, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+	SetAPen(tti->tti_Window->RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 	ToolTipDraw(tti->tti_Window->RPort, TT_RADIUS, tti->tti_yBottom);			       // -> 6
 
 	ToolTopDrawEllipse(tti->tti_Window->RPort,
 		TT_RADIUS, tti->tti_yBottom - TT_RADIUS,
 		TT_RADIUS, TT_RADIUS, ELLIPSE_SEGMENT_BOTTOMLEFT,
-		iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
-		iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);					// bottom left -> 7
-	SetAPen(tti->tti_Window->RPort, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);					// bottom left -> 7
+	SetAPen(tti->tti_Window->RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
 	Move(tti->tti_Window->RPort, 0, tti->tti_yBottom - TT_RADIUS);				// -> 7
 	ToolTipDraw(tti->tti_Window->RPort, 0, tti->tti_yTop + TT_RADIUS);			       // -> 8
 
 	ToolTopDrawEllipse(tti->tti_Window->RPort,
 		TT_RADIUS, tti->tti_yTop + TT_RADIUS,
 		TT_RADIUS, TT_RADIUS, ELLIPSE_SEGMENT_TOPLEFT,
-		iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
-		iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);					// top left -> 1
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+		iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);					// top left -> 1
 }
 
 
@@ -1303,7 +1307,7 @@ static void outline_ellipse(struct RastPort *rp, WORD center_x, WORD center_y,
 
 static void ToolTipDraw(struct RastPort *rp, WORD Left, WORD Top)
 {
-	ULONG ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+	ULONG ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 	if (CyberGfxBase && ScreenDepth > 8)
 		{
@@ -1320,7 +1324,7 @@ static void ToolTipDraw(struct RastPort *rp, WORD Left, WORD Top)
 static void ToolTopDrawEllipse(struct RastPort *rp, WORD center_x, WORD center_y,
 	WORD rx, WORD ry, WORD Segment, UBYTE color1, UBYTE color2)
 {
-	ULONG ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+	ULONG ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 	if (CyberGfxBase && ScreenDepth > 8)
 		{
@@ -1359,7 +1363,7 @@ static void TTLayoutWindow(struct ttInfo *tti)
 
 	tti->tti_WindowBox.Left = tti->tti_PointerX;
 
-	if ((tti->tti_WindowBox.Left + tti->tti_WindowBox.Width) >= iInfos.ii_Screen->Width)
+	if ((tti->tti_WindowBox.Left + tti->tti_WindowBox.Width) >= iInfos.xii_iinfos.ii_Screen->Width)
 		tti->tti_WindowBox.Left -= tti->tti_WindowBox.Width;
 
 	// position tooltip above mouse pointer if enough space available
@@ -1384,8 +1388,8 @@ static void TTLayoutWindow(struct ttInfo *tti)
 	// w/o having to be shifted by intuition
 	if (tti->tti_WindowBox.Left < 0)
 		tti->tti_WindowBox.Left = 0;
-	if (tti->tti_WindowBox.Left + tti->tti_WindowBox.Width > iInfos.ii_Screen->Width)
-		tti->tti_WindowBox.Left = iInfos.ii_Screen->Width - tti->tti_WindowBox.Width;
+	if (tti->tti_WindowBox.Left + tti->tti_WindowBox.Width > iInfos.xii_iinfos.ii_Screen->Width)
+		tti->tti_WindowBox.Left = iInfos.xii_iinfos.ii_Screen->Width - tti->tti_WindowBox.Width;
 
 	d1(kprintf("%s/%s/%ld: yTop=%ld  yBottom=%ld\n", __FILE__, __FUNC__, __LINE__, tti->tti_yTop, tti->tti_yBottom));
 }
@@ -1711,7 +1715,7 @@ static STRPTR Tooltip_FileType(struct ScaToolTipInfoHookData *ttshd, CONST_STRPT
 		{
 	case WBAPPICON:
 		{
-		struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+		struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 		const struct AppObject *appo, *appoFound = NULL;
 		ULONG TypeMsgID = MSGID_TOOLTIP_APPICON;
 
@@ -2038,7 +2042,7 @@ static STRPTR Tooltip_DiskUsedCount(struct ScaToolTipInfoHookData *ttshd, CONST_
 
 		if (di)
 			{
-			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 			struct msg_Translate ttm;
 			struct MsgPort *oldFsTask;
 			char SizePercent[15], SizeUsed[20], SizeFree[20];
@@ -2096,7 +2100,7 @@ static STRPTR Tooltip_DiskUsedPercent(struct ScaToolTipInfoHookData *ttshd, CONS
 
 		if (di)
 			{
-			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 			struct msg_Translate ttm;
 			struct MsgPort *oldFsTask;
 			char SizePercent[15];
@@ -2138,7 +2142,7 @@ static STRPTR Tooltip_DiskUsedInUse(struct ScaToolTipInfoHookData *ttshd, CONST_
 
 		if (di)
 			{
-			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 			struct msg_Translate ttm;
 			struct MsgPort *oldFsTask;
 			char SizeUsed[20];
@@ -2180,7 +2184,7 @@ static STRPTR Tooltip_DiskUsedFree(struct ScaToolTipInfoHookData *ttshd, CONST_S
 
 		if (di)
 			{
-			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 			struct msg_Translate ttm;
 			struct MsgPort *oldFsTask;
 			char SizeFree[20];
@@ -2549,7 +2553,7 @@ static void DrawWuLine(struct RastPort *rp, int X1, int Y1, UWORD LinePen)
 	X0 = rp->cp_x;
 	Y0 = rp->cp_y;
 
-	GetRGB32(iInfos.ii_Screen->ViewPort.ColorMap, LinePen, 1, LinePenRGB);
+	GetRGB32(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, LinePen, 1, LinePenRGB);
 
 	rl = LinePenRGB[0] >> 24;
 	gl = LinePenRGB[1] >> 24;
@@ -2825,13 +2829,13 @@ static void outline_ellipse_antialias(struct RastPort *rp,
 	double cp;
         UBYTE weight, iweight;
 
-	GetRGB32(iInfos.ii_Screen->ViewPort.ColorMap, color1, 1, LinePenRGB);
+	GetRGB32(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, color1, 1, LinePenRGB);
 
 	rgbColor1.Red   = LinePenRGB[0] >> 24;
 	rgbColor1.Green = LinePenRGB[1] >> 24;
 	rgbColor1.Blue  = LinePenRGB[2] >> 24;
 
-	GetRGB32(iInfos.ii_Screen->ViewPort.ColorMap, color2, 1, LinePenRGB);
+	GetRGB32(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, color2, 1, LinePenRGB);
 
 	rgbColor2.Red   = LinePenRGB[0] >> 24;
 	rgbColor2.Green = LinePenRGB[1] >> 24;

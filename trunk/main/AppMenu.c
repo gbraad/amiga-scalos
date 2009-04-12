@@ -250,7 +250,7 @@ void AppMenu_CreateMenu(void)
 
 	if (MainMenu)
 		{
-		LayoutMenus(MainMenu, iInfos.ii_visualinfo,
+		LayoutMenus(MainMenu, iInfos.xii_iinfos.ii_visualinfo,
 			GTMN_NewLookMenus, TRUE,
 			TAG_END);
 		}
@@ -279,7 +279,7 @@ void AppMenu_ResetMenu(void)
 		{
 		struct internalScaWindowTask *iwt;
 
-		iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+		iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 
 		if (wsAct->ws_WindowTask == (struct ScaWindowTask *) iwt)
 			SetMenuOnOff(iwt);

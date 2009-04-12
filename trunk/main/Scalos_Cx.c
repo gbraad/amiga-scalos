@@ -138,7 +138,7 @@ BOOL InitCx(void)
 		return TRUE;
 
 	do	{
-		newBroker.nb_Port = iInfos.ii_MainMsgPort;
+		newBroker.nb_Port = iInfos.xii_iinfos.ii_MainMsgPort;
 
 		ScalosCxBroker = CxBroker(&newBroker, NULL);
 		if (NULL == ScalosCxBroker)
@@ -214,14 +214,14 @@ static SAVEDS(void) INTERRUPT RawMouseMoveHandler(CxMsg *cxm, CxObj *co)
 	do	{
 		struct Screen *MouseScreen;
 
-		if (NULL == iInfos.ii_Screen)
+		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		d1(KPrintF("%s/%s/%ld: Class=%ld  SubClass=%ld  Code=%04lx\n", __FILE__, __FUNC__, __LINE__, ie->ie_Class, ie->ie_SubClass, ie->ie_Code));
 
 		MouseScreen = SearchMouseScreen(ie->ie_position.ie_xy.ie_x, ie->ie_position.ie_xy.ie_y);
 
-		if (MouseScreen != iInfos.ii_Screen)
+		if (MouseScreen != iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		if (MouseScreen->LayerInfo.Lock.ss_NestCount != 0)
@@ -255,14 +255,14 @@ static SAVEDS(void) INTERRUPT RawMouseButtonsHandler(CxMsg *cxm, CxObj *co)
 		struct Window *foreignWindow;
 		BOOL QoSuccess;
 
-		if (NULL == iInfos.ii_Screen)
+		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		d1(KPrintF("%s/%s/%ld: Class=%ld  SubClass=%ld  Code=%04lx\n", __FILE__, __FUNC__, __LINE__, ie->ie_Class, ie->ie_SubClass, ie->ie_Code));
 
 		MouseScreen = SearchMouseScreen(ie->ie_position.ie_xy.ie_x, ie->ie_position.ie_xy.ie_y);
 
-		if (MouseScreen != iInfos.ii_Screen)
+		if (MouseScreen != iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		if (MouseScreen->LayerInfo.Lock.ss_NestCount != 0)
@@ -480,8 +480,8 @@ static void HighlightControlbarGadgets(BOOL QoSuccess,
 
 	if (QoSuccess && iwtUnderPointer && NULL == iconUnderPointer && iwtUnderPointer->iwt_ControlBar)
 		{
-		WORD MouseX = iInfos.ii_Screen->MouseX;
-		WORD MouseY = iInfos.ii_Screen->MouseY;
+		WORD MouseX = iInfos.xii_iinfos.ii_Screen->MouseX;
+		WORD MouseY = iInfos.xii_iinfos.ii_Screen->MouseY;
 		UWORD Code;
 
 		MouseX -= iwtUnderPointer->iwt_WindowTask.wt_Window->LeftEdge;
@@ -551,7 +551,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				if (sMsg)
 					{
 					sMsg->smst_showTitle = TITLEBAR_ON;
-					PutMsg(iInfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
+					PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
 					}
 				}
 			}
@@ -567,7 +567,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				if (sMsg)
 					{
 					sMsg->smst_showTitle = TITLEBAR_OFF;
-					PutMsg(iInfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
+					PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
 					}
 
 				OnCount++;
@@ -591,7 +591,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				if (sMsg)
 					{
 					sMsg->smst_showTitle = TITLEBAR_OFF;
-					PutMsg(iInfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
+					PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
 					}
 				}
 			}
@@ -608,7 +608,7 @@ static SAVEDS(void) PopScreenTitle(const struct Screen *MouseScreen)
 				if (sMsg)
 					{
 					sMsg->smst_showTitle = TITLEBAR_ON;
-					PutMsg(iInfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
+					PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &sMsg->ScalosMessage.sm_Message);
 					}
 				}
 			}

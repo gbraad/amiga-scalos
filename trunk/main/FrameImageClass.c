@@ -775,12 +775,12 @@ static void GenerateBackground(Class *cl, Object *o)
 		ULONG ScreenDepth;
 		struct BackFillMsg bfm;
 
-		ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+		ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 		inst->bmicl_BackgroundBitMap = AllocBitMap(img->Width, img->Height,
 			ScreenDepth,
 			BMF_MINPLANES,
-			iInfos.ii_Screen->RastPort.BitMap);
+			iInfos.xii_iinfos.ii_Screen->RastPort.BitMap);
 
 		if (inst->bmicl_BackgroundBitMap)
 			{
