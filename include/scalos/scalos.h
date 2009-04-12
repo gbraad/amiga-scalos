@@ -1635,7 +1635,7 @@ enum WriteProtectedReqResult { WRITEPROTREQ_Replace = 1, WRITEPROTREQ_Skip, WRIT
 struct ScaRootList 
 {
 	struct ScaWindowTask	*rl_WindowTask;			// Pointer to a WindowTask structure
-	struct extendedScaInternInfos *rl_internInfos;		// Pointer to a Internal Infos struct
+	struct ScaInternInfos 	*rl_internInfos;		// Pointer to a Internal Infos struct
 };								// !! This is not the end of this struct
 
 
