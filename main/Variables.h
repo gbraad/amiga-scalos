@@ -174,14 +174,12 @@ extern STRPTR ScreenTitleBuffer;		// +jl+ 20010831 Scalos ScreenTitle
 extern UBYTE IconActive;
 extern UBYTE PopupMenuFlag;			// Flag: Are popupmenus available +jl+ 20010303
 
-extern struct GlobalGadgetDef GlobalGadgetUnderPointer;	// current Gadget under pointer
-
 extern struct MsgPort *wbPort;			// Workbench Message port
 
 extern struct MainTask *MainWindowTask;		// +jl+ 20011020 MainTask
 extern struct Process *MainTask;		// Scalos main task +jl+ 20010504
 
-extern struct ScaInternInfos iInfos;
+extern struct extendedScaInternInfos iInfos;
 ///
 /* ------------------------------------------------- */
 

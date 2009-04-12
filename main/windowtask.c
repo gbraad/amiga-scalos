@@ -154,8 +154,8 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 
 		ws->ws_WindowTask = (struct ScaWindowTask *) iwt;
 
-		iwt->iwt_WinScreen = iwt->iwt_OrigWinScreen = iInfos.ii_Screen;
-		iwt->iwt_WinDrawInfo = iInfos.ii_DrawInfo;
+		iwt->iwt_WinScreen = iwt->iwt_OrigWinScreen = iInfos.xii_iinfos.ii_Screen;
+		iwt->iwt_WinDrawInfo = iInfos.xii_iinfos.ii_DrawInfo;
 
 		iwt->iwt_CheckOverlappingIcons = (ws->ws_Flags & WSV_FlagF_CheckOverlappingIcons) != 0;
 
@@ -391,9 +391,9 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 					WinSemaLocked = TRUE;
 
 					d1(KPrintF("%s/%s/%ld: mt_WindowStruct=%08lx  ii_MainWindowStruct=%08lx\n", \
-						__FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.mt_WindowStruct, iInfos.ii_MainWindowStruct));
+						__FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.mt_WindowStruct, iInfos.xii_iinfos.ii_MainWindowStruct));
 
-					if (iwt->iwt_WindowTask.mt_WindowStruct == iInfos.ii_MainWindowStruct)
+					if (iwt->iwt_WindowTask.mt_WindowStruct == iInfos.xii_iinfos.ii_MainWindowStruct)
 						{
 						// "Quit Scalos" requested
 
@@ -492,11 +492,11 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		if (GlobalGadgetUnderPointer.ggd_iwt == iwt)
+		if (iInfos.xii_GlobalGadgetUnderPointer.ggd_iwt == iwt)
 			{
-			GlobalGadgetUnderPointer.ggd_iwt = NULL;
-			GlobalGadgetUnderPointer.ggd_Gadget = NULL;
-			GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_iwt = NULL;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_Gadget = NULL;
+			iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
 			}
 
 		// Dispose icon overlays
@@ -627,7 +627,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 			{
 			msg->smar_EntryPoint = (ASYNCROUTINEFUNC) CloseWindowMsg;
 
-			PutMsg(iInfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
+			PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
 			}
 		}
 

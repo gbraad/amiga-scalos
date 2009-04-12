@@ -350,7 +350,7 @@ static SAVEDS(ULONG) GenerateThumbnailProcess(struct SM_StartProg *sMsg, struct 
 					d1(KPrintF("%s/%s/%ld: smrio=%08lx\n", __FILE__, __FUNC__, __LINE__, smrio));
 					if (smrio)
 						{
-						smrio->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+						smrio->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 						smrio->smrio_IconObject = tni->tni_IconObj;
 						smrio->smrio_Flags = SMRIOFLAGF_EraseIcon | SMRIOFLAGF_FreeLayout;
 						PutMsg(iwt->iwt_WindowTask.wt_IconPort, &smrio->ScalosMessage.sm_Message);
@@ -396,7 +396,7 @@ static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 
 	memset(&PVResult, 0, sizeof(PVResult));
 
-	ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+	ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 	do	{
 		BOOL DoRemap;
@@ -549,7 +549,7 @@ static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 				tni->tni_IconName,
 				SCALOSPREVIEW_ThumbnailWidth, ThumbnailWidth,
 				SCALOSPREVIEW_ThumbnailHeight, ThumbnailHeight,
-				SCALOSPREVIEW_Screen, (ULONG) iInfos.ii_Screen,
+				SCALOSPREVIEW_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				SCALOSPREVIEW_SupportedColors, SupportedColors,
 				SCALOSPREVIEW_ResultStruct, (ULONG) &PVResult,
 				SCALOSPREVIEW_ImgBitMapHeader, (ULONG) &bmhd,
@@ -880,7 +880,7 @@ static BOOL GenerateThumbnailFromARGB(struct internalScaWindowTask *iwt,
 			d1(KPrintF("%s/%s/%ld: smtir=%08lx\n", __FILE__, __FUNC__, __LINE__, smtir));
 			if (smtir)
 				{
-				smtir->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+				smtir->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 				smtir->smtir_IconObject = IconObj;
 				smtir->smtir_NewImage = sac;
 
@@ -910,7 +910,7 @@ static BOOL GenerateThumbnailFromARGB(struct internalScaWindowTask *iwt,
 		d1(KPrintF("%s/%s/%ld: smtia=%08lx\n", __FILE__, __FUNC__, __LINE__, smtia));
 		if (smtia)
 			{
-			smtia->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+			smtia->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 			smtia->smtia_IconObject = IconObj;
 			smtia->smtia_NewImage = *argbDest;
 
@@ -951,7 +951,7 @@ static BOOL GenerateThumbnailFromSac(struct internalScaWindowTask *iwt,
 	d1(KPrintF("%s/%s/%ld: smtir=%08lx\n", __FILE__, __FUNC__, __LINE__, smtir));
 	if (smtir)
 		{
-		smtir->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+		smtir->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 		smtir->smtir_IconObject = IconObj;
 		smtir->smtir_NewImage = *sac;
 
@@ -1074,7 +1074,7 @@ BOOL SetIconThumbnailARGB(struct internalScaWindowTask *iwt,
 					FillARGB.Alpha = (CurrentPrefs.pref_ThumbnailBackgroundTransparency * 255) / 100;
 
 					// get RGB values for thumbnail background pen
-					GetRGB32(iInfos.ii_Screen->ViewPort.ColorMap,
+					GetRGB32(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap,
 						PalettePrefs.pal_PensList[PENIDX_THUMBNAILBACKGROUNDPEN],
                                                 1, rgb);
 
@@ -1194,7 +1194,7 @@ BOOL SetIconThumbnailRemapped(struct internalScaWindowTask *iwt,
 					ULONG rgb[3];
 
 					// get RGB values for thumbnail background pen
-					GetRGB32(iInfos.ii_Screen->ViewPort.ColorMap,
+					GetRGB32(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap,
 						PalettePrefs.pal_PensList[PENIDX_THUMBNAILBACKGROUNDPEN],
                                                 1, rgb);
 

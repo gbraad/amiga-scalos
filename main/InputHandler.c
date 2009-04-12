@@ -183,7 +183,7 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 		if (NULL == PopupMenuBase)
 			break;
 
-		if (NULL == iInfos.ii_Screen)
+		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		d1(KPrintF("%s/%s/%ld: Class=%02lx  SubClass=%02lx  Code=%04lx  Qual=%04lx\n", \
@@ -197,7 +197,7 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		if (MouseScreen != iInfos.ii_Screen)
+		if (MouseScreen != iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		if (MouseScreen->LayerInfo.Lock.ss_NestCount != 0)

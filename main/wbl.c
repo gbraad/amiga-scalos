@@ -442,7 +442,7 @@ static BOOL WBLRequestFile(struct WBArg *arg)
 		// AllocAslRequest()
 		fileReq = AllocAslRequestTags(ASL_FileRequest,
 				ASLFR_PrivateIDCMP, TRUE,
-				ASLFR_Screen, (ULONG) iInfos.ii_Screen,
+				ASLFR_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				ASLFR_TitleText, (ULONG) GetLocString(MSGID_WBLOAD_ASLTITLE),
 				ASLFR_DoSaveMode, FALSE,
 				ASLFR_RejectIcons, TRUE,

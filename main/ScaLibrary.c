@@ -133,7 +133,7 @@ LIBFUNC_P6(struct AppObject *, sca_NewAddAppIcon,
 		{ WBAPPICONA_SupportsEmptyTrash,	INF_SupportsEmptyTrash	},
 		{ TAG_DONE,				0			},
 		};
-	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 	struct AppObject *appo;
 	struct ScaIconNode *in;
 
@@ -636,9 +636,9 @@ LIBFUNC_P3(ULONG, sca_ScalosControl,
 			SetIoErr(ErrorCode);
 		}
 
-	if (DoUpdateAll && iInfos.ii_MainWindowStruct)
+	if (DoUpdateAll && iInfos.xii_iinfos.ii_MainWindowStruct)
 		{
-		UpdateAllProg((struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask, NULL);
+		UpdateAllProg((struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask, NULL);
 		}
 
 	d1(kprintf("%s/%s/%ld: TagsSuccessfullyProcessed=%lu\n", __FILE__, __FUNC__, __LINE__, TagsSuccessfullyProcessed));
@@ -757,7 +757,7 @@ LIBFUNC_P6(struct AppObject *, sca_NewAddAppMenuItem,
 	A2, struct TagItem *, TagList,
 	A6, struct ScalosBase *, ScalosBase)
 {
-	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 	struct Menu *theNewMenu = NULL;
 	struct AppObject *appo;
 	BOOL WinListLocked = FALSE;
@@ -1149,7 +1149,7 @@ static BOOL WaitForReply(struct Process *newProc, struct WblMessage *wblMsg,
 
 		ScalosReleaseSemaphore(&DoWaitSemaphore);
 
-		wblMsg->wbl_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+		wblMsg->wbl_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 
 		Success = TRUE;
 		d1(kprintf("%s/%s/%ld: msg=%08lx\n", __FILE__, __FUNC__, __LINE__, &wblMsg->wbl_Message));
@@ -1561,7 +1561,7 @@ LIBFUNC_P2(BOOL, sca_RemoveAppObject,
 	A6, struct ScalosBase *, ScalosBase)
 {
 	BOOL Success = TRUE;
-	struct ScaWindowStruct *ws = iInfos.ii_AppWindowStruct;
+	struct ScaWindowStruct *ws = iInfos.xii_iinfos.ii_AppWindowStruct;
 	struct internalScaWindowTask *iwt;
 
 	(void) ScalosBase;
@@ -1789,7 +1789,7 @@ LIBFUNC_P6(struct AppObject *, sca_NewAddAppWindow,
 	A2, struct TagItem *, TagList,
 	A6, struct ScalosBase *, ScalosBase)
 {
-	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 	struct AppObject *appo;
 
 	(void) ScalosBase;
@@ -2186,7 +2186,7 @@ LIBFUNC_P4(ULONG, sca_MakeWBArgs,
 			{
 			if (!(ws->ws_Flags & WSV_FlagF_TaskSleeps) 
 				&& ws->ws_Window
-				&& ws != iInfos.ii_MainWindowStruct
+				&& ws != iInfos.xii_iinfos.ii_MainWindowStruct
 				&& (ws->ws_Window->Flags & WFLG_WINDOWACTIVE))
 				{
 				ArgCount += DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_MakeWBArg, NULL, wbArg);
@@ -2767,7 +2767,7 @@ LIBFUNC_P1(ULONG, sca_CountWBArgs,
 			{
 			if (!(ws->ws_Flags & WSV_FlagF_TaskSleeps)
 				&& ws->ws_Window
-				&& ws != iInfos.ii_MainWindowStruct
+				&& ws != iInfos.xii_iinfos.ii_MainWindowStruct
 				&& (ws->ws_Window->Flags & WFLG_WINDOWACTIVE))
 				{
 				ArgCount += DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_CountWBArg, NULL);
@@ -2801,7 +2801,7 @@ static STRPTR ChkPrjRequestFile(struct WBArg *arg)
 		// AllocAslRequest()
 		fileReq = AllocAslRequestTags(ASL_FileRequest,
 				ASLFR_PrivateIDCMP, TRUE,
-				ASLFR_Screen, (ULONG) iInfos.ii_Screen,
+				ASLFR_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				ASLFR_TitleText, (ULONG) GetLocString(MSGID_REQ_SELECTDEFTOOL),
 				ASLFR_DoSaveMode, FALSE,
 				ASLFR_RejectIcons, TRUE,

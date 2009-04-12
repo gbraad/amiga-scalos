@@ -46,7 +46,7 @@ void NewLocalePrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *msg
 	if (smnp)
 		{
 		smnp->smnp_PrefsFlags = SMNPFLAGF_LOCALEPREFS;
-		PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 		}
 }
 
@@ -54,7 +54,7 @@ void NewLocalePrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *msg
 BOOL ChangedLocalePrefs(struct MainTask *mt)
 {
 ///
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	BOOL Changed = FALSE;
 
 	CleanupLocale();

@@ -390,7 +390,7 @@ ULONG WaitReply(struct MsgPort *port, struct internalScaWindowTask *iwt, ULONG M
 				return Result;
 				}
 			}
-		else if (iInfos.ii_MainMsgPort == port)
+		else if (iInfos.xii_iinfos.ii_MainMsgPort == port)
 			{
 			struct MainTask *mt = (struct MainTask *) iwt;
 

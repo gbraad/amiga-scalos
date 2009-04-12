@@ -140,7 +140,7 @@ static ULONG Iconify_Draw(Class *cl, Object *o, Msg msg)
 	MaxX += img->Width - 1;
 	MaxY += img->Height - 1;
 
-	SetAPen(imp->imp_RPort, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+	SetAPen(imp->imp_RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 	Move(imp->imp_RPort, MinX - 1, MinY + 1);
 	Draw(imp->imp_RPort, MinX - 1, MaxY);
 
@@ -149,7 +149,7 @@ static ULONG Iconify_Draw(Class *cl, Object *o, Msg msg)
 	else
 		Pen = SHADOWPEN;
 
-	SetAPen(imp->imp_RPort, iInfos.ii_DrawInfo->dri_Pens[Pen]);
+	SetAPen(imp->imp_RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[Pen]);
 
 	Move(imp->imp_RPort, MinX + 1, MaxY);
 	Draw(imp->imp_RPort, MaxX, MaxY);
@@ -160,7 +160,7 @@ static ULONG Iconify_Draw(Class *cl, Object *o, Msg msg)
 	else
 		Pen = SHINEPEN;
 
-	SetAPen(imp->imp_RPort, iInfos.ii_DrawInfo->dri_Pens[Pen]);
+	SetAPen(imp->imp_RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[Pen]);
 
 	Draw(imp->imp_RPort, MinX + 1, MinY);
 	Draw(imp->imp_RPort, MinX + 1, MaxY);
@@ -176,11 +176,11 @@ static ULONG Iconify_Draw(Class *cl, Object *o, Msg msg)
 		break;
 		}
 
-	SetAPen(imp->imp_RPort, iInfos.ii_DrawInfo->dri_Pens[Pen]);
+	SetAPen(imp->imp_RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[Pen]);
 	RectFill(imp->imp_RPort, MinX + 2, MinY + 1,
 		MaxX - 1, MaxY - 1);
 
-	SetAPen(imp->imp_RPort, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+	SetAPen(imp->imp_RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 
 	if (IDS_SELECTED == imp->imp_State)
 		x = MinX + 14;
@@ -194,11 +194,11 @@ static ULONG Iconify_Draw(Class *cl, Object *o, Msg msg)
 	else
 		Pen = SHINEPEN;
 
-	SetAPen(imp->imp_RPort, iInfos.ii_DrawInfo->dri_Pens[Pen]);
+	SetAPen(imp->imp_RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[Pen]);
 
 	RectFill(imp->imp_RPort, MinX + 8, RenderYPos(img, MinY, 45), MinX + 11, RenderYPos(img, MinY, 60));
 
-	SetAPen(imp->imp_RPort, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+	SetAPen(imp->imp_RPort, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 
 	DrawSquare(imp->imp_RPort, MinX + 8, RenderYPos(img, MinY, 45), MinX + 11, RenderYPos(img, MinY, 60));
 

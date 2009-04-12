@@ -358,7 +358,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 
 		if (!ScaAttemptSemaphoreList(SCA_SemaphoreExclusiveNoNest, (ULONG) &iwt->iwt_UpdateSemaphore,
 			SCA_SemaphoreExclusive, (ULONG) iwt->iwt_WindowTask.wt_IconSemaphore,
-			SCA_SemaphoreExclusive, (ULONG) iInfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore,
+			SCA_SemaphoreExclusive, (ULONG) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore,
 			SCA_SemaphoreShared, (ULONG) iwt->iwt_WindowTask.wt_WindowSemaphore,
 			TAG_END))
 			{
@@ -384,7 +384,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 
 			ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
 			ScalosUnLockIconList(iwt);
-			ScalosReleaseSemaphore(iInfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
+			ScalosReleaseSemaphore(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
 			ScalosReleaseSemaphore(&iwt->iwt_UpdateSemaphore);
 			SemaphoresLocked = FALSE;
 
@@ -602,7 +602,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 				if (cud->cud_IconNode->in_Lock)
 					{
 					// remove left-out icon from root window
-					DoMethod(iInfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
+					DoMethod(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
 						SCCM_DeviceWin_RemIcon,
 						cud->cud_IconNode);
 					}
@@ -648,7 +648,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		{
 		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
 		ScalosUnLockIconList(iwt);
-		ScalosReleaseSemaphore(iInfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
+		ScalosReleaseSemaphore(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
 		ScalosReleaseSemaphore(&iwt->iwt_UpdateSemaphore);
 		}
 
@@ -703,7 +703,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 
 		if (!ScaAttemptSemaphoreList(SCA_SemaphoreExclusiveNoNest, (ULONG) &iwt->iwt_UpdateSemaphore,
 			SCA_SemaphoreExclusive, (ULONG) iwt->iwt_WindowTask.wt_IconSemaphore,
-			SCA_SemaphoreExclusive, (ULONG) iInfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore,
+			SCA_SemaphoreExclusive, (ULONG) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore,
 			SCA_SemaphoreShared, (ULONG) iwt->iwt_WindowTask.wt_WindowSemaphore,
 			TAG_END))
 			{
@@ -732,7 +732,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 
 			ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
 			ScalosUnLockIconList(iwt);
-			ScalosReleaseSemaphore(iInfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
+			ScalosReleaseSemaphore(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
 			ScalosReleaseSemaphore(&iwt->iwt_UpdateSemaphore);
 			SemaphoresLocked = FALSE;
 	
@@ -1014,7 +1014,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 				if (cud->cud_IconNode->in_Lock)
 					{
 					// remove left-out icon from root window
-					DoMethod(iInfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
+					DoMethod(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
 						SCCM_DeviceWin_RemIcon,
 						cud->cud_IconNode);
 					}
@@ -1091,7 +1091,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		{
 		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
 		ScalosUnLockIconList(iwt);
-		ScalosReleaseSemaphore(iInfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
+		ScalosReleaseSemaphore(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->wt_IconSemaphore);
 		ScalosReleaseSemaphore(&iwt->iwt_UpdateSemaphore);
 		}
 
@@ -1137,9 +1137,9 @@ static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesL
 		}
 
 	// now add left-out icons belonging to this drawer
-	if (iwt->iwt_WindowTask.mt_WindowStruct != iInfos.ii_MainWindowStruct)
+	if (iwt->iwt_WindowTask.mt_WindowStruct != iInfos.xii_iinfos.ii_MainWindowStruct)
 		{
-		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
 		for (in=iwtMain->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 			{
@@ -1240,7 +1240,7 @@ static void DeviceWindowBuildFileList(struct internalScaWindowTask *iwt, struct 
 
 static void CheckLeftoutIcons(struct CudFilesList *cfl, BPTR dirLock)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
 	d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 	debugLock_d1(dirLock);
@@ -1308,7 +1308,7 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 			{
 			isBackdrop = TRUE;
 			iconDirLock = inUpdate->in_Lock;
-			iwtIcon = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+			iwtIcon = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 			RewriteBackdrop(inUpdate);
 			}
 		else

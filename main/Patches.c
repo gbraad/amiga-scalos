@@ -248,7 +248,7 @@ LIBFUNC_P1(LONG, sca_CloseWorkBench,
 
 		smas->ScalosMessage.sm_Message.mn_ReplyPort = ReplyPort;
 
-		PutMsg(iInfos.ii_MainMsgPort, &smas->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smas->ScalosMessage.sm_Message);
 
 		WaitReply(ReplyPort, &MainWindowTask->mwt, MTYP_AppSleep);
 
@@ -268,14 +268,14 @@ LIBFUNC_P1(LONG, sca_CloseWorkBench,
 
 		UnlockScalosPens();
 
-		FreeScreenDrawInfo(iInfos.ii_Screen, iInfos.ii_DrawInfo);
-		iInfos.ii_DrawInfo = NULL;
+		FreeScreenDrawInfo(iInfos.xii_iinfos.ii_Screen, iInfos.xii_iinfos.ii_DrawInfo);
+		iInfos.xii_iinfos.ii_DrawInfo = NULL;
 
-		FreeVisualInfo(iInfos.ii_visualinfo);
-		iInfos.ii_visualinfo = NULL;
+		FreeVisualInfo(iInfos.xii_iinfos.ii_visualinfo);
+		iInfos.xii_iinfos.ii_visualinfo = NULL;
 
-		UnlockPubScreen("Workbench", iInfos.ii_Screen);
-		iInfos.ii_Screen = NULL;
+		UnlockPubScreen("Workbench", iInfos.xii_iinfos.ii_Screen);
+		iInfos.xii_iinfos.ii_Screen = NULL;
 
 		d1(KPrintF("%s/%s/%ld: OldCloseWB=%08lx\n", __FILE__, __FUNC__, __LINE__, OldCloseWB));
 
@@ -319,7 +319,7 @@ LIBFUNC_P1(LONG, sca_OpenWorkBench,
 
 	// OpenWorkBench() is supposed to return WBScreeen !!!
 
-	return Success ? (LONG) iInfos.ii_Screen : 0L;
+	return Success ? (LONG) iInfos.xii_iinfos.ii_Screen : 0L;
 }
 LIBFUNC_END
 
@@ -332,26 +332,26 @@ static LONG ReOpenScalos(void)
 	do	{
 		struct SM_AppWakeup *smaw;
 
-		if (NULL == iInfos.ii_Screen)
-			iInfos.ii_Screen = LockPubScreen("Workbench");
-		if (NULL == iInfos.ii_Screen)
+		if (NULL == iInfos.xii_iinfos.ii_Screen)
+			iInfos.xii_iinfos.ii_Screen = LockPubScreen("Workbench");
+		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		LockScalosPens();
 
-		if (NULL == iInfos.ii_DrawInfo)
-			iInfos.ii_DrawInfo = GetScreenDrawInfo(iInfos.ii_Screen);
-		if (NULL == iInfos.ii_DrawInfo)
+		if (NULL == iInfos.xii_iinfos.ii_DrawInfo)
+			iInfos.xii_iinfos.ii_DrawInfo = GetScreenDrawInfo(iInfos.xii_iinfos.ii_Screen);
+		if (NULL == iInfos.xii_iinfos.ii_DrawInfo)
 			break;
 
-		if (NULL == iInfos.ii_visualinfo)
-			iInfos.ii_visualinfo = GetVisualInfoA(iInfos.ii_Screen, NULL);
+		if (NULL == iInfos.xii_iinfos.ii_visualinfo)
+			iInfos.xii_iinfos.ii_visualinfo = GetVisualInfoA(iInfos.xii_iinfos.ii_Screen, NULL);
 
 		if (IconBase->lib_Version >= 44)
 			{
 			// IconControlA()
 			IconControl(NULL, 
-				ICONCTRLA_SetGlobalScreen, (ULONG) iInfos.ii_Screen,
+				ICONCTRLA_SetGlobalScreen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				TAG_END);
 			}
 
@@ -371,7 +371,7 @@ static LONG ReOpenScalos(void)
 		smaw->ScalosMessage.sm_Message.mn_ReplyPort = ReplyPort,
 		smaw->smaw_ReLayout = TRUE;
 
-		PutMsg(iInfos.ii_MainMsgPort, &smaw->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smaw->ScalosMessage.sm_Message);
 
 		WaitReply(ReplyPort, &MainWindowTask->mwt, MTYP_AppWakeup);
 
@@ -1623,7 +1623,7 @@ LIBFUNC_P3(ULONG, sca_Rename,
 	D2, CONST_STRPTR, newName,
 	A6, struct DosLibrary *, DOSBase)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 	ULONG isIcon;
 	STRPTR fName = NULL;
 	BOOL Success;

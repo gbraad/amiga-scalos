@@ -650,7 +650,7 @@ static void DrawIconListShadows(struct internalScaWindowTask *iwt, struct ScaIco
 	Scalos_InitRastPort(&rpMask);
 	Scalos_SetFont(&rpMask, iwt->iwt_IconFont, &iwt->iwt_IconTTFont);
 
-	ScreenDepth = GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+	ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 	iwt->iwt_IconShadowVisible = TRUE;
 
@@ -2532,7 +2532,7 @@ LIBFUNC_P2(struct DragHandle *, sca_InitDrag,
 	(void) ScalosBase;
 
 	if (NULL == Scr)
-		Scr = iInfos.ii_Screen;
+		Scr = iInfos.xii_iinfos.ii_Screen;
 
 	Depth = GetBitMapAttr(Scr->RastPort.BitMap, BMA_DEPTH);
 

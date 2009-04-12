@@ -197,7 +197,7 @@ void FillBackground(struct RastPort *rp, struct DatatypesImage *dtImage,
 		}
 	else
 		{
-		SetAPen(rp, iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN]);
+		SetAPen(rp, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN]);
 		SetDrMd(rp, JAM1);
 
 		RectFill(rp, MinX, MinY, MaxX, MaxY);
@@ -326,7 +326,7 @@ static struct DatatypesImage *NewDatatypesImage(CONST_STRPTR ImageName, ULONG Fl
 		dti->dti_NotifyTab.nft_Entry = DtImageNotify;
 
 		/* +dm+ Do not use a friend bitmap for 8bit or less screens */
-		UseFriendBM = !(Flags & DTI_NoFriendBitMap) && (GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH) > 8);
+		UseFriendBM = !(Flags & DTI_NoFriendBitMap) && (GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH) > 8);
 		DoRemap = !(Flags & DTIFLAG_NoRemap);
 
 		// NewDTObjectA()
@@ -335,7 +335,7 @@ static struct DatatypesImage *NewDatatypesImage(CONST_STRPTR ImageName, ULONG Fl
 				DTA_GroupID, GID_PICTURE,
 				PDTA_DestMode, PMODE_V43,
 				PDTA_Remap, DoRemap,
-				DoRemap ? PDTA_Screen : TAG_IGNORE, (ULONG) iInfos.ii_Screen,
+				DoRemap ? PDTA_Screen : TAG_IGNORE, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				PDTA_UseFriendBitMap, UseFriendBM,
 				TAG_END);
 		d1(KPrintF("%s/%s/%ld: dti_ImageObj=%08lx\n", __FILE__, __FUNC__, __LINE__, dti->dti_ImageObj));
@@ -573,8 +573,8 @@ static void DtImageNotify(struct internalScaWindowTask *iwt, struct NotifyMessag
 				DTA_GroupID, GID_PICTURE,
 				PDTA_DestMode, PMODE_V43,
 				PDTA_Remap, TRUE,
-				PDTA_Screen, (ULONG) iInfos.ii_Screen,
-				PDTA_UseFriendBitMap, (GetBitMapAttr(iInfos.ii_Screen->RastPort.BitMap, BMA_DEPTH) <= 8 ? FALSE : TRUE ),	 /* +dm+ Do not use a friend bitmap for 8bit or less screens */
+				PDTA_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
+				PDTA_UseFriendBitMap, (GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH) <= 8 ? FALSE : TRUE ),	 /* +dm+ Do not use a friend bitmap for 8bit or less screens */
 				TAG_END);
 		d1(KPrintF("%s/%s/%ld: dti_ImageObj=%08lx\n", __FILE__, __FUNC__, __LINE__, dtiNew->dti_ImageObj));
 		if (NULL == dtiNew->dti_ImageObj)

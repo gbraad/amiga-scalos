@@ -380,8 +380,8 @@ SAVEDS(void) Scalos_SetFont(struct RastPort *rp, struct TextFont *tf, struct TTF
 		TT_SetAttrs(rp,
 			TT_Antialias, CurrentPrefs.pref_TTFontAntialias,
 			TT_Gamma, CurrentPrefs.pref_TTFontGamma,
-			TT_ColorMap, (ULONG) iInfos.ii_Screen->ViewPort.ColorMap, 
-//			TT_Screen, iInfos.ii_Screen,
+			TT_ColorMap, (ULONG) iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, 
+//			TT_Screen, iInfos.xii_iinfos.ii_Screen,
 			TAG_END);
 #ifdef USE_SEMA
 		ScalosReleaseSemaphore(&tteSema);
@@ -439,7 +439,7 @@ static void SetFamilyTTFont(struct RastPort *rp, ULONG style, struct TTFontFamil
 		TT_SetAttrs(rp,
 			TT_Antialias, CurrentPrefs.pref_TTFontAntialias,
 			TT_Gamma, CurrentPrefs.pref_TTFontGamma,
-			TT_ColorMap, (ULONG) iInfos.ii_Screen->ViewPort.ColorMap,
+			TT_ColorMap, (ULONG) iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap,
 			TAG_END);
 #ifdef USE_SEMA
 		ScalosReleaseSemaphore(&tteSema);
@@ -552,14 +552,14 @@ SAVEDS(void) Scalos_InitRastPort(struct RastPort *rp)
 		ScalosObtainSemaphore(&tteSema);
 #endif
 		TT_SetAttrs(rp,
-			TT_ColorMap, (ULONG) iInfos.ii_Screen->ViewPort.ColorMap, 
+			TT_ColorMap, (ULONG) iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, 
 			TAG_END);
 
 #ifdef USE_SEMA
 		ScalosReleaseSemaphore(&tteSema);
 #endif
 		d1(kprintf("%s/%s/%ld: rp=%08lx  cm=%08lx\n", \
-			__FILE__, __FUNC__, __LINE__, rp, iInfos.ii_Screen->ViewPort.ColorMap));
+			__FILE__, __FUNC__, __LINE__, rp, iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap));
 		}
 }
 

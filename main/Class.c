@@ -636,15 +636,17 @@ void ClassTimerToolTipMsg(struct internalScaWindowTask *iwt)
 
 	if (!LockFlag)
 		{
-		enum sgttGadgetIDs gadgetUnderPointer = GlobalGadgetUnderPointer.ggd_GadgetID;
+		enum sgttGadgetIDs gadgetUnderPointer = iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID;
 
 		QueryObjectUnderPointer(&iwtUnderPointer, &iconUnderPointer, NULL, &foreignWindow);
 
-		d1(kprintf("%s/%s/%ld: iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, iconUnderPointer));
-		d1(kprintf("%s/%s/%ld: gadgetUnderPointer=%ld\n", __FILE__, __FUNC__, __LINE__, gadgetUnderPointer));
+		d1(KPrintF("%s/%s/%ld: iconUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, iconUnderPointer));
+		d1(KPrintF("%s/%s/%ld: gadgetUnderPointer=%ld\n", __FILE__, __FUNC__, __LINE__, gadgetUnderPointer));
 
-		if (iwtUnderPointer != GlobalGadgetUnderPointer.ggd_iwt)
+		if (iwtUnderPointer != iInfos.xii_GlobalGadgetUnderPointer.ggd_iwt)
 			gadgetUnderPointer = SGTT_GADGETID_unknown;
+
+		d1(KPrintF("%s/%s/%ld: gadgetUnderPointer=%ld\n", __FILE__, __FUNC__, __LINE__, gadgetUnderPointer));
 
 		if ((SGTT_GADGETID_unknown == MainWindowTask->miwt_LastGadgetUnderPtr
 			 || gadgetUnderPointer != MainWindowTask->miwt_LastGadgetUnderPtr)
@@ -652,16 +654,20 @@ void ClassTimerToolTipMsg(struct internalScaWindowTask *iwt)
 			(NULL == iconUnderPointer ||
 				iconUnderPointer != MainWindowTask->miwt_LastIconUnderPtr))
 			{
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 			MainWindowTask->miwt_IconUnderPtrCount = 0;
 			MainWindowTask->miwt_LastIconUnderPtr = iconUnderPointer;
 			MainWindowTask->miwt_LastGadgetUnderPtr = gadgetUnderPointer;
 			}
 		else
 			{
-			d1(kprintf("%s/%s/%ld: iwt_IconUnderPtrCount=%ld\n", __FILE__, __FUNC__, __LINE__, MainWindowTask->miwt_IconUnderPtrCount));
+			d1(KPrintF("%s/%s/%ld: iwt_IconUnderPtrCount=%ld\n", __FILE__, __FUNC__, __LINE__, MainWindowTask->miwt_IconUnderPtrCount));
 
 			if (NULL == iwtUnderPointer || VGADGETID_IDLE != iwtActiveWindow->iwt_MoveGadId)
 				{
+				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 				MainWindowTask->miwt_IconUnderPtrCount = 0;
 				MainWindowTask->miwt_LastIconUnderPtr = NULL;
 				MainWindowTask->miwt_LastGadgetUnderPtr = SGTT_GADGETID_unknown;
@@ -670,11 +676,11 @@ void ClassTimerToolTipMsg(struct internalScaWindowTask *iwt)
 				{
 				if (++MainWindowTask->miwt_IconUnderPtrCount == CurrentPrefs.pref_ToolTipDelaySeconds)
 					{
-					d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 					if (iconUnderPointer)
 						{
-						d1(kprintf("%s/%s/%ld: iconUnderPointer=%08lx  <%s>\n", \
+						d1(KPrintF("%s/%s/%ld: iconUnderPointer=%08lx  <%s>\n", \
 							__FILE__, __FUNC__, __LINE__, iconUnderPointer, iconUnderPointer->in_Name));
 
 						DoMethod(iwtUnderPointer->iwt_WindowTask.mt_MainObject, 
@@ -682,7 +688,7 @@ void ClassTimerToolTipMsg(struct internalScaWindowTask *iwt)
 						}
 					else if (SGTT_GADGETID_unknown != gadgetUnderPointer)
 						{
-						d1(kprintf("%s/%s/%ld: gadgetUnderPointer=%08lx\n", \
+						d1(KPrintF("%s/%s/%ld: gadgetUnderPointer=%08lx\n", \
 							__FILE__, __FUNC__, __LINE__, gadgetUnderPointer));
 
 						DoMethod(iwtUnderPointer->iwt_WindowTask.mt_MainObject, 
@@ -771,7 +777,7 @@ Object *ClassGetWindowIconObject(struct internalScaWindowTask *iwt, Object **all
 			// first look in main window's device icon list
 			if (parentLock)
 				{
-				struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+				struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 				struct ScaDeviceIcon *sdi;
 				struct FileLock *fLock = BADDR(parentLock);
 
@@ -1016,7 +1022,7 @@ static void NotifyAppIconSelected(struct ScaWindowStruct *ws, Object *IconObj, B
 	ULONG IconType;
 	struct AppObject *appo;
 
-	if (ws != iInfos.ii_MainWindowStruct)
+	if (ws != iInfos.xii_iinfos.ii_MainWindowStruct)
 		return;
 
 	GetAttr(IDTA_Type, IconObj, &IconType);

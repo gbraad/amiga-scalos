@@ -1220,7 +1220,7 @@ static SAVEDS(ULONG) GadgetBar_BackFillFunc(struct Hook *bfHook, struct RastPort
 		WindowBackFill(rp, msg, inst->gbcl_Background->dti_BitMap,
 			inst->gbcl_Background->dti_BitMapHeader->bmh_Width,
 			inst->gbcl_Background->dti_BitMapHeader->bmh_Height,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}
@@ -1228,7 +1228,7 @@ static SAVEDS(ULONG) GadgetBar_BackFillFunc(struct Hook *bfHook, struct RastPort
 		{
 		WindowBackFill(rp, msg, NULL,
 			0, 0,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}

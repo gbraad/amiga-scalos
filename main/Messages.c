@@ -152,7 +152,7 @@ LONG SendAppMessage(struct AppObject *appo, ULONG AmClass, WORD x, WORD y)
 
 		am->am_NumArgs = 0;
 
-		am->am_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+		am->am_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 		am->am_Message.mn_Length = sizeof(struct AppMessage);
 		am->am_UserData = appo->appo_userdata;
 		am->am_ID = appo->appo_id;
@@ -245,7 +245,7 @@ static ULONG ShowTitleMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 	d1(KPrintF("\n" "%s/%s/%ld: iwt=%08lx  ws=%08lx  ShowTitle=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WindowTask.mt_WindowStruct, smst->smst_showTitle));
 
-	ShowTitle(iInfos.ii_Screen, smst->smst_showTitle);
+	ShowTitle(iInfos.xii_iinfos.ii_Screen, smst->smst_showTitle);
 
 	return 0;
 }
@@ -291,7 +291,7 @@ static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg,
 			{
 			d1(kprintf("%s/%s/%ld: ws=%08lx\n", __FILE__, __FUNC__, __LINE__, ws));
 
-			if ((NULL == iwt->iwt_WindowTask.mt_WindowStruct && ws == iInfos.ii_MainWindowStruct)
+			if ((NULL == iwt->iwt_WindowTask.mt_WindowStruct && ws == iInfos.xii_iinfos.ii_MainWindowStruct)
 				|| ws == iwt->iwt_WindowTask.mt_WindowStruct)
 				{
 				d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -305,7 +305,7 @@ static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg,
 
 				if (msg)
 					{
-					msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+					msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 
 					PutMsg(ws->ws_MessagePort, &msg->ScalosMessage.sm_Message);
 					WaitCount++;
@@ -322,7 +322,7 @@ static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg,
 		{
 		d1(kprintf("%s/%s/%ld: WaitCount=%lu\n", __FILE__, __FUNC__, __LINE__, WaitCount));
 
-		WaitReply(iInfos.ii_MainMsgPort, iwt, MTYP_Sleep);
+		WaitReply(iInfos.xii_iinfos.ii_MainMsgPort, iwt, MTYP_Sleep);
 		WaitCount--;
 		}
 
@@ -345,10 +345,10 @@ static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 
 	if (smaw->smaw_ReLayout)
 		{
-		if (NULL == iInfos.ii_visualinfo)
-			iInfos.ii_visualinfo = GetVisualInfoA(iInfos.ii_Screen, NULL);
+		if (NULL == iInfos.xii_iinfos.ii_visualinfo)
+			iInfos.xii_iinfos.ii_visualinfo = GetVisualInfoA(iInfos.xii_iinfos.ii_Screen, NULL);
 
-		LayoutMenus(MainMenu, iInfos.ii_visualinfo,
+		LayoutMenus(MainMenu, iInfos.xii_iinfos.ii_visualinfo,
 			GTMN_NewLookMenus, TRUE,
 			TAG_END);
 		}
@@ -359,7 +359,7 @@ static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 		{
 		if (ws->ws_Flags & WSV_FlagF_TaskSleeps)
 			{
-			if ((NULL == iwt->iwt_WindowTask.mt_WindowStruct && ws == iInfos.ii_MainWindowStruct)
+			if ((NULL == iwt->iwt_WindowTask.mt_WindowStruct && ws == iInfos.xii_iinfos.ii_MainWindowStruct)
 				|| ws == iwt->iwt_WindowTask.mt_WindowStruct)
 				{
 				d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -371,7 +371,7 @@ static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 
 				if (msg)
 					{
-					msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+					msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 					msg->smwu_ReLayout = smaw->smaw_ReLayout;
 
 					PutMsg(ws->ws_MessagePort, &msg->ScalosMessage.sm_Message);
@@ -383,7 +383,7 @@ static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 
 	while (WaitCount)
 		{
-		WaitReply(iInfos.ii_MainMsgPort, iwt, MTYP_Wakeup);
+		WaitReply(iInfos.xii_iinfos.ii_MainMsgPort, iwt, MTYP_Wakeup);
 		WaitCount--;
 		}
 
@@ -762,8 +762,8 @@ static ULONG DoPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *M
 		{
 		WORD MouseX, MouseY;
 
-		MouseX = iInfos.ii_Screen->MouseX - iwt->iwt_WindowTask.wt_Window->LeftEdge;
-		MouseY = iInfos.ii_Screen->MouseY - iwt->iwt_WindowTask.wt_Window->TopEdge;
+		MouseX = iInfos.xii_iinfos.ii_Screen->MouseX - iwt->iwt_WindowTask.wt_Window->LeftEdge;
+		MouseY = iInfos.xii_iinfos.ii_Screen->MouseY - iwt->iwt_WindowTask.wt_Window->TopEdge;
 
 		d1(KPrintF("%s/%s/%ld: MouseX=%ld  MouseY=%ld\n", __FILE__, __FUNC__, __LINE__, MouseX, MouseY));
 

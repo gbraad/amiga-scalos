@@ -1560,7 +1560,7 @@ void NewMenuPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *msg)
 		if (smnp)
 			{
 			smnp->smnp_PrefsFlags = SMNPFLAGF_MENUPREFS;
-			PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+			PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 			}
 		}
 }

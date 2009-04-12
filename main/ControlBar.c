@@ -138,7 +138,7 @@ BOOL ControlBarAdd(struct internalScaWindowTask *iwt)
 
 		// Layout Control bar so we can query the required height
 		DoGadgetMethod(iwt->iwt_ControlBar,
-			iInfos.ii_MainWindowStruct->ws_Window, NULL,
+			iInfos.xii_iinfos.ii_MainWindowStruct->ws_Window, NULL,
 			GM_LAYOUT,
 			NULL,		// GadgetInfo is filled in by DoGadgetMethod
 			TRUE);
@@ -439,8 +439,8 @@ static struct ControlBarMember *ControlBarCreateViewByCycle(struct internalScaWi
 		Member->cbm_Gadget = SCA_NewScalosObjectTags("CycleGadget.sca",
 			SCACYCLE_Labels, (ULONG) CycleLabels,
 			SCACYCLE_Active, ControlbarCodeFromViewMode(iwt->iwt_WindowTask.mt_WindowStruct->ws_Viewmodes),
-			SCACYCLE_TextFont, (ULONG) iInfos.ii_Screen->RastPort.Font,
-			SCACYCLE_PopupTextFont, (ULONG) iInfos.ii_Screen->RastPort.Font,
+			SCACYCLE_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			SCACYCLE_PopupTextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
 			SCACYCLE_PopupTTFont, CurrentPrefs.pref_UseScreenTTFont ? (ULONG) &ScreenTTFont : 0,
 			Member->cbm_FrameImage ? SCACYCLE_FrameImage : TAG_IGNORE, (ULONG) Member->cbm_FrameImage,
 			GA_ID, GadgetID,
@@ -499,8 +499,8 @@ static struct ControlBarMember *ControlBarCreateShowModeCycle(struct internalSca
 		Member->cbm_Gadget = SCA_NewScalosObjectTags("CycleGadget.sca",
 			SCACYCLE_Labels, (ULONG) ShowModeLabels,
 			SCACYCLE_Active, IsShowAll(iwt->iwt_WindowTask.mt_WindowStruct) ? 1 : 0,
-			SCACYCLE_TextFont, (ULONG) iInfos.ii_Screen->RastPort.Font,
-			SCACYCLE_PopupTextFont, (ULONG) iInfos.ii_Screen->RastPort.Font,
+			SCACYCLE_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			SCACYCLE_PopupTextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
 			SCACYCLE_PopupTTFont, CurrentPrefs.pref_UseScreenTTFont ? (ULONG) &ScreenTTFont : 0,
 			Member->cbm_FrameImage ? SCACYCLE_FrameImage : TAG_IGNORE, (ULONG) Member->cbm_FrameImage,
 			GA_ID, GadgetID,
@@ -724,7 +724,7 @@ static struct ControlBarMember *ControlBarCreateButton(CONST_STRPTR NormalImgNam
 			// no Theme image could be found - fall back to sys image
 			Member->cbm_NormalImage	= NewObject(NULL, SYSICLASS,
 					SYSIA_Which, FallbackSysImg,
-					SYSIA_DrawInfo, (ULONG) iInfos.ii_DrawInfo,
+					SYSIA_DrawInfo, (ULONG) iInfos.xii_iinfos.ii_DrawInfo,
 					TAG_END);
 			}
 		d1(KPrintF("%s/%s/%ld: cbm_NormalImage=%08lx\n", __FILE__, __FUNC__, __LINE__, Member->cbm_NormalImage));
@@ -789,7 +789,7 @@ static struct ControlBarMember *ControlBarCreateHistoryGadget(struct internalSca
 			// no Theme image could be found - fall back to sys image
 			Member->cbm_NormalImage	= NewObject(NULL, SYSICLASS,
 					SYSIA_Which, MXIMAGE,
-					SYSIA_DrawInfo, (ULONG) iInfos.ii_DrawInfo,
+					SYSIA_DrawInfo, (ULONG) iInfos.xii_iinfos.ii_DrawInfo,
 					TAG_END);
 			}
 		if (NULL == Member->cbm_NormalImage)

@@ -207,7 +207,7 @@ void NewDefIconsPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *m
 	if (smnp)
 		{
 		smnp->smnp_PrefsFlags = SMNPFLAGF_DEFICONSPREFS;
-		PutMsg(iInfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smnp->ScalosMessage.sm_Message);
 		}
 }
 

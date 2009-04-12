@@ -69,11 +69,11 @@ BOOL StatusBarAdd(struct internalScaWindowTask *iwt)
 		return FALSE;
 
 	d1(KPrintF("%s/%s/%ld: Height=%ld\n", __FILE__, __FUNC__, __LINE__, Height));
-	d1(KPrintF("%s/%s/%ld: tf_YSize=%ld\n", __FILE__, __FUNC__, __LINE__, iInfos.ii_Screen->RastPort.Font->tf_YSize));
+	d1(KPrintF("%s/%s/%ld: tf_YSize=%ld\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen->RastPort.Font->tf_YSize));
 
 	iwt->iwt_StatusBarMembers[STATUSBARGADGET_StatusText] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
 		GBTDTA_Text, (ULONG) "Ä???g",
-		GBTDTA_TextFont, (ULONG) iInfos.ii_Screen->RastPort.Font,
+		GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
 		GBTDTA_TextPen, PalettePrefs.pal_PensList[PENIDX_STATUSBAR_TEXT],
 		GBTDTA_Justification, GACT_STRINGCENTER,
 		GA_ID, SBAR_GadgetID_Text,
@@ -111,7 +111,7 @@ BOOL StatusBarAdd(struct internalScaWindowTask *iwt)
 
 	// Layout Status bar so we can query the required height
 	DoGadgetMethod(iwt->iwt_StatusBar,
-		iInfos.ii_MainWindowStruct->ws_Window, NULL,
+		iInfos.xii_iinfos.ii_MainWindowStruct->ws_Window, NULL,
 		GM_LAYOUT,
 		NULL,		// GadgetInfo is filled in by DoGadgetMethod
 		TRUE);

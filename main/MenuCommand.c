@@ -515,7 +515,7 @@ void WBInfoStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
 			InfoArgs.wa_Name, InfoArgs.wa_Name ? InfoArgs.wa_Name : (BYTE *) ""));
 		debugLock_d1(InfoArgs.wa_Lock);
 
-		RunProcess(&iwt->iwt_WindowTask, InfoStart, sizeof(InfoArgs)/sizeof(ULONG), &InfoArgs, iInfos.ii_MainMsgPort);
+		RunProcess(&iwt->iwt_WindowTask, InfoStart, sizeof(InfoArgs)/sizeof(ULONG), &InfoArgs, iInfos.xii_iinfos.ii_MainMsgPort);
 		}
 }
 
@@ -827,7 +827,7 @@ static void WBIconPropertiesStart(struct internalScaWindowTask *iwt, struct ScaI
 		InfoArgs.wa_Name, InfoArgs.wa_Name ? InfoArgs.wa_Name : ""));
 	debugLock_d1(InfoArgs.wa_Lock);
 
-	RunProcess(&iwt->iwt_WindowTask, IconPropertiesStart, sizeof(InfoArgs)/sizeof(ULONG), &InfoArgs, iInfos.ii_MainMsgPort);
+	RunProcess(&iwt->iwt_WindowTask, IconPropertiesStart, sizeof(InfoArgs)/sizeof(ULONG), &InfoArgs, iInfos.xii_iinfos.ii_MainMsgPort);
 }
 
 
@@ -1340,7 +1340,7 @@ static struct ScaIconNode *FindIconGlobal(BPTR dirLock, CONST_STRPTR Name)
 		// no icon found.
 		// now look in main window for left-out (=backdrop) icons.
 
-		struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+		struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 		struct ScaIconNode *inx;
 
 		ScalosLockIconListShared(iwt);
@@ -1822,7 +1822,7 @@ static SAVEDS(ULONG) CloneFilesStart(APTR aptr, struct SM_RunProcess *msg)
 			break;
 
 		fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca", 
-			SCCA_FileTrans_Screen, (ULONG) iInfos.ii_Screen,
+			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 			SCCA_FileTrans_Number, arg->cla_NumArgs,
 			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
 			TAG_END);
@@ -2362,7 +2362,7 @@ static void AsyncResetScalosProg(struct internalScaWindowTask *iwt, const struct
 			smas->ScalosMessage.sm_Message.mn_ReplyPort = ReplyPort;
 
 			d1(kprintf("%s/%s/%ld: Before PutMsg\n", __FILE__, __FUNC__, __LINE__));
-			PutMsg(iInfos.ii_MainMsgPort, &smas->ScalosMessage.sm_Message);
+			PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smas->ScalosMessage.sm_Message);
 			d1(kprintf("%s/%s/%ld: After PutMsg\n", __FILE__, __FUNC__, __LINE__));
 
 			WaitReply(ReplyPort, iwt, MTYP_AppSleep);
@@ -2428,7 +2428,7 @@ static void AsyncResetScalosProg(struct internalScaWindowTask *iwt, const struct
 			smaw->smaw_ReLayout = FALSE;
 
 			d1(kprintf("%s/%s/%ld: Before PutMsg\n", __FILE__, __FUNC__, __LINE__));
-			PutMsg(iInfos.ii_MainMsgPort, &smaw->ScalosMessage.sm_Message);
+			PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &smaw->ScalosMessage.sm_Message);
 			d1(kprintf("%s/%s/%ld: After PutMsg\n", __FILE__, __FUNC__, __LINE__));
 
 			WaitReply(ReplyPort, iwt, MTYP_AppWakeup);
@@ -2751,7 +2751,7 @@ static void SnapshotAllProg(struct internalScaWindowTask *iwt, const struct Menu
 
 static void SnapshotWindowProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
 {
-	if (iInfos.ii_MainWindowStruct == iwt->iwt_WindowTask.mt_WindowStruct)
+	if (iInfos.xii_iinfos.ii_MainWindowStruct == iwt->iwt_WindowTask.mt_WindowStruct)
 		WriteWBConfig();
 	else
 		SnapshotWindow(iwt);
@@ -3244,7 +3244,7 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 	debugLock_d1(DestLock);
 
 	fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca", 
-		SCCA_FileTrans_Screen, (ULONG) iInfos.ii_Screen,
+		SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 //		SCCA_FileTrans_Number, ArgCount,
 		SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
 		TAG_END);
@@ -3695,7 +3695,7 @@ static SAVEDS(ULONG) AsyncStartModule(APTR aptr, struct SM_RunProcess *msg, CONS
 	d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : ""));
 
 	if (!Ok)
-		WBInfo(arg->wa_Lock, arg->wa_Name, iInfos.ii_Screen);
+		WBInfo(arg->wa_Lock, arg->wa_Name, iInfos.xii_iinfos.ii_Screen);
 
 	if (IS_VALID_LOCK(oldDir))
 		CurrentDir(oldDir);
@@ -3928,7 +3928,7 @@ static SAVEDS(ULONG) CopyToStart(APTR aptr, struct SM_RunProcess *msg)
 		// AllocAslRequest()
 		dirReq = AllocAslRequestTags(ASL_FileRequest,
 				ASLFR_PrivateIDCMP, TRUE,
-				ASLFR_Screen, (ULONG) iInfos.ii_Screen,
+				ASLFR_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				ASLFR_TitleText, (ULONG) GetLocString(MSGID_COPYTO_ASLTITLE),
 				ASLFR_DoSaveMode, TRUE,
 				ASLFR_DrawersOnly, TRUE,
@@ -3959,7 +3959,7 @@ static SAVEDS(ULONG) CopyToStart(APTR aptr, struct SM_RunProcess *msg)
 			stccpy(LockdirName, dirReq->fr_Drawer, sizeof(LockdirName));
 
 			fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca", 
-				SCCA_FileTrans_Screen, (ULONG) iInfos.ii_Screen,
+				SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				SCCA_FileTrans_Number, arg->cla_NumArgs,
 				SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
 				TAG_END);
@@ -4219,7 +4219,7 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 		// AllocAslRequest()
 		dirReq = AllocAslRequestTags(ASL_FileRequest,
 				ASLFR_PrivateIDCMP, TRUE,
-				ASLFR_Screen, (ULONG) iInfos.ii_Screen,
+				ASLFR_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				ASLFR_TitleText, (ULONG) GetLocString(MSGID_MOVETO_ASLTITLE),
 				ASLFR_DoSaveMode, TRUE,
 				ASLFR_DrawersOnly, TRUE,
@@ -4274,7 +4274,7 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 			stccpy(LockdirName, dirReq->fr_Drawer, sizeof(LockdirName));
 
 			fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca", 
-				SCCA_FileTrans_Screen, (ULONG) iInfos.ii_Screen,
+				SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 				SCCA_FileTrans_Number, arg->cla_NumArgs,
 				SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
 				TAG_END);

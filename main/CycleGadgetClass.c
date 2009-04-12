@@ -284,7 +284,7 @@ static ULONG CycleGadgetNew(Class *cl, Object *o, Msg msg)
 
 		inst->cgi_CheckImage = NewObject(NULL, SYSICLASS,
 			SYSIA_Which, MENUCHECK,
-			SYSIA_DrawInfo, iInfos.ii_DrawInfo,
+			SYSIA_DrawInfo, iInfos.xii_iinfos.ii_DrawInfo,
 			TAG_END);
 		d1(KPrintF("%s/%s/%ld:  o=%08lx  cgi_CheckImage=%08lx\n", __FILE__, __FUNC__, __LINE__, o, inst->cgi_CheckImage));
 		if (NULL == inst->cgi_CheckImage)
@@ -316,9 +316,9 @@ static ULONG CycleGadgetNew(Class *cl, Object *o, Msg msg)
 		inst->cgi_InsideBackFillHook.h_Data = inst;
 
 		inst->cgi_GadgetFont = (struct TextFont *) GetTagData(SCACYCLE_TextFont,
-			(ULONG) iInfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
+			(ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
 		inst->cgi_PopupFont = (struct TextFont *) GetTagData(SCACYCLE_PopupTextFont,
-			(ULONG) iInfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
+			(ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
 		inst->cgi_PopupTTFont = (struct TTFontFamily *) GetTagData(SCACYCLE_PopupTTFont,
 			CurrentPrefs.pref_UseScreenTTFont ? (ULONG) &ScreenTTFont : 0, ops->ops_AttrList);
 
@@ -1226,7 +1226,7 @@ static void CycleGadgetAsyncOpenPopupWindow(Class *cl, Object *o, struct GadgetI
 		cpm->cpm_OurClass = cl;
 		cpm->cpm_OurGadget = o;
 
-		PutMsg(iInfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
 		}
 }
 
@@ -1253,7 +1253,7 @@ static void CycleGadgetAsyncDrawPopupWindowLine(Class *cl, Object *o,
 		cpm->cpm_OurClass = cl;
 		cpm->cpm_OurGadget = o;
 
-		PutMsg(iInfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
 		}
 }
 
@@ -1275,7 +1275,7 @@ static void CycleGadgetAsyncClosePopupWindow(Class *cl, Object *o)
 		cpm->cpm_OurClass = cl;
 		cpm->cpm_OurGadget = o;
 
-		PutMsg(iInfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
+		PutMsg(iInfos.xii_iinfos.ii_MainMsgPort, &msg->ScalosMessage.sm_Message);
 		}
 }
 
@@ -1621,7 +1621,7 @@ static SAVEDS(ULONG) CycleGadget_BackFillFunc(struct Hook *bfHook,
 		WindowBackFill(rp, msg, inst->cgi_Background->dti_BitMap,
 			inst->cgi_Background->dti_BitMapHeader->bmh_Width,
 			inst->cgi_Background->dti_BitMapHeader->bmh_Height,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}
@@ -1629,7 +1629,7 @@ static SAVEDS(ULONG) CycleGadget_BackFillFunc(struct Hook *bfHook,
 		{
 		WindowBackFill(rp, msg, NULL,
 			0, 0,
-			iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
 		}

@@ -1598,7 +1598,7 @@ static ULONG IconWindowClass_Sleep(Class *cl, Object *o, Msg msg)
 
 	ws = iwt->iwt_WindowTask.mt_WindowStruct;
 
-	if (ws == iInfos.ii_MainWindowStruct && !iwt->iwt_BackDrop)
+	if (ws == iInfos.xii_iinfos.ii_MainWindowStruct && !iwt->iwt_BackDrop)
 		{
 		CurrentPrefs.pref_WBWindowBox.Left = iwt->iwt_WindowTask.wt_Window->LeftEdge;
 		CurrentPrefs.pref_WBWindowBox.Top = iwt->iwt_WindowTask.wt_Window->TopEdge;
@@ -1645,8 +1645,8 @@ static ULONG IconWindowClass_Wakeup(Class *cl, Object *o, Msg msg)
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
-	iwt->iwt_WinScreen = iInfos.ii_Screen;
-	iwt->iwt_WinDrawInfo = iInfos.ii_DrawInfo;
+	iwt->iwt_WinScreen = iInfos.xii_iinfos.ii_Screen;
+	iwt->iwt_WinDrawInfo = iInfos.xii_iinfos.ii_DrawInfo;
 
 	if (iwt->iwt_IconifyFlag)
 		return 0;
@@ -1908,7 +1908,7 @@ static ULONG IconWindowClass_MenuCommand(Class *cl, Object *o, Msg msg)
 		{
 		if (CompareCommand(cmd->smcom_CommandName, mcm->mcm_CmdName))
 			{
-			if (iInfos.ii_MainWindowStruct == iwt->iwt_WindowTask.mt_WindowStruct || !(cmd->smcom_Flags & SMCOMFLAGF_RunFromRootWindow))
+			if (iInfos.xii_iinfos.ii_MainWindowStruct == iwt->iwt_WindowTask.mt_WindowStruct || !(cmd->smcom_Flags & SMCOMFLAGF_RunFromRootWindow))
 				{
 				struct MenuCmdArg mcArg;
 
@@ -1952,7 +1952,7 @@ static ULONG IconWindowClass_MenuCommand(Class *cl, Object *o, Msg msg)
 						__FILE__, __FUNC__, __LINE__, mcm->mcm_CmdName, mcm->mcm_IconNode, mcm->mcm_State));
 
 					d1(kprintf("%s/%s/%ld: PutMsg Msg=%08lx \n", __FILE__, __FUNC__, __LINE__, &msg->smc_AsyncRoutine.ScalosMessage.sm_Message));
-					PutMsg(iInfos.ii_MainWindowStruct->ws_MessagePort,
+					PutMsg(iInfos.xii_iinfos.ii_MainWindowStruct->ws_MessagePort,
 						&msg->smc_AsyncRoutine.ScalosMessage.sm_Message);
 					}
 				}
@@ -3297,7 +3297,7 @@ static ULONG IconWindowClass_Browse(Class *cl, Object *o, Msg msg)
 	if (iwt->iwt_ControlBar && iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock && iwt->iwt_WindowTask.wt_Window)
 		{
 		RunProcess(&iwt->iwt_WindowTask, IconWinBrowseProc,
-			0, NULL, iInfos.ii_MainMsgPort);
+			0, NULL, iInfos.xii_iinfos.ii_MainMsgPort);
                 }
 
 	return 0;

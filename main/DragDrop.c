@@ -197,9 +197,9 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 
 	case OUM_AppWindow:
 		d1(kprintf("%s/%s/%ld: Drop on AppWindow\n", __FILE__, __FUNC__, __LINE__));
-		if (iInfos.ii_AppWindowStruct)
+		if (iInfos.xii_iinfos.ii_AppWindowStruct)
 			{
-			struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.ii_AppWindowStruct->ws_WindowTask;
+			struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_AppWindowStruct->ws_WindowTask;
 			struct AppObject *ao;
 
 			ScalosObtainSemaphoreShared(iwtx->iwt_AppListSemaphore);
@@ -334,7 +334,7 @@ static SAVEDS(void) ASM INTERRUPT DropTask(void)
 		d1(kprintf("%s/%s/%ld: ArgList=%08lx  ArgCount=%ld\n", __FILE__, __FUNC__, __LINE__, ArgList, ArgCount));
 
 		DrInfo.drin_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
-			SCCA_FileTrans_Screen, (ULONG) iInfos.ii_Screen,
+			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 			SCCA_FileTrans_Number, ArgCount,
 			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
 			TAG_END);
@@ -1626,7 +1626,7 @@ static void DronOnAppObject(struct internalScaWindowTask *iwt, struct AppObject 
 
 	argList = (struct WBArg *) &am[1];
 
-	am->am_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+	am->am_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 	am->am_Message.mn_Length = Len;
 
 	switch (ao->appo_type)

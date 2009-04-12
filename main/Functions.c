@@ -804,15 +804,15 @@ static Object *FindIconInDeviceWindow(CONST_STRPTR IconName,
 	*windowListLocked = FALSE;
 
 	d1(KPrintF("\n" "%s/%s/%ld: IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, IconName));
-	d1(KPrintF("\n" "%s/%s/%ld: ii_MainWindowStruct=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.ii_MainWindowStruct));
+	d1(KPrintF("\n" "%s/%s/%ld: ii_MainWindowStruct=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_MainWindowStruct));
 
-	while (NULL == iInfos.ii_MainWindowStruct
-		|| NULL == iInfos.ii_MainWindowStruct->ws_WindowTask)
+	while (NULL == iInfos.xii_iinfos.ii_MainWindowStruct
+		|| NULL == iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask)
 		{
-		d1(KPrintF("\n" "%s/%s/%ld: Wait for ii_MainWindowStruct=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.ii_MainWindowStruct));
+		d1(KPrintF("\n" "%s/%s/%ld: Wait for ii_MainWindowStruct=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_MainWindowStruct));
 		Delay(10);
 		}
-	iwt = (struct internalScaWindowTask *) iInfos.ii_MainWindowStruct->ws_WindowTask;
+	iwt = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
 	d1(KPrintF("\n" "%s/%s/%ld: wt_IconSemaphore=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_IconSemaphore));
 
@@ -970,7 +970,7 @@ Object *FunctionsFindIconObjectForPath(CONST_STRPTR Path, BOOL *WindowListLocked
 				d1(KPrintF("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 				if (NULL == IconObj)
 					{
-					IconObj = (Object *) DoMethod(iInfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
+					IconObj = (Object *) DoMethod(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
 						SCCM_IconWin_GetDefIcon, FullPath, ST_USERDIR, 0);
 
 					d1(KPrintF("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));

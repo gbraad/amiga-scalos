@@ -760,11 +760,11 @@ void TTRender(struct RastPort *rp, struct ttDef *ttd, WORD xLeft, WORD yTop)
 					x = xLeft + ttd->ttd_Box.Left + ttd->ttd_SpaceLeft;
 					y = ttd->ttd_Box.Top + ttd->ttd_SpaceTop;
 
-					SetAPen(rp, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
+					SetAPen(rp, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN]);
 					Move(rp, x, y + yTop);
 					Draw(rp, x + ttd->ttd_Box.Width - ttd->ttd_SpaceRight, y + yTop);
 
-					SetAPen(rp, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
+					SetAPen(rp, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN]);
 					Move(rp, x, y + yTop + 1);
 					Draw(rp, x + ttd->ttd_Box.Width - ttd->ttd_SpaceRight, y + yTop+ 1);
 					break;
@@ -923,8 +923,8 @@ void TTRender(struct RastPort *rp, struct ttDef *ttd, WORD xLeft, WORD yTop)
 						ttd->ttd_Box.Top + yTop,
 						xLeft + ttd->ttd_Box.Left + ttd->ttd_Box.Width - 1,
 						ttd->ttd_Box.Top + yTop + ttd->ttd_Box.Height - 1,
-						IA_ShadowPen, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
-						IA_HighlightPen, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+						IA_ShadowPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
+						IA_HighlightPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
 						IA_FrameType, ttd->ttd_FrameType,
 						TAG_END);
 					}
@@ -936,8 +936,8 @@ void TTRender(struct RastPort *rp, struct ttDef *ttd, WORD xLeft, WORD yTop)
 						ttd->ttd_Box.Top + yTop,
 						xLeft + ttd->ttd_Box.Left + ttd->ttd_Box.Width - 1,
 						ttd->ttd_Box.Top + yTop + ttd->ttd_Box.Height - 1,
-						IA_ShadowPen, iInfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
-						IA_HighlightPen, iInfos.ii_DrawInfo->dri_Pens[SHINEPEN],
+						IA_ShadowPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHADOWPEN],
+						IA_HighlightPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[SHINEPEN],
 						IA_FrameType, MF_FRAME_BORDER,
 						TAG_END);
 					}

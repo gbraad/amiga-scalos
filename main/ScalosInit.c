@@ -676,7 +676,7 @@ SAVEDS(ULONG) LockScalosPens(void)
 
 	memset(PalettePrefs.pal_AllocatedPens, NO_PEN, sizeof(PalettePrefs.pal_AllocatedPens));
 
-	if (PalettePrefs.pal_ScreenColorList && iInfos.ii_Screen)
+	if (PalettePrefs.pal_ScreenColorList && iInfos.xii_iinfos.ii_Screen)
 		{
 		struct ScrColorList *cList = (struct ScrColorList *) PalettePrefs.pal_ScreenColorList;
 		ULONG n, Pen;
@@ -700,14 +700,14 @@ SAVEDS(ULONG) LockScalosPens(void)
 
 			if (NO_PEN == driPen)
 				{
-				PalettePrefs.pal_AllocatedPens[n] = gotPen = ObtainPen(iInfos.ii_Screen->ViewPort.ColorMap,
+				PalettePrefs.pal_AllocatedPens[n] = gotPen = ObtainPen(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap,
 					Pen, cList->Colors[n].cw_Red, cList->Colors[n].cw_Green, cList->Colors[n].cw_Blue, 0);
 
 				d1(kprintf("%s/%s/%ld: gotPen=%ld\n", __FILE__, __FUNC__, __LINE__, gotPen));
 
 				if (NO_PEN == gotPen)
 					{
-					PalettePrefs.pal_AllocatedPens[n] = gotPen = ObtainPen(iInfos.ii_Screen->ViewPort.ColorMap, NO_PEN, cList->Colors[n].cw_Red, cList->Colors[n].cw_Green, cList->Colors[n].cw_Blue, 0);
+					PalettePrefs.pal_AllocatedPens[n] = gotPen = ObtainPen(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, NO_PEN, cList->Colors[n].cw_Red, cList->Colors[n].cw_Green, cList->Colors[n].cw_Blue, 0);
 
 					d1(kprintf("%s/%s/%ld: gotPen=%ld\n", __FILE__, __FUNC__, __LINE__, gotPen));
 					}
@@ -717,7 +717,7 @@ SAVEDS(ULONG) LockScalosPens(void)
 				}
 			else
 				{
-				PalettePrefs.pal_AllocatedPens[n] = ObtainBestPen(iInfos.ii_Screen->ViewPort.ColorMap,
+				PalettePrefs.pal_AllocatedPens[n] = ObtainBestPen(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap,
 					cList->Colors[n].cw_Red,
 					cList->Colors[n].cw_Green,
 					cList->Colors[n].cw_Blue,
@@ -747,7 +747,7 @@ SAVEDS(ULONG) LockScalosPens(void)
 SAVEDS(void) UnlockScalosPens(void)
 {
 ///
-	if (PalettePrefs.pal_ScreenColorList && iInfos.ii_Screen)
+	if (PalettePrefs.pal_ScreenColorList && iInfos.xii_iinfos.ii_Screen)
 		{
 		ULONG n;
 
@@ -757,7 +757,7 @@ SAVEDS(void) UnlockScalosPens(void)
 			{
 			if (NO_PEN != PalettePrefs.pal_AllocatedPens[n])
 				{
-				ReleasePen(iInfos.ii_Screen->ViewPort.ColorMap, PalettePrefs.pal_AllocatedPens[n]);
+				ReleasePen(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, PalettePrefs.pal_AllocatedPens[n]);
 				PalettePrefs.pal_AllocatedPens[n] = NO_PEN;
 				}
 			}
@@ -941,10 +941,10 @@ static ULONG InitMainWindow(void)
 		if (NULL == smsw)
 			break;
 
-		smsw->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+		smsw->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 		smsw->WindowStruct = wsMain;
 
-		iInfos.ii_MainWindowStruct = iInfos.ii_AppWindowStruct = wsMain;
+		iInfos.xii_iinfos.ii_MainWindowStruct = iInfos.xii_iinfos.ii_AppWindowStruct = wsMain;
 
 		SplashDisplayProgress(GetLocString(MSGID_PROGRESS_STARTWINDOWPROC), 0);
 
@@ -966,7 +966,7 @@ static ULONG InitMainWindow(void)
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		WaitReply(iInfos.ii_MainMsgPort, &MainWindowTask->mwt, MTYP_StartWindow);
+		WaitReply(iInfos.xii_iinfos.ii_MainMsgPort, &MainWindowTask->mwt, MTYP_StartWindow);
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		Success = TRUE;
@@ -1237,17 +1237,17 @@ static void ScalosMain(LONG *ArgArray)
 		wbPort = CreateMsgPort();
 		if (NULL == wbPort)
 			break;
-		iInfos.ii_MainMsgPort = CreateMsgPort();
-		if (NULL == iInfos.ii_MainMsgPort)
+		iInfos.xii_iinfos.ii_MainMsgPort = CreateMsgPort();
+		if (NULL == iInfos.xii_iinfos.ii_MainMsgPort)
 			break;
 
-		iInfos.ii_MainMsgPort->mp_Node.ln_Name = (STRPTR) "SCALOS";
-		iInfos.ii_MainMsgPort->mp_Node.ln_Pri = 0;
-		AddPort(iInfos.ii_MainMsgPort);
+		iInfos.xii_iinfos.ii_MainMsgPort->mp_Node.ln_Name = (STRPTR) "SCALOS";
+		iInfos.xii_iinfos.ii_MainMsgPort->mp_Node.ln_Pri = 0;
+		AddPort(iInfos.xii_iinfos.ii_MainMsgPort);
 
 		LINE_TRACE;
 
-		MainWindowTask->iorequest = (T_TIMEREQUEST *)CreateIORequest(iInfos.ii_MainMsgPort, sizeof(T_TIMEREQUEST));
+		MainWindowTask->iorequest = (T_TIMEREQUEST *)CreateIORequest(iInfos.xii_iinfos.ii_MainMsgPort, sizeof(T_TIMEREQUEST));
 		if (NULL == MainWindowTask->iorequest)
 			break;
 
@@ -1374,7 +1374,7 @@ static void ScalosMain(LONG *ArgArray)
 
 		SetupTheme();
 
-		InitSplash(iInfos.ii_MainMsgPort);
+		InitSplash(iInfos.xii_iinfos.ii_MainMsgPort);
 
 		LINE_TRACE;
 
@@ -1425,28 +1425,28 @@ static void ScalosMain(LONG *ArgArray)
 			((char *) WorkbenchBase)[45] |= 0x02;	// set flag "Wb opened"
 #endif /* __MORPHOS__ */
 
-			iInfos.ii_Screen = LockPubScreen("Workbench");
-			d1(KPrintF("%s/%s/%ld: ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.ii_Screen));
-			if (NULL == iInfos.ii_Screen)
+			iInfos.xii_iinfos.ii_Screen = LockPubScreen("Workbench");
+			d1(KPrintF("%s/%s/%ld: ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
+			if (NULL == iInfos.xii_iinfos.ii_Screen)
 				break;
 
 			// Adjust colors for existing Workbench screen
 			if (ArgsForcePalette && PalettePrefs.pal_ScreenColorList)
 				{
-				LoadRGB32(&iInfos.ii_Screen->ViewPort, PalettePrefs.pal_ScreenColorList);
-				SetRast(&iInfos.ii_Screen->RastPort, 0);
+				LoadRGB32(&iInfos.xii_iinfos.ii_Screen->ViewPort, PalettePrefs.pal_ScreenColorList);
+				SetRast(&iInfos.xii_iinfos.ii_Screen->RastPort, 0);
 				}
 
 			if (IconBase->lib_Version >= 44)
 				{
 				IconControl(NULL,
-					ICONCTRLA_SetGlobalScreen, (ULONG) iInfos.ii_Screen,
+					ICONCTRLA_SetGlobalScreen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 					TAG_END);
 				}
 			}
 		else
 			{
-			iInfos.ii_Screen = OpenScreenTags(NULL,
+			iInfos.xii_iinfos.ii_Screen = OpenScreenTags(NULL,
 				CurrentPrefs.pref_FullBenchFlag ? SA_ShowTitle : TAG_IGNORE, FALSE,
 //				  SA_Pens, (ULONG) PalettePrefs.pal_driPens,
 				SA_SharePens, TRUE,
@@ -1457,11 +1457,11 @@ static void ScalosMain(LONG *ArgArray)
 				SA_Title, (ULONG) "Scalos Screen",
 				TAG_END);
 
-			if (NULL == iInfos.ii_Screen)
+			if (NULL == iInfos.xii_iinfos.ii_Screen)
 				break;
 			}
 
-		d1(KPrintF("%s/%s/%ld: ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.ii_Screen));
+		d1(KPrintF("%s/%s/%ld: ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
 
 		LINE_TRACE;
 
@@ -1497,24 +1497,24 @@ static void ScalosMain(LONG *ArgArray)
 
 		TRACE_AMITHLON(__LINE__);
 
-		d1(kprintf("%s/%s/%ld: iInfos.ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.ii_Screen));
-		if (NULL == iInfos.ii_Screen)
+		d1(kprintf("%s/%s/%ld: iInfos.xii_iinfos.ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
+		if (NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		TRACE_AMITHLON(__LINE__);
 
-		iInfos.ii_DrawInfo = GetScreenDrawInfo(iInfos.ii_Screen);
+		iInfos.xii_iinfos.ii_DrawInfo = GetScreenDrawInfo(iInfos.xii_iinfos.ii_Screen);
 
 		UnAllocatedPens = LockScalosPens();
 
 		d1(kprintf("%s/%s/%ld: DrawInfo=%08lx  dri_Pens=%08lx\n", \
-			__FILE__, __FUNC__, __LINE__, iInfos.ii_DrawInfo, iInfos.ii_DrawInfo->dri_Pens));
+			__FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_DrawInfo, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens));
 
 		d1({ short n;\
 			for (n=0; n < NUMDRIPENS; n++)\
 			{\
 			kprintf("%s/%s/%ld: dri_Pen[%ld]=%ld \n", \
-				__FILE__, __FUNC__, __LINE__, n, (LONG) iInfos.ii_DrawInfo->dri_Pens[n]);\
+				__FILE__, __FUNC__, __LINE__, n, (LONG) iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[n]);\
 			} });
 
 		if (GuiGFXBase)
@@ -1543,12 +1543,12 @@ static void ScalosMain(LONG *ArgArray)
 		patNode = GetPatternNode(PatternPrefs.patt_DefScreenPatternNr);
 		if (patNode)
 			{
-			MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.ii_Screen->Width;
-			MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_height = iInfos.ii_Screen->Height;
+			MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.xii_iinfos.ii_Screen->Width;
+			MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_height = iInfos.xii_iinfos.ii_Screen->Height;
 			MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook.h_Data = MainWindowTask;
 
 			if (SetBackFill(&MainWindowTask->mwt, patNode, 
-				&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo, 1, iInfos.ii_Screen))
+				&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo, 1, iInfos.xii_iinfos.ii_Screen))
 				{
 				struct Layer *newLayer;
 
@@ -1558,14 +1558,14 @@ static void ScalosMain(LONG *ArgArray)
 
 				LINE_TRACE;
 
-				InstallLayerInfoHook(&iInfos.ii_Screen->LayerInfo, 
+				InstallLayerInfoHook(&iInfos.xii_iinfos.ii_Screen->LayerInfo, 
 					&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook);
 
-				newLayer = CreateBehindLayer(&iInfos.ii_Screen->LayerInfo,
-					iInfos.ii_Screen->RastPort.BitMap,
-					iInfos.ii_Screen->LeftEdge, iInfos.ii_Screen->TopEdge,
-					iInfos.ii_Screen->LeftEdge + iInfos.ii_Screen->Width - 1,
-					iInfos.ii_Screen->TopEdge + iInfos.ii_Screen->Height - 1,
+				newLayer = CreateBehindLayer(&iInfos.xii_iinfos.ii_Screen->LayerInfo,
+					iInfos.xii_iinfos.ii_Screen->RastPort.BitMap,
+					iInfos.xii_iinfos.ii_Screen->LeftEdge, iInfos.xii_iinfos.ii_Screen->TopEdge,
+					iInfos.xii_iinfos.ii_Screen->LeftEdge + iInfos.xii_iinfos.ii_Screen->Width - 1,
+					iInfos.xii_iinfos.ii_Screen->TopEdge + iInfos.xii_iinfos.ii_Screen->Height - 1,
 					LAYERBACKDROP | LAYERSIMPLE,
 					NULL);
 
@@ -1581,7 +1581,7 @@ static void ScalosMain(LONG *ArgArray)
 
 		SplashDisplayProgress(GetLocString(MSGID_PROGRESS_INITMENU), 0);
 
-		iInfos.ii_visualinfo = GetVisualInfoA(iInfos.ii_Screen, NULL);
+		iInfos.xii_iinfos.ii_visualinfo = GetVisualInfoA(iInfos.xii_iinfos.ii_Screen, NULL);
 
 		CreateScalosMenu();
 
@@ -1604,12 +1604,12 @@ static void ScalosMain(LONG *ArgArray)
 			SplashAddUser();
 
 			RunProcess(&MainWindowTask->mwt.iwt_WindowTask, 
-				(RUNPROCFUNC) WBStartup, 0, NULL, iInfos.ii_MainMsgPort);
+				(RUNPROCFUNC) WBStartup, 0, NULL, iInfos.xii_iinfos.ii_MainMsgPort);
 			}
 
 		LINE_TRACE;
 
-		PubScreenStatus(iInfos.ii_Screen, 0);
+		PubScreenStatus(iInfos.xii_iinfos.ii_Screen, 0);
 		SetDefaultPubScreen(MainWindowTask->emulation ? "Workbench" : "Scalos");
 
 		SplashDisplayProgress(GetLocString(MSGID_PROGRESS_INITNOTIFY), 0);
@@ -1642,7 +1642,7 @@ static void ScalosMain(LONG *ArgArray)
 
 		LINE_TRACE;
 
-		PubScreenStatus(iInfos.ii_Screen, PSNF_PRIVATE);
+		PubScreenStatus(iInfos.xii_iinfos.ii_Screen, PSNF_PRIVATE);
 
 		LINE_TRACE;
 		} while (0);
@@ -1662,7 +1662,7 @@ static void ScalosMain(LONG *ArgArray)
 			msg = (struct SM_CloseWindow *) SCA_AllocMessage(MTYP_CloseWindow, 0);
 			if (msg)
 				{
-				msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.ii_MainMsgPort;
+				msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
 				PutMsg(ws->ws_MessagePort, &msg->ScalosMessage.sm_Message);
 
 				wsNext = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ;
@@ -1670,7 +1670,7 @@ static void ScalosMain(LONG *ArgArray)
 				SCA_UnLockWindowList();
 				SCA_LockWindowList(SCA_LockWindowList_Shared);
 
-				WaitReply(iInfos.ii_MainMsgPort, &MainWindowTask->mwt, MTYP_CloseWindow);
+				WaitReply(iInfos.xii_iinfos.ii_MainMsgPort, &MainWindowTask->mwt, MTYP_CloseWindow);
 				}
 			else
 				wsNext = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ;
@@ -1710,16 +1710,16 @@ static void ScalosMain(LONG *ArgArray)
 		FreeMenus(MainMenu);
 		MainMenu = NULL;
 		}
-	if (iInfos.ii_visualinfo)
+	if (iInfos.xii_iinfos.ii_visualinfo)
 		{
-		FreeVisualInfo(iInfos.ii_visualinfo);
-		iInfos.ii_visualinfo = NULL;
+		FreeVisualInfo(iInfos.xii_iinfos.ii_visualinfo);
+		iInfos.xii_iinfos.ii_visualinfo = NULL;
 		}
 
 	LINE_TRACE;
 
-	if (MainWindowTask && iInfos.ii_MainMsgPort && ScalosBase)
-		PatternsOff(MainWindowTask, iInfos.ii_MainMsgPort);
+	if (MainWindowTask && iInfos.xii_iinfos.ii_MainMsgPort && ScalosBase)
+		PatternsOff(MainWindowTask, iInfos.xii_iinfos.ii_MainMsgPort);
 
 	FreeFontPrefs();
 	FreePatternPrefs();
@@ -1749,26 +1749,26 @@ static void ScalosMain(LONG *ArgArray)
 
 	LINE_TRACE;
 
-	if (iInfos.ii_Screen)
+	if (iInfos.xii_iinfos.ii_Screen)
 		{
 		if (MainWindowTask && MainWindowTask->emulation)
 			{
-			UnlockPubScreen(NULL, iInfos.ii_Screen);
+			UnlockPubScreen(NULL, iInfos.xii_iinfos.ii_Screen);
 			}
 		else
 			{
-			if (!CloseScreen(iInfos.ii_Screen))
+			if (!CloseScreen(iInfos.xii_iinfos.ii_Screen))
 				{
 				Delay(20);
 
-				while (!CloseScreen(iInfos.ii_Screen))
+				while (!CloseScreen(iInfos.xii_iinfos.ii_Screen))
 					{
 					UseRequest(NULL, MSGID_CANNOT_QUIT_FOREIGNWINDOWS, MSGID_GADGETSNAME, NULL);
 					}
 				}
 			}
 
-		iInfos.ii_Screen = NULL;
+		iInfos.xii_iinfos.ii_Screen = NULL;
 		}
 
 	LINE_TRACE;
@@ -1790,11 +1790,11 @@ static void ScalosMain(LONG *ArgArray)
 		MainWindowTask->iorequest = NULL;
 		}
 
-	if (iInfos.ii_MainMsgPort)
+	if (iInfos.xii_iinfos.ii_MainMsgPort)
 		{
 		Forbid();
-		RemPort(iInfos.ii_MainMsgPort);
-		DeleteMsgPort(iInfos.ii_MainMsgPort);
+		RemPort(iInfos.xii_iinfos.ii_MainMsgPort);
+		DeleteMsgPort(iInfos.xii_iinfos.ii_MainMsgPort);
 		Permit();
 		}
 

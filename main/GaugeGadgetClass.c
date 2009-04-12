@@ -331,7 +331,7 @@ static void DrawGauge(struct GaugeINST *inst, struct Gadget *g, struct RastPort 
 		g->TopEdge+1 + g->Height-2 - 1);
 
 	// Erase level to right edge
-	SetAPen(rp, iInfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN]);
+	SetAPen(rp, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN]);
 	RectFill(rp,
 		g->LeftEdge+2 + GaugeWidth, g->TopEdge+1,
 		g->LeftEdge + g->Width - 2 - 1,

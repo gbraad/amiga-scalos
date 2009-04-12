@@ -138,14 +138,14 @@ void PatternsOff(struct MainTask *mt, struct MsgPort *ReplyPort)
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		ScaLockScreenLayers();
 
-		InstallLayerInfoHook(&iInfos.ii_Screen->LayerInfo, NULL);
+		InstallLayerInfoHook(&iInfos.xii_iinfos.ii_Screen->LayerInfo, NULL);
 
-		newLayer = CreateBehindLayer(&iInfos.ii_Screen->LayerInfo,
-			iInfos.ii_Screen->RastPort.BitMap,
-			iInfos.ii_Screen->LeftEdge,
-			iInfos.ii_Screen->TopEdge,
-			iInfos.ii_Screen->LeftEdge + iInfos.ii_Screen->Width - 1,
-			iInfos.ii_Screen->TopEdge + iInfos.ii_Screen->Height - 1,
+		newLayer = CreateBehindLayer(&iInfos.xii_iinfos.ii_Screen->LayerInfo,
+			iInfos.xii_iinfos.ii_Screen->RastPort.BitMap,
+			iInfos.xii_iinfos.ii_Screen->LeftEdge,
+			iInfos.xii_iinfos.ii_Screen->TopEdge,
+			iInfos.xii_iinfos.ii_Screen->LeftEdge + iInfos.xii_iinfos.ii_Screen->Width - 1,
+			iInfos.xii_iinfos.ii_Screen->TopEdge + iInfos.xii_iinfos.ii_Screen->Height - 1,
 			LAYERBACKDROP | LAYERSIMPLE,
 			NULL
 			);
@@ -197,26 +197,26 @@ void PatternsOn(struct MainTask *mt)
 		{
 		struct Layer *newLayer;
 
-		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.ii_Screen->Width;
-		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_height = iInfos.ii_Screen->Height;
+		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.xii_iinfos.ii_Screen->Width;
+		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_height = iInfos.xii_iinfos.ii_Screen->Height;
 
 		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook.h_Data = mt;
 
-		if (SetBackFill(NULL, ScreenPatternNode, &mt->mwt.iwt_WindowTask.wt_PatternInfo, SETBACKFILLF_NOASYNC, iInfos.ii_Screen))
+		if (SetBackFill(NULL, ScreenPatternNode, &mt->mwt.iwt_WindowTask.wt_PatternInfo, SETBACKFILLF_NOASYNC, iInfos.xii_iinfos.ii_Screen))
 			{
 			mt->screenbackfill = TRUE;
 
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			ScaLockScreenLayers();
 
-			InstallLayerInfoHook(&iInfos.ii_Screen->LayerInfo, NULL);
+			InstallLayerInfoHook(&iInfos.xii_iinfos.ii_Screen->LayerInfo, NULL);
 
-			newLayer = CreateBehindLayer(&iInfos.ii_Screen->LayerInfo,
-				iInfos.ii_Screen->RastPort.BitMap,
-				iInfos.ii_Screen->LeftEdge,
-				iInfos.ii_Screen->TopEdge,
-				iInfos.ii_Screen->LeftEdge + iInfos.ii_Screen->Width - 1,
-				iInfos.ii_Screen->TopEdge + iInfos.ii_Screen->Height - 1,
+			newLayer = CreateBehindLayer(&iInfos.xii_iinfos.ii_Screen->LayerInfo,
+				iInfos.xii_iinfos.ii_Screen->RastPort.BitMap,
+				iInfos.xii_iinfos.ii_Screen->LeftEdge,
+				iInfos.xii_iinfos.ii_Screen->TopEdge,
+				iInfos.xii_iinfos.ii_Screen->LeftEdge + iInfos.xii_iinfos.ii_Screen->Width - 1,
+				iInfos.xii_iinfos.ii_Screen->TopEdge + iInfos.xii_iinfos.ii_Screen->Height - 1,
 				LAYERBACKDROP | LAYERSIMPLE,
 				NULL
 				);
@@ -1023,7 +1023,7 @@ static void PatternFreeInfoBitMap(struct PatternInfo *ptInfo)
 		}
 	if (NO_PEN != ptInfo->ptinf_BgPen)
 		{
-		ReleasePen(iInfos.ii_Screen->ViewPort.ColorMap, ptInfo->ptinf_BgPen);
+		ReleasePen(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, ptInfo->ptinf_BgPen);
 		ptInfo->ptinf_BgPen = NO_PEN;
 		}
 }
@@ -1295,7 +1295,7 @@ static BOOL PatternCreateScaledBitMapNoGuiGFX(struct internalScaWindowTask *iwt,
 		sbma.sbma_NumberOfColors = NumColors;
 		sbma.sbma_ColorTable = ColorTable;
 		sbma.sbma_Flags = SCALEFLAGF_BILINEAR | SCALEFLAGF_AVERAGE | SCALEFLAGF_DOUBLESIZE;
-		sbma.sbma_ScreenBM = iInfos.ii_Screen->RastPort.BitMap;
+		sbma.sbma_ScreenBM = iInfos.xii_iinfos.ii_Screen->RastPort.BitMap;
 
 		ScaledBitMap = ScalosGfxScaleBitMap(&sbma, NULL);
 		d1(KPrintF("%s/%s/%ld: ScaledBitMap=%08lx\n", __FILE__, __FUNC__, __LINE__, ScaledBitMap));
@@ -1586,7 +1586,7 @@ static BOOL PatternBackgroundSingleColor(struct PatternNode *ptNode,
 	struct PatternInfo *ptInfo, struct RastPort *rp)
 {
 	// Try to allocate pen for background color
-	ptInfo->ptinf_BgPen = ObtainBestPen(iInfos.ii_Screen->ViewPort.ColorMap,
+	ptInfo->ptinf_BgPen = ObtainBestPen(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap,
 		RGB_8_TO_32(ptNode->ptn_BgColor1[0]),
 		RGB_8_TO_32(ptNode->ptn_BgColor1[1]),
 		RGB_8_TO_32(ptNode->ptn_BgColor1[2]),
