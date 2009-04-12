@@ -176,7 +176,7 @@ static ULONG RootClass_New(Class *cl, Object *o, Msg msg)
 		struct opSet *ops = (struct opSet *) msg;
 
 		inst->rci_RootList.rl_WindowTask = (struct ScaWindowTask *) GetTagData(SCCA_WindowTask, (ULONG)NULL, ops->ops_AttrList);
-		inst->rci_RootList.rl_internInfos = &iInfos;
+		inst->rci_RootList.rl_internInfos = &iInfos.xii_iinfos;
 		}
 
 	return (ULONG) o;
