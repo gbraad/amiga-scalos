@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20090412	jl	- Improvement: gadget help tooltips in about window no only pop up
+41.7	20090413	jl	- Bugfix: about window gadget tooltips kept appearing over and over.
+	20090412	jl	- Improvement: gadget help tooltips in about window no longer pop up
 				  immediately when mouse is moved over gadget, but with a short delay.
 	20090410	jl	- Improvement: added smooth fade-in and fade-out for Splash and About
 				  windows (MorphOS2.x and AmigaOS4.x only).
@@ -1842,6 +1843,8 @@ Additions/changes:
 ****************************************************************************
 
 --------------------Scalos main Preferences---------------------------------
+
+ 40.24  20090413	jl	- Bugfix: resolved NULL pointer hit when adding normal image to user-defined control bar button.
 
  40.23  20090109	jl	- Improvement: added support for transparent Scalos windows - MorphOS 2.x only.
 	20090103	jl	- Improvement: added configuration options option for highlighting
