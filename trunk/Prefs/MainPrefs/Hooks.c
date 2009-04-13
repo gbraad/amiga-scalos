@@ -1126,7 +1126,7 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 					MUIA_ScaDtpic_Name, (ULONG) cgy->cgy_NormalImage,
 					TAG_END); //DataTypesMCC
 
-				d1(KPrintF(__FUNC__ "/%ld:  <%s>  cgy_Image=%08lx\n", __LINE__, cgy->cgy_NormalImage, cgy->cgy_Image));
+				d1(KPrintF("%s/%s/%ld:  <%s>  cgy_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy->cgy_NormalImage, cgy->cgy_Image));
 				}
 			else
 				{
@@ -1170,9 +1170,10 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 
 		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT],MUIA_TextEditor_HasChanged, FALSE);
 		str = (STRPTR) DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], MUIM_TextEditor_ExportText);
-		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
-		if (0 != strcmp(str, cgy->cgy_HelpText))
+		d1(KPrintF("%s/%s/%ld: str=%08lx  cgy_HelpText=%08lx\n", __FILE__, __FUNC__, __LINE__, str, cgy->cgy_HelpText));
+		if ((NULL == cgy->cgy_HelpText) || (0 != strcmp(str, cgy->cgy_HelpText)))
 			{
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			Changed++;
 
 			if (cgy->cgy_HelpText)
@@ -1180,9 +1181,12 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 			cgy->cgy_HelpText = strdup(str);
 			}
 
+		d1(KPrintF("%s/%s/%ld: Changed=%ld\n", __FILE__, __FUNC__, __LINE__, Changed));
 		if (Changed)
 			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTIVE], MUIM_NList_RedrawEntry, cgy);
 		}
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }

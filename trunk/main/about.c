@@ -193,6 +193,7 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 	struct Region		*rg_Oldregion;		/* region which was previously set in the window */
 	struct Rectangle	ra_Regionsize;		/* size of the above regions */
 	struct AboutGadgetInfo	*agi;
+	static const ULONG IDCMPFlags =  IDCMP_GADGETUP | IDCMP_GADGETHELP | IDCMP_MOUSEBUTTONS;
 
 
 	do	{
@@ -297,7 +298,7 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 		abi->abi_Window = LockedOpenWindowTags(NULL,
 				WA_Title, (ULONG) GetLocString(MSGID_ABOUTNAME),
 				WA_CustomScreen, (ULONG) iInfos.xii_iinfos.ii_Screen,
-				WA_IDCMP, IDCMP_GADGETUP | IDCMP_GADGETHELP | IDCMP_MOUSEBUTTONS | IDCMP_INTUITICKS,
+				WA_IDCMP, IDCMPFlags,
 				WA_Flags, WFLG_RMBTRAP|WFLG_ACTIVATE|WFLG_DEPTHGADGET|WFLG_DRAGBAR,
 				WA_HelpGroup, HelpGroupID,
 				WA_Height, WindowHeight,
@@ -524,6 +525,8 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 					if (++TickCount > 10)
 						{
 						d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+						ModifyIDCMP(abi->abi_Window, IDCMPFlags);
+						TickCount = 0;
 						IconWinShowGadgetToolTip((struct internalScaWindowTask *) msg->WindowTask,
 							lastGadgetID, &AboutGadgetTextHook);
 						}
@@ -541,6 +544,7 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 							d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 							lastGadgetID = gad->GadgetID;
 							TickCount = 0;
+							ModifyIDCMP(abi->abi_Window, IDCMPFlags | IDCMP_INTUITICKS);
 							}
 						}
 					else
