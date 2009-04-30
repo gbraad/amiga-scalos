@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7	20090413	jl	- Bugfix: about window gadget tooltips kept appearing over and over.
+41.7	20090430	jmc	- Bugfix: Extras comment.module didn't increment files via
+				  asl requester using ASLFR_DOMULTISELECT tag.
+	20090413	jl	- Bugfix: about window gadget tooltips kept appearing over and over.
 	20090412	jl	- Improvement: gadget help tooltips in about window no longer pop up
 				  immediately when mouse is moved over gadget, but with a short delay.
 	20090410	jl	- Improvement: added smooth fade-in and fade-out for Splash and About
