@@ -306,18 +306,18 @@ DEF	strprotinfo,lockinfo=NIL,wintitre[100]:STRING
     					diskobjects()
                         		IF ent AND (etatlog=1)
 						examine()
-                        		ELSEIF ent AND (etatlog=0)
+                        		ELSEIF (ent=0) AND (etatlog=0)
 						protectfile(file.name)
+					ENDIF
+					strprotinfo:=String(StrLen(buffer)+5)
+					StrCopy(strprotinfo,buffer,ALL)
+					StrAdd(strprotinfo,'.info')
+					-> WriteF('\s\n',strprotinfo)
+					IF (lockinfo := Lock(strprotinfo, ACCESS_READ))
+						file.name:=strprotinfo
+						protectfile(file.name)
+						UnLock(lockinfo)
 
-						strprotinfo:=String(StrLen(buffer)+5)
-						StrCopy(strprotinfo,buffer,ALL)
-						StrAdd(strprotinfo,'.info')
-						-> WriteF('\s\n',strprotinfo)
-						IF (lockinfo := Lock(strprotinfo, ACCESS_READ))
-							file.name:=strprotinfo
-							protectfile(file.name)
-							UnLock(lockinfo)
-						ENDIF
 					ENDIF
 
 
@@ -565,61 +565,6 @@ PROC getargs()
 
 ENDPROC
 
-
- PROC diskobjects()
-DEF do:PTR TO diskobject,type
-
-  IF do:=GetDiskObjectNew(file.name)
-  	type:=do.type
-  	file.type:=type
-  	IF (file.type=WBTOOL)
-		ent:=0
-        	set(ttir,MUIA_Text_Contents,(cat.msg_TypeTool.getstr() ))
-  		IF (debut=1) THEN initfile(file.name) ELSE comfile(file.name)
- 		set(log,MUIA_Disabled,1)
-		set(vuetime,MUIA_ShowMe,0)
-  	ELSEIF (file.type=WBPROJECT)
-		ent:=0
-        	set(ttir,MUIA_Text_Contents,(cat.msg_TypeProject.getstr() ))
-  		IF (debut=1) THEN initfile(file.name) ELSE comfile(file.name)
- 		set(log,MUIA_Disabled,1)
-		set(vuetime,MUIA_ShowMe,0)
-  	ELSEIF (file.type=WBDRAWER)
-  		IF (debut=1) THEN initfile(file.name) ELSE comfile(file.name)
- 		set(log,MUIA_Disabled,0)
-        	set(ttir,MUIA_Text_Contents,(cat.msg_TypeDrawer.getstr() ))
-        	StrCopy(str,file.name)
-		IF str[(StrLen(str)-1)]=":" THEN set(ttir,MUIA_Text_Contents,(cat.msg_TypeAssign.getstr() ))
-		IF str[(StrLen(str)-1)]<>":" THEN
-        	StrAdd(str,'/')
-        	file.name:=str
-		ent:=1
-  	ELSEIF (file.type=WBDISK)
-        	set(ttir,MUIA_Text_Contents,(cat.msg_TypeDisk.getstr() ))
-		set(log,MUIA_Selected,1)
-		StrCopy(str,file.name)
-		ent:=1
-  	ELSEIF (file.type=WBGARBAGE)
-  		IF (debut=1) THEN initfile(file.name) ELSE comfile(file.name)
- 		set(log,MUIA_Disabled,0)
-        	set(ttir,MUIA_Text_Contents,(cat.msg_TypeGarbage.getstr() ))
-        	StrCopy(str,file.name)
-        	StrAdd(str,'/')
-        	file.name:=str
-		ent:=1
-  	ENDIF
-  	FreeDiskObject(do)
- ELSE
-	ent:=0
-        set(ttir,MUIA_Text_Contents,'?')
-  	IF (debut=1) THEN initfile(file.name) ELSE comfile(file.name)
- 	set(log,MUIA_Disabled,1)
-	set(vuetime,MUIA_ShowMe,0)
- ENDIF
-ENDPROC
-
-
-/*
 PROC diskobjects()
 DEF	dlock=NIL, info:PTR TO fileinfoblock
 
@@ -628,6 +573,7 @@ DEF	dlock=NIL, info:PTR TO fileinfoblock
    	Examine(dlock, info)
 	IF info.direntrytype=-3
 		ent:=0
+		set(log,MUIA_Disabled,1)
         	set(ttir,MUIA_Text_Contents,(cat.msg_TypeProject.getstr() ))
 	ELSEIF info.direntrytype=1
 		ent:=1
@@ -645,16 +591,19 @@ DEF	dlock=NIL, info:PTR TO fileinfoblock
         	StrAdd(str,'/')
         	file.name:=str
        	ENDIF
-	WriteF('type = \d\n',info.direntrytype)
+
+	-> WriteF('type = \d\n',info.direntrytype)
+
     	UnLock(dlock)
   ENDIF
   FreeDosObject(DOS_FIB, info)
 ENDPROC
-*/
+
 ->*********************
 
 PROC initfile(fichier)
 DEF fib:fileinfoblock,lock=0
+
  IF lock:=Lock(fichier,-2)
    Examine(lock,fib)
    file.numblocks:=fib.numblocks
@@ -670,6 +619,7 @@ ENDPROC
 
 PROC comfile(fichier)
 DEF fib:fileinfoblock,lock=0
+
  IF lock:=Lock(fichier,-2)
    Examine(lock,fib)
    file.pname:=fichier
@@ -688,7 +638,7 @@ PROC mreq(obj,tobj,tbt,tmreq,tamp)
 	Mui_RequestA(app, obj, 0, tobj, tbt, tmreq, tamp)
 ENDPROC
 
-PROC appMsgFunc(x:PTR TO LONG)
+PROC appMsgFunc(hook,obj,x:PTR TO LONG)
   DEF ap:PTR TO wbarg,
       amsg:PTR TO appmessage,
       i,
@@ -708,17 +658,6 @@ PROC appMsgFunc(x:PTR TO LONG)
   ENDWHILE
 ENDPROC
 
-/* PROC getprogname()
-DEF l,d,f[56]:STRING
-IF l:=GetProgramDir()
-d:=String(256)
-NameFromLock(l,d,256)
-GetProgramName(f,56)
-AddPart(d,f,256)
-SetStr(d,StrLen(d))
-ENDIF
-ENDPROC d
-*/
 
 PROC loadfile(prog,file=0); DEF str[600]:STRING
 StringF(str,'STACK 10000\nrun <>nil: "\s"',prog)
