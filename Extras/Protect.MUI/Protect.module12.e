@@ -5,6 +5,8 @@ MODULE  'workbench/startup','workbench/workbench','dos/datetime','dos/dos','util
 	'utility/tagitem','tools/installhook','icon','libraries/asl','timer','devices/timer','exec/io','*VERSTAG',
 	'locale','libraries/locale','*Scalos_Protect_Locale','*ProtModule','scalos','scalos/scalos41.6','*GetIconObject'
 
+#define prefile 'ENV:Scalos/Protect_Module.prefs'
+
 OBJECT ttype
 	name
 	next:PTR TO ttype
@@ -57,6 +59,38 @@ DEF	ph,ps,pp,pa,pr,pw,pe,pd
 DEF	ah,as,ap,aa,ar,aw,ae,ad
 
 DEF	var,buffer[600]:STRING
+
+PROC o_pref()
+DEF bufo[2]:STRING,bufo2[2]:STRING,n,outfile=NIL,line[1024]:ARRAY OF CHAR
+	n:=0
+	IF outfile:=Open(prefile,OLDFILE)
+        	WHILE (Fgets(outfile, line, 3))
+        		n++
+        		IF n=1
+        			StrCopy(bufo,line,StrLen(line)-1)
+				-> WriteF('n[\d] bufo = \s\n', n, bufo)
+			ENDIF
+		ENDWHILE
+
+        	IF StrCmp(bufo,'0')=TRUE
+        		set(endgui,MUIA_Selected,0)
+        	ELSEIF StrCmp(bufo,'1')=TRUE
+        		set(endgui,MUIA_Selected,1)
+		ENDIF
+
+		Close(outfile)
+        ENDIF
+ENDPROC
+
+PROC s_pref()
+DEF bufs[3]:STRING,outfile=NIL
+
+	get(endgui,MUIA_Selected,{etatendgui})
+	outfile:=Open(prefile,NEWFILE)
+	StringF(bufs,'\d\n',etatendgui)
+	Fputs(outfile,bufs)
+	Close(outfile)
+ENDPROC
 
 PROC main() HANDLE 
 DEF	strprotinfo,lockinfo=NIL,wintitre[100]:STRING
@@ -264,7 +298,10 @@ DEF	strprotinfo,lockinfo=NIL,wintitre[100]:STRING
   set(vuetir,MUIA_ShowMe,0)
   set(vuetime,MUIA_ShowMe,0)
 
+ o_pref()
+
  getargs()
+
 
  IF StrLen(str) = 0
 	set(app,MUIA_Application_Iconified,TRUE)
@@ -280,6 +317,7 @@ DEF	strprotinfo,lockinfo=NIL,wintitre[100]:STRING
 
         SELECT result
 		CASE MUIV_Application_ReturnID_Quit
+			s_pref()
 			running:=FALSE
 
 		CASE "init"
