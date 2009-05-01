@@ -362,6 +362,7 @@ DEF	strprotinfo,lockinfo=NIL,wintitre[100]:STRING
 				ENDIF
 				IF lock THEN UnLock(lock)
 				IF (etatendgui=1)
+					s_pref()
 					running:=FALSE
 				ELSE
 					file.name:=NIL
@@ -370,6 +371,7 @@ DEF	strprotinfo,lockinfo=NIL,wintitre[100]:STRING
 					getinit()
 					changebtapply()
 				ENDIF
+				s_pref()
 				-> set(bt_p,MUIA_Disabled,0)
 			ELSE
 				set(ttir,MUIA_Text_Contents, (cat.msg_TextNothing.getstr() ) )
