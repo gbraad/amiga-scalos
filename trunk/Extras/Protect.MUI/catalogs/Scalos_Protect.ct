@@ -34,7 +34,7 @@ Quitter
 ;
 MSGID_HELPQUIT
 Si coché, permet de quitter Protect.module après\n\
-avoir terminer de commenter les éléments choisis. 
+avoir terminer de protéger les éléments choisis. 
 ; If selected, apply to quit Protect.module after\n\
 ; to finish Protect operation.
 ;
