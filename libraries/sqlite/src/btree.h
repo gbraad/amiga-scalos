@@ -80,7 +80,7 @@ int sqlite3BtreeClose(Btree*);
 int sqlite3BtreeSetCacheSize(Btree*,int);
 int sqlite3BtreeSetSafetyLevel(Btree*,int,int);
 int sqlite3BtreeSyncDisabled(Btree*);
-int sqlite3BtreeSetPageSize(Btree*,int,int);
+int sqlite3BtreeSetPageSize(Btree*,int,int,int);
 int sqlite3BtreeGetPageSize(Btree*);
 int sqlite3BtreeMaxPageCount(Btree*,int);
 int sqlite3BtreeGetReserve(Btree*);
@@ -148,7 +148,7 @@ int sqlite3BtreeCursorHasMoved(BtCursor*, int*);
 int sqlite3BtreeDelete(BtCursor*);
 int sqlite3BtreeInsert(BtCursor*, const void *pKey, i64 nKey,
                                   const void *pData, int nData,
-                                  int nZero, int bias);
+                                  int nZero, int bias, int seekResult);
 int sqlite3BtreeFirst(BtCursor*, int *pRes);
 int sqlite3BtreeLast(BtCursor*, int *pRes);
 int sqlite3BtreeNext(BtCursor*, int *pRes);
@@ -186,42 +186,39 @@ void sqlite3BtreeCursorList(Btree*);
 ** use mutexes to access the BtShared structures.  So make the
 ** Enter and Leave procedures no-ops.
 */
-#if !defined(SQLITE_OMIT_SHARED_CACHE) && SQLITE_THREADSAFE
+#ifndef SQLITE_OMIT_SHARED_CACHE
   void sqlite3BtreeEnter(Btree*);
-  void sqlite3BtreeLeave(Btree*);
-#ifndef NDEBUG
-  /* This routine is used inside assert() statements only. */
-  int sqlite3BtreeHoldsMutex(Btree*);
+  void sqlite3BtreeEnterAll(sqlite3*);
+#else
+# define sqlite3BtreeEnter(X) 
+# define sqlite3BtreeEnterAll(X)
 #endif
+
+#if !defined(SQLITE_OMIT_SHARED_CACHE) && SQLITE_THREADSAFE
+  void sqlite3BtreeLeave(Btree*);
   void sqlite3BtreeEnterCursor(BtCursor*);
   void sqlite3BtreeLeaveCursor(BtCursor*);
-  void sqlite3BtreeEnterAll(sqlite3*);
   void sqlite3BtreeLeaveAll(sqlite3*);
-#ifndef NDEBUG
-  /* This routine is used inside assert() statements only. */
-  int sqlite3BtreeHoldsAllMutexes(sqlite3*);
-#endif
   void sqlite3BtreeMutexArrayEnter(BtreeMutexArray*);
   void sqlite3BtreeMutexArrayLeave(BtreeMutexArray*);
   void sqlite3BtreeMutexArrayInsert(BtreeMutexArray*, Btree*);
-#else
-# define sqlite3BtreeEnter(X)
-# define sqlite3BtreeLeave(X)
 #ifndef NDEBUG
-  /* This routine is used inside assert() statements only. */
-# define sqlite3BtreeHoldsMutex(X) 1
+  /* These routines are used inside assert() statements only. */
+  int sqlite3BtreeHoldsMutex(Btree*);
+  int sqlite3BtreeHoldsAllMutexes(sqlite3*);
 #endif
+#else
+
+# define sqlite3BtreeLeave(X)
 # define sqlite3BtreeEnterCursor(X)
 # define sqlite3BtreeLeaveCursor(X)
-# define sqlite3BtreeEnterAll(X)
 # define sqlite3BtreeLeaveAll(X)
-#ifndef NDEBUG
-  /* This routine is used inside assert() statements only. */
-# define sqlite3BtreeHoldsAllMutexes(X) 1
-#endif
 # define sqlite3BtreeMutexArrayEnter(X)
 # define sqlite3BtreeMutexArrayLeave(X)
 # define sqlite3BtreeMutexArrayInsert(X,Y)
+
+# define sqlite3BtreeHoldsMutex(X) 1
+# define sqlite3BtreeHoldsAllMutexes(X) 1
 #endif
 
 

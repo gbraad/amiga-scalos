@@ -730,9 +730,9 @@ static char *displayP4(Op *pOp, char *zTemp, int nTemp){
 */
 void sqlite3VdbeUsesBtree(Vdbe *p, int i){
   int mask;
-  assert( i>=0 && i<p->db->nDb );
+  assert( i>=0 && i<p->db->nDb && i<sizeof(u32)*8 );
   assert( i<(int)sizeof(p->btreeMask)*8 );
-  mask = 1<<i;
+  mask = ((u32)1)<<i;
   if( (p->btreeMask & mask)==0 ){
     p->btreeMask |= mask;
     sqlite3BtreeMutexArrayInsert(&p->aMutex, p->db->aDb[i].pBt);
@@ -1023,6 +1023,7 @@ static void allocSpace(
   u8 *pEnd,            /* Pointer to 1 byte past the end of *ppFrom buffer */
   int *pnByte          /* If allocation cannot be made, increment *pnByte */
 ){
+  assert( EIGHT_BYTE_ALIGNMENT(*ppFrom) );
   if( (*(void**)pp)==0 ){
     nByte = ROUND8(nByte);
     if( (pEnd - *ppFrom)>=nByte ){
@@ -1096,6 +1097,9 @@ void sqlite3VdbeMakeReady(
     if( isExplain && nMem<10 ){
       nMem = 10;
     }
+    zCsr += (zCsr - (u8*)0)&7;
+    assert( EIGHT_BYTE_ALIGNMENT(zCsr) );
+    if( zEnd<zCsr ) zEnd = zCsr;
 
     do {
       memset(zCsr, 0, zEnd-zCsr);
@@ -1607,6 +1611,33 @@ int sqlite3VdbeCloseStatement(Vdbe *p, int eOp){
 }
 
 /*
+** If SQLite is compiled to support shared-cache mode and to be threadsafe,
+** this routine obtains the mutex associated with each BtShared structure
+** that may be accessed by the VM passed as an argument. In doing so it
+** sets the BtShared.db member of each of the BtShared structures, ensuring
+** that the correct busy-handler callback is invoked if required.
+**
+** If SQLite is not threadsafe but does support shared-cache mode, then
+** sqlite3BtreeEnterAll() is invoked to set the BtShared.db variables
+** of all of BtShared structures accessible via the database handle 
+** associated with the VM. Of course only a subset of these structures
+** will be accessed by the VM, and we could use Vdbe.btreeMask to figure
+** that subset out, but there is no advantage to doing so.
+**
+** If SQLite is not threadsafe and does not support shared-cache mode, this
+** function is a no-op.
+*/
+#ifndef SQLITE_OMIT_SHARED_CACHE
+void sqlite3VdbeMutexArrayEnter(Vdbe *p){
+#if SQLITE_THREADSAFE
+  sqlite3BtreeMutexArrayEnter(&p->aMutex);
+#else
+  sqlite3BtreeEnterAll(p->db);
+#endif
+}
+#endif
+
+/*
 ** This routine is called the when a VDBE tries to halt.  If the VDBE
 ** has made changes and is in autocommit mode, then commit those
 ** changes.  If a rollback is needed, then do the rollback.
@@ -1655,7 +1686,7 @@ int sqlite3VdbeHalt(Vdbe *p){
     int isSpecialError;            /* Set to true if a 'special' error */
 
     /* Lock all btrees used by the statement */
-    sqlite3BtreeMutexArrayEnter(&p->aMutex);
+    sqlite3VdbeMutexArrayEnter(p);
 
     /* Check for one of the special errors */
     mrc = p->rc & 0xff;
@@ -1909,7 +1940,7 @@ void sqlite3VdbeDeleteAuxData(VdbeFunc *pVdbeFunc, int mask){
   int i;
   for(i=0; i<pVdbeFunc->nAux; i++){
     struct AuxData *pAux = &pVdbeFunc->apAux[i];
-    if( (i>31 || !(mask&(1<<i))) && pAux->pAux ){
+    if( (i>31 || !(mask&(((u32)1)<<i))) && pAux->pAux ){
       if( pAux->xDelete ){
         pAux->xDelete(pAux->pAux);
       }
@@ -1971,8 +2002,8 @@ int sqlite3VdbeCursorMoveto(VdbeCursor *p){
     rc = sqlite3BtreeMovetoUnpacked(p->pCursor, 0, p->movetoTarget, 0, &res);
     if( rc ) return rc;
     p->lastRowid = keyToInt(p->movetoTarget);
-    p->rowidIsValid = res==0 ?1:0;
-    if( res<0 ){
+    p->rowidIsValid = ALWAYS(res==0) ?1:0;
+    if( NEVER(res<0) ){
       rc = sqlite3BtreeNext(p->pCursor, &res);
       if( rc ) return rc;
     }
@@ -2316,30 +2347,40 @@ UnpackedRecord *sqlite3VdbeRecordUnpack(
   KeyInfo *pKeyInfo,     /* Information about the record format */
   int nKey,              /* Size of the binary record */
   const void *pKey,      /* The binary record */
-  UnpackedRecord *pSpace,/* Space available to hold resulting object */
+  char *pSpace,          /* Unaligned space available to hold the object */
   int szSpace            /* Size of pSpace[] in bytes */
 ){
   const unsigned char *aKey = (const unsigned char *)pKey;
-  UnpackedRecord *p;
-  int nByte, d;
+  UnpackedRecord *p;  /* The unpacked record that we will return */
+  int nByte;          /* Memory space needed to hold p, in bytes */
+  int d;
   u32 idx;
-  u16 u;                 /* Unsigned loop counter */
+  u16 u;              /* Unsigned loop counter */
   u32 szHdr;
   Mem *pMem;
+  int nOff;           /* Increase pSpace by this much to 8-byte align it */
   
-  assert( sizeof(Mem)>sizeof(*p) );
-  nByte = sizeof(Mem)*(pKeyInfo->nField+2);
+  /*
+  ** We want to shift the pointer pSpace up such that it is 8-byte aligned.
+  ** Thus, we need to calculate a value, nOff, between 0 and 7, to shift 
+  ** it by.  If pSpace is already 8-byte aligned, nOff should be zero.
+  */
+  nOff = (8 - (SQLITE_PTR_TO_INT(pSpace) & 7)) & 7;
+  pSpace += nOff;
+  szSpace -= nOff;
+  nByte = ROUND8(sizeof(UnpackedRecord)) + sizeof(Mem)*(pKeyInfo->nField+1);
   if( nByte>szSpace ){
     p = sqlite3DbMallocRaw(pKeyInfo->db, nByte);
     if( p==0 ) return 0;
     p->flags = UNPACKED_NEED_FREE | UNPACKED_NEED_DESTROY;
   }else{
-    p = pSpace;
+    p = (UnpackedRecord*)pSpace;
     p->flags = UNPACKED_NEED_DESTROY;
   }
   p->pKeyInfo = pKeyInfo;
   p->nField = pKeyInfo->nField + 1;
-  p->aMem = pMem = &((Mem*)p)[1];
+  p->aMem = pMem = (Mem*)&((char*)p)[ROUND8(sizeof(UnpackedRecord))];
+  assert( EIGHT_BYTE_ALIGNMENT(pMem) );
   idx = getVarint32(aKey, szHdr);
   d = szHdr;
   u = 0;
@@ -2425,6 +2466,7 @@ int sqlite3VdbeRecordCompare(
   mem1.enc = pKeyInfo->enc;
   mem1.db = pKeyInfo->db;
   mem1.flags = 0;
+  mem1.u.i = 0;  /* not needed, here to silence compiler warning */
   mem1.zMalloc = 0;
   
   idx1 = getVarint32(aKey1, szHdr1);
@@ -2454,6 +2496,18 @@ int sqlite3VdbeRecordCompare(
     i++;
   }
   if( mem1.zMalloc ) sqlite3VdbeMemRelease(&mem1);
+
+  /* If the PREFIX_SEARCH flag is set and all fields except the final
+  ** rowid field were equal, then clear the PREFIX_SEARCH flag and set 
+  ** pPKey2->rowid to the value of the rowid field in (pKey1, nKey1).
+  ** This is used by the OP_IsUnique opcode.
+  */
+  if( (pPKey2->flags & UNPACKED_PREFIX_SEARCH) && i==(pPKey2->nField-1) ){
+    assert( idx1==szHdr1 && rc );
+    assert( mem1.flags & MEM_Int );
+    pPKey2->flags &= ~UNPACKED_PREFIX_SEARCH;
+    pPKey2->rowid = mem1.u.i;
+  }
 
   if( rc==0 ){
     /* rc==0 here means that one of the keys ran out of fields and

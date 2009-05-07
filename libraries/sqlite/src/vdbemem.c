@@ -209,6 +209,7 @@ int sqlite3VdbeMemStringify(Mem *pMem, int enc){
   assert( !(fg&(MEM_Str|MEM_Blob)) );
   assert( fg&(MEM_Int|MEM_Real) );
   assert( (pMem->flags&MEM_RowSet)==0 );
+  assert( EIGHT_BYTE_ALIGNMENT(pMem) );
 
 
   if( sqlite3VdbeMemGrow(pMem, nByte, 0) ){
@@ -269,16 +270,18 @@ int sqlite3VdbeMemFinalize(Mem *pMem, FuncDef *pFunc){
 */
 void sqlite3VdbeMemReleaseExternal(Mem *p){
   assert( p->db==0 || sqlite3_mutex_held(p->db->mutex) );
-  if( p->flags&MEM_Agg ){
-    sqlite3VdbeMemFinalize(p, p->u.pDef);
-    assert( (p->flags & MEM_Agg)==0 );
-    sqlite3VdbeMemRelease(p);
-  }else if( p->flags&MEM_Dyn && p->xDel ){
-    assert( (p->flags&MEM_RowSet)==0 );
-    p->xDel((void *)p->z);
-    p->xDel = 0;
-  }else if( p->flags&MEM_RowSet ){
-    sqlite3RowSetClear(p->u.pRowSet);
+  if( p->flags&(MEM_Agg|MEM_Dyn|MEM_RowSet) ){
+    if( p->flags&MEM_Agg ){
+      sqlite3VdbeMemFinalize(p, p->u.pDef);
+      assert( (p->flags & MEM_Agg)==0 );
+      sqlite3VdbeMemRelease(p);
+    }else if( p->flags&MEM_Dyn && p->xDel ){
+      assert( (p->flags&MEM_RowSet)==0 );
+      p->xDel((void *)p->z);
+      p->xDel = 0;
+    }else if( p->flags&MEM_RowSet ){
+      sqlite3RowSetClear(p->u.pRowSet);
+    }
   }
 }
 
@@ -345,6 +348,7 @@ static i64 doubleToInt64(double r){
 i64 sqlite3VdbeIntValue(Mem *pMem){
   int flags;
   assert( pMem->db==0 || sqlite3_mutex_held(pMem->db->mutex) );
+  assert( EIGHT_BYTE_ALIGNMENT(pMem) );
   flags = pMem->flags;
   if( flags & MEM_Int ){
     return pMem->u.i;
@@ -373,6 +377,7 @@ i64 sqlite3VdbeIntValue(Mem *pMem){
 */
 double sqlite3VdbeRealValue(Mem *pMem){
   assert( pMem->db==0 || sqlite3_mutex_held(pMem->db->mutex) );
+  assert( EIGHT_BYTE_ALIGNMENT(pMem) );
   if( pMem->flags & MEM_Real ){
     return pMem->r;
   }else if( pMem->flags & MEM_Int ){
@@ -403,6 +408,7 @@ void sqlite3VdbeIntegerAffinity(Mem *pMem){
   assert( pMem->flags & MEM_Real );
   assert( (pMem->flags & MEM_RowSet)==0 );
   assert( pMem->db==0 || sqlite3_mutex_held(pMem->db->mutex) );
+  assert( EIGHT_BYTE_ALIGNMENT(pMem) );
 
   pMem->u.i = doubleToInt64(pMem->r);
   if( pMem->r==(double)pMem->u.i ){
@@ -416,6 +422,8 @@ void sqlite3VdbeIntegerAffinity(Mem *pMem){
 int sqlite3VdbeMemIntegerify(Mem *pMem){
   assert( pMem->db==0 || sqlite3_mutex_held(pMem->db->mutex) );
   assert( (pMem->flags & MEM_RowSet)==0 );
+  assert( EIGHT_BYTE_ALIGNMENT(pMem) );
+
   pMem->u.i = sqlite3VdbeIntValue(pMem);
   MemSetTypeFlag(pMem, MEM_Int);
   return SQLITE_OK;
@@ -427,6 +435,8 @@ int sqlite3VdbeMemIntegerify(Mem *pMem){
 */
 int sqlite3VdbeMemRealify(Mem *pMem){
   assert( pMem->db==0 || sqlite3_mutex_held(pMem->db->mutex) );
+  assert( EIGHT_BYTE_ALIGNMENT(pMem) );
+
   pMem->r = sqlite3VdbeRealValue(pMem);
   MemSetTypeFlag(pMem, MEM_Real);
   return SQLITE_OK;
@@ -967,12 +977,14 @@ int sqlite3ValueFromExpr(
     zVal = sqlite3DbStrNDup(db, (char*)pExpr->token.z, pExpr->token.n);
     pVal = sqlite3ValueNew(db);
     if( !zVal || !pVal ) goto no_mem;
-    sqlite3Dequote(zVal);
     sqlite3ValueSetStr(pVal, -1, zVal, SQLITE_UTF8, SQLITE_DYNAMIC);
     if( (op==TK_INTEGER || op==TK_FLOAT ) && affinity==SQLITE_AFF_NONE ){
-      sqlite3ValueApplyAffinity(pVal, SQLITE_AFF_NUMERIC, enc);
+      sqlite3ValueApplyAffinity(pVal, SQLITE_AFF_NUMERIC, SQLITE_UTF8);
     }else{
-      sqlite3ValueApplyAffinity(pVal, affinity, enc);
+      sqlite3ValueApplyAffinity(pVal, affinity, SQLITE_UTF8);
+    }
+    if( enc!=SQLITE_UTF8 ){
+      sqlite3VdbeChangeEncoding(pVal, enc);
     }
   }else if( op==TK_UMINUS ) {
     if( SQLITE_OK==sqlite3ValueFromExpr(db,pExpr->pLeft,enc,affinity,&pVal) ){

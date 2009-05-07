@@ -1523,8 +1523,8 @@ static int unixUnlock(sqlite3_file *id, int locktype){
   }
 	
 end_unlock:
-#endif
   unixLeaveMutex();
+#endif
   if( rc==SQLITE_OK ) pFile->locktype = locktype;
   return rc;
 }
@@ -2218,8 +2218,8 @@ static int semClose(sqlite3_file *id) {
     unixEnterMutex();
     releaseLockInfo(pFile->pLock);
     releaseOpenCnt(pFile->pOpen);
-    closeUnixFile(id);
     unixLeaveMutex();
+    closeUnixFile(id);
   }
   return SQLITE_OK;
 }
@@ -3212,7 +3212,7 @@ IOMETHODS(
   dotlockCheckReservedLock  /* xCheckReservedLock method */
 )
 
-#if SQLITE_ENABLE_LOCKING_STYLE
+#if SQLITE_ENABLE_LOCKING_STYLE && !OS_VXWORKS
 IOMETHODS(
   flockIoFinder,            /* Finder function name */
   flockIoMethods,           /* sqlite3_io_methods object name */
@@ -3335,6 +3335,44 @@ static const sqlite3_io_methods *(*const autolockIoFinder)(const char*,int)
         = autolockIoFinderImpl;
 
 #endif /* defined(__APPLE__) && SQLITE_ENABLE_LOCKING_STYLE */
+
+#if OS_VXWORKS && SQLITE_ENABLE_LOCKING_STYLE
+/* 
+** This "finder" function attempts to determine the best locking strategy 
+** for the database file "filePath".  It then returns the sqlite3_io_methods
+** object that implements that strategy.
+**
+** This is for VXWorks only.
+*/
+static const sqlite3_io_methods *autolockIoFinderImpl(
+  const char *filePath,    /* name of the database file */
+  int fd                   /* file descriptor open on the database file */
+){
+  struct flock lockInfo;
+
+  if( !filePath ){
+    /* If filePath==NULL that means we are dealing with a transient file
+    ** that does not need to be locked. */
+    return &nolockIoMethods;
+  }
+
+  /* Test if fcntl() is supported and use POSIX style locks.
+  ** Otherwise fall back to the named semaphore method.
+  */
+  lockInfo.l_len = 1;
+  lockInfo.l_start = 0;
+  lockInfo.l_whence = SEEK_SET;
+  lockInfo.l_type = F_RDLCK;
+  if( fcntl(fd, F_GETLK, &lockInfo)!=-1 ) {
+    return &posixIoMethods;
+  }else{
+    return &semIoMethods;
+  }
+}
+static const sqlite3_io_methods *(*const autolockIoFinder)(const char*,int)
+        = autolockIoFinderImpl;
+
+#endif /* OS_VXWORKS && SQLITE_ENABLE_LOCKING_STYLE */
 
 /*
 ** An abstract type for a pointer to a IO method finder function:
@@ -3618,7 +3656,7 @@ static int unixOpen(
   int flags,                   /* Input flags to control the opening */
   int *pOutFlags               /* Output flags returned to SQLite core */
 ){
-  int fd = 0;                    /* File descriptor returned by open() */
+  int fd = -1;                    /* File descriptor returned by open() */
   int dirfd = -1;                /* Directory file descriptor */
   int openFlags = 0;             /* Flags to pass to open() */
   int eType = flags&0xFFFFFF00;  /* Type of file to open */
@@ -3721,7 +3759,7 @@ static int unixOpen(
   }
 #endif
 
-  assert(fd!=0);
+  assert( fd>=0 );
   if( isOpenDirectory ){
     rc = openDirectory(zPath, &dirfd);
     if( rc!=SQLITE_OK ){
@@ -5066,7 +5104,7 @@ int sqlite3_os_init(void){
   ** array cannot be const.
   */
   static sqlite3_vfs aVfs[] = {
-#if SQLITE_ENABLE_LOCKING_STYLE && defined(__APPLE__)
+#if SQLITE_ENABLE_LOCKING_STYLE && (OS_VXWORKS || defined(__APPLE__))
     UNIXVFS("unix",          autolockIoFinder ),
 #else
     UNIXVFS("unix",          posixIoFinder ),
@@ -5078,7 +5116,9 @@ int sqlite3_os_init(void){
 #endif
 #if SQLITE_ENABLE_LOCKING_STYLE
     UNIXVFS("unix-posix",    posixIoFinder ),
+#if !OS_VXWORKS
     UNIXVFS("unix-flock",    flockIoFinder ),
+#endif
 #endif
 #if SQLITE_ENABLE_LOCKING_STYLE && defined(__APPLE__)
     UNIXVFS("unix-afp",      afpIoFinder ),

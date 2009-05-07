@@ -1,84 +1,84 @@
 /* Automatically generated.  Do not edit */
 /* See the mkopcodeh.awk script for details */
-#define OP_VRowid                               1
-#define OP_VFilter                              2
-#define OP_IfNeg                                3
-#define OP_ContextPop                           4
-#define OP_IntegrityCk                          5
-#define OP_DropTrigger                          6
-#define OP_DropIndex                            7
-#define OP_IdxInsert                            8
-#define OP_Delete                               9
-#define OP_SeekLt                              10
-#define OP_OpenEphemeral                       11
-#define OP_VerifyCookie                        12
-#define OP_Blob                                13
-#define OP_RowKey                              14
-#define OP_IsUnique                            15
-#define OP_SetNumColumns                       16
+#define OP_VFilter                              1
+#define OP_IfNeg                                2
+#define OP_ContextPop                           3
+#define OP_IntegrityCk                          4
+#define OP_DropTrigger                          5
+#define OP_DropIndex                            6
+#define OP_IdxInsert                            7
+#define OP_Delete                               8
+#define OP_SeekLt                               9
+#define OP_OpenEphemeral                       10
+#define OP_VerifyCookie                        11
+#define OP_Blob                                12
+#define OP_RowKey                              13
+#define OP_IsUnique                            14
+#define OP_SetNumColumns                       15
 #define OP_Eq                                  74   /* same as TK_EQ       */
-#define OP_VUpdate                             17
-#define OP_Expire                              18
-#define OP_NullRow                             20
-#define OP_OpenPseudo                          21
-#define OP_OpenWrite                           22
-#define OP_OpenRead                            23
-#define OP_Transaction                         24
-#define OP_AutoCommit                          25
-#define OP_Copy                                26
-#define OP_Halt                                27
-#define OP_VRename                             28
-#define OP_Vacuum                              29
-#define OP_RowData                             30
-#define OP_NotExists                           31
-#define OP_SetCookie                           32
-#define OP_Move                                33
-#define OP_Variable                            34
-#define OP_Pagecount                           35
-#define OP_VNext                               36
-#define OP_VDestroy                            37
-#define OP_TableLock                           38
-#define OP_RowSetAdd                           39
-#define OP_LoadAnalysis                        40
-#define OP_IdxDelete                           41
-#define OP_Sort                                42
-#define OP_ResetCount                          43
-#define OP_Count                               44
+#define OP_VUpdate                             16
+#define OP_Expire                              17
+#define OP_NullRow                             18
+#define OP_OpenPseudo                          20
+#define OP_OpenWrite                           21
+#define OP_OpenRead                            22
+#define OP_Transaction                         23
+#define OP_AutoCommit                          24
+#define OP_Copy                                25
+#define OP_Halt                                26
+#define OP_VRename                             27
+#define OP_Vacuum                              28
+#define OP_RowData                             29
+#define OP_NotExists                           30
+#define OP_SetCookie                           31
+#define OP_Move                                32
+#define OP_Variable                            33
+#define OP_Pagecount                           34
+#define OP_VNext                               35
+#define OP_VDestroy                            36
+#define OP_TableLock                           37
+#define OP_RowSetAdd                           38
+#define OP_LoadAnalysis                        39
+#define OP_IdxDelete                           40
+#define OP_Sort                                41
+#define OP_ResetCount                          42
+#define OP_Count                               43
 #define OP_NotNull                             72   /* same as TK_NOTNULL  */
 #define OP_Ge                                  78   /* same as TK_GE       */
 #define OP_Remainder                           88   /* same as TK_REM      */
 #define OP_Divide                              87   /* same as TK_SLASH    */
-#define OP_Integer                             45
-#define OP_Explain                             46
-#define OP_IncrVacuum                          47
-#define OP_AggStep                             48
-#define OP_CreateIndex                         49
-#define OP_NewRowid                            50
+#define OP_Integer                             44
+#define OP_Explain                             45
+#define OP_IncrVacuum                          46
+#define OP_AggStep                             47
+#define OP_CreateIndex                         48
+#define OP_NewRowid                            49
 #define OP_And                                 67   /* same as TK_AND      */
 #define OP_ShiftLeft                           82   /* same as TK_LSHIFT   */
 #define OP_Real                               130   /* same as TK_FLOAT    */
-#define OP_Return                              51
-#define OP_Trace                               52
-#define OP_IfPos                               53
-#define OP_IdxLT                               54
-#define OP_Rewind                              55
-#define OP_SeekGe                              56
-#define OP_Affinity                            57
+#define OP_Return                              50
+#define OP_Trace                               51
+#define OP_IfPos                               52
+#define OP_IdxLT                               53
+#define OP_Rewind                              54
+#define OP_SeekGe                              55
+#define OP_Affinity                            56
 #define OP_Gt                                  75   /* same as TK_GT       */
-#define OP_AddImm                              58
+#define OP_AddImm                              57
 #define OP_Subtract                            85   /* same as TK_MINUS    */
-#define OP_Null                                59
-#define OP_VColumn                             60
-#define OP_Clear                               61
+#define OP_Null                                58
+#define OP_VColumn                             59
+#define OP_Clear                               60
 #define OP_IsNull                              71   /* same as TK_ISNULL   */
-#define OP_If                                  62
-#define OP_Permutation                         63
+#define OP_If                                  61
+#define OP_Permutation                         62
 #define OP_ToBlob                             142   /* same as TK_TO_BLOB  */
-#define OP_RealAffinity                        64
-#define OP_HaltIfNull                          65
-#define OP_Yield                               68
-#define OP_AggFinal                            69
-#define OP_IfZero                              70
+#define OP_RealAffinity                        63
+#define OP_HaltIfNull                          64
+#define OP_Yield                               65
+#define OP_AggFinal                            68
+#define OP_IfZero                              69
+#define OP_RowSetTest                          70
 #define OP_Last                                79
 #define OP_Rowid                               90
 #define OP_Sequence                            91
@@ -160,15 +160,15 @@
 #define OPFLG_IN3             0x0010  /* in3:   P3 is an input */
 #define OPFLG_OUT3            0x0020  /* out3:  P3 is an output */
 #define OPFLG_INITIALIZER {\
-/*   0 */ 0x00, 0x02, 0x01, 0x05, 0x00, 0x00, 0x00, 0x00,\
-/*   8 */ 0x08, 0x00, 0x11, 0x00, 0x00, 0x02, 0x00, 0x11,\
+/*   0 */ 0x00, 0x01, 0x05, 0x00, 0x00, 0x00, 0x00, 0x08,\
+/*   8 */ 0x00, 0x11, 0x00, 0x00, 0x02, 0x00, 0x11, 0x00,\
 /*  16 */ 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00,\
-/*  24 */ 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x11,\
-/*  32 */ 0x10, 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x08,\
-/*  40 */ 0x00, 0x00, 0x01, 0x00, 0x02, 0x02, 0x00, 0x01,\
-/*  48 */ 0x00, 0x02, 0x02, 0x04, 0x00, 0x05, 0x11, 0x01,\
-/*  56 */ 0x11, 0x00, 0x04, 0x02, 0x00, 0x00, 0x05, 0x00,\
-/*  64 */ 0x04, 0x10, 0x2c, 0x2c, 0x04, 0x00, 0x05, 0x05,\
+/*  24 */ 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x11, 0x10,\
+/*  32 */ 0x00, 0x00, 0x02, 0x01, 0x00, 0x00, 0x08, 0x00,\
+/*  40 */ 0x00, 0x01, 0x00, 0x02, 0x02, 0x00, 0x01, 0x00,\
+/*  48 */ 0x02, 0x02, 0x04, 0x00, 0x05, 0x11, 0x01, 0x11,\
+/*  56 */ 0x00, 0x04, 0x02, 0x00, 0x00, 0x05, 0x00, 0x04,\
+/*  64 */ 0x10, 0x04, 0x2c, 0x2c, 0x00, 0x05, 0x15, 0x05,\
 /*  72 */ 0x05, 0x15, 0x15, 0x15, 0x15, 0x15, 0x15, 0x01,\
 /*  80 */ 0x2c, 0x2c, 0x2c, 0x2c, 0x2c, 0x2c, 0x2c, 0x2c,\
 /*  88 */ 0x2c, 0x2c, 0x02, 0x02, 0x11, 0x04, 0x02, 0x11,\

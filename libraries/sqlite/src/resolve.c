@@ -248,7 +248,11 @@ static int lookupName(
             if( iCol>=0 ){
               testcase( iCol==31 );
               testcase( iCol==32 );
-              *piColMask |= ((u32)1<<iCol) | (iCol>=32?0xffffffff:0);
+              if( iCol>=32 ){
+                *piColMask = 0xffffffff;
+              }else{
+                *piColMask |= ((u32)1)<<iCol;
+              }
             }
             break;
           }
@@ -319,7 +323,7 @@ static int lookupName(
   ** Because no reference was made to outer contexts, the pNC->nRef
   ** fields are not changed in any context.
   */
-  if( cnt==0 && zTab==0 && pColumnToken->z[0]=='"' ){
+  if( cnt==0 && zTab==0 && ExprHasProperty(pExpr,EP_DblQuoted) ){
     sqlite3DbFree(db, zCol);
     pExpr->op = TK_STRING;
     pExpr->pTab = 0;

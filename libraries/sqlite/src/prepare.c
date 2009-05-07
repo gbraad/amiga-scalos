@@ -127,6 +127,7 @@ int sqlite3InitCallback(void *pInit, int argc, char **argv, char **NotUsed){
 */
 static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   int rc;
+  int i;
   BtCursor *curMain;
   int size;
   Table *pTab;
@@ -216,7 +217,8 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   }
   sqlite3BtreeEnter(pDb->pBt);
   rc = sqlite3BtreeCursor(pDb->pBt, MASTER_ROOT, 0, 0, curMain);
-  if( rc!=SQLITE_OK && rc!=SQLITE_EMPTY ){
+  if( rc==SQLITE_EMPTY ) rc = SQLITE_OK;
+  if( rc!=SQLITE_OK ){
     sqlite3SetString(pzErrMsg, db, "%s", sqlite3ErrStr(rc));
     goto initone_error_out;
   }
@@ -238,17 +240,12 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   ** Note: The #defined SQLITE_UTF* symbols in sqliteInt.h correspond to
   ** the possible values of meta[4].
   */
-  if( rc==SQLITE_OK ){
-    int i;
-    for(i=0; i<ArraySize(meta); i++){
-      rc = sqlite3BtreeGetMeta(pDb->pBt, i+1, (u32 *)&meta[i]);
-      if( rc ){
-        sqlite3SetString(pzErrMsg, db, "%s", sqlite3ErrStr(rc));
-        goto initone_error_out;
-      }
+  for(i=0; i<ArraySize(meta); i++){
+    rc = sqlite3BtreeGetMeta(pDb->pBt, i+1, (u32 *)&meta[i]);
+    if( rc ){
+      sqlite3SetString(pzErrMsg, db, "%s", sqlite3ErrStr(rc));
+      goto initone_error_out;
     }
-  }else{
-    memset(meta, 0, sizeof(meta));
   }
   pDb->pSchema->schema_cookie = meta[0];
 
@@ -528,11 +525,8 @@ static int sqlite3Prepare(
   int rc = SQLITE_OK;
   int i;
 
-  assert( ppStmt );
-  *ppStmt = 0;
-  if( sqlite3SafetyOn(db) ){
-    return SQLITE_MISUSE;
-  }
+  if( sqlite3SafetyOn(db) ) return SQLITE_MISUSE;
+  assert( ppStmt && *ppStmt==0 );
   assert( !db->mallocFailed );
   assert( sqlite3_mutex_held(db->mutex) );
 
@@ -671,6 +665,8 @@ static int sqlite3LockAndPrepare(
   const char **pzTail       /* OUT: End of parsed string */
 ){
   int rc;
+  assert( ppStmt!=0 );
+  *ppStmt = 0;
   if( !sqlite3SafetyCheckOk(db) ){
     return SQLITE_MISUSE;
   }
@@ -773,6 +769,8 @@ static int sqlite3Prepare16(
   const char *zTail8 = 0;
   int rc = SQLITE_OK;
 
+  assert( ppStmt );
+  *ppStmt = 0;
   if( !sqlite3SafetyCheckOk(db) ){
     return SQLITE_MISUSE;
   }

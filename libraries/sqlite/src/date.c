@@ -344,6 +344,7 @@ static int parseDateOrTime(
   const char *zDate, 
   DateTime *p
 ){
+  int isRealNum;    /* Return from sqlite3IsNumber().  Not used */
   if( parseYyyyMmDd(zDate,p)==0 ){
     return 0;
   }else if( parseHhMmSs(zDate, p)==0 ){
@@ -351,7 +352,7 @@ static int parseDateOrTime(
   }else if( sqlite3StrICmp(zDate,"now")==0){
     setDateTimeToCurrent(context, p);
     return 0;
-  }else if( sqlite3IsNumber(zDate, 0, SQLITE_UTF8) ){
+  }else if( sqlite3IsNumber(zDate, &isRealNum, SQLITE_UTF8) ){
     double r;
     getValue(zDate, &r);
     p->iJD = (sqlite3_int64)(r*86400000.0 + 0.5);
@@ -549,7 +550,7 @@ static int parseModifier(const char *zMod, DateTime *p){
       ** seconds since 1970.  Convert to a real julian day number.
       */
       if( strcmp(z, "unixepoch")==0 && p->validJD ){
-        p->iJD = p->iJD/86400 + 21086676*(i64)10000000;
+        p->iJD = (p->iJD + 43200)/86400 + 21086676*(i64)10000000;
         clearYMD_HMS_TZ(p);
         rc = 0;
       }
@@ -953,8 +954,8 @@ static void strftimeFunc(
         case 'm':  sqlite3_snprintf(3, &z[j],"%02d",x.M); j+=2; break;
         case 'M':  sqlite3_snprintf(3, &z[j],"%02d",x.m); j+=2; break;
         case 's': {
-          sqlite3_snprintf(30,&z[j],"%d",
-                           (int)(x.iJD/1000.0 - 210866760000.0));
+          sqlite3_snprintf(30,&z[j],"%lld",
+                           (i64)(x.iJD/1000 - 21086676*(i64)10000));
           j += sqlite3Strlen30(&z[j]);
           break;
         }
