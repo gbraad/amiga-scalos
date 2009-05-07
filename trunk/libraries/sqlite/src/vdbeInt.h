@@ -80,6 +80,10 @@ struct VdbeCursor {
   sqlite3_vtab_cursor *pVtabCursor;  /* The cursor for a virtual table */
   const sqlite3_module *pModule;     /* Module for cursor pVtabCursor */
 
+  /* Result of last sqlite3BtreeMoveto() done by an OP_NotExists or 
+  ** OP_IsUnique opcode on this cursor. */
+  int seekResult;
+
   /* Cached information about the header for the data record that the
   ** cursor is currently pointing to.  Only valid if cacheValid is true.
   ** aRow might point to (ephemeral) data for the current row, or it might
@@ -377,6 +381,12 @@ int sqlite3VdbeMemGrow(Mem *pMem, int n, int preserve);
 int sqlite3VdbeCloseStatement(Vdbe *, int);
 #ifdef SQLITE_ENABLE_MEMORY_MANAGEMENT
 int sqlite3VdbeReleaseBuffers(Vdbe *p);
+#endif
+
+#ifndef SQLITE_OMIT_SHARED_CACHE
+void sqlite3VdbeMutexArrayEnter(Vdbe *p);
+#else
+# define sqlite3VdbeMutexArrayEnter(p)
 #endif
 
 int sqlite3VdbeMemTranslate(Mem*, u8);

@@ -225,7 +225,7 @@ static void reloadTableSchema(Parse *pParse, Table *pTab, const char *zName){
 #endif
 
   v = sqlite3GetVdbe(pParse);
-  if( !v ) return;
+  if( NEVER(v==0) ) return;
   assert( sqlite3BtreeHoldsAllMutexes(pParse->db) );
   iDb = sqlite3SchemaToIndex(pParse->db, pTab->pSchema);
   assert( iDb>=0 );
@@ -279,7 +279,7 @@ void sqlite3AlterRenameTable(
 #endif
   int isVirtualRename = 0;  /* True if this is a v-table with an xRename() */
   
-  if( db->mallocFailed ) goto exit_rename_table;
+  if( NEVER(db->mallocFailed) ) goto exit_rename_table;
   assert( pSrc->nSrc==1 );
   assert( sqlite3BtreeHoldsAllMutexes(pParse->db) );
 
@@ -512,7 +512,7 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
   zCol = sqlite3DbStrNDup(db, (char*)pColDef->z, pColDef->n);
   if( zCol ){
     char *zEnd = &zCol[pColDef->n-1];
-    while( (zEnd>zCol && *zEnd==';') || sqlite3Isspace(*zEnd) ){
+    while( zEnd>zCol && (*zEnd==';' || sqlite3Isspace(*zEnd)) ){
       *zEnd-- = '\0';
     }
     sqlite3NestedParse(pParse, 
