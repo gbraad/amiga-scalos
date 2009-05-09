@@ -461,10 +461,13 @@ static void AddHiddenDeviceFromDosList(struct SCAModule *app, struct DosList *dl
 	strcpy(VolName, "");
 	BtoCString(dl->dol_Name, DevName, sizeof(DevName));
 
+	d2(KPrintF(__FILE__ "/%s/%ld: START  DevName=<%s>\n", __FUNC__, __LINE__, DevName));
+
 #if defined(__amigaos4__)
 	if (0 != Stricmp(DevName, "ENV"))
 #endif //!defined(__amigaos4__)
 		{
+		d2(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 		if (dl->dol_Task &&
 			DoPkt(dl->dol_Task, ACTION_DISK_INFO,
 				MKBADDR(id),
@@ -472,6 +475,7 @@ static void AddHiddenDeviceFromDosList(struct SCAModule *app, struct DosList *dl
 			{
 			InfoDataValid = TRUE;
 			}
+		d2(KPrintF(__FILE__ "/%s/%ld: InfoDataValid=%ld\n", __FUNC__, __LINE__, InfoDataValid));
 		}
 
 	if (!Hidden && !InfoDataValid)
