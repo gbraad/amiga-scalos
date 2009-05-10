@@ -42,8 +42,7 @@ Some interesting info on why it's called Scalos... It was named after a planet f
 <!-- Registered users -->
 <?php make_title('registered', 1, 'registered.gif', 400, 30, 'What about registered users?'); ?>
 
-<p>Current registered users will be able to use upgrades to V1.x for free from us. V2.x will require some sort of upgrade fee - but this will include BIG changes and additional software with it, 
-hopefully. We have no idea of how long this could take!<br><br>
+<p>All Scalos updates will be available for free. We do not intend to make money from future Scalos versions.<br><br>
 In V1.x updates, we plan to kill the bugs as soon as possible, but we also plan to add as many new, exciting, useful features as we can. Please see the <a href="features.php">features</a> page for 
 more details.</p>
 <?php back_to_top(); ?>
@@ -56,12 +55,7 @@ more details.</p>
   <tr>
     <td width="105" valign="top" align="right"><img src="gfx/misc/ppcchip.gif" width="100" height="115" alt="PowerPC chip"></td>
     <td width="100%">
-      <p>We are considering adding PPC support for V2.x of Scalos. However, we need to see how much this will affect the performance. If it makes only a slight improvement, we'll <b>STILL</b> do it. 
-      At least it then depends on others to make it even faster by porting the 68k libraries to PPC (both the OS and third-party ones). If it reduces performance due to the 68k&lt;-&gt;PPC context 
-      switches, then we'll shelve the idea. Depending on how we go, we will either use the <a href="http://ftp.plig.org/pub/aminet/dev/asm/PPC680x0V1.10.readme" target="_blank">68k-&gt;PPC Assembler</a> 
-      (as seen on Aminet) -or- work on converting the source code into 'C' and then compile it using VBCC for <a href="http://www.haage-partner.com/wu_e.htm" target="_blank">WarpUP</a> only!<br><br>
-      If H&amp;P don't achieve a native PPC implementation of the Amiga OS ROM libraries, we will also hope to support the PPC MorphOS project. This system runs natively on the PPC and allows existing 
-      68k libraries to be emulated on the PPC. The 68k is not used at all. Please visit the <a href="http://www.morphos.de/" target="_blank">MorphOS website</a> for more info.</p>
+      <p>Currently, PPC is fully supported by Scalos. Current and future versions are available for MorphOS/PPC and AmigaOS4/PPC, as well as for AmigaOS3.x/68K.
     </td>
   </tr>
 </table><br>
