@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7	20090507        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.14.
+41.7    20090511	jl	- Improvement: added filetype for FLV video.
+	20090507        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.14.
 	20090430	jmc	- Bugfix: Extras comment.module didn't increment files via
 				  asl requester using ASLFR_DOMULTISELECT tag.
 	20090413	jl	- Bugfix: about window gadget tooltips kept appearing over and over.
