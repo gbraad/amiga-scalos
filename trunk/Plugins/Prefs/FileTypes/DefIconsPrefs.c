@@ -87,7 +87,6 @@ static STRPTR GetProtectionBitString(ULONG BitMask, ULONG AndMask, ULONG CmpMask
 	STRPTR Buffer, size_t *BuffSize);
 static void SetProtectionCycle(Object *o, ULONG BitMask,
 	ULONG AndMask, ULONG CmpMask);
-static void SetFileTypesIcon(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *ln);
 static void SetMagicString(struct FileTypesActionEntry *fae, CONST_STRPTR String, size_t Length);
 static size_t TranslateFromPrintable(STRPTR Buffer, size_t BuffLength,
 	CONST_STRPTR InputString);
@@ -400,7 +399,7 @@ static void SetProtectionCycle(Object *o, ULONG BitMask,
 
 //----------------------------------------------------------------------------
 
-static void SetFileTypesIcon(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *ln)
+void SetFileTypesIcon(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *ln)
 {
 	BOOL FoundNative = TRUE;
 
