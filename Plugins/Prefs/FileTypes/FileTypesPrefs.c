@@ -5384,6 +5384,31 @@ DISPATCHER(myFileTypesNListTree)
 		}
 		break;
 
+	case MUIM_DragDrop:
+		{
+		//struct MUIP_DragDrop *dq = (struct MUIP_DragDrop *) msg;
+		struct MUI_NListtree_TreeNode *ln;
+
+		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		d1(kprintf("%s/%ld: MUIP_DragDrop obj=%08lx\n", __FUNC__, __LINE__, dq->obj));
+
+		Result = DoSuperMethodA(cl, obj, msg);
+
+		ln = (struct MUI_NListtree_TreeNode *) DoMethod(obj,
+			MUIM_NListtree_GetEntry,
+			MUIV_NListtree_GetEntry_ListNode_Active,
+			MUIV_NListtree_GetEntry_Position_Active,
+			0);
+
+		d1(kprintf("%s/%ld: ln=%08lx  tn_User=%08lx\n", __FUNC__, __LINE__, ln, ln->tn_User));
+
+		if (ln)
+			{
+			SetFileTypesIcon(inst, ln);
+			}
+		}
+		break;
+
 	default:
 		Result = DoSuperMethodA(cl, obj, msg);
 		}

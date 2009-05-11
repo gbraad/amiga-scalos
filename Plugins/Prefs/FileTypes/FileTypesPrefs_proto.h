@@ -18,6 +18,8 @@ SAVEDS(APTR) INTERRUPT FileTypesActionConstructFunc(struct Hook *hook, APTR obj,
 SAVEDS(void) INTERRUPT FileTypesActionDestructFunc(struct Hook *hook, APTR obj, struct NList_DestructMessage *ltdm);
 SAVEDS(ULONG) INTERRUPT FileTypesActionDisplayFunc(struct Hook *hook, APTR obj, struct NList_DisplayMessage *ltdm);
 
+void SetFileTypesIcon(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *ln);
+
 SAVEDS(ULONG) INTERRUPT SelectFileTypesEntryHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(ULONG) INTERRUPT SelectFileTypesActionEntryHookFunc(struct Hook *hook, Object *o, Msg msg);
 
