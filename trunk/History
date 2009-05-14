@@ -1979,6 +1979,9 @@ Additions/changes:
 
  40.22	20090511	jl	- Bugfix: icon is updated correctly when filetypes recognition
 				  list is sorted via drag-drop.
+				- Improvement: Search panel can now be unhidden via popup menu.
+				- Improvement: In filetype search panel, forward and backwards
+				  buttons allow jumping to next and previous match.
  40.21	20081217	jl      - Improvement: Replaced "search" entries in popup menu by
 				  MUI group. Filetype search work works incrementally.
  40.20	20080831	jl      - Bugfix: search filetypes list with "Find next" didn't work.
