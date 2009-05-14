@@ -130,6 +130,10 @@ Paste
 MSGID_MENU_HIDE_EMPTY_ENTRIES (//)
 Hide empty entries?
 ;
+;
+MSGID_MENU_EDIT_FIND (//)
+Find...
+;
 ;---------------------------------------------
 ;
 MSGID_ABOUTREQOK (6000//)
@@ -278,15 +282,7 @@ MSGID_SHORTHELP_BUTTON_CREATE_ICON (//)
 Create a new dedicated icon for this filetype.
 ;
 ;
-MSGID_BUTTON_FIND_NEXT (//)
-Next
-;
-;
-MSGID_BUTTON_FIND_NEXT_KEY (/1/1)
-N
-;
-;
-MSGID_BUTTON_FIND_NEXT_SHORTHELP (//)
+MSGID_BUTTON_FIND_NEXT_SHORTHELP (+2//)
 Find next filetype that matches the given search string.
 ;
 ;
@@ -297,6 +293,10 @@ Hide Find Filetype Dialog.
 MSGID_STRING_FIND_SHORTHELP (//)
 This is the string to find in filetypes' name.\n\
 While you type, the first matching entry is always shown.
+;
+;
+MSGID_BUTTON_FIND_PREV_SHORTHELP (//)
+Find previous filetype that matches the given search string.
 ;
 ;---------------------------------------------
 ;

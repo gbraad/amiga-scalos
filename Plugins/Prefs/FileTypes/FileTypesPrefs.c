@@ -212,6 +212,20 @@ struct EntryAttributes
 	ULONG eat_AttrCount;		// number of entries in eat_AttrArray
 	};
 
+enum FindDir
+	{
+	FINDDIR_First = 0,
+	FINDDIR_Next,
+	FINDDIR_Prev
+	};
+
+struct FoundNode
+	{
+	struct Node fdn_Node;
+	struct MUI_NListtree_TreeNode *fdn_TreeNode;
+	ULONG fdn_Index;
+	};
+
 //----------------------------------------------------------------------------
 
 // aus mempools.lib
@@ -293,13 +307,16 @@ static SAVEDS(APTR) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg
 static SAVEDS(APTR) INTERRUPT SaveAsHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, Msg msg);
 static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
-	CONST_STRPTR SearchString, BOOL SearchNext);
-static struct MUI_NListtree_TreeNode *FindPatternInListtree(Object *ListTree,
+	CONST_STRPTR SearchString, enum FindDir dir);
+static void BuildFindTree(struct FileTypesPrefsInst *inst,
+	Object *ListTree,
 	struct MUI_NListtree_TreeNode *list, CONST_STRPTR pattern,
 	struct MUI_NListtree_TreeNode *startnode, ULONG *dosearch);
+static SAVEDS(void) INTERRUPT ShowFindGroupHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT HideFindGroupHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT IncrementalFindFileTypeHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT IncrementalFindNextFileTypeHookFunc(struct Hook *hook, Object *o, Msg msg);
+static SAVEDS(void) INTERRUPT IncrementalFindPrevFileTypeHookFunc(struct Hook *hook, Object *o, Msg msg);
 
 static LONG ReadPrefs(struct FileTypesPrefsInst *inst,
 	CONST_STRPTR LoadName, CONST_STRPTR DefIconPrefsName);
@@ -353,6 +370,8 @@ static void ParseToolTypes(struct FileTypesPrefsInst *inst, struct MUIP_ScalosPr
 static LONG ReadScalosPrefs(struct FileTypesPrefsInst *inst, CONST_STRPTR PrefsFileName);
 static CONST_STRPTR GetPrefsConfigString(APTR prefsHandle, ULONG Id, CONST_STRPTR DefaultString);
 static ULONG DoDragDrop(Class *cl, Object *obj, Msg msg);
+static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *tn);
+static void CleanupFoundNodes(struct FileTypesPrefsInst *inst);
 
 #if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
@@ -529,9 +548,11 @@ static const struct Hook FileTypesPrefsHooks[] =
 
 	{ { NULL, NULL }, HOOKFUNC_DEF(FileTypesActionDragDropSortHookFunc), NULL },
 
+	{ { NULL, NULL }, HOOKFUNC_DEF(ShowFindGroupHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(HideFindGroupHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(IncrementalFindFileTypeHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(IncrementalFindNextFileTypeHookFunc), NULL },
+	{ { NULL, NULL }, HOOKFUNC_DEF(IncrementalFindPrevFileTypeHookFunc), NULL },
 
 	{ { NULL, NULL }, HOOKFUNC_DEF(LearnFileTypeHookFunc), NULL },
 
@@ -551,6 +572,8 @@ static struct NewMenu ContextMenuFileTypes[] =
 	{  NM_ITEM, NM_BARLABEL,				NULL, 	0,			0, NULL },
 	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_COLLAPSEALL, 	NULL, 	0,			0, (APTR) HOOKNDX_CollapseAllFileTypes },
 	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_EXPANDALL, 	NULL, 	0,			0, (APTR) HOOKNDX_ExpandAllFileTypes },
+	{  NM_ITEM, NM_BARLABEL,				NULL, 	0,			0, NULL },
+	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_FIND, 		NULL, 	NM_ITEMDISABLED,	0, (APTR) HOOKNDX_ShowFindGroup },
 	{  NM_ITEM, NM_BARLABEL,				NULL, 	0,			0, NULL },
 	{  NM_ITEM, (STRPTR) MSGID_MENU_PROJECT_ABOUT,		NULL, 	0,			0, (APTR) HOOKNDX_About },
 
@@ -1665,6 +1688,9 @@ DISPATCHER(FileTypesPrefs)
 			inst->fpb_TTfAntialias = TT_Antialias_Auto;
 			inst->fpb_TTfGamma = 2500;
 
+			NewList(&inst->fpb_FoundList);
+			inst->fpb_CurrentFound = (struct FoundNode *) &inst->fpb_FoundList.lh_Tail;
+
 			InitHooks(inst);
 
 			ReadScalosPrefs(inst, "ENV:scalos/scalos.prefs");
@@ -1932,6 +1958,8 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 	inst->fpb_Objects[OBJNDX_Menu_CollapseFileTypes] = (Object *) DoMethod(inst->fpb_Objects[OBJNDX_ContextMenuFileTypes],
 			MUIM_FindUData, HOOKNDX_CollapseFileTypes);
 
+	inst->fpb_Objects[OBJNDX_Menu_Find] = (Object *) DoMethod(inst->fpb_Objects[OBJNDX_ContextMenuFileTypes],
+			MUIM_FindUData, HOOKNDX_ShowFindGroup);
 
 	inst->fpb_Objects[OBJNDX_ContextMenu] = MUI_MakeObject(MUIO_MenustripNM, ContextMenus, 0);
 	if (NULL == inst->fpb_Objects[OBJNDX_ContextMenu])
@@ -2063,10 +2091,25 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 									StringFrame,
 									MUIA_ShortHelp, GetLocString(MSGID_STRING_FIND_SHORTHELP),
 									End, //StringObject
-								Child, inst->fpb_Objects[OBJNDX_Button_FindNextFileType] = KeyButtonHelp2(MSGID_BUTTON_FIND_NEXT,
-									MSGID_BUTTON_FIND_NEXT_KEY,
-									MSGID_BUTTON_FIND_NEXT_SHORTHELP,
-									50),
+								Child, inst->fpb_Objects[OBJNDX_Button_FindPrevFileType] = TextObject,
+									MUIA_Weight, 10,
+									ButtonFrame,
+									MUIA_CycleChain, TRUE,
+									MUIA_Text_Contents, MUIX_C "\33I[6:" STR(MUII_TapePlayBack) "]",
+									MUIA_InputMode, MUIV_InputMode_RelVerify,
+									MUIA_Background, MUII_ButtonBack,
+									MUIA_ShortHelp, GetLocString(MSGID_BUTTON_FIND_PREV_SHORTHELP),
+									End,
+								Child, inst->fpb_Objects[OBJNDX_Button_FindNextFileType] = TextObject,
+									MUIA_Weight, 10,
+									ButtonFrame,
+									MUIA_CycleChain, TRUE,
+									MUIA_Text_Contents, MUIX_C "\33I[6:" STR(MUII_TapePlay) "]",
+									MUIA_InputMode, MUIV_InputMode_RelVerify,
+									MUIA_Background, MUII_ButtonBack,
+									MUIA_ShortHelp, GetLocString(MSGID_BUTTON_FIND_NEXT_SHORTHELP),
+									End,
+
 								End, //HGroup
 
 							Child, ColGroup(2),
@@ -2597,6 +2640,9 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 	set(inst->fpb_Objects[OBJNDX_Menu_CutAttr], MUIA_Menuitem_Enabled, FALSE);
 	set(inst->fpb_Objects[OBJNDX_HiddenListView], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
 
+	set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled, TRUE);
+	set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled, TRUE);
+        
 	set(inst->fpb_Objects[OBJNDX_Button_FileTypes_Remove], MUIA_Disabled, TRUE);
 	set(inst->fpb_Objects[OBJNDX_Button_FileTypes_Actions_Remove], MUIA_Disabled, TRUE);
 	set(inst->fpb_Objects[OBJNDX_Button_FileTypes_Actions_Learn], MUIA_Disabled, TRUE);
@@ -2621,6 +2667,10 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 	// Call FindNextFileTypeHook when "Next" button is clicked
 	DoMethod(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIM_Notify, MUIA_Pressed, FALSE,
 		inst->fpb_Objects[OBJNDX_Button_FindNextFileType], 2, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_IncrementalFindNextFileType]);
+
+	// Call FindPrevFileTypeHook when "Prev" button is clicked
+	DoMethod(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIM_Notify, MUIA_Pressed, FALSE,
+		inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], 2, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_IncrementalFindPrevFileType]);
 
 	// call hook on double click into "Add Method" popup listview
 	DoMethod(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods_Add], MUIM_Notify, MUIA_Listview_DoubleClick, TRUE,
@@ -7188,17 +7238,38 @@ static SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, 
 
 //----------------------------------------------------------------------------
 
-static SAVEDS(void) INTERRUPT HideFindGroupHookFunc(struct Hook *hook, Object *o, Msg msg)
+static SAVEDS(void) INTERRUPT ShowFindGroupHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
-	LONG isVisible;
 
 	(void) hook;
 	(void) o;
 	(void) msg;
 
-	get(inst->fpb_Objects[OBJNDX_Group_FindFiletype], MUIA_ShowMe, &isVisible);
-	set(inst->fpb_Objects[OBJNDX_Group_FindFiletype], MUIA_ShowMe, !isVisible);
+	CleanupFoundNodes(inst);
+
+	setstring(inst->fpb_Objects[OBJNDX_String_FindFileType], "");
+
+	set(inst->fpb_Objects[OBJNDX_Menu_Find], MUIA_Menuitem_Enabled, FALSE);
+	set(inst->fpb_Objects[OBJNDX_Group_FindFiletype], MUIA_ShowMe, TRUE);
+
+	set(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject,
+		inst->fpb_Objects[OBJNDX_String_FindFileType]);
+
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) INTERRUPT HideFindGroupHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
+
+	(void) hook;
+	(void) o;
+	(void) msg;
+
+	set(inst->fpb_Objects[OBJNDX_Menu_Find], MUIA_Menuitem_Enabled, TRUE);
+	set(inst->fpb_Objects[OBJNDX_Group_FindFiletype], MUIA_ShowMe, FALSE);
 }
 
 //----------------------------------------------------------------------------
@@ -7216,7 +7287,15 @@ static SAVEDS(void) INTERRUPT IncrementalFindFileTypeHookFunc(struct Hook *hook,
 
 	if (FindString && strlen(FindString) > 0)
 		{
-		IncrementalSearchFileType(inst, FindString, FALSE);
+		set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled, FALSE);
+		set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled, FALSE);
+                
+		IncrementalSearchFileType(inst, FindString, FINDDIR_First);
+		}
+	else
+		{
+		set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled, TRUE);
+		set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled, TRUE);
 		}
 }
 
@@ -7235,7 +7314,27 @@ static SAVEDS(void) INTERRUPT IncrementalFindNextFileTypeHookFunc(struct Hook *h
 
 	if (FindString && strlen(FindString) > 0)
 		{
-		IncrementalSearchFileType(inst, FindString, TRUE);
+		IncrementalSearchFileType(inst, FindString, FINDDIR_Next);
+		}
+
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) INTERRUPT IncrementalFindPrevFileTypeHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
+	CONST_STRPTR FindString = NULL;
+
+	(void) hook;
+	(void) o;
+	(void) msg;
+
+	get(inst->fpb_Objects[OBJNDX_String_FindFileType], MUIA_String_Contents, &FindString);
+
+	if (FindString && strlen(FindString) > 0)
+		{
+		IncrementalSearchFileType(inst, FindString, FINDDIR_Prev);
 		}
 
 }
@@ -7243,7 +7342,7 @@ static SAVEDS(void) INTERRUPT IncrementalFindNextFileTypeHookFunc(struct Hook *h
 //----------------------------------------------------------------------------
 
 static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
-	CONST_STRPTR SearchString, BOOL SearchNext)
+	CONST_STRPTR SearchString, enum FindDir dir)
 {
 	BOOL Found = FALSE;
 	STRPTR SearchPattern = NULL;
@@ -7254,7 +7353,6 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 		size_t SearchPatternLength;
 		size_t PatternBufLength;
 		Object *ActiveObject;
-		ULONG dosearch;
 
 		if (SearchString == NULL || strlen(SearchString) < 1)
 			break;
@@ -7285,22 +7383,71 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 		 * When searching for next one, fetch selected one first.
 		 */
 
-		if (SearchNext)
+		if (FINDDIR_Next == dir)
 			{
-			tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->fpb_Objects[OBJNDX_NListtree_FileTypes],
-				MUIM_NListtree_GetEntry,
-				MUIV_NListtree_GetEntry_ListNode_Active,
-				MUIV_NListtree_GetEntry_Position_Active,
-                                0);
+			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound));
+
+			if (inst->fpb_CurrentFound != (struct FoundNode *) &inst->fpb_FoundList.lh_Tail)
+				inst->fpb_CurrentFound = (struct FoundNode *) inst->fpb_CurrentFound->fdn_Node.ln_Succ;
+
+			if (inst->fpb_CurrentFound != (struct FoundNode *) &inst->fpb_FoundList.lh_Tail)
+				tn = inst->fpb_CurrentFound->fdn_TreeNode;
+			else
+				tn = NULL;
+
+			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
+			}
+		else if (FINDDIR_Prev == dir)
+			{
+			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound));
+
+			if (inst->fpb_CurrentFound != (struct FoundNode *) &inst->fpb_FoundList.lh_Head)
+				inst->fpb_CurrentFound = (struct FoundNode *) inst->fpb_CurrentFound->fdn_Node.ln_Pred;
+
+			if (inst->fpb_CurrentFound != (struct FoundNode *) &inst->fpb_FoundList.lh_Head)
+				tn = inst->fpb_CurrentFound->fdn_TreeNode;
+			else
+				tn = NULL;
+
+			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
+			}
+		else
+			{
+			ULONG dosearch = TRUE;
+
+			d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+
+			CleanupFoundNodes(inst);
+
+			BuildFindTree(inst,
+				inst->fpb_Objects[OBJNDX_NListtree_FileTypes],
+				MUIV_NListtree_GetEntry_ListNode_Root,
+				PatternBuffer,
+				MUIV_NListtree_GetEntry_Position_Head,
+				&dosearch);
+
+			if (IsListEmpty(&inst->fpb_FoundList))
+				{
+				d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+				tn = NULL;
+				inst->fpb_CurrentFound = (struct FoundNode *) &inst->fpb_FoundList.lh_Tail;
+				}
+			else
+				{
+				d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+				inst->fpb_CurrentFound = (struct FoundNode *) inst->fpb_FoundList.lh_Head;
+				tn = inst->fpb_CurrentFound->fdn_TreeNode;
+				}
+			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
 			}
 
-		dosearch = NULL == tn;
-
-		tn = FindPatternInListtree(inst->fpb_Objects[OBJNDX_NListtree_FileTypes],
-			MUIV_NListtree_GetEntry_ListNode_Root, PatternBuffer, tn, &dosearch);
-
 		if (NULL == tn)
+			{
+			// nothing found
+			set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled, TRUE);
+			set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled, TRUE);
 			break;
+			}
 
 		Found = TRUE;
 		/*
@@ -7314,6 +7461,12 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 		set(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, tn);
 
 		set(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject, ActiveObject);
+
+		set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled,
+			inst->fpb_CurrentFound->fdn_Node.ln_Succ == (struct Node *) &inst->fpb_FoundList.lh_Tail);
+
+		set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled,
+			inst->fpb_CurrentFound->fdn_Node.ln_Pred == (struct Node *) &inst->fpb_FoundList.lh_Head);
 		} while (0);
 
 	if (SearchPattern)
@@ -7326,15 +7479,17 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 
 //----------------------------------------------------------------------------
 
-static struct MUI_NListtree_TreeNode *FindPatternInListtree(Object *ListTree,
+static void BuildFindTree(struct FileTypesPrefsInst *inst,
+	 Object *ListTree,
 	struct MUI_NListtree_TreeNode *list, CONST_STRPTR pattern,
 	struct MUI_NListtree_TreeNode *startnode, ULONG *dosearch)
 {
-	struct MUI_NListtree_TreeNode *tn;
 	ULONG pos;
 
 	for (pos = 0; ; pos++)
 		{
+		struct MUI_NListtree_TreeNode *tn;
+
 		tn = (struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
 			MUIM_NListtree_GetEntry,
                         list,
@@ -7346,25 +7501,59 @@ static struct MUI_NListtree_TreeNode *FindPatternInListtree(Object *ListTree,
 
 		if (tn->tn_Flags & TNF_LIST)
 			{
-			struct MUI_NListtree_TreeNode *tnChild;
-
-			tnChild	= FindPatternInListtree(ListTree, tn, pattern, startnode, dosearch);
-
-			if (tnChild)
-				return tnChild;
-
+			// Current node is a list
 			if (*dosearch)
 				{
+				// Check if list node matches
 				if (MatchPatternNoCase(pattern, tn->tn_Name))
-					return tn;
+					{
+					AddFoundNode(inst, tn);
+					}
 				}
+
+			// check children for matches
+			BuildFindTree(inst, ListTree, tn, pattern, startnode, dosearch);
 			}
 
 		if ( tn == startnode )
 			*dosearch = TRUE;
 		}
+}
 
-	return NULL;
+//----------------------------------------------------------------------------
+
+static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *tn)
+{
+	struct FoundNode *fdn;
+
+	d2(kprintf(__FILE__ "/%s/%ld: <%s>\n", __FUNC__, __LINE__, tn->tn_Name));
+
+	fdn = malloc(sizeof(struct FoundNode));
+	if (fdn)
+		{
+		fdn->fdn_TreeNode = tn;
+		fdn->fdn_Index = ++inst->fpb_FoundCount;
+
+		AddTail(&inst->fpb_FoundList, &fdn->fdn_Node);
+		}
+
+	return fdn;
+}
+
+//----------------------------------------------------------------------------
+
+static void CleanupFoundNodes(struct FileTypesPrefsInst *inst)
+{
+	struct FoundNode *fdn;
+
+	d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+
+	while ( (fdn = (struct FoundNode *) RemHead(&inst->fpb_FoundList)) )
+		{
+		free(fdn);
+		}
+
+	inst->fpb_FoundCount = 0;
 }
 
 //----------------------------------------------------------------------------

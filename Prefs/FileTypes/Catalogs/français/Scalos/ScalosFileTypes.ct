@@ -163,6 +163,11 @@ MSGID_MENU_HIDE_EMPTY_ENTRIES
 Caher les entrées vides ?
 ;Hide empty entries?
 ;
+;+++translateme+++
+MSGID_MENU_EDIT_FIND
+Find...
+;Find...
+;
 ;---------------------------------------------
 ;
 MSGID_ABOUTREQOK
@@ -344,15 +349,6 @@ pour ce type de fichier.
 ;Create a new dedicated icon for this filetype.
 ;
 ;
-MSGID_BUTTON_FIND_NEXT
-Prochain
-;Next
-;
-MSGID_BUTTON_FIND_NEXT_KEY
-P
-;N
-;
-;
 MSGID_BUTTON_FIND_NEXT_SHORTHELP
 Trouver le prochain type de fichier \n\
 correspondant à la recherche donnée.
@@ -369,6 +365,11 @@ C'est la chaîne de recherche dans le nom des types de fichiers.\n\
 Pendant que vous tapez un charactère, la première entrée trouvée sera affichée.
 ;This is the string to find in filetypes' name.\n\
 ;While you type, the first matching entry is always shown.
+;
+;+++translateme+++
+MSGID_BUTTON_FIND_PREV_SHORTHELP
+Find previous filetype that matches the given search string.
+;Find previous filetype that matches the given search string.
 ;
 ;---------------------------------------------
 ;

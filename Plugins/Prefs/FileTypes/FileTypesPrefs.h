@@ -143,9 +143,11 @@ enum HookIndex
 
 	HOOKNDX_DragDropSort_FileTypesAction,
 
+	HOOKNDX_ShowFindGroup,
 	HOOKNDX_HideFindGroup,
 	HOOKNDX_IncrementalFindFileType,
 	HOOKNDX_IncrementalFindNextFileType,
+	HOOKNDX_IncrementalFindPrevFileType,
 
 	HOOKNDX_Learn_FileType,
 
@@ -201,6 +203,8 @@ enum ObjectIndex
 	OBJNDX_Menu_Copy,
 	OBJNDX_Menu_Cut,
 	OBJNDX_Menu_Paste,
+
+	OBJNDX_Menu_Find,
 
 	OBJNDX_Menu_CopyAttr,
 	OBJNDX_Menu_CutAttr,
@@ -304,6 +308,7 @@ enum ObjectIndex
 	OBJNDX_Button_HideFind,
 	OBJNDX_String_FindFileType,
 	OBJNDX_Button_FindNextFileType,
+	OBJNDX_Button_FindPrevFileType,
 
 	OBJNDX_WIN_EditAttribute,
 
@@ -497,6 +502,10 @@ struct FileTypesPrefsInst
 	BPTR fpb_FileTypesDirLock;
 
 	Object *fpb_IconObject;
+
+	struct List fpb_FoundList;
+	struct FoundNode *fpb_CurrentFound;
+	ULONG fpb_FoundCount;		// number of entries in fpb_FoundList
 
 	struct MUI_NListtree_TreeNode *fpb_PopupMenu;
 	struct MUI_NListtree_TreeNode *fpb_CurrentTTItem;

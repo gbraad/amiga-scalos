@@ -161,6 +161,11 @@ MSGID_MENU_HIDE_EMPTY_ENTRIES
 Hide empty entries?
 ;Hide empty entries?
 ;
+;+++translateme+++
+MSGID_MENU_EDIT_FIND
+Find...
+;Find...
+;
 ;---------------------------------------------
 ;
 MSGID_ABOUTREQOK
@@ -346,16 +351,6 @@ Create a new dedicated icon for this filetype.
 ;Create a new dedicated icon for this filetype.
 ;
 ;+++translateme+++
-MSGID_BUTTON_FIND_NEXT
-Next
-;Next
-;
-;+++translateme+++
-MSGID_BUTTON_FIND_NEXT_KEY
-N
-;N
-;
-;+++translateme+++
 MSGID_BUTTON_FIND_NEXT_SHORTHELP
 Find next filetype that matches the given search string.
 ;Find next filetype that matches the given search string.
@@ -371,6 +366,11 @@ This is the string to find in filetypes' name.\n\
 While you type, the first matching entry is always shown.
 ;This is the string to find in filetypes' name.\n\
 ;While you type, the first matching entry is always shown.
+;
+;+++translateme+++
+MSGID_BUTTON_FIND_PREV_SHORTHELP
+Find previous filetype that matches the given search string.
+;Find previous filetype that matches the given search string.
 ;
 ;---------------------------------------------
 ;
