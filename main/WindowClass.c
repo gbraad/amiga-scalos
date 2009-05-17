@@ -907,6 +907,9 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 	NewList((struct List *) &inst->wci_dunno3.do3_List);
 #endif //defined(__MORPHOS__)
 
+	d1(KPrintF("%s/%s/%ld: WA_Width=%ld  WA_Height=%ld  wci_Transparency=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		ws->ws_Width + iwt->iwt_ExtraWidth, ws->ws_Height + iwt->iwt_ExtraHeight, inst->wci_Transparency));
+
 	// OpenWindowTags()
 	win = LockedOpenWindowTags(NULL,
 		WA_ScreenTitle, ScreenTitleBuffer,
