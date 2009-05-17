@@ -163,9 +163,9 @@ MSGID_MENU_HIDE_EMPTY_ENTRIES
 Caher les entrées vides ?
 ;Hide empty entries?
 ;
-;+++translateme+++
+;
 MSGID_MENU_EDIT_FIND
-Find...
+Trouver...
 ;Find...
 ;
 ;---------------------------------------------
@@ -366,9 +366,9 @@ Pendant que vous tapez un charactère, la première entrée trouvée sera affichée.
 ;This is the string to find in filetypes' name.\n\
 ;While you type, the first matching entry is always shown.
 ;
-;+++translateme+++
+;
 MSGID_BUTTON_FIND_PREV_SHORTHELP
-Find previous filetype that matches the given search string.
+Trouver le type de fichier correspondant à la chaine de caratères recherchée.
 ;Find previous filetype that matches the given search string.
 ;
 ;---------------------------------------------
