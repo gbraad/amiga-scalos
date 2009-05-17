@@ -920,6 +920,9 @@ static ULONG InitMainWindow(void)
 		wsMain->ws_Width = CurrentPrefs.pref_WBWindowBox.Width;
 		wsMain->ws_Height = CurrentPrefs.pref_WBWindowBox.Height;
 
+		wsMain->ws_WindowOpacityActive = CurrentPrefs.pref_ActiveWindowTransparency;
+		wsMain->ws_WindowOpacityInactive = CurrentPrefs.pref_InactiveWindowTransparency;
+
 		wsMain->ws_xoffset = CurrentPrefs.pref_WBWindowXOffset;
 		wsMain->ws_yoffset = CurrentPrefs.pref_WBWindowYOffset;
 
