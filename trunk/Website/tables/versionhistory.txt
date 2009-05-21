@@ -1,4 +1,12 @@
 V41.7
+Bugfix: when switching to non-backdrop desktop window, the window was created with 100% transparency (invisible)
+Improvement: added filetype for FLV video
+Improvement: Updated sqlite3.library to SQLite3 V3.6.14
+Bugfix: Extras comment.module didn't increment files via asl requester using ASLFR_DOMULTISELECT tag
+Bugfix: about window gadget tooltips kept appearing over and over
+Improvement: gadget help tooltips in about window no longer pop up immediately when mouse is moved over gadget, but with a short delay
+Improvement: added smooth fade-in and fade-out for Splash and About windows (MorphOS2.x and AmigaOS4.x only)
+Improvement: Updated sqlite3.library to SQLite3 V3.6.12
 Bugfix: in default menu preferences, prefs drawer didn't open due to wrong path
 Bugfix: information.module:wrong icon was displayed for all entries inside a drawer if at least one icon was left-out from this drawer to the desktop
 V41.6

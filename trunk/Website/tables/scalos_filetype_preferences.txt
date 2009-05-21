@@ -1,3 +1,8 @@
+V40.22
+Bugfix: icon is updated correctly when filetypes recognition list is sorted via drag-drop
+Improvement: Search panel can now be unhidden via popup menu
+Improvement: In filetype search panel, forward and backwards buttons allow jumping to next and previous match
+
 V40.21
 Improvement: Replaced &quot;search&quot; entries in popup menu by MUI group. Filetype search work works incrementally
 
