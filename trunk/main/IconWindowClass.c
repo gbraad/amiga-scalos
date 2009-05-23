@@ -4020,6 +4020,8 @@ static void SelectIconByName(struct internalScaWindowTask *iwt, CONST_STRPTR Nam
 
 	if (Length > 0)
 		{
+		BOOL First = TRUE;
+
 		ScalosLockIconListShared(iwt);
 
 		for (in=iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
@@ -4029,10 +4031,24 @@ static void SelectIconByName(struct internalScaWindowTask *iwt, CONST_STRPTR Nam
 			if (IconName && strlen(IconName) >= Length &&
 				(0 == Strnicmp((STRPTR) Name, (STRPTR) IconName, Length)))
 				{
-				SelectNewIcon(iwt, in);
-				break;
+				// Select all matching icon(s)
+				ClassSelectIcon(iwt->iwt_WindowTask.mt_WindowStruct, in, TRUE);
+
+				if (First)
+					{
+					// Make first matching icon visible
+					MakeIconVisible(iwt, in);
+					First = FALSE;
+					}
+				}
+			else
+				{
+				// Deselect all non-matching icon(s)
+				ClassSelectIcon(iwt->iwt_WindowTask.mt_WindowStruct, in, FALSE);
 				}
 			}
+
+		AdjustIconActive(iwt);
 
 		ScalosUnLockIconList(iwt);
 		}

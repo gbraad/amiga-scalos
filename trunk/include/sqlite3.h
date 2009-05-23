@@ -30,7 +30,7 @@
 ** the version number) and changes its name to "sqlite3.h" as
 ** part of the build process.
 **
-** @(#) $Id: sqlite3.h 134 2009-05-07 21:20:02Z jlachmann $
+** @(#) $Id: sqlite.h.in,v 1.447 2009/04/30 15:59:56 drh Exp $
 */
 #ifndef _SQLITE3_H_
 #define _SQLITE3_H_
@@ -99,7 +99,7 @@ extern "C" {
 **
 ** Requirements: [H10011] [H10014]
 */
-#define SQLITE_VERSION         "3.6.14"
+#define SQLITE_VERSION         "3.6.14.1"
 #define SQLITE_VERSION_NUMBER  3006014
 
 /*

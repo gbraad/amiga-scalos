@@ -311,7 +311,7 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 static void BuildFindTree(struct FileTypesPrefsInst *inst,
 	Object *ListTree,
 	struct MUI_NListtree_TreeNode *list, CONST_STRPTR pattern,
-	struct MUI_NListtree_TreeNode *startnode, ULONG *dosearch);
+	struct MUI_NListtree_TreeNode *startnode, ULONG *dosearch, BOOL CaseSensitive);
 static SAVEDS(void) INTERRUPT ShowFindGroupHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT HideFindGroupHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT IncrementalFindFileTypeHookFunc(struct Hook *hook, Object *o, Msg msg);
@@ -7345,6 +7345,7 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 	CONST_STRPTR SearchString, enum FindDir dir)
 {
 	BOOL Found = FALSE;
+	BOOL CaseSensitive = FALSE;
 	STRPTR SearchPattern = NULL;
 	STRPTR PatternBuffer = NULL;
 
@@ -7376,8 +7377,16 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 		if (NULL == PatternBuffer)
 			break;
 
-		if (ParsePatternNoCase(SearchPattern, PatternBuffer, PatternBufLength) < 0)
-			break;
+		if (CaseSensitive)
+			{
+			if (ParsePattern(SearchPattern, PatternBuffer, PatternBufLength) < 0)
+				break;
+			}
+		else
+			{
+			if (ParsePatternNoCase(SearchPattern, PatternBuffer, PatternBufLength) < 0)
+				break;
+			}
 
 		/*
 		 * When searching for next one, fetch selected one first.
@@ -7424,7 +7433,7 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 				MUIV_NListtree_GetEntry_ListNode_Root,
 				PatternBuffer,
 				MUIV_NListtree_GetEntry_Position_Head,
-				&dosearch);
+				&dosearch, CaseSensitive);
 
 			if (IsListEmpty(&inst->fpb_FoundList))
 				{
@@ -7480,9 +7489,10 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 //----------------------------------------------------------------------------
 
 static void BuildFindTree(struct FileTypesPrefsInst *inst,
-	 Object *ListTree,
+	Object *ListTree,
 	struct MUI_NListtree_TreeNode *list, CONST_STRPTR pattern,
-	struct MUI_NListtree_TreeNode *startnode, ULONG *dosearch)
+	struct MUI_NListtree_TreeNode *startnode,
+	ULONG *dosearch, BOOL CaseSensitive)
 {
 	ULONG pos;
 
@@ -7505,14 +7515,27 @@ static void BuildFindTree(struct FileTypesPrefsInst *inst,
 			if (*dosearch)
 				{
 				// Check if list node matches
-				if (MatchPatternNoCase(pattern, tn->tn_Name))
+				BOOL Found;
+
+				if (CaseSensitive)
+					Found = MatchPattern(pattern, tn->tn_Name);
+				else
+					Found = MatchPatternNoCase(pattern, tn->tn_Name);
+
+				if (Found)
 					{
 					AddFoundNode(inst, tn);
 					}
 				}
 
 			// check children for matches
-			BuildFindTree(inst, ListTree, tn, pattern, startnode, dosearch);
+			BuildFindTree(inst,
+				ListTree,
+				tn,
+				pattern,
+				startnode,
+				dosearch,
+				CaseSensitive);
 			}
 
 		if ( tn == startnode )
