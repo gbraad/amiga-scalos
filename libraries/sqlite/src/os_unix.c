@@ -1087,7 +1087,6 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
   SimulateIOError( return SQLITE_IOERR_CHECKRESERVEDLOCK; );
 
   assert( pFile );
-#if 0
   unixEnterMutex(); /* Because pFile->pLock is shared across threads */
 
   /* Check if a thread in this process holds such a lock */
@@ -1115,7 +1114,6 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
 #endif
   
   unixLeaveMutex();
-#endif
   OSTRACE4("TEST WR-LOCK %d %d %d\n", pFile->h, rc, reserved);
 
   *pResOut = reserved;
@@ -1211,7 +1209,7 @@ static int unixLock(sqlite3_file *id, int locktype){
   assert( pFile->locktype!=NO_LOCK || locktype==SHARED_LOCK );
   assert( locktype!=PENDING_LOCK );
   assert( locktype!=RESERVED_LOCK || pFile->locktype==SHARED_LOCK );
-#if 0
+
   /* This mutex is needed because pFile->pLock is shared across threads
   */
   unixEnterMutex();
@@ -1374,7 +1372,6 @@ static int unixLock(sqlite3_file *id, int locktype){
 
 end_lock:
   unixLeaveMutex();
-#endif
   OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype), 
       rc==SQLITE_OK ? "ok" : "failed");
   return rc;
@@ -1405,7 +1402,6 @@ static int unixUnlock(sqlite3_file *id, int locktype){
   if( CHECK_THREADID(pFile) ){
     return SQLITE_MISUSE;
   }
-#if 0
   unixEnterMutex();
   h = pFile->h;
   pLock = pFile->pLock;
@@ -1524,7 +1520,6 @@ static int unixUnlock(sqlite3_file *id, int locktype){
 	
 end_unlock:
   unixLeaveMutex();
-#endif
   if( rc==SQLITE_OK ) pFile->locktype = locktype;
   return rc;
 }
