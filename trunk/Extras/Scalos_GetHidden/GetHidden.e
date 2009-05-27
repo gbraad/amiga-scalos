@@ -8,7 +8,9 @@ MODULE	'dos/dos', 'dos/dosextens', 'dos/datetime', 'amigalib/boopsi','tools/inst
 
 	'mui/lamp_mcc', 'icon', '*MyDebugOnOff', 'debug', '*VERSTAG', '*getpath', '*GeticonObject',
 
-	'scalos/scalos41.6','scalos', 'intuition/classusr', 'intuition/classes', 'amigalib/boopsi'
+	'scalos/scalos41.6','scalos', 'intuition/classusr', 'intuition/classes', 'amigalib/boopsi',
+
+	'*Scalos_GetHidden_Locale','locale','libraries/locale'
 
 
 #define FIBF_HIDDEN Shl(1,7)
@@ -65,7 +67,8 @@ DEF	textbuffer[120]:STRING,
 	lamp,
 	gr_list,
 	menufiletypes,
-	menuopen
+	menuopen,
+	cat:PTR TO catalog_Scalos_GetHidden
 
 DEF hook_lv_display:hook,
     hook_lv_construct:hook,
@@ -82,6 +85,9 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 	IF (iconbase:=OpenLibrary('icon.library',0))=NIL THEN Raise(ER_ICONLIB)
 	IF (utilitybase:=OpenLibrary('utility.library',0))=NIL THEN Raise('Failed to open utility.library !')
 
+	localebase := OpenLibrary( 'locale.library' , 0 )
+	NEW cat.create()
+	cat.open( NIL , NIL )
 
 	installhook(hook_lv_display, {hooklvdisplay})
 	installhook(hook_lv_construct, {hooklvconstruct})
@@ -94,7 +100,7 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 		Child, MenuObject,
 			MUIA_Menu_Title, bufnom,
 			Child, menuopen:=MenuitemObject,
-				MUIA_Menuitem_Title, 'Open parent dir',
+				MUIA_Menuitem_Title, (cat.msg_MenuOpenDir.getstr() ),
 				MUIA_Menuitem_Enabled, 0,
 				MUIA_UserData, OP_DIR,
 			End,
@@ -123,7 +129,7 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 			WindowContents, VGroup,
 				Child, txt_HeadSplash:=TextObject,
 					MUIA_Text_PreParse,'\eb\ec',
-					MUIA_Text_Contents,'Please wait, searching hidden protection...',
+					MUIA_Text_Contents, (cat.msg_Searching.getstr() ),
 				End,
 
 				Child, HGroup,
@@ -141,21 +147,21 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 				End,
 				Child, VGroup,
 					Child, HGroup,
-						Child, bt_UnHide:=SimpleButton('Remove hidden protection'),
-						Child, bt_Arret:=SimpleButton('Abort'),
+						Child, bt_UnHide:=SimpleButton(cat.msg_RemoveHidden.getstr() ),
+						Child, bt_Arret:=SimpleButton(cat.msg_Abort.getstr() ),
 					End,
 					Child, ColGroup(3),
 						Child, HGroup,
-							Child, Label2('Dirs:'),
-							Child, txt_Dirs  :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', 'Number of dirs found.'),
+							Child, Label2(cat.msg_Dirs.getstr() ),
+							Child, txt_Dirs  :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', cat.msg_NumberDirs.getstr() ),
 						End,
 						Child, HGroup,
-							Child, Label2('Files:'),
-							Child, txt_Files :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', 'Number of files found'),
+							Child, Label2(cat.msg_Files.getstr() ),
+							Child, txt_Files :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', cat.msg_NumberFiles.getstr() ),
 						End,
 						Child, HGroup,
-							Child, Label2('Total:'),
-							Child, txt_Num   :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', 'Total number of objects found.'),
+							Child, Label2(cat.msg_Total.getstr() ),
+							Child, txt_Num   :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', cat.msg_NumberTotal.getstr() ),
 						End,
 					End,
 				End,
@@ -190,10 +196,10 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 		IF (set_UnHide)
 			proc_CountDirFiles()
 		ELSE
-			set(txt_Splash,     MUIA_Text_Contents, 'Any hidden protection bit found !')
+			set(txt_Splash,     MUIA_Text_Contents, cat.msg_AnyHiddenFound.getstr() )
 			set(bt_UnHide, MUIA_Disabled, 1)
 		ENDIF
-		IF (arret=1) THEN set(txt_HeadSplash, MUIA_Text_Contents, 'Aborted by user !') ELSE set(txt_HeadSplash, MUIA_Text_Contents, 'Completed !')
+		IF (arret=1) THEN set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_UserAborted.getstr() ) ELSE set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_Completed.getstr() )
 	ENDIF
 
 	WHILE running
@@ -203,7 +209,7 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 				running:=FALSE
 
 			CASE UN_HIDE
-				set(txt_HeadSplash, MUIA_Text_Contents, 'Please wait, remove hidden protection...')
+				set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_WaitHiddenRemoved.getstr() )
 				arret:=0
 				vnumlist(list_Prot)
 				set(list_Prot,  MUIA_NList_Quiet,1)
@@ -237,7 +243,7 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 				set(bt_Arret,   MUIA_Disabled, 1)
 				set(bt_UnHide,  MUIA_Disabled, 0)
 				set(list_Prot, MUIA_NList_Quiet,0)
-				set(txt_HeadSplash, MUIA_Text_Contents, 'Hidden protection bit removed !')
+				set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_HiddenRemoved.getstr() )
 		ENDSELECT
 
 		IF (running AND sigs) THEN Wait(sigs)
@@ -251,20 +257,22 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 		IF utilitybase	 THEN CloseLibrary(utilitybase)
 		IF iconbase 	 THEN CloseLibrary(iconbase)
 		IF muimasterbase THEN CloseLibrary(muimasterbase)
+		cat.close()
+		IF localebase THEN CloseLibrary( localebase )
   		SELECT exception
 			    CASE ER_LIB
-				WriteF('Can\at open \s.\s' ,SCALOSNAME, SCALOSREVISION)
+				WriteF(cat.msg_ScalosFailed.getstr() ,SCALOSNAME, SCALOSREVISION)
 				CleanUp(20)
 			CASE ER_MUILIB
-				WriteF('Can\at open \s', MUIMASTER_NAME)
+				WriteF(cat.msg_ErrorMuimaster.getstr() , MUIMASTER_NAME)
 				CleanUp(20)
 
 			CASE ER_ICONLIB
-				WriteF('Can\at open icon.library!')
+				WriteF(cat.msg_ErrorIconLib.getstr() )
 				CleanUp(20)
 
 			CASE ER_APP
-				WriteF('Can\at create application !')
+				WriteF(cat.msg_ErrorApp.getstr() )
 				CleanUp(20)
 		ENDSELECT
 ENDPROC 0
@@ -423,7 +431,7 @@ DEF 	the_File[512]:STRING, rdargs, myargs:PTR TO LONG, wb:PTR TO wbstartup, args
         			ENDFOR
 			ENDIF
 		ELSE
-			Raise(WriteF('Arguments no found !'))
+			Raise(WriteF(cat.msg_ArgNoFound.getstr() ))
 		ENDIF
 
 		d1(kPrintF('\s/getargs()/wb.numargs=[\d] numobj=[\d] - the_File=\s\n', [THE_FILE, wb.numargs, numobj, the_File]))
@@ -436,7 +444,7 @@ DEF 	the_File[512]:STRING, rdargs, myargs:PTR TO LONG, wb:PTR TO wbstartup, args
 			ENDIF
 			IF rdargs THEN FreeArgs(rdargs)
 		ELSE
-			WriteF('** Entry Name: ')
+			WriteF(cat.msg_EntryName.getstr() )
 			ReadStr(stdout, the_File)
 		ENDIF
 
@@ -527,7 +535,7 @@ DEF	s_lock, fib:PTR TO fileinfoblock, isfile=FALSE, my_File
 		proc_EndProcess()
 	ELSE
 		Fault(IoErr(),NIL,textbuffer,120)
-		WriteF('*** WARNING ***\n\s\n\tErrorCode: \d - \s\n***************\n', the_File, IoErr(), textbuffer)
+		WriteF(cat.msg_IoErrorFile.getstr(), the_File, IoErr(), textbuffer)
 		CleanUp(20)
 	 ENDIF
 ENDPROC
@@ -804,7 +812,7 @@ DEF	nprot=NIL, pt=FALSE, name, full_Path[512]:STRING
 
 		IF pt:=FALSE
 		 	Fault(IoErr(),NIL,textbuffer,120)
-			WriteF('*** WARNING ***\n\s\n\tErrorCode: \d - \s\n***************\n', full_Path, IoErr(), textbuffer)
+			WriteF(cat.msg_IoErrorFullPath.getstr() , full_Path, IoErr(), textbuffer)
 		ENDIF
 		nprot:=NIL
 		UnLock(lock_file)
@@ -965,12 +973,12 @@ PROC hooklvdisplay(hook, array:PTR TO LONG, entry:PTR TO oListData)
 DEF	s_Disk=0, s_Dir=0, aide_Nom, aide_Protect, aide_Size, aide_Date, aide_Heure, aide_Chemin
 
 	IF entry=0                 	-> Titles
-		array[0]:= '\ebName'
-		array[1]:= '\ebProtections'
-		array[2]:= '\ebSize'
-		array[3]:= '\ebDate'
-		array[4]:= '\ebTime'
-		array[5]:= '\ebPath'
+		array[0]:= (cat.msg_TitleName.getstr() )
+		array[1]:= (cat.msg_TitleProtect.getstr() )
+		array[2]:= (cat.msg_TitleSise.getstr() )
+		array[3]:= (cat.msg_TitleDate.getstr() )
+		array[4]:= (cat.msg_TitleTime.getstr() )
+		array[5]:= (cat.msg_TitlePath.getstr() )
 	ELSE                       	-> normal entries
 		array[0]:=entry.nom
 		array[1]:=entry.protect
