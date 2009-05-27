@@ -1,7 +1,16 @@
-# ECX makefile for MorphOS GetHidden tool
+# ECX makefile for Amigaos/68k GetHidden tool
 # $Date: $
 # $Revision: $
 # $Id: $
+
+#############################################################
+
+SUBDIRMAKE 	= $(MAKE) -s -C 
+
+#############################################################
+
+.PHONY: clean install nodebug
+
 #############################################################
 
 CC      	= ECX:bin/ECX
@@ -9,6 +18,17 @@ CC      	= ECX:bin/ECX
 CFLAGS  	= AMIGAOS VAR LINE SYM ICA
 
 OPTFLAGS  	= EXENAME
+
+#############################################################
+
+CATCOMP 	= CatComp
+CAT_FILE	= Scalos/GetHidden.catalog
+DESTCAT		= Locale:Catalogs
+
+CATS		= deutsch \
+		  français
+
+ALLCATS		= $(foreach cat,$(CATS),catalogs/$(cat)/$(CAT_FILE))
 
 #############################################################
 
@@ -36,19 +56,16 @@ MOD5		= MyDebugOnOff.m
 
 #############################################################
 
-All:	$(MOD1) \
- 	$(MOD2) \
- 	$(MOD3) \
- 	$(MOD4) \
-	$(MOD5) \
-	$(NAME)
+All:	$(MOD1) $(MOD2) $(MOD3) $(MOD4) $(MOD5) $(NAME) allcatalogs
 	
 
 #############################################################
 
-$(CATMOD):
-	@printf '\033[32mCompile: \033[31m\033[1m$@\033[0m\n'
-	@$(CC) $(CATSRC) $(CFLAGS)
+#############################################################
+
+# commands generated a catalog (.catalog) from a catalog translation (.ct) file.
+.ct.catalog:
+	$(CATCOMP) $*.cd $< CATALOG $*.catalog VB=1
 
 $(MOD1):
 	@printf '\033[32mCompile: \033[31m\033[1m$@\033[0m\n'
@@ -74,12 +91,18 @@ $(NAME):
 	@printf '\033[32mCompile: \033[31m\033[1m$@\033[0m\n'
 	@$(CC) $(SRC) $(CFLAGS) $(OPTFLAGS) $@
 
+############################################################
+
+# make all GetHidden .catalogs
+allcatalogs:
+	-@$(foreach cat,$(CATS),$(SUBDIRMAKE) catalogs/$(cat)/Scalos;)
+
 #############################################################
 
 # A little something to clean it all up
 clean:
 	@printf '\033[32mDelete: \033[31m\033[1m'
-	@delete $(MOD1) $(MOD2) $(MOD3) $(MOD4) $(MOD5) $(NAME)
+	@delete $(MOD1) $(MOD2) $(MOD3) $(MOD4) $(MOD5) $(NAME) $(ALLCATS)
 	@printf '\033[0m'
 
 #############################################################
@@ -88,4 +111,5 @@ clean:
 install:
 	@printf '\033[32mInstall: \033[31m\033[1m$(DESTTOOL)\033[0m\n'
 	@copy $(NAME) $(DESTTOOL) clone
+	-@$(foreach cat,$(CATS),copy "catalogs/$(cat)/$(CAT_FILE)" "$(DESTCAT)/$(cat)/Scalos" clone;)
 
