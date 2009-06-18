@@ -103,11 +103,14 @@ int sqlite3PagerTrace=1;  /* True to enable tracing */
 ** A macro used for invoking the codec if there is one
 */
 #ifdef SQLITE_HAS_CODEC
-# define CODEC1(P,D,N,X) if( P->xCodec!=0 ){ P->xCodec(P->pCodecArg,D,N,X); }
-# define CODEC2(P,D,N,X) ((char*)(P->xCodec!=0?P->xCodec(P->pCodecArg,D,N,X):D))
+# define CODEC1(P,D,N,X,E) \
+    if( P->xCodec && P->xCodec(P->pCodecArg,D,N,X)==0 ){ E; }
+# define CODEC2(P,D,N,X,E,O) \
+    if( P->xCodec==0 ){ O=(char*)D; }else \
+    if( (O=(char*)(P->xCodec(P->pCodecArg,D,N,X)))==0 ){ E; }
 #else
-# define CODEC1(P,D,N,X) /* NO-OP */
-# define CODEC2(P,D,N,X) ((char*)D)
+# define CODEC1(P,D,N,X,E)   /* NO-OP */
+# define CODEC2(P,D,N,X,E,O) O=(char*)D
 #endif
 
 /*
@@ -1595,7 +1598,7 @@ static int pager_playback_one_page(
     }
 
     /* Decode the page just read from disk */
-    CODEC1(pPager, pData, pPg->pgno, 3);
+    CODEC1(pPager, pData, pPg->pgno, 3, rc=SQLITE_NOMEM);
     sqlite3PcacheRelease(pPg);
   }
   return rc;
@@ -2887,8 +2890,11 @@ static int pager_write_pagelist(PgHdr *pList){
     ** set (set by sqlite3PagerDontWrite()).
     */
     if( pgno<=pPager->dbSize && 0==(pList->flags&PGHDR_DONT_WRITE) ){
-      i64 offset = (pgno-1)*(i64)pPager->pageSize;         /* Offset to write */
-      char *pData = CODEC2(pPager, pList->pData, pgno, 6); /* Data to write */
+      i64 offset = (pgno-1)*(i64)pPager->pageSize;   /* Offset to write */
+      char *pData;                                   /* Data to write */    
+
+      /* Encode the database */
+      CODEC2(pPager, pList->pData, pgno, 6, return SQLITE_NOMEM, pData);
 
       /* Write out the page data. */
       rc = sqlite3OsWrite(pPager->fd, pData, pPager->pageSize, offset);
@@ -2943,8 +2949,9 @@ static int subjournalPage(PgHdr *pPg){
   if( isOpen(pPager->sjfd) ){
     void *pData = pPg->pData;
     i64 offset = pPager->nSubRec*(4+pPager->pageSize);
-    char *pData2 = CODEC2(pPager, pData, pPg->pgno, 7);
-  
+    char *pData2;
+
+    CODEC2(pPager, pData, pPg->pgno, 7, return SQLITE_NOMEM, pData2);
     PAGERTRACE(("STMT-JOURNAL %d page %d\n", PAGERID(pPager), pPg->pgno));
   
     assert( pageInJournal(pPg) || pPg->pgno>pPager->dbOrigSize );
@@ -3266,6 +3273,7 @@ int sqlite3PagerOpen(
     */ 
     tempFile = 1;
     pPager->state = PAGER_EXCLUSIVE;
+    readOnly = (vfsFlags&SQLITE_OPEN_READONLY);
   }
 
   /* The following call to PagerSetPagesize() serves to set the value of 
@@ -3384,18 +3392,38 @@ static int hasHotJournal(Pager *pPager, int *pExists){
   rc = sqlite3OsAccess(pVfs, pPager->zJournal, SQLITE_ACCESS_EXISTS, &exists);
   if( rc==SQLITE_OK && exists ){
     int locked;                 /* True if some process holds a RESERVED lock */
+
+    /* Race condition here:  Another process might have been holding the
+    ** the RESERVED lock and have a journal open at the sqlite3OsAccess() 
+    ** call above, but then delete the journal and drop the lock before
+    ** we get to the following sqlite3OsCheckReservedLock() call.  If that
+    ** is the case, this routine might think there is a hot journal when
+    ** in fact there is none.  This results in a false-positive which will
+    ** be dealt with by the playback routine.  Ticket #3883.
+    */
     rc = sqlite3OsCheckReservedLock(pPager->fd, &locked);
     if( rc==SQLITE_OK && !locked ){
       int nPage;
 
       /* Check the size of the database file. If it consists of 0 pages,
       ** then delete the journal file. See the header comment above for 
-      ** the reasoning here.
+      ** the reasoning here.  Delete the obsolete journal file under
+      ** a RESERVED lock to avoid race conditions and to avoid violating
+      ** [H33020].
       */
       rc = sqlite3PagerPagecount(pPager, &nPage);
       if( rc==SQLITE_OK ){
         if( nPage==0 ){
-          rc = sqlite3OsDelete(pVfs, pPager->zJournal, 0);
+          sqlite3BeginBenignMalloc();
+          if( pPager->state>=PAGER_RESERVED
+                 ||  sqlite3OsLock(pPager->fd, RESERVED_LOCK)==SQLITE_OK ){
+            sqlite3OsDelete(pVfs, pPager->zJournal, 0);
+            assert( pPager->state>=PAGER_SHARED );
+            if( pPager->state==PAGER_SHARED ){
+              sqlite3OsUnlock(pPager->fd, SHARED_LOCK);
+            }
+          }
+          sqlite3EndBenignMalloc();
         }else{
           /* The journal file exists and no other connection has a reserved
           ** or greater lock on the database file. Now check that there is
@@ -3413,6 +3441,18 @@ static int hasHotJournal(Pager *pPager, int *pExists){
             }
             sqlite3OsClose(pPager->jfd);
             *pExists = (first!=0);
+          }else if( rc==SQLITE_CANTOPEN ){
+            /* If we cannot open the rollback journal file in order to see if
+            ** its has a zero header, that might be due to an I/O error, or
+            ** it might be due to the race condition described above and in
+            ** ticket #3883.  Either way, assume that the journal is hot.
+            ** This might be a false positive.  But if it is, then the
+            ** automatic journal playback and recovery mechanism will deal
+            ** with it under an EXCLUSIVE lock where we do not need to
+            ** worry so much with race conditions.
+            */
+            *pExists = 1;
+            rc = SQLITE_OK;
           }
         }
       }
@@ -3455,7 +3495,7 @@ static int readDbPage(PgHdr *pPg){
     u8 *dbFileVers = &((u8*)pPg->pData)[24];
     memcpy(&pPager->dbFileVers, dbFileVers, sizeof(pPager->dbFileVers));
   }
-  CODEC1(pPager, pPg->pData, pgno, 3);
+  CODEC1(pPager, pPg->pData, pgno, 3, rc = SQLITE_NOMEM);
 
   PAGER_INCR(sqlite3_pager_readdb_count);
   PAGER_INCR(pPager->nRead);
@@ -4153,7 +4193,7 @@ static int pager_write(PgHdr *pPg){
         ** contains the database locks.  The following assert verifies
         ** that we do not. */
         assert( pPg->pgno!=PAGER_MJ_PGNO(pPager) );
-        pData2 = CODEC2(pPager, pData, pPg->pgno, 7);
+        CODEC2(pPager, pData, pPg->pgno, 7, return SQLITE_NOMEM, pData2);
         cksum = pager_cksum(pPager, (u8*)pData2);
         rc = write32bits(pPager->jfd, pPager->journalOff, pPg->pgno);
         if( rc==SQLITE_OK ){
@@ -5134,7 +5174,8 @@ int sqlite3PagerMovepage(Pager *pPager, DbPage *pPg, Pgno pgno, int isCommit){
     rc = sqlite3PagerGet(pPager, needSyncPgno, &pPgHdr);
     if( rc!=SQLITE_OK ){
       if( pPager->pInJournal && needSyncPgno<=pPager->dbOrigSize ){
-        sqlite3BitvecClear(pPager->pInJournal, needSyncPgno);
+        assert( pPager->pTmpSpace!=0 );
+        sqlite3BitvecClear(pPager->pInJournal, needSyncPgno, pPager->pTmpSpace);
       }
       return rc;
     }

@@ -12,7 +12,7 @@
 ** This file contains the implementation of the sqlite3_backup_XXX() 
 ** API functions and the related features.
 **
-** $Id: backup.c,v 1.13.2.1 2009/05/18 17:11:31 drh Exp $
+** $Id: backup.c,v 1.17 2009/06/03 11:25:07 danielk1977 Exp $
 */
 #include "sqliteInt.h"
 #include "btreeInt.h"
@@ -91,15 +91,24 @@ static Btree *findBtree(sqlite3 *pErrorDb, sqlite3 *pDb, const char *zDb){
   int i = sqlite3FindDbName(pDb, zDb);
 
   if( i==1 ){
-    Parse sParse;
-    memset(&sParse, 0, sizeof(sParse));
-    sParse.db = pDb;
-    if( sqlite3OpenTempDatabase(&sParse) ){
-      sqlite3ErrorClear(&sParse);
-      sqlite3Error(pErrorDb, sParse.rc, "%s", sParse.zErrMsg);
+    Parse *pParse;
+    int rc = 0;
+    pParse = sqlite3StackAllocZero(pErrorDb, sizeof(*pParse));
+    if( pParse==0 ){
+      sqlite3Error(pErrorDb, SQLITE_NOMEM, "out of memory");
+      rc = SQLITE_NOMEM;
+    }else{
+      pParse->db = pDb;
+      if( sqlite3OpenTempDatabase(pParse) ){
+        sqlite3ErrorClear(pParse);
+        sqlite3Error(pErrorDb, pParse->rc, "%s", pParse->zErrMsg);
+        rc = SQLITE_ERROR;
+      }
+      sqlite3StackFree(pErrorDb, pParse);
+    }
+    if( rc ){
       return 0;
     }
-    assert( sParse.zErrMsg==0 );
   }
 
   if( i<0 ){
@@ -184,7 +193,7 @@ sqlite3_backup *sqlite3_backup_init(
 ** are considered fatal except for SQLITE_BUSY and SQLITE_LOCKED.
 */
 static int isFatalError(int rc){
-  return (rc!=SQLITE_OK && rc!=SQLITE_BUSY && rc!=SQLITE_LOCKED);
+  return (rc!=SQLITE_OK && rc!=SQLITE_BUSY && ALWAYS(rc!=SQLITE_LOCKED));
 }
 
 /*
@@ -309,7 +318,7 @@ int sqlite3_backup_step(sqlite3_backup *p, int nPage){
      && SQLITE_OK==(rc = sqlite3BtreeBeginTrans(p->pDest, 2)) 
     ){
       p->bDestLocked = 1;
-      rc = sqlite3BtreeGetMeta(p->pDest, 1, &p->iDestSchema);
+      rc = sqlite3BtreeGetMeta(p->pDest, BTREE_SCHEMA_VERSION, &p->iDestSchema);
     }
 
     /* If there is no open read-transaction on the source database, open
@@ -469,6 +478,7 @@ int sqlite3_backup_finish(sqlite3_backup *p){
   int rc;                              /* Value to return */
 
   /* Enter the mutexes */
+  if( p==0 ) return SQLITE_OK;
   sqlite3_mutex_enter(p->pSrcDb->mutex);
   sqlite3BtreeEnter(p->pSrc);
   mutex = p->pSrcDb->mutex;
