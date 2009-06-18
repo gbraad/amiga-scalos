@@ -54,7 +54,7 @@ struct PCache1 {
 /*
 ** Each cache entry is represented by an instance of the following 
 ** structure. A buffer of PgHdr1.pCache->szPage bytes is allocated 
-** directly after the structure in memory (see the PGHDR1_TO_PAGE() 
+** directly before this structure in memory (see the PGHDR1_TO_PAGE() 
 ** macro below).
 */
 struct PgHdr1 {
@@ -88,6 +88,7 @@ static SQLITE_WSD struct PCacheGlobal {
   int szSlot;                         /* Size of each free slot */
   void *pStart, *pEnd;                /* Bounds of pagecache malloc range */
   PgFreeslot *pFree;                  /* Free page blocks */
+  int isInit;                         /* True if initialized */
 } pcache1_g;
 
 /*
@@ -99,7 +100,7 @@ static SQLITE_WSD struct PCacheGlobal {
 
 /*
 ** When a PgHdr1 structure is allocated, the associated PCache1.szPage
-** bytes of data are located directly after it in memory (i.e. the total
+** bytes of data are located directly before it in memory (i.e. the total
 ** size of the allocation is sizeof(PgHdr1)+PCache1.szPage byte). The
 ** PGHDR1_TO_PAGE() macro takes a pointer to a PgHdr1 structure as
 ** an argument and returns a pointer to the associated block of szPage
@@ -107,10 +108,10 @@ static SQLITE_WSD struct PCacheGlobal {
 ** a pointer to a block of szPage bytes of data and the return value is
 ** a pointer to the associated PgHdr1 structure.
 **
-**   assert( PGHDR1_TO_PAGE(PAGE_TO_PGHDR1(X))==X );
+**   assert( PGHDR1_TO_PAGE(PAGE_TO_PGHDR1(pCache, X))==X );
 */
-#define PGHDR1_TO_PAGE(p) (void *)(&((unsigned char *)p)[sizeof(PgHdr1)])
-#define PAGE_TO_PGHDR1(p) (PgHdr1 *)(&((unsigned char *)p)[-1*(int)sizeof(PgHdr1)])
+#define PGHDR1_TO_PAGE(p)    (void*)(((char*)p) - p->pCache->szPage)
+#define PAGE_TO_PGHDR1(c, p) (PgHdr1*)(((char*)p) + c->szPage)
 
 /*
 ** Macros to enter and leave the global LRU mutex.
@@ -128,18 +129,20 @@ static SQLITE_WSD struct PCacheGlobal {
 ** enough to contain 'n' buffers of 'sz' bytes each.
 */
 void sqlite3PCacheBufferSetup(void *pBuf, int sz, int n){
-  PgFreeslot *p;
-  sz = ROUNDDOWN8(sz);
-  pcache1.szSlot = sz;
-  pcache1.pStart = pBuf;
-  pcache1.pFree = 0;
-  while( n-- ){
-    p = (PgFreeslot*)pBuf;
-    p->pNext = pcache1.pFree;
-    pcache1.pFree = p;
-    pBuf = (void*)&((char*)pBuf)[sz];
+  if( pcache1.isInit ){
+    PgFreeslot *p;
+    sz = ROUNDDOWN8(sz);
+    pcache1.szSlot = sz;
+    pcache1.pStart = pBuf;
+    pcache1.pFree = 0;
+    while( n-- ){
+      p = (PgFreeslot*)pBuf;
+      p->pNext = pcache1.pFree;
+      pcache1.pFree = p;
+      pBuf = (void*)&((char*)pBuf)[sz];
+    }
+    pcache1.pEnd = pBuf;
   }
-  pcache1.pEnd = pBuf;
 }
 
 /*
@@ -152,6 +155,7 @@ static void *pcache1Alloc(int nByte){
   void *p;
   assert( sqlite3_mutex_held(pcache1.mutex) );
   if( nByte<=pcache1.szSlot && pcache1.pFree ){
+    assert( pcache1.isInit );
     p = (PgHdr1 *)pcache1.pFree;
     pcache1.pFree = pcache1.pFree->pNext;
     sqlite3StatusSet(SQLITE_STATUS_PAGECACHE_SIZE, nByte);
@@ -199,11 +203,15 @@ static void pcache1Free(void *p){
 */
 static PgHdr1 *pcache1AllocPage(PCache1 *pCache){
   int nByte = sizeof(PgHdr1) + pCache->szPage;
-  PgHdr1 *p = (PgHdr1 *)pcache1Alloc(nByte);
-  if( p ){
+  void *pPg = pcache1Alloc(nByte);
+  PgHdr1 *p;
+  if( pPg ){
+    p = PAGE_TO_PGHDR1(pCache, pPg);
     if( pCache->bPurgeable ){
       pcache1.nCurrentPage++;
     }
+  }else{
+    p = 0;
   }
   return p;
 }
@@ -216,7 +224,7 @@ static void pcache1FreePage(PgHdr1 *p){
     if( p->pCache->bPurgeable ){
       pcache1.nCurrentPage--;
     }
-    pcache1Free(p);
+    pcache1Free(PGHDR1_TO_PAGE(p));
   }
 }
 
@@ -360,7 +368,7 @@ static void pcache1TruncateUnsafe(
   PCache1 *pCache, 
   unsigned int iLimit 
 ){
-  TESTONLY( int nPage = 0; )      /* Used to assert pCache->nPage is correct */
+  TESTONLY( unsigned int nPage = 0; )      /* Used to assert pCache->nPage is correct */
   unsigned int h;
   assert( sqlite3_mutex_held(pcache1.mutex) );
   for(h=0; h<pCache->nHash; h++){
@@ -374,7 +382,7 @@ static void pcache1TruncateUnsafe(
         pcache1FreePage(pPage);
       }else{
         pp = &pPage->pNext;
-        TESTONLY( nPage++ );
+        TESTONLY( nPage++; )
       }
     }
   }
@@ -389,10 +397,12 @@ static void pcache1TruncateUnsafe(
 */
 static int pcache1Init(void *NotUsed){
   UNUSED_PARAMETER(NotUsed);
+  assert( pcache1.isInit==0 );
   memset(&pcache1, 0, sizeof(pcache1));
   if( sqlite3GlobalConfig.bCoreMutex ){
     pcache1.mutex = sqlite3_mutex_alloc(SQLITE_MUTEX_STATIC_LRU);
   }
+  pcache1.isInit = 1;
   return SQLITE_OK;
 }
 
@@ -401,7 +411,8 @@ static int pcache1Init(void *NotUsed){
 */
 static void pcache1Shutdown(void *NotUsed){
   UNUSED_PARAMETER(NotUsed);
-  /* no-op */
+  assert( pcache1.isInit!=0 );
+  memset(&pcache1, 0, sizeof(pcache1));
 }
 
 /*
@@ -553,13 +564,13 @@ static void *pcache1Fetch(sqlite3_pcache *p, unsigned int iKey, int createFlag){
 
   if( pPage ){
     unsigned int h = iKey % pCache->nHash;
-    *(void **)(PGHDR1_TO_PAGE(pPage)) = 0;
     pCache->nPage++;
     pPage->iKey = iKey;
     pPage->pNext = pCache->apHash[h];
     pPage->pCache = pCache;
     pPage->pLruPrev = 0;
     pPage->pLruNext = 0;
+    *(void **)(PGHDR1_TO_PAGE(pPage)) = 0;
     pCache->apHash[h] = pPage;
   }
 
@@ -580,8 +591,9 @@ fetch_out:
 */
 static void pcache1Unpin(sqlite3_pcache *p, void *pPg, int reuseUnlikely){
   PCache1 *pCache = (PCache1 *)p;
-  PgHdr1 *pPage = PAGE_TO_PGHDR1(pPg);
-
+  PgHdr1 *pPage = PAGE_TO_PGHDR1(pCache, pPg);
+ 
+  assert( pPage->pCache==pCache );
   pcache1EnterMutex();
 
   /* It is an error to call this function if the page is already 
@@ -623,10 +635,11 @@ static void pcache1Rekey(
   unsigned int iNew
 ){
   PCache1 *pCache = (PCache1 *)p;
-  PgHdr1 *pPage = PAGE_TO_PGHDR1(pPg);
+  PgHdr1 *pPage = PAGE_TO_PGHDR1(pCache, pPg);
   PgHdr1 **pp;
   unsigned int h; 
   assert( pPage->iKey==iOld );
+  assert( pPage->pCache==pCache );
 
   pcache1EnterMutex();
 
@@ -721,7 +734,7 @@ int sqlite3PcacheReleaseMemory(int nReq){
     PgHdr1 *p;
     pcache1EnterMutex();
     while( (nReq<0 || nFree<nReq) && (p=pcache1.pLruTail) ){
-      nFree += sqlite3MallocSize(p);
+      nFree += sqlite3MallocSize(PGHDR1_TO_PAGE(p));
       pcache1PinPage(p);
       pcache1RemoveFromHash(p);
       pcache1FreePage(p);
