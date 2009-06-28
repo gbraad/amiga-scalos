@@ -833,7 +833,13 @@ static void WBIconPropertiesStart(struct internalScaWindowTask *iwt, struct ScaI
 
 static SAVEDS(ULONG) IconPropertiesStart(APTR aptr, struct SM_RunProcess *msg)
 {
-	return AsyncStartModule(aptr, msg, "iconproperties.module");
+	ULONG Result;
+
+	d1(KPrintF("%s/%s/%ld: START aptr=%08lx  msg=%08lx\n", __FILE__, __FUNC__, __LINE__, aptr, msg));
+	Result = AsyncStartModule(aptr, msg, "iconproperties.module");
+	d1(KPrintF("%s/%s/%ld: END  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+
+	return Result;
 }
 
 //----------------------------------------------------------------------------
@@ -3655,7 +3661,7 @@ static SAVEDS(ULONG) AsyncStartModule(APTR aptr, struct SM_RunProcess *msg, CONS
 	BOOL Ok = FALSE;
 
 	debugLock_d1(arg->wa_Lock);
-	d1(kprintf("%s/%s/%ld: arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : ""));
+	d1(kprintf("%s/%s/%ld: START arg->wa_Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name, arg->wa_Name ? arg->wa_Name : ""));
 
 	do	{
 		ModsDirLock = LockScaModsDir();
@@ -3707,6 +3713,8 @@ static SAVEDS(ULONG) AsyncStartModule(APTR aptr, struct SM_RunProcess *msg, CONS
 		UnLock(arg->wa_Lock);
 	if (arg->wa_Name)
 		FreeCopyString(arg->wa_Name);
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }

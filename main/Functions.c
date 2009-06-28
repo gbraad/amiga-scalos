@@ -591,6 +591,9 @@ BOOL RunProcess(struct ScaWindowTask *iwt, RUNPROCFUNC Routine, ULONG NumLongs,
 	struct SM_RunProcess *msg;
 	ULONG NumBytes;
 
+	d1(kprintf("%s/%s/%ld: START  iwt=%08lx  Routine=%08lx  NumLongs=%lu  ArgArray=%08lx  ReplyPort=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, iwt, Routine, NumLongs, ArgArray, ReplyPort));
+
 	if (NumLongs > 77)
 		return FALSE;
 
@@ -601,6 +604,7 @@ BOOL RunProcess(struct ScaWindowTask *iwt, RUNPROCFUNC Routine, ULONG NumLongs,
 		{
 		STATIC_PATCHFUNC(ProcRunnerTask)
 		struct Process *newProc;
+		BPTR WBPath;
 
 		msg->ScalosMessage.sm_Message.mn_ReplyPort = ReplyPort;
 		msg->WindowTask = iwt;
@@ -611,25 +615,41 @@ BOOL RunProcess(struct ScaWindowTask *iwt, RUNPROCFUNC Routine, ULONG NumLongs,
 
 		d1(KPrintF("%s/%s/%ld: msg=%08lx  iwt=%08lx  Routine=%08lx\n", __FILE__, __FUNC__, __LINE__, msg, iwt, Routine));
 
+		WBPath = DupWBPathList();
+		d1(kprintf("%s/%s/%ld: WBPath=%08lx\n", __FILE__, __FUNC__, __LINE__, WBPath));
+
+		{
+		BPTR oldDir = CurrentDir(NULL);
+		d1(kprintf("%s/%s/%ld: Task=<%s>  oldDir=%08lx\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL)->tc_Node.ln_Name, oldDir));
+		debugLock_d1(oldDir);
+		CurrentDir(oldDir);
+		}
+
 		newProc = CreateNewProcTags(NP_WindowPtr, NULL,
 			NP_StackSize, CurrentPrefs.pref_DefaultStackSize,
 			NP_Priority, 0,
 			NP_Cli, TRUE,
 			NP_Name, (ULONG) "Scalos_SubProcess_Runner",
 			NP_Entry, (ULONG) PATCH_NEWFUNC(ProcRunnerTask),
-			NP_Path, DupWBPathList(),
+			WBPath ? NP_Path : TAG_IGNORE, WBPath,
 			TAG_END);
+
+		d1(kprintf("%s/%s/%ld: newProc=%08lx\n", __FILE__, __FUNC__, __LINE__, newProc));
 
 		if (newProc)
 			{
+			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			PutMsg(&newProc->pr_MsgPort, &msg->ScalosMessage.sm_Message);
 			Success = TRUE;
 			}
 		else
 			{
+			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			SCA_FreeMessage(&msg->ScalosMessage);
 			}
 		}
+
+	d1(kprintf("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -928,7 +948,7 @@ Object *FunctionsFindIconObjectForPath(CONST_STRPTR Path, BOOL *WindowListLocked
 	Object *IconObj = NULL;
 	BPTR pLock;
 	BPTR parentLock = BNULL;
-	BPTR oldDir = BNULL;
+	BPTR oldDir = NOT_A_LOCK;
 	STRPTR FullPath = NULL;
 
 	do	{
@@ -992,7 +1012,7 @@ Object *FunctionsFindIconObjectForPath(CONST_STRPTR Path, BOOL *WindowListLocked
 			}
 		} while (0);
 
-	if (oldDir)
+	if (IS_VALID_LOCK(oldDir))
 		CurrentDir(oldDir);
 	if (parentLock)
 		UnLock(parentLock);

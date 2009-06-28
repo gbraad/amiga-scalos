@@ -119,6 +119,16 @@ void ScalosFreeVecPooled_Debug(APTR mem, CONST_STRPTR CallingFile,
 
 /* ------------------------------------------------- */
 
+#if 0
+
+#define	UnLock(fh) \
+	do { KPrintF("%s/%s/%ld: UnLock(%08lx)\n", __FILE__, __FUNC__, __LINE__, (fh)); \
+	UnLock(fh); } while (0)
+
+#endif
+
+/* ------------------------------------------------- */
+
 // from debug.lib
 extern int kprintf(const char *fmt, ...);
 extern int KPrintF(const char *fmt, ...);
