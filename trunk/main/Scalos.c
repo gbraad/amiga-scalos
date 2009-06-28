@@ -531,7 +531,7 @@ SAVEDS(void) INTERRUPT ProcRunnerTask(void)
 	struct internalScaWindowTask *iwt = NULL;
 	struct SM_RunProcess *msg;
 
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	// Scalos MUST not quit while subprocess is running
 	ScalosObtainSemaphoreShared(&QuitSemaphore);
@@ -620,6 +620,8 @@ SAVEDS(void) INTERRUPT ProcRunnerTask(void)
 		}
 
 	ScalosReleaseSemaphore(&QuitSemaphore);
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 

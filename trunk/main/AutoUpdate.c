@@ -1290,7 +1290,7 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 	struct ScaIconNode *inNew = NULL;
 	STRPTR AllocIconName;
 	BPTR DirLockCopy = BNULL;
-	BPTR oldDir = BNULL;
+	BPTR oldDir = NOT_A_LOCK;
 
 	do	{
 		CONST_STRPTR IconName;
@@ -1328,6 +1328,7 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 			break;
 
 		DirLockCopy = DupLock(iconDirLock);
+		debugLock_d1(DirLockCopy);
 		if (BNULL == DirLockCopy)
 			break;
 
@@ -1337,6 +1338,8 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 
 		oldDir = CurrentDir(DirLockCopy);
 
+		d1(kprintf("%s/%s/%ld: Task=<%s>  oldDir=%08lx\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL)->tc_Node.ln_Name, oldDir));
+
 		// remove (old) icon from window
 		// !!Take care!!
 		// ALL References to inUpdate are invalid after this call !!!
@@ -1344,6 +1347,8 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 			SCCM_IconWin_RemIcon,
 			DirLockCopy,
 			IconName);
+
+		debugLock_d1(DirLockCopy);
 
 		if (isBackdrop)
 			{
@@ -1365,7 +1370,7 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 		d1(KPrintF("%s/%s/%ld: inNew=%08lx\n", __FILE__, __FUNC__, __LINE__, inNew));
 		} while (0);
 
-	if (oldDir)
+	if (IS_VALID_LOCK(oldDir))
 		CurrentDir(oldDir);
 
 	if (AllocIconName)
@@ -1720,16 +1725,20 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 					// (frees backdropIcon!)
 					FreeIconNode(iwt, &iconList, in);
 
+					debugLock_d1(ria.ria_Lock);
+
 					ScalosUnLockIconList(iwt);
 					IconSemaLocked = FALSE;
 
 					oldDir = CurrentDir(arg->wa_Lock);
+					debugLock_d1(oldDir);
 
 					// (generates new backdropIcon)
 					(void) DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 						SCCM_IconWin_ReadIcon,
 						arg->wa_Name, &ria);
 
+					debugLock_d1(oldDir);
 					CurrentDir(oldDir);
 
 					RefreshTextWindow(iwt);

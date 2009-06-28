@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7	20090618        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.15.
+41.7	20090628	jl	- Bugfix: updating left-out icons left the Scalos main window task 
+				  with an invalid current directory handle.
+	20090618        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.15.
 	20090609	jmc	- Upgraded libpng 1.2.36 to 1.2.37 (SAS/C and MOS).
 	20090528	jmc	- Upgraded libpng 1.2.35 to 1.2.36 (SAS/C and MOS).
     	20090526	jl	- Improvement: Updated sqlite3.library to SQLite3 3.6.14.2.
