@@ -76,15 +76,14 @@ static void resolveAlias(
     if( pDup==0 ) return;
   }else{
     char *zToken = pOrig->u.zToken;
+    assert( zToken!=0 );
     pOrig->u.zToken = 0;
     pDup = sqlite3ExprDup(db, pOrig, 0);
     pOrig->u.zToken = zToken;
     if( pDup==0 ) return;
-    if( zToken ){
-      assert( (pDup->flags & (EP_Reduced|EP_TokenOnly))==0 );
-      pDup->flags2 |= EP2_MallocedToken;
-      pDup->u.zToken = sqlite3DbStrDup(db, zToken);
-    }
+    assert( (pDup->flags & (EP_Reduced|EP_TokenOnly))==0 );
+    pDup->flags2 |= EP2_MallocedToken;
+    pDup->u.zToken = sqlite3DbStrDup(db, zToken);
   }
   if( pExpr->flags & EP_ExpCollate ){
     pDup->pColl = pExpr->pColl;
@@ -120,7 +119,7 @@ static void resolveAlias(
 ** can be used.
 **
 ** If the name cannot be resolved unambiguously, leave an error message
-** in pParse and return non-zero.  Return zero on success.
+** in pParse and return WRC_Abort.  Return WRC_Prune on success.
 */
 static int lookupName(
   Parse *pParse,       /* The parsing context */
@@ -169,7 +168,9 @@ static int lookupName(
             if( sqlite3StrICmp(zTabName, zTab)!=0 ) continue;
           }else{
             char *zTabName = pTab->zName;
-            if( zTabName==0 || sqlite3StrICmp(zTabName, zTab)!=0 ) continue;
+            if( NEVER(zTabName==0) || sqlite3StrICmp(zTabName, zTab)!=0 ){
+              continue;
+            }
             if( zDb!=0 && sqlite3StrICmp(db->aDb[iDb].zName, zDb)!=0 ){
               continue;
             }
@@ -248,14 +249,12 @@ static int lookupName(
             cnt++;
             pExpr->iColumn = iCol==pTab->iPKey ? -1 : (i16)iCol;
             pExpr->pTab = pTab;
-            if( iCol>=0 ){
-              testcase( iCol==31 );
-              testcase( iCol==32 );
-              if( iCol>=32 ){
-                *piColMask = 0xffffffff;
-              }else{
-                *piColMask |= ((u32)1)<<iCol;
-              }
+            testcase( iCol==31 );
+            testcase( iCol==32 );
+            if( iCol>=32 ){
+              *piColMask = 0xffffffff;
+            }else{
+              *piColMask |= ((u32)1)<<iCol;
             }
             break;
           }
@@ -296,7 +295,7 @@ static int lookupName(
           pOrig = pEList->a[j].pExpr;
           if( !pNC->allowAgg && ExprHasProperty(pOrig, EP_Agg) ){
             sqlite3ErrorMsg(pParse, "misuse of aliased aggregate %s", zAs);
-            return 2;
+            return WRC_Abort;
           }
           resolveAlias(pParse, pEList, j, pExpr, "");
           cnt = 1;
@@ -328,7 +327,7 @@ static int lookupName(
   if( cnt==0 && zTab==0 && ExprHasProperty(pExpr,EP_DblQuoted) ){
     pExpr->op = TK_STRING;
     pExpr->pTab = 0;
-    return 0;
+    return WRC_Prune;
   }
 
   /*
@@ -383,9 +382,9 @@ lookupname_end:
       if( pTopNC==pNC ) break;
       pTopNC = pTopNC->pNext;
     }
-    return 0;
+    return WRC_Prune;
   } else {
-    return 1;
+    return WRC_Abort;
   }
 }
 
@@ -444,8 +443,7 @@ static int resolveExprStep(Walker *pWalker, Expr *pExpr){
     /* A lone identifier is the name of a column.
     */
     case TK_ID: {
-      lookupName(pParse, 0, 0, pExpr->u.zToken, pNC, pExpr);
-      return WRC_Prune;
+      return lookupName(pParse, 0, 0, pExpr->u.zToken, pNC, pExpr);
     }
   
     /* A table name and column name:     ID.ID
@@ -469,8 +467,7 @@ static int resolveExprStep(Walker *pWalker, Expr *pExpr){
         zTable = pRight->pLeft->u.zToken;
         zColumn = pRight->pRight->u.zToken;
       }
-      lookupName(pParse, zDb, zTable, zColumn, pNC, pExpr);
-      return WRC_Prune;
+      return lookupName(pParse, zDb, zTable, zColumn, pNC, pExpr);
     }
 
     /* Resolve function names
@@ -488,6 +485,7 @@ static int resolveExprStep(Walker *pWalker, Expr *pExpr){
       FuncDef *pDef;              /* Information about the function */
       u8 enc = ENC(pParse->db);   /* The database encoding */
 
+      testcase( pExpr->op==TK_CONST_FUNC );
       assert( !ExprHasProperty(pExpr, EP_xIsSelect) );
       zId = pExpr->u.zToken;
       nId = sqlite3Strlen30(zId);
@@ -542,9 +540,10 @@ static int resolveExprStep(Walker *pWalker, Expr *pExpr){
     }
 #ifndef SQLITE_OMIT_SUBQUERY
     case TK_SELECT:
-    case TK_EXISTS:
+    case TK_EXISTS:  testcase( pExpr->op==TK_EXISTS );
 #endif
     case TK_IN: {
+      testcase( pExpr->op==TK_IN );
       if( ExprHasProperty(pExpr, EP_xIsSelect) ){
         int nRef = pNC->nRef;
 #ifndef SQLITE_OMIT_CHECK
@@ -593,7 +592,7 @@ static int resolveAsName(
 
   UNUSED_PARAMETER(pParse);
 
-  if( pE->op==TK_ID || (pE->op==TK_STRING && pE->u.zToken[0]!='\'') ){
+  if( pE->op==TK_ID ){
     char *zCol = pE->u.zToken;
     for(i=0; i<pEList->nExpr; i++){
       char *zAs = pEList->a[i].zName;
@@ -729,7 +728,7 @@ static int resolveCompoundOrderBy(
       if( pItem->done ) continue;
       pE = pItem->pExpr;
       if( sqlite3ExprIsInteger(pE, &iCol) ){
-        if( iCol<0 || iCol>pEList->nExpr ){
+        if( iCol<=0 || iCol>pEList->nExpr ){
           resolveOutOfRangeError(pParse, "ORDER", i+1, pEList->nExpr);
           return 1;
         }
@@ -742,9 +741,6 @@ static int resolveCompoundOrderBy(
             iCol = resolveOrderByTermToExprList(pParse, pSelect, pDup);
           }
           sqlite3ExprDelete(db, pDup);
-        }
-        if( iCol<0 ){
-          return 1;
         }
       }
       if( iCol>0 ){
@@ -852,9 +848,6 @@ static int resolveOrderGroupBy(
   for(i=0, pItem=pOrderBy->a; i<pOrderBy->nExpr; i++, pItem++){
     Expr *pE = pItem->pExpr;
     iCol = resolveAsName(pParse, pSelect->pEList, pE);
-    if( iCol<0 ){
-      return 1;  /* OOM error */
-    }
     if( iCol>0 ){
       /* If an AS-name match is found, mark this ORDER BY column as being
       ** a copy of the iCol-th result-set column.  The subsequent call to

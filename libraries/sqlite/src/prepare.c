@@ -31,12 +31,12 @@ static void corruptSchema(
     if( zObj==0 ) zObj = "?";
     sqlite3SetString(pData->pzErrMsg, pData->db,
        "malformed database schema (%s)", zObj);
-    if( zExtra && zExtra[0] ){
+    if( zExtra ){
       *pData->pzErrMsg = sqlite3MAppendf(pData->db, *pData->pzErrMsg, "%s - %s",
                                   *pData->pzErrMsg, zExtra);
     }
   }
-  pData->rc = SQLITE_CORRUPT;
+  pData->rc = db->mallocFailed ? SQLITE_NOMEM : SQLITE_CORRUPT;
 }
 
 /*
@@ -62,7 +62,7 @@ int sqlite3InitCallback(void *pInit, int argc, char **argv, char **NotUsed){
   DbClearProperty(db, iDb, DB_Empty);
   if( db->mallocFailed ){
     corruptSchema(pData, argv[0], 0);
-    return SQLITE_NOMEM;
+    return 1;
   }
 
   assert( iDb>=0 && iDb<db->nDb );
@@ -87,7 +87,7 @@ int sqlite3InitCallback(void *pInit, int argc, char **argv, char **NotUsed){
       pData->rc = rc;
       if( rc==SQLITE_NOMEM ){
         db->mallocFailed = 1;
-      }else if( rc!=SQLITE_INTERRUPT && (rc&0xff)!=SQLITE_LOCKED ){
+      }else if( rc!=SQLITE_INTERRUPT && rc!=SQLITE_LOCKED ){
         corruptSchema(pData, argv[0], zErr);
       }
       sqlite3DbFree(db, zErr);
@@ -103,15 +103,15 @@ int sqlite3InitCallback(void *pInit, int argc, char **argv, char **NotUsed){
     */
     Index *pIndex;
     pIndex = sqlite3FindIndex(db, argv[0], db->aDb[iDb].zName);
-    if( pIndex==0 || pIndex->tnum!=0 ){
+    if( pIndex==0 ){
       /* This can occur if there exists an index on a TEMP table which
       ** has the same name as another index on a permanent index.  Since
       ** the permanent table is hidden by the TEMP table, we can also
       ** safely ignore the index on the permanent table.
       */
       /* Do Nothing */;
-    }else{
-      pIndex->tnum = atoi(argv[1]);
+    }else if( sqlite3GetInt32(argv[1], &pIndex->tnum)==0 ){
+      corruptSchema(pData, argv[0], "invalid rootpage");
     }
   }
   return 0;
@@ -197,7 +197,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
     goto error_out;
   }
   pTab = sqlite3FindTable(db, zMasterName, db->aDb[iDb].zName);
-  if( pTab ){
+  if( ALWAYS(pTab) ){
     pTab->tabFlags |= TF_Readonly;
   }
 
@@ -205,7 +205,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   */
   pDb = &db->aDb[iDb];
   if( pDb->pBt==0 ){
-    if( !OMIT_TEMPDB && iDb==1 ){
+    if( !OMIT_TEMPDB && ALWAYS(iDb==1) ){
       DbSetProperty(db, 1, DB_SchemaLoaded);
     }
     return SQLITE_OK;
@@ -225,8 +225,13 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   **    meta[0]   Schema cookie.  Changes with each schema change.
   **    meta[1]   File format of schema layer.
   **    meta[2]   Size of the page cache.
-  **    meta[3]   Use freelist if 0.  Autovacuum if greater than zero.
+  **    meta[3]   Largest rootpage (auto/incr_vacuum mode)
   **    meta[4]   Db text encoding. 1:UTF-8 2:UTF-16LE 3:UTF-16BE
+  **    meta[5]   User version
+  **    meta[6]   Incremental vacuum mode
+  **    meta[7]   unused
+  **    meta[8]   unused
+  **    meta[9]   unused
   **
   ** Note: The #defined SQLITE_UTF* symbols in sqliteInt.h correspond to
   ** the possible values of meta[4].
@@ -303,10 +308,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   /* Read the schema information out of the schema tables
   */
   assert( db->init.busy );
-  if( rc==SQLITE_EMPTY ){
-    /* For an empty database, there is nothing to read */
-    rc = SQLITE_OK;
-  }else{
+  {
     char *zSql;
     zSql = sqlite3MPrintf(db, 
         "SELECT name, rootpage, sql FROM '%q'.%s",
@@ -380,7 +382,6 @@ int sqlite3Init(sqlite3 *db, char **pzErrMsg){
   int commit_internal = !(db->flags&SQLITE_InternChanges);
   
   assert( sqlite3_mutex_held(db->mutex) );
-  if( db->init.busy ) return SQLITE_OK;
   rc = SQLITE_OK;
   db->init.busy = 1;
   for(i=0; rc==SQLITE_OK && i<db->nDb; i++){
@@ -396,7 +397,8 @@ int sqlite3Init(sqlite3 *db, char **pzErrMsg){
   ** schema may contain references to objects in other databases.
   */
 #ifndef SQLITE_OMIT_TEMPDB
-  if( rc==SQLITE_OK && db->nDb>1 && !DbHasProperty(db, 1, DB_SchemaLoaded) ){
+  if( rc==SQLITE_OK && ALWAYS(db->nDb>1)
+                    && !DbHasProperty(db, 1, DB_SchemaLoaded) ){
     rc = sqlite3InitOne(db, 1, pzErrMsg);
     if( rc ){
       sqlite3ResetInternalSchema(db, 1);
@@ -453,12 +455,13 @@ static int schemaIsValid(sqlite3 *db){
       rc = sqlite3BtreeCursor(pBt, MASTER_ROOT, 0, 0, curTemp);
       if( rc==SQLITE_OK ){
         rc = sqlite3BtreeGetMeta(pBt, BTREE_SCHEMA_VERSION, (u32 *)&cookie);
-        if( rc==SQLITE_OK && cookie!=db->aDb[iDb].pSchema->schema_cookie ){
+        if( ALWAYS(rc==SQLITE_OK)
+                && cookie!=db->aDb[iDb].pSchema->schema_cookie ){
           allOk = 0;
         }
         sqlite3BtreeCloseCursor(curTemp);
       }
-      if( rc==SQLITE_NOMEM || rc==SQLITE_IOERR_NOMEM ){
+      if( NEVER(rc==SQLITE_NOMEM) || rc==SQLITE_IOERR_NOMEM ){
         db->mallocFailed = 1;
       }
     }
@@ -577,6 +580,8 @@ static int sqlite3Prepare(
   if( nBytes>=0 && (nBytes==0 || zSql[nBytes-1]!=0) ){
     char *zSqlCopy;
     int mxLen = db->aLimit[SQLITE_LIMIT_SQL_LENGTH];
+    testcase( nBytes==mxLen );
+    testcase( nBytes==mxLen+1 );
     if( nBytes>mxLen ){
       sqlite3Error(db, SQLITE_TOOBIG, "statement too long");
       (void)sqlite3SafetyOff(db);
@@ -683,6 +688,10 @@ static int sqlite3LockAndPrepare(
   sqlite3_mutex_enter(db->mutex);
   sqlite3BtreeEnterAll(db);
   rc = sqlite3Prepare(db, zSql, nBytes, saveSqlFlag, ppStmt, pzTail);
+  if( rc==SQLITE_SCHEMA ){
+    sqlite3_finalize(*ppStmt);
+    rc = sqlite3Prepare(db, zSql, nBytes, saveSqlFlag, ppStmt, pzTail);
+  }
   sqlite3BtreeLeaveAll(db);
   sqlite3_mutex_leave(db->mutex);
   return rc;

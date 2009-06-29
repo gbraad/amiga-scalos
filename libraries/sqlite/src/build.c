@@ -174,6 +174,12 @@ void sqlite3FinishCoding(Parse *pParse){
       ** shared-cache feature is enabled.
       */
       codeTableLocks(pParse);
+
+      /* Initialize any AUTOINCREMENT data structures required.
+      */
+      sqlite3AutoincrementBegin(pParse);
+
+      /* Finally, jump back to the beginning of the executable code. */
       sqlite3VdbeAddOp2(v, OP_Goto, 0, pParse->cookieGoto);
     }
   }
@@ -372,10 +378,7 @@ void sqlite3UnlinkAndDeleteIndex(sqlite3 *db, int iDb, const char *zIdxName){
 
   len = sqlite3Strlen30(zIdxName);
   pIndex = sqlite3HashInsert(pHash, zIdxName, len, 0);
-  /* Justification of ALWAYS():  This routine is only called from the
-  ** OP_DropIndex opcode.  And there is no way that opcode will ever run
-  ** unless the corresponding index is in the symbol table. */
-  if( ALWAYS(pIndex) ){
+  if( pIndex ){
     if( pIndex->pTable->pIndex==pIndex ){
       pIndex->pTable->pIndex = pIndex->pNext;
     }else{
@@ -429,15 +432,6 @@ void sqlite3ResetInternalSchema(sqlite3 *db, int iDb){
   ** schema hash tables and therefore do not have to make any changes
   ** to any of those tables.
   */
-#ifdef SQLITE_HAS_CODEC
-  for(i=0; i<db->nDb; i++){
-    struct Db *pDb = &db->aDb[i];
-    if( pDb->pBt==0 ){
-      if( pDb->pAux && pDb->xFreeAux ) pDb->xFreeAux(pDb->pAux);
-      pDb->pAux = 0;
-    }
-  }
-#endif
   for(i=j=2; i<db->nDb; i++){
     struct Db *pDb = &db->aDb[i];
     if( pDb->pBt==0 ){
@@ -1264,7 +1258,6 @@ CollSeq *sqlite3LocateCollSeq(Parse *pParse, const char *zName){
     pColl = sqlite3GetCollSeq(db, pColl, zName);
     if( !pColl ){
       sqlite3ErrorMsg(pParse, "no such collation sequence: %s", zName);
-      pColl = 0;
     }
   }
 
