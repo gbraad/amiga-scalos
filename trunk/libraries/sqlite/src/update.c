@@ -564,6 +564,14 @@ void sqlite3Update(
     sqlite3VdbeAddOp2(v, OP_Close, oldIdx, 0);
   }
 
+  /* Update the sqlite_sequence table by storing the content of the
+  ** maximum rowid counter values recorded while inserting into
+  ** autoincrement tables.
+  */
+  if( pParse->nested==0 && pParse->trigStack==0 ){
+    sqlite3AutoincrementEnd(pParse);
+  }
+
   /*
   ** Return the number of rows that were changed. If this routine is 
   ** generating code because of a call to sqlite3NestedParse(), do not
@@ -661,8 +669,7 @@ static void updateVirtualTable(
   /* Generate code to scan the ephemeral table and call VUpdate. */
   iReg = ++pParse->nMem;
   pParse->nMem += pTab->nCol+1;
-  sqlite3VdbeAddOp2(v, OP_Rewind, ephemTab, 0);
-  addr = sqlite3VdbeCurrentAddr(v);
+  addr = sqlite3VdbeAddOp2(v, OP_Rewind, ephemTab, 0);
   sqlite3VdbeAddOp3(v, OP_Column,  ephemTab, 0, iReg);
   sqlite3VdbeAddOp3(v, OP_Column, ephemTab, (pRowid?1:0), iReg+1);
   for(i=0; i<pTab->nCol; i++){
@@ -670,8 +677,8 @@ static void updateVirtualTable(
   }
   sqlite3VtabMakeWritable(pParse, pTab);
   sqlite3VdbeAddOp4(v, OP_VUpdate, 0, pTab->nCol+2, iReg, pVtab, P4_VTAB);
-  sqlite3VdbeAddOp2(v, OP_Next, ephemTab, addr);
-  sqlite3VdbeJumpHere(v, addr-1);
+  sqlite3VdbeAddOp2(v, OP_Next, ephemTab, addr+1);
+  sqlite3VdbeJumpHere(v, addr);
   sqlite3VdbeAddOp2(v, OP_Close, ephemTab, 0);
 
   /* Cleanup */

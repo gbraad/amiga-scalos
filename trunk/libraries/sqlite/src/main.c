@@ -395,7 +395,6 @@ int sqlite3_config(int op, ...){
 #ifndef AMIGA
   va_end(ap);
 #endif /* AMIGA */
-
   return rc;
 }
 
@@ -613,13 +612,6 @@ int sqlite3_close(sqlite3 *db){
   }
   sqlite3_mutex_enter(db->mutex);
 
-#ifdef SQLITE_SSE
-  {
-    extern void sqlite3SseCleanup(sqlite3*);
-    sqlite3SseCleanup(db);
-  }
-#endif 
-
   sqlite3ResetInternalSchema(db, 0);
 
   /* If a transaction is open, the ResetInternalSchema() call above
@@ -786,7 +778,7 @@ const char *sqlite3ErrStr(int rc){
     /* SQLITE_PROTOCOL    */ 0,
     /* SQLITE_EMPTY       */ "table contains no data",
     /* SQLITE_SCHEMA      */ "database schema has changed",
-    /* SQLITE_TOOBIG      */ "String or BLOB exceeded size limit",
+    /* SQLITE_TOOBIG      */ "string or blob too big",
     /* SQLITE_CONSTRAINT  */ "constraint failed",
     /* SQLITE_MISMATCH    */ "datatype mismatch",
     /* SQLITE_MISUSE      */ "library routine called out of sequence",
@@ -1599,7 +1591,6 @@ static int openDatabase(
   }
   sqlite3_mutex_enter(db->mutex);
   db->errMask = 0xff;
-  db->priorNewRowid = 0;
   db->nDb = 2;
   db->magic = SQLITE_MAGIC_BUSY;
   db->aDb = db->aDbStatic;

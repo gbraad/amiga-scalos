@@ -661,18 +661,18 @@ static int isLikeOrGlob(
   }
   if( sqlite3ExprAffinity(pLeft)!=SQLITE_AFF_TEXT ) return 0;
   z = pRight->u.zToken;
-  cnt = 0;
   if( ALWAYS(z) ){
+    cnt = 0;
     while( (c=z[cnt])!=0 && c!=wc[0] && c!=wc[1] && c!=wc[2] ){
       cnt++;
     }
+    if( cnt!=0 && c!=0 && 255!=(u8)z[cnt-1] ){
+      *pisComplete = z[cnt]==wc[0] && z[cnt+1]==0;
+      *pnPattern = cnt;
+      return 1;
+    }
   }
-  if( cnt==0 || c==0 || 255==(u8)z[cnt-1] ){
-    return 0;
-  }
-  *pisComplete = z[cnt]==wc[0] && z[cnt+1]==0;
-  *pnPattern = cnt;
-  return 1;
+  return 0;
 }
 #endif /* SQLITE_OMIT_LIKE_OPTIMIZATION */
 
@@ -2233,6 +2233,7 @@ static void bestIndex(
   ExprList *pOrderBy,         /* The ORDER BY clause */
   WhereCost *pCost            /* Lowest cost query plan */
 ){
+#ifndef SQLITE_OMIT_VIRTUALTABLE
   if( IsVirtual(pSrc->pTab) ){
     sqlite3_index_info *p = 0;
     bestVirtualIndex(pParse, pWC, pSrc, notReady, pOrderBy, pCost, &p);
@@ -2240,7 +2241,9 @@ static void bestIndex(
       sqlite3_free(p->idxStr);
     }
     sqlite3DbFree(pParse->db, p);
-  }else{
+  }else
+#endif
+  {
     bestBtreeIndex(pParse, pWC, pSrc, notReady, pOrderBy, pCost);
   }
 }
@@ -2876,8 +2879,8 @@ static Bitmask codeOneLoopStart(
     SrcList oneTab;        /* Shortened table list */
 
     int regReturn = ++pParse->nMem;           /* Register used with OP_Gosub */
-    int regRowset;                            /* Register for RowSet object */
-    int regRowid;                             /* Register holding rowid */
+    int regRowset = 0;                        /* Register for RowSet object */
+    int regRowid = 0;                         /* Register holding rowid */
     int iLoopBody = sqlite3VdbeMakeLabel(v);  /* Start of loop body */
     int iRetInit;                             /* Address of regReturn init */
     int ii;
@@ -2925,7 +2928,7 @@ static Bitmask codeOneLoopStart(
             int r;
             r = sqlite3ExprCodeGetColumn(pParse, pTabItem->pTab, -1, iCur, 
                                          regRowid, 0);
-            sqlite3VdbeAddOp4(v, OP_RowSetTest, regRowset, 
+            sqlite3VdbeAddOp4(v, OP_RowSetTest, regRowset,
                               sqlite3VdbeCurrentAddr(v)+2,
                               r, SQLITE_INT_TO_PTR(iSet), P4_INT32);
           }
@@ -3216,9 +3219,11 @@ WhereInfo *sqlite3WhereBegin(
   assert( pWC->vmask==0 && pMaskSet->n==0 );
   for(i=0; i<pTabList->nSrc; i++){
     createMask(pMaskSet, pTabList->a[i].iCursor);
+#ifndef SQLITE_OMIT_VIRTUALTABLE
     if( ALWAYS(pTabList->a[i].pTab) && IsVirtual(pTabList->a[i].pTab) ){
       pWC->vmask |= ((Bitmask)1 << i);
     }
+#endif
   }
 #ifndef NDEBUG
   {

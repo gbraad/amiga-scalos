@@ -911,7 +911,7 @@ static int findLockInfo(
   struct unixLockKey lockKey;    /* Lookup key for the unixLockInfo structure */
   struct unixFileId fileId;      /* Lookup key for the unixOpenCnt struct */
   struct stat statbuf;           /* Low-level file information */
-  struct unixLockInfo *pLock;    /* Candidate unixLockInfo object */
+  struct unixLockInfo *pLock = 0;/* Candidate unixLockInfo object */
   struct unixOpenCnt *pOpen;     /* Candidate unixOpenCnt object */
 
   /* Get low-level information about the file that we can used to
@@ -1815,7 +1815,8 @@ static int dotlockUnlock(sqlite3_file *id, int locktype) {
   /* To fully unlock the database, delete the lock file */
   assert( locktype==NO_LOCK );
   if( unlink(zLockFile) ){
-    int rc, tErrno = errno;
+    int rc = 0;
+    int tErrno = errno;
     if( ENOENT != tErrno ){
       rc = sqliteErrorFromPosixError(tErrno, SQLITE_IOERR_UNLOCK);
     }
@@ -4065,7 +4066,11 @@ int sqlite3_current_time = 0;  /* Fake system time in seconds since 1970. */
 ** return 0.  Return 1 if the time and date cannot be found.
 */
 static int unixCurrentTime(sqlite3_vfs *NotUsed, double *prNow){
-#if defined(NO_GETTOD)
+#if defined(SQLITE_OMIT_FLOATING_POINT)
+  time_t t;
+  time(&t);
+  *prNow = (((sqlite3_int64)t)/8640 + 24405875)/10;
+#elif defined(NO_GETTOD)
   time_t t;
   time(&t);
   *prNow = t/86400.0 + 2440587.5;
