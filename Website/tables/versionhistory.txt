@@ -1,4 +1,12 @@
 V41.7
+Improvement: Updated sqlite3.library to SQLite3 3.6.16
+Bugfix: updating left-out icons left the Scalos main window task with an invalid current directory handle
+Improvement: Updated sqlite3.library to SQLite3 V3.6.15
+Upgraded libpng 1.2.36 to 1.2.37 (SAS/C and MOS)
+Upgraded libpng 1.2.35 to 1.2.36 (SAS/C and MOS)
+Improvement: Updated sqlite3.library to SQLite3 3.6.14.2
+Improvement: Updated sqlite3.library to SQLite3 3.6.14.1
+Improvement: icons can now be selected incrementally via keyboard input
 Bugfix: when switching to non-backdrop desktop window, the window was created with 100% transparency (invisible)
 Improvement: added filetype for FLV video
 Improvement: Updated sqlite3.library to SQLite3 V3.6.14
