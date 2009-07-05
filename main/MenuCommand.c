@@ -3099,12 +3099,12 @@ static void DeleteModuleKludge(struct WBArg *wbArg, ULONG nArgs)
 
 	if (fib)
 		{
-		BPTR oldDir;
 		ULONG n;
 
 		// do not change wbArg[0] here!
 		for (n=1; n<nArgs; n++)
 			{
+			BPTR oldDir;
 			BPTR oldLock = (BPTR)NULL;
 			BPTR dirLock;
 
