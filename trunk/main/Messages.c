@@ -914,8 +914,8 @@ BPTR LockScaModsDir(void)
 	BPTR modsDirLock;
 
 	ScalosDirLock = Lock((STRPTR) CurrentPrefs.pref_ScalosHomeDir, ACCESS_READ);
-	if ((BPTR)NULL == ScalosDirLock)
-		return (BPTR)NULL;
+	if (BNULL == ScalosDirLock)
+		return BNULL;
 
 	oldDir = CurrentDir(ScalosDirLock);
 
