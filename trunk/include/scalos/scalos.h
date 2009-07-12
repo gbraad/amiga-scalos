@@ -1002,6 +1002,11 @@ struct ScalosNodeList
 #define SCCM_Window_SetTransparency		(SCC_Dummy+209)
 // ULONG Transparency, 0=transparent, 100=opaque
 
+// ---------------------------------------------------------------------------
+
+#define SCCM_Window_WBStartupFinished 		(SCC_Dummy+210)
+// ./.
+
 // -------------- Attributes ------------
 
 #define SCCA_Window_IDCMP			(SCC_Dummy+2)	// unused
@@ -1414,6 +1419,10 @@ enum sgttGadgetIDs
 #define	SCCM_IconWin_Browse			(SCC_Dummy+207)
 // ./.
 
+// ---------------------------------------------------------------------------
+
+#define	SCCM_IconWin_WBStartupFinished		(SCC_Dummy+208)
+// ./.
 
 
 // ---------------------------------------------------------------------------

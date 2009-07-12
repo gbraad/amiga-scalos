@@ -109,6 +109,7 @@ STRPTR DefIconsPath = "ENV:sys/def_";
 static BOOL fInit;
 
 static BOOL ignoreWindowClose = FALSE;
+static BOOL wbStartupFinished = FALSE;
 
 static struct SignalSemaphore PersistSema;
 static struct List OpenList;
@@ -116,7 +117,6 @@ static struct List OpenList;
 static struct List ReOpenList;
 
 static long OpenDelayTicks = 20l;	// number of Delay() ticks to wait before opening each window
-static long StartDelaySeconds = 5;	// number of seconds to wait after initialisation before re-opening windows
 static BOOL UseScaIconify = FALSE;	// Flag : use SCA_Iconify with OpenDrawerByNameTags()
 static long UseWindowSizes = TRUE;	// Flag: size and position is retained for each window
 
@@ -332,6 +332,11 @@ M68KFUNC_P3(ULONG, persistHookFunc,
 	case SCCM_Window_SetInnerSize:
 		d(KPrintF(__FUNC__ "/%ld SCCM_Window_SetInnerSize\n", __LINE__);)
 		ScalosWindowSetSize(cl, obj, msg);
+		break;
+
+	case SCCM_Window_WBStartupFinished:
+		d1(KPrintF("%s/%ld SCCM_Window_WBStartupFinished\n", __FUNC__, __LINE__);)
+		wbStartupFinished = TRUE;
 		break;
 		}
 
@@ -762,11 +767,18 @@ static SAVEDS(int) ReOpenProcess(void)
 			break;
 #endif /* __amigaos4__ */
 
-		d(kprintf(__FUNC__ "/%ld \n", __LINE__);)
+		d(kprintf("%s/%ld \n", __FUNC__, __LINE__);)
 
 		ReadNodes();
 
-		Delay(StartDelaySeconds * 50);
+		d1(kprintf("%s/%ld \n", __FUNC__, __LINE__);)
+
+		while (!wbStartupFinished)
+			{
+			Delay(5);
+			}
+
+		d1(kprintf("%s/%ld \n", __FUNC__, __LINE__);)
 
 		if (!OpenNodes())
 			break;
@@ -1119,12 +1131,7 @@ static void ReadConfig(CONST_STRPTR Filename)
 
 			d1(kprintf(__FUNC__ "/%ld OptName=<%s>  Arg=<%s>\n", __LINE__, OptName, lp);)
 
-			if (0 == Stricmp(OptName, "StartDelay_Seconds"))
-				{
-				sscanf(lp, "%ld", &StartDelaySeconds);
-				d1(kprintf(__FUNC__ "/%ld  StartDelaySeconds = %ld\n", __LINE__, StartDelaySeconds);)
-				}
-			else if (0 == Stricmp(OptName, "OpenDelay_Ticks"))
+			if (0 == Stricmp(OptName, "OpenDelay_Ticks"))
 				{
 				sscanf(lp, "%ld", &OpenDelayTicks);
 				d1(kprintf(__FUNC__ "/%ld  OpenDelayTicks = %ld\n", __LINE__, OpenDelayTicks);)

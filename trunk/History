@@ -2613,6 +2613,9 @@ Additions/changes:
 
 --------------------persist.plugin------------------------------------------
 
+ 39.24	20090712	jl	- Improvement: plugin now automatically reconizes when Scalos has
+				  finished starting up, and will start re-opening windows.
+				  Preferences variable "StartDelay_Seconds" is no longer used.
  39.23	20090107	jl	- Improvement: Plugin is now able to store size and
 				  position of Scalos windows.
  39.22	20080106	jl	- Improvement: Added support for browser mode windows.

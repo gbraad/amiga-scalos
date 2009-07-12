@@ -11,12 +11,12 @@
 #define PLUGIN_TYPE		OOP
 
 #define	LIB_VERSION		39
-#define	LIB_REVISION		23
+#define	LIB_REVISION		24
 
 #define LIB_NAME 		"persist.plugin"
 #define LIB_VERSTRING 		"$VER: persist.plugin " \
 				STR(LIB_VERSION) "." STR(LIB_REVISION) \
-				" (03.01.2009) " COMPILER_STRING \
+				" (12.07.2009) " COMPILER_STRING \
 				" ©1999" CURRENTYEAR " The Scalos Team"
 
 

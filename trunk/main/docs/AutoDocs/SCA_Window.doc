@@ -15,6 +15,7 @@ Window.sca/SCCM_Window_SetTitle
 Window.sca/SCCM_Window_SetInnerSize
 Window.sca/SCCM_Window_UnIconify
 Window.sca/SCCM_Window_UnlockUpdate
+Window.sca/SCCM_Window_WBStartupFinished
 Window.sca/--background
 
     NAME
@@ -306,4 +307,21 @@ Window.sca/SCCM_Window_UnlockUpdate
 
     SEE ALSO
 	SCCM_Window_LockUpdate
+
+IconWindow.sca/SCCM_Window_WBStartupFinished
+
+    NAME
+        SCCM_Window_WBStartupFinished
+
+    SYNOPSIS
+	void DoMethod(obj,SCCM_Window_WBStartupFinished);
+
+    FUNCTION
+	This message is broadcasted to all Scalos windows as soon as WBStartup procedure has finished.
+
+    INPUTS
+	none
+
+    RESULT
+	nothing
 

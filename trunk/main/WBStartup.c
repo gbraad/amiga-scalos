@@ -52,6 +52,7 @@
 // local functions
 static SAVEDS(LONG) CompareStartPriFunc(struct Hook * hook, struct ScaIconNode * in2, struct ScaIconNode * in1);
 static void StartTool(BPTR DirLock, struct ScaIconNode *in);
+static void WBStartupFinished(void);
 
 //----------------------------------------------------------------------------
 
@@ -150,8 +151,7 @@ SAVEDS(void) INTERRUPT WBStartup(void)
 	if (ws.ws_Lock)
 		UnLock(ws.ws_Lock);
 
-	SplashDisplayProgress(GetLocString(MSGID_PROGRESS_WBSTARTUPFINISHED), 0);
-	SplashRemoveUser();
+	WBStartupFinished();
 }
 
 
@@ -196,5 +196,31 @@ static void StartTool(BPTR DirLock, struct ScaIconNode *in)
 
 	if (WaitTime)
 		Delay(WaitTime * 50);
+}
+
+
+static void WBStartupFinished(void)
+{
+	struct ScaWindowList *winList;
+
+	SplashDisplayProgress(GetLocString(MSGID_PROGRESS_WBSTARTUPFINISHED), 0);
+	SplashRemoveUser();
+
+	winList = SCA_LockWindowList(SCA_LockWindowList_Shared);
+	if (winList)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = winList->wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			struct ScaWindowTask *wt = ws->ws_WindowTask;
+
+			DoMethod(wt->mt_MainObject, SCCM_IconWin_WBStartupFinished);
+			DoMethod(wt->mt_WindowObject, SCCM_Window_WBStartupFinished);
+			}
+
+		SCA_UnLockWindowList();
+		}
+
 }
 

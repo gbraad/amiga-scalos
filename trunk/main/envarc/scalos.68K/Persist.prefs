@@ -1,18 +1,12 @@
 ; persist.plugin prefs file
 ; ENV:Scalos/Persist.prefs
-; 03 Jan 2009 17:37:18
+; 12 Jul 2009 17:37:18
 
 
 ; number of Delay() ticks to wait before opening each window
 ; 1 ticks represents 1/50 s
 ; default : 20 ticks = 0.4s
 OpenDelay_Ticks = 10
-
-
-; number of seconds to wait after initialisation before re-opening windows
-; depends upon how many WBStartup programs you have got.
-; default : 5 seconds
-StartDelay_Seconds = 11
 
 
 ;
