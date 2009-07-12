@@ -1,6 +1,6 @@
 ; persist.plugin prefs file
 ; ENV:Scalos/Persist.prefs
-; 03 Jan 2009 17:37:18
+; 12 Jul 2009 17:37:18
 
 
 ; number of Delay() ticks to wait before opening each window
@@ -9,13 +9,6 @@
 OpenDelay_Ticks = 10
 
 
-; number of seconds to wait after initialisation before re-opening windows
-; depends upon how many WBStartup programs you have got.
-; default : 5 seconds
-StartDelay_Seconds = 3
-
-
-;
 ; If set, SCA_Iconify will be used when re-opening iconified windows
 ; (broken up to Scalos V222x24)
 ;

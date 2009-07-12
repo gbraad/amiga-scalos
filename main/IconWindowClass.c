@@ -469,6 +469,11 @@ static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 		Result = IconWindowClass_Browse(cl, o, msg);
 		break;
 
+	case SCCM_IconWin_WBStartupFinished:
+		// currently No-Op
+		Result = 0;
+		break;
+
 	default:
 		Result = DoSuperMethodA(cl, o, msg);
 		break;

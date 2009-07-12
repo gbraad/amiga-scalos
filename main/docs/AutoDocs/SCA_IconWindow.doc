@@ -56,6 +56,7 @@ IconWindow.sca/SCCM_IconWin_UpdateIcon
 IconWindow.sca/SCCM_IconWin_UpdateControlBar
 IconWindow.sca/SCCM_IconWin_UpdateStatusBar
 IconWindow.sca/SCCM_IconWin_WakeUp
+IconWindow.sca/SCCM_IconWin_WBStartupFinished
 
 IconWindow.sca/--background
 
@@ -1290,4 +1291,20 @@ IconWindow.sca/SCCM_IconWin_WakeUp
 	nothing
 
     SEE ALSO
+IconWindow.sca/SCCM_IconWin_WBStartupFinished
+
+    NAME
+        SCCM_IconWin_WBStartupFinished
+
+    SYNOPSIS
+	void DoMethod(obj,SCCM_IconWin_WBStartupFinished);
+
+    FUNCTION
+	This message is broadcasted to all Scalos windows as soon as WBStartup procedure has finished.
+
+    INPUTS
+	none
+
+    RESULT
+	nothing
 

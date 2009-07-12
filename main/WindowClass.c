@@ -213,6 +213,11 @@ static SAVEDS(ULONG) WindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 		Result = 0;
 		break;
 
+	case SCCM_Window_WBStartupFinished:
+		// currently No-Op
+		Result = 0;
+		break;
+
 	case OM_SET:
 		Result = WindowClass_Set(cl, o, msg);
 		break;

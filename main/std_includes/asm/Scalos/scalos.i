@@ -592,6 +592,11 @@ SCCM_Window_NewPath		equ	SCC_Dummy+208
 ; ULONG Tag, Tag, ... TAG_END
 ; (same parameters as SCCM_IconWin_NewPath)
 
+SCCM_Window_SetTransparency	equ	SCC_Dummy+209
+; ULONG Transparency, 0=transparent, 100=opaque
+
+SCCM_Window_WBStartupFinished 	equ	SCC_Dummy+210
+
 ;-------------- Attributes ------------
 
 SCCA_Window_IDCMP		EQU	SCC_Dummy+2	; unused
@@ -786,6 +791,9 @@ SCCM_IconWin_StartNotify	equ	SCC_Dummy+206
 ; ./.
 
 SCCM_IconWin_Browse		equ	SCC_Dummy+207
+; ./.
+
+SCCM_IconWin_WBStartupFinished	equ	SCC_Dummy+208
 ; ./.
 
 ;---------------- DeviceWindow Class ----------------------------
