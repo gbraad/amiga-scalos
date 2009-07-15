@@ -1,3 +1,6 @@
+V39.24
+Improvement: plugin now automatically reconizes when Scalos has finished starting up, and will start re-opening windows. Preferences variable &quot;StartDelay_Seconds&quot; is no longer used
+
 V39.23
 Improvement: Plugin is now able to store size and position of Scalos windows
 
