@@ -480,7 +480,10 @@ WSV_Type_DeviceWindow		EQU	1
 	LABEL	devi_SIZEOF
 
 ;di_Flags
-DIB_DontDisplay			EQU	0	;Don't display this icon
+	BITDEF	DIB,DontDisplay,0      		;Don't display this icon
+	BITDEF	DIB,Remove,1    		;***internal use only***
+	BITDEF	DIB,InfoPending,2   		;***internal use only***
+	BITDEF	DIB,BackdropReadComplete,3	;***internal use only***
 
 ;-----------------------------------------------------------------------
 

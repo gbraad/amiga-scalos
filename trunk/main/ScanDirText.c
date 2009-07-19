@@ -97,6 +97,8 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 		if (NULL == iwt->iwt_WindowTask.wt_Window)
 			break;
 
+		BackdropWait(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock);
+
 		if (!AttemptSemaphoreNoNest(&iwt->iwt_ScanDirSemaphore))
 			break;
 
@@ -594,6 +596,8 @@ ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_SetVirtSize, 
 		SETVIRTF_AdjustRightSlider | SETVIRTF_AdjustBottomSlider);
+
+	BackdropWait(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock);
 
 	// limit <wt_XOffset> and <wt_YOffset> to positive values
 	if (iwt->iwt_WindowTask.wt_XOffset < 0)

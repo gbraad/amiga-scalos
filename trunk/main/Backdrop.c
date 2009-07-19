@@ -1132,4 +1132,61 @@ static void BackdropRedrawMainIconObject(struct internalScaWindowTask *iwtMain, 
 }
 
 
+// Wait up to 2 seconds for completion of backdrop icon generation on desktop
+BOOL BackdropWait(BPTR dirLock)
+{
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
+	struct ScaIconNode *in;
+	BOOL Found = FALSE;
+	ULONG n = 20;
+
+	if (NULL == iwtMain)
+		{
+		d1(kprintf("%s/%s/%ld: iwtMain=%08lx\n", __FILE__, __FUNC__, __LINE__, iwtMain));
+		return Found;
+		}
+
+	d1(KPrintF("%s/%s/%ld: START iwtMain=%08lx\n", __FILE__, __FUNC__, __LINE__, iwtMain));
+
+	do	{
+		ScalosLockIconListShared(iwtMain);
+
+		for (in=iwtMain->iwt_WindowTask.wt_IconList; in && !Found; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
+			{
+			if (in->in_DeviceIcon)
+				{
+				BPTR DeviceIconLock = DiskInfoLock(in);
+
+				if (DeviceIconLock)
+					{
+					LONG IsSameLock;
+
+					IsSameLock = ScaSameLock(DeviceIconLock, dirLock);
+
+					if (LOCK_SAME_VOLUME == IsSameLock || LOCK_SAME == IsSameLock)
+						{
+						d1(kprintf("%s/%s/%ld: Found Device Icon in=<%s>  di_Flags=%08lx\n", \
+							__FILE__, __FUNC__, __LINE__, GetIconName(in), \
+							in->in_DeviceIcon->di_Flags));
+						Found = in->in_DeviceIcon->di_Flags & DIBF_BackdropReadComplete;
+						}
+
+					UnLock(DeviceIconLock);
+					}
+				}
+			}
+
+		ScalosUnLockIconList(iwtMain);
+
+		if (!Found)
+			Delay(5);	// wait 100 ms
+
+		} while (!Found && (n-- > 0));
+
+
+	d1(kprintf("%s/%s/%ld: END Found=%ld\n", __FILE__, __FUNC__, __LINE__, Found));
+
+	return Found;
+}
+
 

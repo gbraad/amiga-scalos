@@ -786,6 +786,8 @@ struct ScaDeviceIcon
 #define DIBF_Remove			(1L << DIBB_Remove)
 #define DIBB_InfoPending		2		// ***internal use only*** 
 #define DIBF_InfoPending		(1L << DIBB_InfoPending)
+#define DIBB_BackdropReadComplete 	3		// ***internal use only***
+#define DIBF_BackdropReadComplete	(1L << DIBB_BackdropReadComplete)
 
 
 // for compatibility's sake

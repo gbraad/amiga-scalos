@@ -1077,7 +1077,7 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 	BPTR oldDir = NOT_A_LOCK;
 	BPTR vLock;
 
-	d1(kprintf("%s/%s/%ld: iwt=%08lx  DevIn=%08lx <%s>  in_DeviceIcon=%08lx\n", \
+	d1(kprintf("%s/%s/%ld: START iwt=%08lx  DevIn=%08lx <%s>  in_DeviceIcon=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, DevIn, DevIn->in_Name, DevIn->in_DeviceIcon));
 
 	InitBackDropList(&bdl);
@@ -1090,9 +1090,10 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 		vLock = Lock(DevIn->in_DeviceIcon->di_Device, ACCESS_READ);
 		d1(kprintf("%s/%s/%ld: vLock=%08lx\n", __FILE__, __FUNC__, __LINE__, vLock));
 		debugLock_d1(vLock);
-		if ((BPTR)NULL == vLock)
+		if (BNULL == vLock)
 			{
 			Result = IoErr();
+			d1(kprintf("%s/%s/%ld: vLock=NULL,  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
@@ -1100,12 +1101,16 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 
 		Result = LoadBackdropFile(&bdl);
 		if (RETURN_OK != Result)
+			{
+			d1(kprintf("%s/%s/%ld: LoadBackdropFile() failed,  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
+			}
 
 		fName = AllocPathBuffer();
 		if (NULL == fName)
 			{
 			Result = ERROR_NO_FREE_STORE;
+			d1(kprintf("%s/%s/%ld: AllocPathBuffer() failed,  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
@@ -1118,6 +1123,12 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 			}
 		} while (0);
 
+	if (DevIn && DevIn->in_DeviceIcon)
+		{
+		d1(kprintf("%s/%s/%ld: setting DIBF_BackdropReadComplete flag\n", __FILE__, __FUNC__, __LINE__));
+		DevIn->in_DeviceIcon->di_Flags |= DIBF_BackdropReadComplete;
+		}
+
 	FreeBackdropFile(&bdl);
 
 	d1(kprintf("%s/%s/%ld: vLock=%08lx\n", __FILE__, __FUNC__, __LINE__, vLock));
@@ -1128,6 +1139,8 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 		UnLock(vLock);
 	if (fName)
 		FreePathBuffer(fName);
+
+	d1(kprintf("%s/%s/%ld: END  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }
@@ -1150,7 +1163,7 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 	struct FileInfoBlock *fib = NULL;	// +++ JMC 28.11.2004
 
 
-	d1(kprintf("%s/%s/%ld: BackdropIconName=<%s>\n", __FILE__, __FUNC__, __LINE__, BackdropIconName));
+	d1(kprintf("%s/%s/%ld: START BackdropIconName=<%s>\n", __FILE__, __FUNC__, __LINE__, BackdropIconName));
 
 	do	{
 
@@ -1176,7 +1189,7 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 		oldDir = CurrentDir(dirLock);
 
 		lp = FilePart(fName);
-		d1(kprintf("%s/%s/%ld: FilPart=<%s>\n", __FILE__, __FUNC__, __LINE__, lp));
+		d1(kprintf("%s/%s/%ld: FilePart=<%s>\n", __FILE__, __FUNC__, __LINE__, lp));
 
 //-----------------------------------------------------------------------------
 // +++ JMC 28.11.2004
@@ -1207,7 +1220,10 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 //-----------------------------------------------------------------------------
 
 		if (FindIconInDrawerWindows(dirLock, lp))
+			{
+			d1(kprintf("%s/%s/%ld: <%s> Icon found in drawer window!\n", __FILE__, __FUNC__, __LINE__, PathPart(fName)));
 			break;
+			}
 
 		iconObj = NewIconObjectTags(lp,
 			IDTA_Text, (ULONG) lp,
@@ -1324,6 +1340,8 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 		DisposeIconObject(iconObj);
 	if (fib)
 		FreeDosObject(DOS_FIB, fib);
+
+	d1(kprintf("%s/%s/%ld: END  in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
 	return in;
 }
