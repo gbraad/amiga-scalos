@@ -123,6 +123,8 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 			&& 0 == Stricmp(Name, "disk"))
 			break;
 
+		BackdropWait(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock);
+
 		if (!AttemptSemaphoreNoNest(&iwt->iwt_ScanDirSemaphore))
 			break;
 
@@ -364,6 +366,8 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 		ScalosUnLockIconList(iwt);
 
 		ScanDirUpdateStatusBarText(iwt, 0);
+
+		BackdropWait(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock);
 
 		if (iwt->iwt_WindowTask.wt_Window)
 			{
@@ -785,16 +789,16 @@ static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, str
 BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropList *bdl,
 	BPTR fLock, CONST_STRPTR FileName)
 {
-	struct ScaWindowStruct *ws = iInfos.xii_iinfos.ii_MainWindowStruct;
+	struct ScaWindowStruct *wsMain = iInfos.xii_iinfos.ii_MainWindowStruct;
 
 	if ((BPTR)NULL == fLock)
 		return FALSE;
-	if (NULL == ws)
+	if (NULL == wsMain)
 		return FALSE;
 
-	if (ws != iwt->iwt_WindowTask.mt_WindowStruct)
+	if (wsMain != iwt->iwt_WindowTask.mt_WindowStruct)
 		{
-		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
+		struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) wsMain->ws_WindowTask;
 		struct ScaIconNode *inx;
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));

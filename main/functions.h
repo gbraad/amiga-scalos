@@ -94,6 +94,7 @@ BOOL IsPermanentBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropL
 	BPTR fLock, CONST_STRPTR FileName);
 void PutAwayIcon(struct internalScaWindowTask *iwt,
 	BPTR iconDirLock, CONST_STRPTR IconName, BOOL RemovePermanent);
+BOOL BackdropWait(BPTR dirLock);
 ///
 /* ------------------------------------------------- */
 
