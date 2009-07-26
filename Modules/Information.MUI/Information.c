@@ -41,6 +41,7 @@
 #include <proto/dos.h>
 #include <proto/icon.h>
 #include <proto/intuition.h>
+#include <proto/graphics.h>
 #include <proto/utility.h>
 #include <proto/asl.h>
 #include <proto/muimaster.h>
@@ -2630,11 +2631,21 @@ static void DropZoneMsgHandler(struct DropZoneMsg *dzm)
 		d1(KPrintF("%s/%ld: ADZMACTION_Enter\n", __FUNC__, __LINE__));
 		get(dz->dz_Object, MUIA_Disabled, &Disabled);
 		if (!Disabled)
+			{
 			DoMethod(dz->dz_Object, MUIM_DragBegin, NULL);
+#if defined(__MORPHOS__)
+			if (DOSBase->dl_lib.lib_Version >= 51)
+				WaitTOF();
+#endif //defined(__MORPHOS__)
+			}
 		break;
 	case ADZMACTION_Leave:
 		d1(KPrintF("%s/%ld: ADZMACTION_Leave\n", __FUNC__, __LINE__));
 		DoMethod(dz->dz_Object, MUIM_DragFinish, NULL, FALSE);
+#if defined(__MORPHOS__)
+		if (DOSBase->dl_lib.lib_Version >= 51)
+			WaitTOF();
+#endif //defined(__MORPHOS__)
 		break;
 		}
 	d1(KPrintF("%s/%ld:  END\n", __FUNC__, __LINE__));
@@ -2651,16 +2662,26 @@ static void ReplaceIcon(Object *NewIconObj, Object **OldIconObj)
 	ULONG ul;
 	ULONG IconType;
 
+	d1(KPrintF("%s/%ld: START NewIconObj=%08lx  OldIconObj=%08lx\n", __FUNC__, __LINE__, NewIconObj, OldIconObj));
+
+	d1(KPrintF("%s/%ld: *OldIconObj=%08lx\n", __FUNC__, __LINE__, *OldIconObj));
 	GetAttr(IDTA_Type, *OldIconObj, &IconType);
+	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
 	set(NewIconObj, IDTA_Type, IconType);
+
+	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
 
 	ggNew->BoundsLeftEdge = ggOld->LeftEdge + (ggNew->LeftEdge - ggNew->BoundsLeftEdge);
 	ggNew->BoundsTopEdge = ggOld->TopEdge + (ggNew->TopEdge - ggNew->BoundsTopEdge);
 	ggNew->LeftEdge = ggOld->LeftEdge;
 	ggNew->TopEdge = ggNew->TopEdge;
 
+	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
+
 	GetAttr(IDTA_DefaultTool, *OldIconObj, &ul);
 	set(NewIconObj, IDTA_DefaultTool, ul);
+
+	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
 
 	GetAttr(IDTA_WindowRect, *OldIconObj, &ul);
 	set(NewIconObj, IDTA_WindowRect, ul);
@@ -2673,12 +2694,21 @@ static void ReplaceIcon(Object *NewIconObj, Object **OldIconObj)
 	GetAttr(IDTA_Flags, *OldIconObj, &ul);
 	set(NewIconObj, IDTA_Flags, ul);
 
+	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
+
 	GetAttr(IDTA_ViewModes, *OldIconObj, &ul);
 	set(NewIconObj, IDTA_ViewModes, ul);
 
+	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
+
 	set(MccIconObj, MUIA_Iconobj_Object, NewIconObj);
+
+	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
+
 	DisposeIconObject(*OldIconObj);
 	*OldIconObj = NewIconObj;
+
+	d1(KPrintF("%s/%ld:  END\n", __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------
@@ -4801,15 +4831,18 @@ static void HandleDropOnIcon(struct WBArg *arg, Object *o, struct DefIconInfo *d
 
 	(void) o;
 
+	*dii->dii_IconObjectFromDisk = NULL;
+
 	OldDir = CurrentDir(arg->wa_Lock);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: wa_Lock=%08lx  wa_Name=<%s>\n", __FUNC__, __LINE__, arg->wa_Lock, arg->wa_Name));
 
 	GetIconObjectFromWBArg(dii, arg, TextFileTypeName, sizeof(TextFileTypeName));
 
-
 	if (*dii->dii_IconObjectFromDisk)
 		ReplaceIcon(*dii->dii_IconObjectFromDisk, &OldIconObj);
+	else
+		DisposeIconObject(OldIconObj);
 
 	CurrentDir(OldDir);
 }
