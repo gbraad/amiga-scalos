@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+210)
+** next Tag to use :	(SCC_Dummy+213)
 */
 
 #ifndef DOS_DOS_H
@@ -1526,6 +1526,7 @@ enum ftOpCodes { FTOPCODE_Copy=1, FTOPCODE_Move, FTOPCODE_CreateLink };
 #define SCCA_FileTrans_Screen			(SCC_Dummy+6)	// [I..]
 #define	SCCA_FileTrans_ReplaceMode		(SCC_Dummy+157)	// [I..] +jl+ 20010713
 #define SCCA_FileTrans_WriteProtectedMode	(SCC_Dummy+195)	// [I..]
+#define SCCA_FileTrans_LinksNotSupportedMode	(SCC_Dummy+212)	// [I..]
 
 // Values for SCCA_FileTrans_ReplaceMode
 #define	SCCV_ReplaceMode_Ask			0
@@ -1538,6 +1539,14 @@ enum ftOpCodes { FTOPCODE_Copy=1, FTOPCODE_Move, FTOPCODE_CreateLink };
 #define	SCCV_WriteProtectedMode_Never		1
 #define	SCCV_WriteProtectedMode_Always		2
 #define	SCCV_WriteProtectedMode_Abort		3
+
+// Values for SCCA_FileTrans_LinksNotSupportedMode
+#define	SCCV_LinksNotSupportedMode_Ask		0
+#define	SCCV_LinksNotSupportedMode_Ignore	1
+#define	SCCV_LinksNotSupportedMode_IgnoreAll	2
+#define	SCCV_LinksNotSupportedMode_Copy		3
+#define	SCCV_LinksNotSupportedMode_CopyAll	4
+#define	SCCV_LinksNotSupportedMode_Abort	5
 
 // ---------------------------------------------------------------------------
 // --------------- Methods -------------
@@ -1636,6 +1645,65 @@ enum ExistsReqResult { EXISTREQ_Replace = 1, EXISTREQ_Skip, EXISTREQ_ReplaceAll,
 enum WriteProtectedReqType { WRITEPROTREQ_Copy, WRITEPROTREQ_Move, WRITEPROTREQ_CopyIcon };
 enum WriteProtectedReqResult { WRITEPROTREQ_Replace = 1, WRITEPROTREQ_Skip, WRITEPROTREQ_ReplaceAll, WRITEPROTREQ_SkipAll, WRITEPROTREQ_Abort = 0 };
 
+// ---------------------------------------------------------------------------
+
+#define SCCM_FileTrans_ErrorRequest		(SCC_Dummy+210)
+// ULONG mer_SuggestedBodyTextId;
+// ULONG mer_SuggestedGadgetTextId;
+// returns ErrorReqResult
+
+enum ErrorReqResult { ERRORREQ_Retry = 1, ERRORREQ_Skip, ERRORREQ_Abort };
+enum FileTransTypeAction
+	{
+	ftta_Copy,
+	ftta_Move,
+	ftta_Delete,
+	ftta_DeleteFile,
+	ftta_DeleteDir,
+	ftta_CopyAndDelete,
+	ftta_CopyFile,
+	ftta_CopyDir,
+	ftta_CopyVolume,
+	ftta_CopyLink,
+	ftta_CreateSoftLink,
+	ftta_CreateHardLink,
+	ftta_Count,
+	ftta_CountDir,
+	};
+
+enum FileTransOperation
+	{
+	fto_Lock,
+	fto_AddPart,
+	fto_MakeLink,
+	fto_AllocPathBuffer,
+	fto_NameFromLock,
+	fto_Rename,
+	fto_AllocDosObject,
+	fto_Examine,
+	fto_Open,
+	fto_Read,
+	fto_Write,
+	fto_GetDeviceProc,
+	fto_ReadLink,
+	fto_DeleteFile,
+	fto_CreateDir,
+	fto_ExNext,
+	fto_DupLock,
+	fto_SetProtection,
+	};
+
+// ---------------------------------------------------------------------------
+
+#define SCCM_FileTrans_LinksNotSupportedRequest	(SCC_Dummy+211)
+//	  BPTR  mlns_SrcDirLock;
+//	  CONST_STRPTR mlns_SrcName;
+//	  BPTR  mlns_DestDirLock;
+//	  CONST_STRPTR mlns_DestName;
+//	  ULONG mlns_SuggestedBodyTextId;
+//	  ULONG mlns_SuggestedGadgetTextId;
+
+enum LinksNotSupportedReqResult { LINKSNOTSUPPORTEDREQ_Ignore = 1, LINKSNOTSUPPORTEDREQ_IgnoreAll, LINKSNOTSUPPORTEDREQ_Copy, LINKSNOTSUPPORTEDREQ_CopyAll, LINKSNOTSUPPORTEDREQ_Abort };
 
 // ---------------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -2393,6 +2461,32 @@ struct msg_WriteProtectedRequest
 	LONG mwp_ErrorCode;
 	ULONG mwp_SuggestedBodyTextId;
 	ULONG mwp_SuggestedGadgetTextId;
+	};
+
+// SCCM_FileTrans_ErrorRequest
+struct msg_ErrorRequest
+	{
+	ULONG mer_MethodID;
+	struct Window *mer_ParentWindow;
+	enum FileTransTypeAction mer_Action;	// Action performed when the error occurred
+	enum FileTransOperation mer_Op;		// Operation performed (Lock, Examine etc.) when error occurred
+	LONG	mer_ErrorCode;			// code of error
+	STRPTR	mer_ErrorFileName;		// name of object on which error occured
+	ULONG mer_SuggestedBodyTextId;
+	ULONG mer_SuggestedGadgetTextId;
+	};
+
+// SCCM_FileTrans_LinksNotSupportedRequest
+struct msg_LinksNotSupportedRequest
+	{
+	ULONG mlns_MethodID;
+	struct Window *mlns_ParentWindow;
+	BPTR  mlns_SrcDirLock;
+	CONST_STRPTR mlns_SrcName;
+	BPTR  mlns_DestDirLock;
+	CONST_STRPTR mlns_DestName;
+	ULONG mlns_SuggestedBodyTextId;
+	ULONG mlns_SuggestedGadgetTextId;
 	};
 
 /****************************************************************************/

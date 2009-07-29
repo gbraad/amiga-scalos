@@ -95,11 +95,15 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 static LONG CopyAndDeleteEntry(Class *cl, Object *o, 
 	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock, 
 	const struct FileInfoBlock *fib, CONST_STRPTR DestName);
-static LONG RememberError(Class *cl, Object *o, CONST_STRPTR FileName);
+static LONG RememberError(Class *cl, Object *o, CONST_STRPTR FileName,
+	enum FileTransTypeAction LastAction, enum FileTransOperation LastOp);
 static void ClearError(Class *cl, Object *o);
-static LONG RememberExNextError(Class *cl, Object *o, CONST_STRPTR FileName);
+static LONG RememberExNextError(Class *cl, Object *o, CONST_STRPTR FileName,
+	enum FileTransTypeAction LastAction, enum FileTransOperation LastOp);
 static LONG HandleWriteProtectError(Class *cl, Object *o, BPTR DirLock,
 	CONST_STRPTR FileName, enum WriteProtectedReqType Type, LONG ErroCode);
+static LONG CopyLinkContents(Class *cl, Object *o, struct GlobalCopyArgs *gca,
+	BPTR SrcDirLock, BPTR DestDirLock, CONST_STRPTR DestName, CONST_STRPTR LinkDest);
 
 //----------------------------------------------------------------------------
 
@@ -233,12 +237,12 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 
 				if (!NameFromLock(SrcDirLock, Buffer, Max_PathLen))
 					{
-					Result = RememberError(cl, o, FileName);
+					Result = RememberError(cl, o, FileName, ftta_CreateSoftLink, fto_Lock);
 					break;
 					}
 				if (!AddPart(Buffer, (STRPTR) FileName, Max_PathLen))
 					{
-					Result = RememberError(cl, o, FileName);
+					Result = RememberError(cl, o, FileName, ftta_CreateSoftLink, fto_AddPart);
 					break;
 					}
 
@@ -246,7 +250,7 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 
 				if (!MakeLink((STRPTR) FileName, (LONG) Buffer, LINK_SOFT))
 					{
-					Result = RememberError(cl, o, FileName);
+					Result = RememberError(cl, o, FileName, ftta_CreateSoftLink, fto_MakeLink);
 					break;
 					}
 				}
@@ -257,15 +261,15 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 				fLock = Lock((STRPTR) FileName, ACCESS_READ);
 				if ((BPTR)NULL == fLock)
 					{
-					Result = RememberError(cl, o, FileName);
+					Result = RememberError(cl, o, FileName, ftta_CreateHardLink, fto_Lock);
 					break;
 					}
 
 				CurrentDir(DestDirLock);
 
-				if (!MakeLink((STRPTR) FileName, (LONG) fLock, 0))
+				if (!MakeLink((STRPTR) FileName, (LONG) fLock, LINK_HARD))
 					{
-					Result = RememberError(cl, o, FileName);
+					Result = RememberError(cl, o, FileName, ftta_CreateHardLink, fto_MakeLink);
 					break;
 					}
 				}
@@ -441,7 +445,7 @@ static LONG MoveCommand_Move(Class *cl, Object *o,
 		if (NULL == OldFileName)
 			{
 			SetIoErr(ERROR_NO_FREE_STORE);
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_Move, fto_AllocPathBuffer);
 			break;
 			}
 
@@ -449,35 +453,35 @@ static LONG MoveCommand_Move(Class *cl, Object *o,
 		if (NULL == NewFileName)
 			{
 			SetIoErr(ERROR_NO_FREE_STORE);
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_Move, fto_AllocPathBuffer);
 			break;
 			}
 
 		if (!NameFromLock(SrcDirLock, OldFileName, Max_PathLen - 1))
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_Move, fto_NameFromLock);
 			break;
 			}
 		if (!NameFromLock(DestDirLock, NewFileName, Max_PathLen - 1))
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_Move, fto_NameFromLock);
 			break;
 			}
 
 		if (!AddPart(OldFileName, (STRPTR) FileName, Max_PathLen - 1))
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_Move, fto_AddPart);
 			break;
 			}
 		if (!AddPart(NewFileName, (STRPTR) FileName, Max_PathLen - 1))
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_Move, fto_AddPart);
 			break;
 			}
 
 		if (!Rename(OldFileName, NewFileName))
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_Move, fto_Rename);
 			if (ERROR_WRITE_PROTECTED == Result
 				|| ERROR_DELETE_PROTECTED == Result)
 				{
@@ -491,7 +495,7 @@ static LONG MoveCommand_Move(Class *cl, Object *o,
 				case WRITEPROTREQ_Replace:
 					SetProtection(OldFileName, 0);
 					if (!Rename(OldFileName, NewFileName))
-						Result = RememberError(cl, o, FileName);
+						Result = RememberError(cl, o, FileName, ftta_Move, fto_Rename);
 					break;
 				default:
 					break;
@@ -545,7 +549,7 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_CopyAndDelete, fto_AllocDosObject);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -559,7 +563,7 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 		fLock = Lock((STRPTR) FileName, ACCESS_READ);
 		if ((BPTR)NULL == fLock)
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_CopyAndDelete, fto_Lock);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -571,7 +575,7 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 
 		if (!ScalosExamine64(fLock, fib))
 			{
-			Result = RememberError(cl, o, FileName);
+			Result = RememberError(cl, o, FileName, ftta_CopyAndDelete, fto_Examine);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -587,7 +591,7 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 			parentLock = ParentDir(fLock);
 			if ((BPTR)NULL == parentLock)
 				{
-				Result = RememberError(cl, o, FileName);
+				Result = RememberError(cl, o, FileName, ftta_CopyAndDelete, fto_Lock);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -667,7 +671,7 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, SrcFileName);
+			Result = RememberError(cl, o, SrcFileName, ftta_Copy, fto_AllocDosObject);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -688,7 +692,7 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 			fLock = Lock((STRPTR) SrcFileName, ACCESS_READ);
 			if ((BPTR)NULL == fLock)
 				{
-				Result = RememberError(cl, o, SrcFileName);
+				Result = RememberError(cl, o, SrcFileName, ftta_Copy, fto_Lock);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -700,7 +704,7 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 
 			if (!ScalosExamine64(fLock, fib))
 				{
-				Result = RememberError(cl, o, SrcFileName);
+				Result = RememberError(cl, o, SrcFileName, ftta_Copy, fto_Examine);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -768,7 +772,7 @@ static LONG CopyFile(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		fdSrc = Open((STRPTR) SrcName, MODE_OLDFILE);
 		if ((BPTR)NULL == fdSrc)
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyFile, fto_Open);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -786,7 +790,7 @@ static LONG CopyFile(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		fdDest = Open((STRPTR) DestName, MODE_NEWFILE);
 		if ((BPTR)NULL == fdDest)
 			{
-			Result = RememberError(cl, o, DestName);
+			Result = RememberError(cl, o, DestName, ftta_CopyFile, fto_Open);
 			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			if (ERROR_WRITE_PROTECTED == Result
 				|| ERROR_DELETE_PROTECTED == Result)
@@ -820,7 +824,7 @@ static LONG CopyFile(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 			Actual = Read(fdSrc, Buffer, CurrentPrefs.pref_CopyBuffLen);
 			if (Actual < 0)
 				{
-				Result = RememberError(cl, o, SrcName);
+				Result = RememberError(cl, o, SrcName, ftta_CopyFile, fto_Read);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -832,7 +836,7 @@ static LONG CopyFile(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 				if (Written != Actual)
 					{
-					Result = RememberError(cl, o, DestName);
+					Result = RememberError(cl, o, DestName, ftta_CopyFile, fto_Write);
 					d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 					break;
 					}
@@ -880,7 +884,7 @@ static LONG CopyFile(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 static LONG CopyLink(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 	BPTR SrcParentLock, BPTR DestParentLock, CONST_STRPTR SrcName, CONST_STRPTR DestName)
 {
-//	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
+	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 	LONG Result = RETURN_OK;
 	STRPTR Buffer;
 	struct DevProc *devproc = NULL;
@@ -903,21 +907,21 @@ static LONG CopyLink(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 		if (!NameFromLock(SrcParentLock, Buffer, Max_PathLen))
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyLink, fto_NameFromLock);
 			break;
 			}
 
 		devproc = GetDeviceProc(Buffer, NULL);
 		if (NULL == devproc)
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyLink, fto_GetDeviceProc);
 			break;
 			}
 
 		if (!ReadLink(devproc->dvp_Port, SrcParentLock, (STRPTR) SrcName,
 				Buffer, Max_PathLen))
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyLink, fto_ReadLink);
 			break;
 			}
 
@@ -927,7 +931,7 @@ static LONG CopyLink(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 		if (!MakeLink((STRPTR) DestName, (LONG) Buffer, LINK_SOFT))
 			{
-			Result = RememberError(cl, o, DestName);
+			Result = RememberError(cl, o, DestName, ftta_CreateSoftLink, fto_MakeLink);
 			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 			if (ERROR_OBJECT_EXISTS == Result)
@@ -940,19 +944,77 @@ static LONG CopyLink(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 				if (!DeleteFile((STRPTR) DestName))
 					{
-					Result = RememberError(cl, o, DestName);
+					Result = RememberError(cl, o, DestName, ftta_CopyLink, fto_DeleteFile);
 					}
 
 				d1(kprintf("%s/%s/%ld: after deleting link, Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 				if (RETURN_OK == Result)
 					{
-					if (!MakeLink((STRPTR) DestName, (LONG) Buffer, TRUE))
+					if (!MakeLink((STRPTR) DestName, (LONG) Buffer, LINK_SOFT))
 						{
-						Result = RememberError(cl, o, DestName);
+						Result = RememberError(cl, o, DestName, ftta_CreateSoftLink, fto_MakeLink);
 						}
 
 					d1(KPrintF("%s/%s/%ld: after MakeLink(), Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+					}
+				}
+			else if (ERROR_ACTION_NOT_KNOWN == Result)
+				{
+				// Links probably not supported by destination file system
+				ULONG	LinksMode = ftci->ftci_LinksMode;
+
+				if (SCCV_LinksNotSupportedMode_Ask == LinksMode)
+					{
+					enum LinksNotSupportedReqResult lnsResult;
+
+					lnsResult = DoMethod(o, SCCM_FileTrans_LinksNotSupportedRequest,
+						ftci->ftci_Window,
+						SrcParentLock,
+						Buffer,
+						DestParentLock,
+						DestName,
+						MSGID_LINKSNOTSUPPORTED_BODY,
+						MSGID_LINKSNOTSUPPORTED_GADGETS);
+					
+					switch (lnsResult)
+						{
+					case LINKSNOTSUPPORTEDREQ_Ignore:
+						LinksMode = SCCV_LinksNotSupportedMode_Ignore;
+						break;
+					case LINKSNOTSUPPORTEDREQ_IgnoreAll:
+						LinksMode = ftci->ftci_LinksMode = SCCV_LinksNotSupportedMode_IgnoreAll;
+						break;
+					case LINKSNOTSUPPORTEDREQ_Copy:
+						LinksMode = SCCV_LinksNotSupportedMode_Copy;
+						break;
+					case LINKSNOTSUPPORTEDREQ_CopyAll:
+						LinksMode = ftci->ftci_LinksMode = SCCV_LinksNotSupportedMode_CopyAll;
+						break;
+					case LINKSNOTSUPPORTEDREQ_Abort:
+					default:
+						LinksMode = SCCV_LinksNotSupportedMode_Abort;
+						break;
+						};
+					}
+				switch (LinksMode)
+					{
+				case SCCV_LinksNotSupportedMode_Copy:
+				case SCCV_LinksNotSupportedMode_CopyAll:
+					Result = CopyLinkContents(cl, o, gca,
+						SrcParentLock,
+						DestParentLock,
+						DestName,
+						Buffer);
+					break;
+				case SCCV_LinksNotSupportedMode_Ignore:
+				case SCCV_LinksNotSupportedMode_IgnoreAll:
+					// Silently ignore links
+					Result = RETURN_OK;
+					break;
+				case SCCV_LinksNotSupportedMode_Abort:
+					Result = RETURN_WARN;
+					break;
 					}
 				}
 
@@ -997,7 +1059,7 @@ static LONG CopyDir(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		srcDirLock = Lock((STRPTR) SrcName, ACCESS_READ);
 		if ((BPTR)NULL == srcDirLock)
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyDir, fto_Lock);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1005,14 +1067,14 @@ static LONG CopyDir(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyDir, fto_AllocDosObject);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
 		if (!ScalosExamine64(srcDirLock, fib))
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyDir, fto_Examine);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1022,14 +1084,14 @@ static LONG CopyDir(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		DestDirLock = CreateDir((STRPTR) DestName);
 		if ((BPTR)NULL == DestDirLock)
 			{
-			Result = RememberError(cl, o, DestName);
+			Result = RememberError(cl, o, DestName, ftta_CopyDir, fto_CreateDir);
 			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 			if (ERROR_OBJECT_EXISTS == Result)
 				{
 				DestDirLock = Lock((STRPTR) DestName, ACCESS_READ);
 				ClearError(cl, o);
-				Result = RememberError(cl, o, DestName);
+				Result = RememberError(cl, o, DestName, ftta_CopyDir, fto_CreateDir);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				}
 
@@ -1049,7 +1111,7 @@ static LONG CopyDir(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		do	{
 			if (!ScalosExNext64(srcDirLock, fib))
 				{
-				Result = RememberExNextError(cl, o, SrcName);
+				Result = RememberExNextError(cl, o, SrcName, ftta_CopyDir, fto_ExNext);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -1099,7 +1161,7 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		srcDirLock = DupLock(SrcParentLock);
 		if ((BPTR)NULL == srcDirLock)
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyVolume, fto_DupLock);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1107,14 +1169,14 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyVolume, fto_AllocDosObject);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
 		if (!ScalosExamine64(srcDirLock, fib))
 			{
-			Result = RememberError(cl, o, SrcName);
+			Result = RememberError(cl, o, SrcName, ftta_CopyVolume, fto_Examine);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1126,14 +1188,14 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		DestDirLock = CreateDir((STRPTR) DestName);
 		if ((BPTR)NULL == DestDirLock)
 			{
-			Result = RememberError(cl, o, DestName);
+			Result = RememberError(cl, o, DestName, ftta_CopyVolume, fto_CreateDir);
 			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 			if (ERROR_OBJECT_EXISTS == Result)
 				{
 				DestDirLock = Lock((STRPTR) DestName, ACCESS_READ);
 				ClearError(cl, o);
-				Result = RememberError(cl, o, DestName);
+				Result = RememberError(cl, o, DestName, ftta_CopyVolume, fto_CreateDir);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				}
 
@@ -1153,7 +1215,7 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 		do	{
 			if (!ScalosExNext64(srcDirLock, fib))
 				{
-				Result = RememberExNextError(cl, o, SrcName);
+				Result = RememberExNextError(cl, o, SrcName, ftta_CopyVolume, fto_ExNext);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -1323,9 +1385,9 @@ static LONG CopyEntry(Class *cl, Object *o,
 
 			d1(kprintf("%s/%s/%ld: Result OK\n", __FILE__, __FUNC__, __LINE__));
 
-			SetFileDate((STRPTR) DestName, (struct DateStamp *) &fib->fib_Date);
-			SetComment((STRPTR) DestName, (STRPTR) fib->fib_Comment);
-			SetProtection((STRPTR) DestName, fib->fib_Protection & ~FIBF_ARCHIVE);
+			(void) SetFileDate((STRPTR) DestName, (struct DateStamp *) &fib->fib_Date);
+			(void) SetComment((STRPTR) DestName, (STRPTR) fib->fib_Comment);
+			(void) SetProtection((STRPTR) DestName, fib->fib_Protection & ~FIBF_ARCHIVE);
 
 			CurrentDir(oldDir);
 			}
@@ -1381,33 +1443,31 @@ static BOOL ExistsObject(BPTR DirLock, CONST_STRPTR Name)
 static LONG ReportError(Class *cl, Object *o, LONG *Result, ULONG BodyTextID, ULONG GadgetTextID)
 {
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
-	LONG reqResult;
-	char FaultBuffer[100];
+	enum ErrorReqResult reqResult;
 
-	Fault(ftci->ftci_LastErrorCode, (STRPTR) "", FaultBuffer, sizeof(FaultBuffer)-1);
-
-	// reqResult : 1=Retry, 2=Skip, 3=Abort
-	reqResult = UseRequestArgs(ftci->ftci_Window,
-		BodyTextID, GadgetTextID, 
-		2,
+	reqResult = DoMethod(o, SCCM_FileTrans_ErrorRequest,
+		ftci->ftci_Window,
+		ftci->ftci_LastAction,
+		ftci->ftci_LastOp,
+		ftci->ftci_LastErrorCode,
 		ftci->ftci_LastErrorFileName,
-		FaultBuffer
-		);
+		BodyTextID,
+		GadgetTextID);
 
 	d1(kprintf("%s/%s/%ld: UseRequest returned=%ld\n", __FILE__, __FUNC__, __LINE__, reqResult));
 
 	switch (reqResult)
 		{
-	case COPYERR_Skip:
+	case ERRORREQ_Skip:
 		// Skip : drop current object but try to continue copying
 		*Result = RETURN_OK;
 		break;
 
-	case COPYERR_Retry:
+	case ERRORREQ_Retry:
 		*Result = RETURN_OK;
 		break;
 
-	case COPYERR_Abort:
+	case ERRORREQ_Abort:
 		*Result = RESULT_UserAborted;
 		break;
 		}
@@ -1437,7 +1497,7 @@ static LONG DeleteEntry(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Name
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_Delete, fto_AllocDosObject);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1452,14 +1512,14 @@ static LONG DeleteEntry(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Name
 			objLock = Lock((STRPTR) Name, ACCESS_READ);
 			if ((BPTR)NULL == objLock)
 				{
-				Result = RememberError(cl, o, Name);
+				Result = RememberError(cl, o, Name, ftta_Delete, fto_Lock);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
 
 			if (!ScalosExamine64(objLock, fib))
 				{
-				Result = RememberError(cl, o, Name);
+				Result = RememberError(cl, o, Name, ftta_Delete, fto_Examine);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -1543,7 +1603,7 @@ static LONG ScaDeleteFile(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Na
 
 		if (!DeleteFile((STRPTR) Name))
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_DeleteFile, fto_DeleteFile);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			if (ERROR_WRITE_PROTECTED == Result
 				|| ERROR_DELETE_PROTECTED == Result)
@@ -1558,7 +1618,7 @@ static LONG ScaDeleteFile(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Na
 				case WRITEPROTREQ_Replace:
 					SetProtection(Name, 0);
 					if (!DeleteFile((STRPTR) Name))
-						Result = RememberError(cl, o, Name);
+						Result = RememberError(cl, o, Name, ftta_DeleteFile, fto_SetProtection);
 					break;
 				default:
 					break;
@@ -1598,7 +1658,7 @@ static LONG ScaDeleteDir(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Nam
 		dirLock = Lock((STRPTR) Name, ACCESS_READ);
 		if ((BPTR)NULL == dirLock)
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_DeleteDir, fto_Lock);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1606,14 +1666,14 @@ static LONG ScaDeleteDir(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Nam
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_DeleteDir, fto_AllocDosObject);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
 		if (!ScalosExamine64(dirLock, fib))
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_DeleteDir, fto_Examine);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1621,7 +1681,7 @@ static LONG ScaDeleteDir(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Nam
 		do	{
 			if (!ScalosExNext64(dirLock, fib))
 				{
-				Result = RememberExNextError(cl, o, Name);
+				Result = RememberExNextError(cl, o, Name, ftta_DeleteDir, fto_ExNext);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -1661,7 +1721,7 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, SrcFileName);
+			Result = RememberError(cl, o, SrcFileName, ftta_Count, fto_AllocDosObject);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1682,7 +1742,7 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 			fLock = Lock((STRPTR) SrcFileName, ACCESS_READ);
 			if ((BPTR)NULL == fLock)
 				{
-				Result = RememberError(cl, o, SrcFileName);
+				Result = RememberError(cl, o, SrcFileName, ftta_Count, fto_Lock);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -1694,7 +1754,7 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 
 			if (!ScalosExamine64(fLock, fib))
 				{
-				Result = RememberError(cl, o, SrcFileName);
+				Result = RememberError(cl, o, SrcFileName, ftta_Count, fto_Examine);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -1818,20 +1878,20 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 		dirLock = Lock((STRPTR) Name, ACCESS_READ);
 		if ((BPTR)NULL == dirLock)
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_CountDir, fto_Lock);
 			break;
 			}
 
 		fib = AllocDosObject(DOS_FIB, NULL);
 		if (NULL == fib)
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_CountDir, fto_AllocDosObject);
 			break;
 			}
 
 		if (!ScalosExamine64(dirLock, fib))
 			{
-			Result = RememberError(cl, o, Name);
+			Result = RememberError(cl, o, Name, ftta_CountDir, fto_Examine);
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
@@ -1839,7 +1899,7 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 		do	{
 			if (!ScalosExNext64(dirLock, fib))
 				{
-				Result = RememberExNextError(cl, o, Name);
+				Result = RememberExNextError(cl, o, Name, ftta_CountDir, fto_ExNext);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
@@ -2055,7 +2115,8 @@ static LONG CopyAndDeleteEntry(Class *cl, Object *o,
 }
 
 
-static LONG RememberError(Class *cl, Object *o, CONST_STRPTR FileName)
+static LONG RememberError(Class *cl, Object *o, CONST_STRPTR FileName,
+	enum FileTransTypeAction LastAction, enum FileTransOperation LastOp)
 {
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 	LONG ErrorCode = IoErr();
@@ -2066,6 +2127,8 @@ static LONG RememberError(Class *cl, Object *o, CONST_STRPTR FileName)
 		{
 		if (NULL == ftci->ftci_LastErrorFileName)
 			{
+			ftci->ftci_LastOp = LastOp;
+			ftci->ftci_LastAction = LastAction;
 			ftci->ftci_LastErrorCode = ErrorCode;
 			ftci->ftci_LastErrorFileName = AllocCopyString(FileName);
 			}
@@ -2091,7 +2154,8 @@ static void ClearError(Class *cl, Object *o)
 
 // just like RememberError() except that 
 // ERROR_NO_MORE_ENTRIES get remapped to RETURN_OK
-static LONG RememberExNextError(Class *cl, Object *o, CONST_STRPTR FileName)
+static LONG RememberExNextError(Class *cl, Object *o, CONST_STRPTR FileName,
+	enum FileTransTypeAction LastAction, enum FileTransOperation LastOp)
 {
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 	LONG ErrorCode = IoErr();
@@ -2105,6 +2169,8 @@ static LONG RememberExNextError(Class *cl, Object *o, CONST_STRPTR FileName)
 		{
 		if (NULL == ftci->ftci_LastErrorFileName)
 			{
+			ftci->ftci_LastOp = LastOp;
+			ftci->ftci_LastAction = LastAction;
 			ftci->ftci_LastErrorCode = ErrorCode;
 			ftci->ftci_LastErrorFileName = AllocCopyString(FileName);
 			}
@@ -2175,6 +2241,81 @@ static LONG HandleWriteProtectError(Class *cl, Object *o, BPTR DirLock,
 		}
 
 	return existsResult;
+}
+
+
+static LONG CopyLinkContents(Class *cl, Object *o, struct GlobalCopyArgs *gca,
+	BPTR SrcDirLock, BPTR DestDirLock, CONST_STRPTR DestName, CONST_STRPTR LinkDest)
+{
+	BPTR oldDir;
+	struct FileInfoBlock *fib;
+	LONG Result = RETURN_OK;
+	BPTR LinkSrcDirLock = BNULL;
+	BPTR fLock = BNULL;
+
+	d1(kprintf("%s/%s/%ld: DestName=<%s>  LinkDest=<%s>\n", __FILE__, __FUNC__, __LINE__, DestName, LinkDest));
+	debugLock_d1(SrcDirLock);
+	debugLock_d1(DestDirLock);
+
+	ClearError(cl, o);
+
+	do	{
+		oldDir = CurrentDir(DestDirLock);
+
+		fib = AllocDosObject(DOS_FIB, NULL);
+		if (NULL == fib)
+			{
+			Result = RememberError(cl, o, LinkDest, ftta_CopyLink, fto_AllocDosObject);
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+			break;
+			}
+
+		fLock = Lock(LinkDest, ACCESS_READ);
+		debugLock_d1(fLock);
+		if (BNULL == fLock)
+			{
+			Result = RememberError(cl, o, LinkDest, ftta_CopyLink, fto_Lock);
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+			break;
+			}
+
+		LinkSrcDirLock = ParentDir(fLock);
+		debugLock_d1(LinkSrcDirLock);
+		if (BNULL == LinkSrcDirLock)
+			{
+			Result = RememberError(cl, o, LinkDest, ftta_CopyLink, fto_Lock);
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+			break;
+			}
+
+		if (!ScalosExamine64(fLock, fib))
+			{
+			Result = RememberError(cl, o, LinkDest, ftta_CopyLink, fto_Examine);
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+			break;
+			}
+
+		Result = CopyEntry(cl, o,
+			gca,
+			LinkSrcDirLock,
+			DestDirLock,
+			fib,
+			DestName);
+		} while (0);
+
+	if (fib)
+		FreeDosObject(DOS_FIB, fib);
+
+	CurrentDir(oldDir);
+
+	if (LinkSrcDirLock)
+		UnLock(LinkSrcDirLock);
+	if (fLock)
+		UnLock(fLock);
+
+	d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+
+	return Result;
 }
 
 

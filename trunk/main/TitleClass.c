@@ -157,7 +157,6 @@ static void TTLFN_NumScreens(struct internalScaWindowTask *iwt, struct InfoData 
 
 static ULONG GetNodeCount(struct List *list);
 static void TitleClassGetDiskInfo(struct InfoData *id);
-static void Convert64KMG(ULONG64 Number, STRPTR Buffer, size_t MaxLen);
 
 //----------------------------------------------------------------------------
 
@@ -747,7 +746,7 @@ static void TTLFN_DiskFreeKMG(struct internalScaWindowTask *iwt, struct InfoData
 		d1(kprintf("%s/%s/%ld: id_NumBlocksUsed=%lu  id_BytesPerBlock=%lu\n", __FILE__, __FUNC__, __LINE__, id->id_NumBlocksUsed, id->id_BytesPerBlock));
 		d1(kprintf("%s/%s/%ld: BytesFree=%lu %lu\n", __FILE__, __FUNC__, __LINE__, ULONG64_HIGH(BytesFree), ULONG64_LOW(BytesFree)));
 
-		Convert64KMG(BytesFree, mxl->mxl_Buffer,mxl->mxl_BuffLen);
+		TitleClass_Convert64KMG(BytesFree, mxl->mxl_Buffer,mxl->mxl_BuffLen);
 
 		mxl->mxl_BuffLen -= strlen(mxl->mxl_Buffer);
 		mxl->mxl_Buffer += strlen(mxl->mxl_Buffer);
@@ -811,7 +810,7 @@ static void TTLFN_DiskUsedKMG(struct internalScaWindowTask *iwt, struct InfoData
 		d1(kprintf("%s/%s/%ld: id_NumBlocksUsed=%lu  id_BytesPerBlock=%lu\n", __FILE__, __FUNC__, __LINE__, id->id_NumBlocksUsed, id->id_BytesPerBlock));
 		d1(kprintf("%s/%s/%ld: BytesUsed=%lu %lu\n", __FILE__, __FUNC__, __LINE__, ULONG64_HIGH(BytesUsed), ULONG64_LOW(BytesUsed)));
 
-		Convert64KMG(BytesUsed, mxl->mxl_Buffer,mxl->mxl_BuffLen);
+		TitleClass_Convert64KMG(BytesUsed, mxl->mxl_Buffer,mxl->mxl_BuffLen);
 
 		mxl->mxl_BuffLen -= strlen(mxl->mxl_Buffer);
 		mxl->mxl_Buffer += strlen(mxl->mxl_Buffer);
@@ -1171,7 +1170,7 @@ static void TitleClassGetDiskInfo(struct InfoData *id)
 }
 
 
-static void Convert64KMG(ULONG64 Number, STRPTR Buffer, size_t MaxLen)
+void TitleClass_Convert64KMG(ULONG64 Number, STRPTR Buffer, size_t MaxLen)
 {
 	ULONG MsgID = MSGID_BYTENAME;
 

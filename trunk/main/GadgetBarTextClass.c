@@ -166,7 +166,11 @@ static ULONG GadgetBarText_New(Class *cl, Object *o, Msg msg)
 
 	memset(inst, 0, sizeof(struct GadgetBarTextClassInst));
 
-	gg->Width = gg->Height = gg->BoundsWidth = gg->BoundsHeight = 0;
+	gg->Width = GetTagData(GA_Width, 0, ops->ops_AttrList);
+	gg->Height = GetTagData(GA_Height, 0, ops->ops_AttrList);
+
+	gg->BoundsWidth = gg->Width;
+	gg->BoundsHeight = gg->Height;
 
 	inst->gbtcl_Text = (STRPTR) GetTagData(GBTDTA_Text, (ULONG) "", ops->ops_AttrList);
 	inst->gbtcl_Font = (struct TextFont *) GetTagData(GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
@@ -200,6 +204,8 @@ static ULONG GadgetBarText_New(Class *cl, Object *o, Msg msg)
 			gg->Height = tExt.te_Height;
 		if (gg->BoundsHeight < tExt.te_Height)
 			gg->BoundsHeight = tExt.te_Height;
+
+		d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
 		}
 	return (ULONG) o;
 }
@@ -303,7 +309,7 @@ static ULONG GadgetBarText_Set(Class *cl, Object *o, Msg msg)
 	gg->Width = GetTagData(GA_Width, gg->Width, ops->ops_AttrList);
 	gg->Height = GetTagData(GA_Height, gg->Height, ops->ops_AttrList);
 
-	d1(kprintf("%s/%s/%ld: Width%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg->Width, gg->Height));
+	d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
 
 	return DoSuperMethodA(cl, o, msg);
 }
@@ -317,7 +323,7 @@ static ULONG GadgetBarText_Layout(Class *cl, Object *o, Msg msg)
 	struct ExtGadget *gg = (struct ExtGadget *) o;
 
 	d1(KPrintF("%s/%s/%ld: Left=%ld  Top=%ld  gpl_Initial=%ld\n", \
-		__LINE__, gg->LeftEdge, gg->TopEdge, gpl->gpl_Initial));
+		__FILE__, __FUNC__, __LINE__, gg->LeftEdge, gg->TopEdge, gpl->gpl_Initial));
 
 	if (gpl->gpl_Initial)
 		{
@@ -350,13 +356,12 @@ static ULONG GadgetBarText_Layout(Class *cl, Object *o, Msg msg)
 		if (gg->Height < NewHeight)
 			gg->Height = gg->BoundsHeight = NewHeight;
 
-		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
 
 		Scalos_DoneRastPort(&rp);
 		}
 
-
-	d1(KPrintF("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg->Width, gg->Height));
+	d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
 
 	return 1;
 }
@@ -372,8 +377,8 @@ static ULONG GadgetBarText_Render(Class *cl, Object *o, Msg msg)
 	ULONG chars;
 	SHORT x, y;
 
-	d1(KPrintF("%s/%s/%ld: Left=%ld  Top=%ld\n", __FILE__, __FUNC__, __LINE__, gg->LeftEdge, gg->TopEdge));
-	d1(KPrintF("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg->Width, gg->Height));
+	d1(KPrintF("%s/%s/%ld: o=%08lx  Left=%ld  Top=%ld\n", __FILE__, __FUNC__, __LINE__, o, gg->LeftEdge, gg->TopEdge));
+	d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
 
 	Scalos_DoneRastPort(gpr->gpr_RPort);
 	Scalos_SetFont(gpr->gpr_RPort, inst->gbtcl_Font, inst->gbtcl_TTFont);

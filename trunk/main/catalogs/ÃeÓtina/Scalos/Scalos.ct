@@ -1009,6 +1009,35 @@ MSGID_ABOUT_CONFIRM_GADGETS
 Reboot|Shutdown|Cancel
 ;Reboot|Shutdown|Cancel
 ;
+;+++translateme+++
+MSGID_LINKSNOTSUPPORTED_BODY
+Failed to create link for \"%s\"\n\
+Seems like file system doesn't support \
+links on \"%s\".
+;Failed to create link for \"%s\"\n\
+;Seems like file system doesn't support \
+;links on \"%s\".
+;
+;+++translateme+++
+MSGID_LINKSNOTSUPPORTED_GADGETS
+Ignore|Ignore All|Copy|Copy All|Abort
+;Ignore|Ignore All|Copy|Copy All|Abort
+;
+;+++translateme+++
+MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT
+Finished: %lU / %lU Objects
+;Finished: %lU / %lU Objects
+;
+;+++translateme+++
+MSGID_FILETRANSFER_DETAILS_SIZE
+Copied: %s / %s
+;Copied: %s / %s
+;
+;+++translateme+++
+MSGID_FILETRANSFER_DETAILS_SPEED
+Average Speed: %s/s
+;Average Speed: %s/s
+;
 ; ==============================================
 ;+++translateme+++
 MSGID_DROPMENU_DROPMENUTITLE

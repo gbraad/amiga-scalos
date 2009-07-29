@@ -850,6 +850,7 @@ HOOKFUNC GetTextIconSortFunction(struct internalScaWindowTask *iwt);
 // defined in TitleClass.c
 ///
 struct ScalosClass *initTitleClass(const struct PluginClass *plug);
+void TitleClass_Convert64KMG(ULONG64 Number, STRPTR Buffer, size_t MaxLen);
 ///
 /* ------------------------------------------------- */
 
