@@ -1,4 +1,3 @@
-
 // FileTransClass.c
 // $Date$
 // $Revision$
@@ -27,7 +26,6 @@
 #include <proto/graphics.h>
 #include <proto/utility.h>
 #include <proto/locale.h>
-#include <proto/gadtools.h>
 #include <proto/timer.h>
 #include <proto/iconobject.h>
 #include "debug.h"
@@ -38,6 +36,7 @@
 #include <defs.h>
 #include <datatypes/iconobject.h>
 #include <scalos/scalos.h>
+#include <scalos/GadgetBar.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -51,6 +50,7 @@
 #include "int64.h"
 #include "FileTransClass.h"
 #include "GaugeGadgetClass.h"
+#include "DtImageClass.h"
 
 //----------------------------------------------------------------------------
 
@@ -73,6 +73,8 @@ struct FileTransOp
 	LONG fto_MouseX;		// position for destination icon
 	LONG fto_MouseY;
 	};
+
+#define	FILETRANS_GADGET_IMAGE_BASENAME		"THEME:FileTrans"
 
 //----------------------------------------------------------------------------
 
@@ -107,6 +109,12 @@ static LONG GetElapsedTime(T_TIMEVAL *tv);
 static ULONG FileTransClass_CheckCountTimeout(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_OverwriteRequest(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_WriteProtectedRequest(Class *cl, Object *o, Msg msg);
+static ULONG FileTransClass_ErrorRequest(Class *cl, Object *o, Msg msg);
+static ULONG FileTransClass_LinksNotSupportedRequest(Class *cl, Object *o, Msg msg);
+static void FileTransClass_UpdateTextGadget(struct Window *win, struct Gadget *gad, CONST_STRPTR NewText);
+static void FileTransClass_ChangeGadgetWidth(struct Window *win, struct Gadget *gad, ULONG NewWidth);
+static void FileTransClass_ResizeWindow(struct FileTransClassInstance *inst);
+static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst);
 
 //----------------------------------------------------------------------------
 
@@ -183,6 +191,14 @@ static SAVEDS(ULONG) FileTransClass_Dispatcher(Class *cl, Object *o, Msg msg)
 		Result = FileTransClass_WriteProtectedRequest(cl, o, msg);
 		break;
 
+	case SCCM_FileTrans_ErrorRequest:
+		Result = FileTransClass_ErrorRequest(cl, o, msg);
+		break;
+
+	case SCCM_FileTrans_LinksNotSupportedRequest:
+		Result = FileTransClass_LinksNotSupportedRequest(cl, o, msg);
+		break;
+
 	default:
 		Result = DoSuperMethodA(cl, o, msg);
 		break;
@@ -214,7 +230,9 @@ static ULONG FileTransClass_New(Class *cl, Object *o, Msg msg)
 		SETHOOKFUNC(inst->ftci_BackFillHook, FileTrans_BackFillFunc);
 		inst->ftci_BackFillHook.h_Data = inst;
 
-		inst->ftci_Background = CreateDatatypesImage("THEME:FileTransBackground", 0);
+		inst->ftci_Background = CreateDatatypesImage("THEME:FileTrans/Backfill", 0);
+		if (NULL == inst->ftci_Background)
+			inst->ftci_Background = CreateDatatypesImage("THEME:FileTransBackground", 0);
 
 		ScalosObtainSemaphoreShared(&CopyHookSemaphore);
 
@@ -222,6 +240,7 @@ static ULONG FileTransClass_New(Class *cl, Object *o, Msg msg)
 		inst->ftci_Screen = (struct Screen *) GetTagData(SCCA_FileTrans_Screen, (ULONG)NULL, ops->ops_AttrList);
 		inst->ftci_ReplaceMode = GetTagData(SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask, ops->ops_AttrList);
 		inst->ftci_OverwriteMode = GetTagData(SCCA_FileTrans_WriteProtectedMode, SCCV_WriteProtectedMode_Ask, ops->ops_AttrList);
+		inst->ftci_LinksMode = GetTagData(SCCA_FileTrans_LinksNotSupportedMode, SCCV_LinksNotSupportedMode_Ask, ops->ops_AttrList);
 
 		inst->ftci_Line1Buffer = AllocPathBuffer();
 		inst->ftci_Line2Buffer = AllocPathBuffer();
@@ -252,6 +271,7 @@ static ULONG FileTransClass_New(Class *cl, Object *o, Msg msg)
 static ULONG FileTransClass_Dispose(Class *cl, Object *o, Msg msg)
 {
 	struct FileTransClassInstance *inst = INST_DATA(cl, o);
+	ULONG n;
 
 	if (globalCopyHook && RETURN_OK == inst->ftci_HookResult)
 		{
@@ -268,20 +288,63 @@ static ULONG FileTransClass_Dispose(Class *cl, Object *o, Msg msg)
 	ScalosReleaseSemaphore(&CopyHookSemaphore);
 
 	if (inst->ftci_Window)
+		{
 		LockedCloseWindow(inst->ftci_Window);
+		inst->ftci_Window = NULL;
+		}
 
-	FreeGadgets(inst->ftci_GadgetList);
-
+	for (n = 0; n < sizeof(inst->ftci_TextLineGadgets) / sizeof(inst->ftci_TextLineGadgets[0]); n++)
+		{
+		if (inst->ftci_TextLineGadgets[n])
+			{
+			SCA_DisposeScalosObject((Object *) inst->ftci_TextLineGadgets[n]);
+			inst->ftci_TextLineGadgets[n] = NULL;
+			}
+		}
 	if (inst->ftci_GaugeGadget)
+		{
 		SCA_DisposeScalosObject((Object *) inst->ftci_GaugeGadget);
+		inst->ftci_GaugeGadget = NULL;
+		}
+	if (inst->ftci_CancelButtonFrame)
+		{
+		if (inst->ftci_CancelButtonGadget)
+			{
+			DisposeObject((Object *) inst->ftci_CancelButtonGadget);
+			inst->ftci_CancelButtonGadget = NULL;
+			}
+		DisposeObject(inst->ftci_CancelButtonFrame);
+		inst->ftci_CancelButtonFrame = NULL;
+		}
+	else
+		{
+		if (inst->ftci_CancelButtonGadget)
+			{
+			SCA_DisposeScalosObject((Object *) inst->ftci_CancelButtonGadget);
+			inst->ftci_CancelButtonGadget = NULL;
+			}
+		}
+	if (inst->ftci_CancelButtonImage)
+		{
+		DisposeObject(inst->ftci_CancelButtonImage);
+		inst->ftci_CancelButtonImage = NULL;
+		}
 
 	if (inst->ftci_Line1Buffer)
+		{
 		FreePathBuffer(inst->ftci_Line1Buffer);
+		inst->ftci_Line1Buffer = NULL;
+		}
 	if (inst->ftci_Line2Buffer)
+		{
 		FreePathBuffer(inst->ftci_Line2Buffer);
-
+		inst->ftci_Line2Buffer = NULL;
+		}
 	if (inst->ftci_LastErrorFileName)
+		{
 		FreeCopyString(inst->ftci_LastErrorFileName);
+		inst->ftci_LastErrorFileName = NULL;
+		}
 
 	DisposeDatatypesImage(&inst->ftci_Background);
 
@@ -382,108 +445,14 @@ static ULONG FileTransClass_CreateLink(Class *cl, Object *o, Msg msg)
 static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg)
 {
 	struct FileTransClassInstance *inst = INST_DATA(cl, o);
-	struct Gadget *gad;
-	struct NewGadget ng;
 
 	AskFont(&inst->ftci_Screen->RastPort, &inst->ftci_TextAttr);
 
 	do	{
-		LONG WinWidth, WinHeight;
 		CONST_STRPTR WinTitle;
 
-		WinWidth = 300;
-
-		gad = CreateContext(&inst->ftci_GadgetList);
-		if (NULL == gad)
+		if (!FileTransClass_CreateGadgets(inst))
 			break;
-
-		ng.ng_LeftEdge = 10;
-		ng.ng_TopEdge = 10 + inst->ftci_TextAttr.ta_YSize;
-		ng.ng_Width = WinWidth - 10 - 10;
-		ng.ng_Height = inst->ftci_TextAttr.ta_YSize + 4;
-		ng.ng_GadgetText = NULL;
-		ng.ng_TextAttr = &inst->ftci_TextAttr;
-		ng.ng_GadgetID = 0;
-		ng.ng_Flags = PLACETEXT_LEFT;
-		ng.ng_VisualInfo = iInfos.xii_iinfos.ii_visualinfo;
-		ng.ng_UserData = NULL;
-
-#ifdef SHOW_EVERY_OBJECT
-		d1(kprintf("%s/%s/%ld: Line1Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->ftci_Line1Buffer));
-
-		gad = inst->ftci_TextLine1Gadget = CreateGadget(TEXT_KIND, gad, &ng,
-			GTTX_Text, inst->ftci_Line1Buffer,
-			GTTX_Border, FALSE,
-			GTTX_Clipped, TRUE,
-			GTTX_Justification, GTJ_CENTER,
-			TAG_END);
-
-		if (NULL == gad)
-			break;
-
-		ng.ng_TopEdge += ng.ng_Height + 5;
-#endif /* SHOW_EVERY_OBJECT */
-
-		d1(kprintf("%s/%s/%ld: Line2Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->ftci_Line2Buffer));
-
-		gad = inst->ftci_TextLine2Gadget = CreateGadget(TEXT_KIND, gad, &ng,
-			GTTX_Text, (ULONG) inst->ftci_Line2Buffer,
-			GTTX_Border, FALSE,
-			GTTX_Clipped, TRUE,
-			GTTX_Justification, GTJ_LEFT,
-			TAG_END);
-
-		if (NULL == gad)
-			break;
-
-		ng.ng_TopEdge += ng.ng_Height + 5;
-
-		gad = inst->ftci_GaugeGadget = (struct Gadget *) SCA_NewScalosObjectTags("Gauge.sca",
-			GA_Left, ng.ng_LeftEdge,
-			GA_Top, ng.ng_TopEdge,
-			GA_Width, ng.ng_Width,
-			GA_Height, ng.ng_Height,
-			GA_Previous, (ULONG) gad,
-			SCAGAUGE_MinValue, 0,
-			SCAGAUGE_MaxValue, 100,
-			SCAGAUGE_Level, 0,
-			SCAGAUGE_Vertical, FALSE,
-			SCAGAUGE_WantNumber, FALSE,
-			SCAGAUGE_BarPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[FILLPEN],
-			TAG_END);
-
-		if (NULL == gad)
-			break;
-#ifdef SHOW_REMAINING_TIME
-		ng.ng_TopEdge += ng.ng_Height + 5;
-
-		gad = inst->ftci_TextLine3Gadget = CreateGadget(TEXT_KIND, gad, &ng,
-			GTTX_Text, (ULONG) inst->ftci_Line3Buffer,
-			GTTX_Border, FALSE,
-			GTTX_Clipped, TRUE,
-			GTTX_Justification, GTJ_CENTER,
-			TAG_END);
-
-		if (NULL == gad)
-			break;
-#endif
-		ng.ng_TopEdge += ng.ng_Height + 5;
-
-		ng.ng_GadgetText = (STRPTR) GetLocString(MSGID_CANCELBUTTON);
-		ng.ng_Height = inst->ftci_TextAttr.ta_YSize + 4 + 2;
-		ng.ng_Width = 5 + 5 + Scalos_TextLength(&inst->ftci_Screen->RastPort, ng.ng_GadgetText, strlen(ng.ng_GadgetText));
-		ng.ng_LeftEdge = (WinWidth - ng.ng_Width) / 2;
-		ng.ng_Flags = PLACETEXT_IN;
-		ng.ng_GadgetID = GID_CancelButton;
-
-		gad = inst->ftci_CancelButtonGadget = CreateGadget(BUTTON_KIND, gad, &ng,
-			GT_Underscore, '_',
-			TAG_END);
-
-		if (NULL == gad)
-			break;
-
-		WinHeight = ng.ng_TopEdge + ng.ng_Height + 10;
 
 		switch (inst->ftci_CurrentOperation)
 			{
@@ -499,16 +468,26 @@ static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg)
 			}
 
 		inst->ftci_Window = LockedOpenWindowTags(NULL,
-			WA_IDCMP, IDCMP_CLOSEWINDOW | IDCMP_GADGETUP,
+			WA_IDCMP, IDCMP_CLOSEWINDOW | IDCMP_GADGETUP | IDCMP_NEWSIZE,
 			WA_Gadgets, inst->ftci_GadgetList,
 			WA_CustomScreen, inst->ftci_Screen,
-			WA_Left, (inst->ftci_Screen->Width - WinWidth) / 2,
-			WA_Top, (inst->ftci_Screen->Height - WinHeight) / 2,
-			WA_Height, WinHeight,
-			WA_Width, WinWidth,
+			WA_Left, (inst->ftci_Screen->Width - inst->ftci_WindowWidth) / 2,
+			WA_Top, (inst->ftci_Screen->Height - inst->ftci_WindowHeight) / 2,
+			WA_Height, inst->ftci_WindowHeight,
+			WA_Width, inst->ftci_WindowWidth,
+			WA_MinHeight, inst->ftci_WindowHeight,
+			WA_MinWidth, inst->ftci_WindowWidth,
+			WA_MaxWidth, ~0,
+			WA_MaxHeight, inst->ftci_WindowHeight,
 			WA_BackFill, &inst->ftci_BackFillHook,
 			WA_ScreenTitle, ScreenTitleBuffer,
-			WA_Flags, WFLG_DRAGBAR | WFLG_DEPTHGADGET | WFLG_CLOSEGADGET | WFLG_SMART_REFRESH | WFLG_RMBTRAP,
+			WA_DepthGadget, TRUE,
+			WA_SizeGadget, TRUE,
+			WA_SizeBBottom, TRUE,
+			WA_DragBar, TRUE,
+			WA_CloseGadget, TRUE,
+			WA_SmartRefresh, TRUE,
+			WA_RMBTrap, TRUE,
 			WA_Title, WinTitle,
 			TAG_END);
 		if (NULL == inst->ftci_Window)
@@ -517,15 +496,10 @@ static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg)
 		// ...seems like GTTX_Text isn't honored during CreateGadget(),
 		// so I set the Gadget texts here again
 #ifdef SHOW_EVERY_OBJECT
-		GT_SetGadgetAttrs(inst->ftci_TextLine1Gadget, inst->ftci_Window, NULL,
-			GTTX_Text, inst->ftci_Line1Buffer,
-			TAG_END);
+		FileTransClass_UpdateTextGadget(inst->ftci_Window,
+			inst->ftci_TextLineGadgets[0], inst->ftci_Line1Buffer);
 #endif /* SHOW_EVERY_OBJECT */
-
-		GT_SetGadgetAttrs(inst->ftci_TextLine2Gadget, inst->ftci_Window, NULL,
-			GTTX_Text, (ULONG) inst->ftci_Line2Buffer,
-			TAG_END);
-
+//		  RefreshGList(inst->ftci_CancelButtonGadget, inst->ftci_Window, NULL, 1);
 		} while (0);
 
 	d1(Delay(5 * 50));
@@ -545,17 +519,22 @@ static ULONG FileTransClass_CheckAbort(Class *cl, Object *o, Msg msg)
 
 		d1(kprintf("%s/%s/%ld: Handling intuition messages for copy window\n", __FILE__, __FUNC__, __LINE__));
 
-		while ((iMsg = GT_GetIMsg(inst->ftci_Window->UserPort)))
+		while ((iMsg = (struct IntuiMessage *) GetMsg(inst->ftci_Window->UserPort)))
 			{
 			ULONG msgClass = iMsg->Class;
 			struct Gadget *g = (struct Gadget *) iMsg->IAddress;
 
-			GT_ReplyIMsg(iMsg);
+			ReplyMsg(&iMsg->ExecMessage);
 
 			d1(kprintf("%s/%s/%ld: Class=%08lx\n", __FILE__, __FUNC__, __LINE__, msgClass));
 
 			switch (msgClass)
 				{
+			case IDCMP_REFRESHWINDOW:
+				BeginRefresh(inst->ftci_Window);
+				EndRefresh(inst->ftci_Window, TRUE);
+				break;
+
 			case IDCMP_GADGETUP:
 				switch (g->GadgetID)
 					{
@@ -567,6 +546,10 @@ static ULONG FileTransClass_CheckAbort(Class *cl, Object *o, Msg msg)
 
 			case IDCMP_CLOSEWINDOW:
 				Result = RESULT_UserAborted;
+				break;
+
+			case IDCMP_NEWSIZE:
+				FileTransClass_ResizeWindow(inst);
 				break;
 				}
 			}
@@ -1271,9 +1254,8 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 
 			if (inst->ftci_Window)
 				{
-				GT_SetGadgetAttrs(inst->ftci_TextLine2Gadget, inst->ftci_Window, NULL,
-					GTTX_Text, (ULONG) inst->ftci_Line2Buffer,
-					TAG_END);
+				FileTransClass_UpdateTextGadget(inst->ftci_Window,
+					inst->ftci_TextLineGadgets[1], inst->ftci_Line2Buffer);
 
 				FreePathBuffer(DestDirName);
 				}
@@ -1291,9 +1273,8 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 
 		if (inst->ftci_Window)
 			{
-			GT_SetGadgetAttrs(inst->ftci_TextLine1Gadget, inst->ftci_Window, NULL,
-				GTTX_Text, inst->ftci_Line1Buffer,
-				TAG_END);
+			FileTransClass_UpdateTextGadget(inst->ftci_Window,
+				inst->ftci_TextLineGadgets[0], inst->ftci_Line1Buffer);
 			}
 #endif /* SHOW_EVERY_OBJECT */
 		break;
@@ -1326,7 +1307,7 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 			PercentFinishedItems = 100;
 			}
 
-		PercentFinished = ((90 * ULONG64_LOW(PercentFinishedBytes)) + (10 * PercentFinishedItems)) / 100;
+		PercentFinished = ((75 * ULONG64_LOW(PercentFinishedBytes)) + (25 * PercentFinishedItems)) / 100;
 
 		if (PercentFinished > 100)
 			PercentFinished = 100;
@@ -1336,10 +1317,20 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 			__LINE__, inst->ftci_CurrentItems, inst->ftci_TotalItems, \
 			ULONG64_LOW(inst->ftci_CurrentBytes), ULONG64_LOW(inst->ftci_TotalBytes), PercentFinished));
 
-		if (GetElapsedTime(&inst->ftci_LastRemainTimeDisplay) >= 1000)
+		if (GetElapsedTime(&inst->ftci_LastRemainTimeDisplay) >= 200)
 			{
+			char CurrentBytesBuffer[40];
+			char TotalBytesBuffer[40];
+			char SpeedBuffer[40];
+			ULONG64 Speed;
 			LONG RemainingTime;
 			ULONG elapsedTime = GetElapsedTime(&inst->ftci_CopyStartTime);
+
+			// Calculate speed in Bytes/s
+			if (elapsedTime > 1000)
+				Speed = Div64(inst->ftci_CurrentBytes, Make64(elapsedTime / 1000), NULL);
+			else
+				Speed = 0;
 
 			if (PercentFinished && elapsedTime)
 				{
@@ -1348,7 +1339,9 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 				RemainingTime = TotalTime - elapsedTime;
 				}
 			else
+				{
 				RemainingTime = 0;
+				}
 
 			d1(kprintf("%s/%s/%ld: ElapsedTime=%lu cItem=%lu  tItem=%lu  Current=%lu  Total=%lu  Percent=%ld  remTime=%lu\n", \
 				__LINE__, GetElapsedTime(&inst->ftci_CopyStartTime), \
@@ -1389,9 +1382,33 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 				strcpy(inst->ftci_Line3Buffer, "");
 				}
 
-			GT_SetGadgetAttrs(inst->ftci_TextLine3Gadget, inst->ftci_Window, NULL,
-				GTTX_Text, (ULONG) inst->ftci_Line3Buffer,
-				TAG_END);
+			TitleClass_Convert64KMG(inst->ftci_CurrentBytes, CurrentBytesBuffer, sizeof(CurrentBytesBuffer));
+			TitleClass_Convert64KMG(inst->ftci_TotalBytes, TotalBytesBuffer, sizeof(TotalBytesBuffer));
+			TitleClass_Convert64KMG(Speed, SpeedBuffer, sizeof(SpeedBuffer));
+
+			ScaFormatStringMaxLength(inst->ftci_Line4Buffer, sizeof(inst->ftci_Line4Buffer),
+				GetLocString(MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT),
+				inst->ftci_CurrentItems, inst->ftci_TotalItems);
+
+			ScaFormatStringMaxLength(inst->ftci_Line5Buffer, sizeof(inst->ftci_Line5Buffer),
+				GetLocString(MSGID_FILETRANSFER_DETAILS_SIZE),
+				CurrentBytesBuffer, TotalBytesBuffer);
+
+			ScaFormatStringMaxLength(inst->ftci_Line6Buffer, sizeof(inst->ftci_Line6Buffer),
+				GetLocString(MSGID_FILETRANSFER_DETAILS_SPEED),
+				SpeedBuffer);
+
+			FileTransClass_UpdateTextGadget(inst->ftci_Window,
+				inst->ftci_TextLineGadgets[2], inst->ftci_Line3Buffer);
+
+			FileTransClass_UpdateTextGadget(inst->ftci_Window,
+				inst->ftci_TextLineGadgets[3], inst->ftci_Line4Buffer);
+
+			FileTransClass_UpdateTextGadget(inst->ftci_Window,
+				inst->ftci_TextLineGadgets[4], inst->ftci_Line5Buffer);
+
+			FileTransClass_UpdateTextGadget(inst->ftci_Window,
+				inst->ftci_TextLineGadgets[5], inst->ftci_Line6Buffer);
 
 			GetSysTime(&inst->ftci_LastRemainTimeDisplay);
 			}
@@ -1467,4 +1484,349 @@ static ULONG FileTransClass_WriteProtectedRequest(Class *cl, Object *o, Msg msg)
 
 	return (ULONG) result;
 }
+
+
+static ULONG FileTransClass_ErrorRequest(Class *cl, Object *o, Msg msg)
+{
+//	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
+	struct msg_ErrorRequest *mer = (struct msg_ErrorRequest *) msg;
+	enum ErrorReqResult result;
+	char ErrorText[100];
+
+	Fault(mer->mer_ErrorCode, (STRPTR) "", ErrorText, sizeof(ErrorText)-1);
+
+	result = UseRequestArgs(mer->mer_ParentWindow,
+		mer->mer_SuggestedBodyTextId,
+		mer->mer_SuggestedGadgetTextId,
+		2,
+		mer->mer_ErrorFileName,
+                ErrorText
+                );
+
+	return (ULONG) result;
+}
+
+
+static ULONG FileTransClass_LinksNotSupportedRequest(Class *cl, Object *o, Msg msg)
+{
+//	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
+	struct msg_LinksNotSupportedRequest *mlns = (struct msg_LinksNotSupportedRequest *) msg;
+	enum LinksNotSupportedReqResult result = LINKSNOTSUPPORTEDREQ_Abort;
+	STRPTR DestPath;
+
+	do	{
+		DestPath = AllocPathBuffer();
+		if (NULL == DestPath)
+			break;
+
+		if (!NameFromLock(mlns->mlns_DestDirLock, DestPath, Max_PathLen))
+			break;
+
+		result = UseRequestArgs(mlns->mlns_ParentWindow,
+			mlns->mlns_SuggestedBodyTextId,
+			mlns->mlns_SuggestedGadgetTextId,
+			2,
+			mlns->mlns_SrcName,
+                        DestPath
+			);
+		} while (0);
+
+	if (DestPath)
+		FreePathBuffer(DestPath);
+
+	return (ULONG) result;
+}
+
+
+static void FileTransClass_UpdateTextGadget(struct Window *win, struct Gadget *gad, CONST_STRPTR NewText)
+{
+	SetGadgetAttrs(gad, win, NULL,
+		GBTDTA_Text, (ULONG) NewText,
+		TAG_END);
+	EraseRect(win->RPort,
+		gad->LeftEdge, gad->TopEdge,
+		gad->LeftEdge + gad->Width - 1,
+		gad->TopEdge + gad->Height -1);
+	RefreshGList(gad, win, NULL, 1);
+}
+
+
+static void FileTransClass_ChangeGadgetWidth(struct Window *win, struct Gadget *gad, ULONG NewWidth)
+{
+	SetGadgetAttrs(gad, win, NULL,
+		GA_Width, NewWidth,
+		TAG_END);
+	EraseRect(win->RPort,
+		gad->LeftEdge, gad->TopEdge,
+		gad->LeftEdge + gad->Width - 1,
+		gad->TopEdge + gad->Height -1);
+	RefreshGList(gad, win, NULL, 1);
+}
+
+
+static void FileTransClass_ResizeWindow(struct FileTransClassInstance *inst)
+{
+	FileTransClass_ChangeGadgetWidth(inst->ftci_Window, inst->ftci_GaugeGadget,
+		inst->ftci_Window->Width - 10 - 10);
+#ifdef SHOW_EVERY_OBJECT
+	FileTransClass_ChangeGadgetWidth(inst->ftci_Window, inst->ftci_TextLineGadgets[0],
+		inst->ftci_Window->Width - 10 - 10);
+#endif /* SHOW_EVERY_OBJECT */
+	FileTransClass_ChangeGadgetWidth(inst->ftci_Window, inst->ftci_TextLineGadgets[1],
+		inst->ftci_Window->Width - 10 - 10);
+#ifdef SHOW_REMAINING_TIME
+	FileTransClass_ChangeGadgetWidth(inst->ftci_Window, inst->ftci_TextLineGadgets[2],
+		inst->ftci_Window->Width - 10 - 10);
+#endif /* SHOW_REMAINING_TIME */
+	FileTransClass_ChangeGadgetWidth(inst->ftci_Window, inst->ftci_TextLineGadgets[3],
+		inst->ftci_Window->Width - 10 - 10);
+	FileTransClass_ChangeGadgetWidth(inst->ftci_Window, inst->ftci_TextLineGadgets[4],
+		inst->ftci_Window->Width - 10 - 10);
+	FileTransClass_ChangeGadgetWidth(inst->ftci_Window, inst->ftci_TextLineGadgets[5],
+		inst->ftci_Window->Width - 10 - 10);
+
+	EraseRect(inst->ftci_Window->RPort,
+		inst->ftci_CancelButtonGadget->LeftEdge, inst->ftci_CancelButtonGadget->TopEdge,
+		inst->ftci_CancelButtonGadget->LeftEdge + inst->ftci_CancelButtonGadget->Width - 1,
+		inst->ftci_CancelButtonGadget->TopEdge + inst->ftci_CancelButtonGadget->Height -1);
+	SetGadgetAttrs(inst->ftci_CancelButtonGadget, inst->ftci_Window, NULL,
+		GA_Left, (inst->ftci_Window->Width - inst->ftci_CancelButtonGadget->Width) / 2,
+		TAG_END);
+}
+
+
+static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
+{
+	BOOL Success = FALSE;
+	STRPTR ImageNameNrm;
+	STRPTR ImageNameSel = NULL;
+
+	AskFont(&inst->ftci_Screen->RastPort, &inst->ftci_TextAttr);
+
+	do	{
+		struct Gadget *gad = NULL;
+		struct NewGadget ng;
+
+		ImageNameNrm = AllocPathBuffer();
+		if (NULL == ImageNameNrm)
+			break;
+
+		ImageNameSel= AllocPathBuffer();
+		if (NULL == ImageNameSel)
+			break;
+
+		inst->ftci_WindowWidth = 300;
+
+		ng.ng_LeftEdge = 10;
+		ng.ng_TopEdge = 10 + inst->ftci_TextAttr.ta_YSize;
+		ng.ng_Width = inst->ftci_WindowWidth - 10 - 10;
+		ng.ng_Height = inst->ftci_TextAttr.ta_YSize + 4;
+		ng.ng_GadgetText = NULL;
+		ng.ng_TextAttr = &inst->ftci_TextAttr;
+		ng.ng_GadgetID = 0;
+		ng.ng_Flags = PLACETEXT_LEFT;
+		ng.ng_VisualInfo = iInfos.xii_iinfos.ii_visualinfo;
+		ng.ng_UserData = NULL;
+
+#ifdef SHOW_EVERY_OBJECT
+		d1(kprintf("%s/%s/%ld: Line1Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->ftci_Line1Buffer));
+
+		gad = inst->ftci_GadgetList = inst->ftci_TextLineGadgets[0] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) inst->ftci_Line1Buffer,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			TAG_END);
+		if (NULL == gad)
+			break;
+
+		ng.ng_TopEdge += ng.ng_Height + 5;
+#endif /* SHOW_EVERY_OBJECT */
+
+		d1(kprintf("%s/%s/%ld: Line2Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->ftci_Line2Buffer));
+
+		gad = inst->ftci_TextLineGadgets[1] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) inst->ftci_Line2Buffer,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGLEFT,
+			TAG_END);
+		if (NULL == gad)
+			break;
+
+#ifndef SHOW_EVERY_OBJECT
+		inst->ftci_GadgetList = gad;
+#endif /* SHOW_EVERY_OBJECT */
+
+		ng.ng_TopEdge += ng.ng_Height + 5;
+
+		gad = inst->ftci_GaugeGadget = (struct Gadget *) SCA_NewScalosObjectTags("Gauge.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			SCAGAUGE_MinValue, 0,
+			SCAGAUGE_MaxValue, 100,
+			SCAGAUGE_Level, 0,
+			SCAGAUGE_Vertical, FALSE,
+			SCAGAUGE_WantNumber, FALSE,
+			SCAGAUGE_BarPen, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[FILLPEN],
+			TAG_END);
+
+		if (NULL == gad)
+			break;
+#ifdef SHOW_REMAINING_TIME
+		ng.ng_TopEdge += ng.ng_Height + 5;
+
+		gad = inst->ftci_TextLineGadgets[2] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) inst->ftci_Line3Buffer,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			TAG_END);
+
+		if (NULL == gad)
+			break;
+#endif // SHOW_REMAINING_TIME
+		ng.ng_TopEdge += ng.ng_Height + 5;
+
+		gad = inst->ftci_TextLineGadgets[3] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) inst->ftci_Line4Buffer,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			TAG_END);
+
+		if (NULL == gad)
+			break;
+
+		ng.ng_TopEdge += ng.ng_Height + 5;
+
+		gad = inst->ftci_TextLineGadgets[4] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) inst->ftci_Line5Buffer,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			TAG_END);
+
+		if (NULL == gad)
+			break;
+
+		ng.ng_TopEdge += ng.ng_Height + 5;
+
+		gad = inst->ftci_TextLineGadgets[5] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) inst->ftci_Line6Buffer,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			TAG_END);
+
+		if (NULL == gad)
+			break;
+
+		ng.ng_TopEdge += ng.ng_Height + 5;
+
+		ng.ng_GadgetText = (STRPTR) GetLocString(MSGID_CANCELBUTTON);
+		ng.ng_Height = inst->ftci_TextAttr.ta_YSize + 4 + 2;
+		ng.ng_Width = 5 + 5 + Scalos_TextLength(&inst->ftci_Screen->RastPort, ng.ng_GadgetText, strlen(ng.ng_GadgetText));
+		ng.ng_LeftEdge = (inst->ftci_WindowWidth - ng.ng_Width) / 2;
+		ng.ng_Flags = PLACETEXT_IN;
+		ng.ng_GadgetID = GID_CancelButton;
+
+		stccpy(ImageNameNrm, FILETRANS_GADGET_IMAGE_BASENAME, Max_PathLen);
+		AddPart(ImageNameNrm, "ButtonCancelNormal", Max_PathLen);
+
+		stccpy(ImageNameSel, FILETRANS_GADGET_IMAGE_BASENAME, Max_PathLen);
+		AddPart(ImageNameSel, "ButtonCancelSelected", Max_PathLen);
+
+		// imgNormal is always required
+		inst->ftci_CancelButtonImage = NewObject(DtImageClass, NULL,
+			DTIMG_ImageName, (ULONG) ImageNameNrm,
+			DTIMG_SelImageName, (ULONG) ImageNameSel,
+			TAG_END);
+		d1(KPrintF("%s/%s/%ld: agi_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, agi->agi_Image));
+		if (NULL == inst->ftci_CancelButtonImage)
+			{
+			// no Theme image could be found - fall back to sys image
+			inst->ftci_CancelButtonFrame = NewObject(NULL, FRAMEICLASS,
+				IA_Width, ng.ng_LeftEdge,
+				IA_Height, ng.ng_TopEdge,
+				SYSIA_DrawInfo, (ULONG) iInfos.xii_iinfos.ii_DrawInfo,
+				IA_FrameType, FRAME_BUTTON,
+				TAG_END);
+			d1(KPrintF("%s/%s/%ld: ftci_CancelButtonFrame=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->ftci_CancelButtonFrame));
+			if (NULL == inst->ftci_CancelButtonFrame)
+				break;
+
+			gad = inst->ftci_CancelButtonGadget = NewObject(NULL, FRBUTTONCLASS,
+				GA_Left, ng.ng_LeftEdge,
+				GA_Top, ng.ng_TopEdge,
+				GA_Width, ng.ng_Width,
+				GA_Height, ng.ng_Height,
+				GA_Previous, (ULONG) gad,
+				GA_ID, ng.ng_GadgetID,
+				GA_RelVerify, TRUE,
+				GA_Image, (ULONG) inst->ftci_CancelButtonFrame,
+				GA_Text, (ULONG) ng.ng_GadgetText,
+				TAG_END);
+			d1(KPrintF("%s/%s/%ld: agi_Gadget=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+			}
+		else
+			{
+			ULONG ImgWidth;
+
+			GetAttr(IA_Width, inst->ftci_CancelButtonImage, &ImgWidth);
+			//GetAttr(IA_Height, inst->ftci_CancelButtonImage, &agi->agi_Height);
+
+			inst->ftci_CancelButtonGadget = (struct Gadget *) SCA_NewScalosObjectTags("ButtonGadget.sca",
+				GA_Left, (inst->ftci_WindowWidth - ImgWidth) / 2,
+				GA_Top, ng.ng_TopEdge,
+				GA_ID, ng.ng_GadgetID,
+				GA_RelVerify, TRUE,
+				GA_Image, (ULONG) inst->ftci_CancelButtonImage,
+				GA_Previous, (ULONG) gad,
+				TAG_END);
+			}
+		d1(KPrintF("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+		if (NULL == gad)
+			break;
+
+		inst->ftci_WindowHeight	= ng.ng_TopEdge + ng.ng_Height + 10 + inst->ftci_Screen->BarHeight;
+
+		Success = TRUE;
+		} while (0);
+
+	if (ImageNameNrm)
+		FreePathBuffer(ImageNameNrm);
+	if (ImageNameSel)
+		FreePathBuffer(ImageNameSel);
+
+	return Success;
+}
+
 

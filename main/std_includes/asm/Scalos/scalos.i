@@ -954,6 +954,66 @@ WRITEPROTREQ_ReplaceAll		equ	3
 WRITEPROTREQ_SkipAll		equ	4
 WRITEPROTREQ_Abort		equ	0
 
+SCCM_FileTrans_ErrorRequest		equ	SCC_Dummy+210
+; ULONG mer_SuggestedBodyTextId;
+; ULONG mer_SuggestedGadgetTextId;
+; returns ErrorReqResult
+
+ERRORREQ_Retry 			equ	1
+ERRORREQ_Skip			equ	2
+ERRORREQ_Abort			equ	3
+
+
+ftta_Copy			equ	0
+ftta_Move			equ	1
+ftta_Delete			equ	2
+ftta_DeleteFile			equ	3
+ftta_DeleteDir			equ	4
+ftta_CopyAndDelete		equ	5
+ftta_CopyFile			equ	6
+ftta_CopyDir			equ	7
+ftta_CopyVolume			equ	8
+ftta_CopyLink			equ	9
+ftta_CreateSoftLink		equ	10
+ftta_CreateHardLink		equ	11
+ftta_Count			equ	12
+ftta_CountDir			equ	13
+
+fto_Lock			equ	0
+fto_AddPart			equ	1
+fto_MakeLink                    equ	2
+fto_AllocPathBuffer             equ	3
+fto_NameFromLock                equ	4
+fto_Rename                      equ	5
+fto_AllocDosObject              equ	6
+fto_Examine                     equ	7
+fto_Open                        equ	8
+fto_Read                        equ	9
+fto_Write                       equ	10
+fto_GetDeviceProc               equ	11
+fto_ReadLink                    equ	12
+fto_DeleteFile                  equ	13
+fto_CreateDir                   equ	14
+fto_ExNext                      equ	15
+fto_DupLock                     equ	16
+fto_SetProtection              	equ	17
+
+// ---------------------------------------------------------------------------
+
+SCCM_FileTrans_LinksNotSupportedRequest	equ	SCC_Dummy+211
+;        BPTR  mlns_SrcDirLock;
+;        CONST_STRPTR mlns_SrcName;
+;        BPTR  mlns_DestDirLock;
+;        CONST_STRPTR mlns_DestName;
+;        ULONG mlns_SuggestedBodyTextId;
+;        ULONG mlns_SuggestedGadgetTextId;
+
+LINKSNOTSUPPORTEDREQ_Ignore	equ	1
+LINKSNOTSUPPORTEDREQ_IgnoreAll	equ	2
+LINKSNOTSUPPORTEDREQ_Copy	equ	3
+LINKSNOTSUPPORTEDREQ_CopyAll	equ	4
+LINKSNOTSUPPORTEDREQ_Abort	equ	5
+
 ;------------------------------------------------------------------
 	IF	0
 ; added by +jl+ from "scalos.h"

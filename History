@@ -8,7 +8,12 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20090726	jl	- Bugfix: information.module:crash when trying to replace icon image by
+41.7    20090729	jl	- Improvement: added more details to copy/move progress window. Cancel
+				  button now had themed image. Copy/move progress window is now sizeable.
+				- Improvement: Copy/move recognizes if destination file system does not support
+				  links, and asks the user whether to skip the link(s), copy the link contents,
+				  or abort the entire operation.
+	20090726	jl	- Bugfix: information.module:crash when trying to replace icon image by
 				  dropping another icon on the image.
 				- Bugfix: information.module:drop mark wasn't displayed correctly
 				  with MorphOS 2.x and 3D layers enabled.

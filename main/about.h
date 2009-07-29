@@ -36,6 +36,7 @@ struct AboutGadgetInfo
 	struct Gadget *agi_Gadget;
 	ULONG agi_Width;
 	ULONG agi_Height;
+	BOOL agi_Themed;
 	};
 
 struct	AboutInfo

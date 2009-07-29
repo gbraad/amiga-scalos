@@ -858,6 +858,8 @@ static struct AboutGadgetInfo *AboutCreateButton(const struct AboutGadgetDef *ag
 			agi->agi_Width = 10 + Extent.te_Width;
 			agi->agi_Height = 6 + Extent.te_Height;
 
+			agi->agi_Themed = FALSE;
+
 			// no Theme image could be found - fall back to sys image
 			agi->agi_Image = NewObject(NULL, FRAMEICLASS,
 					IA_Width, agi->agi_Width,
@@ -886,6 +888,8 @@ static struct AboutGadgetInfo *AboutCreateButton(const struct AboutGadgetDef *ag
 			}
 		else
 			{
+			agi->agi_Themed = FALSE;
+
 			GetAttr(IA_Width, agi->agi_Image, &agi->agi_Width);
 			GetAttr(IA_Height, agi->agi_Image, &agi->agi_Height);
 
@@ -931,7 +935,10 @@ static void AboutFreeButton(struct AboutGadgetInfo *agi)
 			}
 		if (agi->agi_Gadget)
 			{
-			SCA_DisposeScalosObject((Object *) agi->agi_Gadget);
+			if (agi->agi_Themed)
+				SCA_DisposeScalosObject((Object *) agi->agi_Gadget);
+			else
+				DisposeObject(agi->agi_Gadget);
 			agi->agi_Gadget	= NULL;
 			}
 		ScalosFreeVecPooled(agi);

@@ -947,6 +947,28 @@ Do you really want to Shutdown or Reboot?
 MSGID_ABOUT_CONFIRM_GADGETS (//)
 Reboot|Shutdown|Cancel
 ;
+;
+MSGID_LINKSNOTSUPPORTED_BODY (//)
+Failed to create link for \"%s\"\n\
+Seems like file system doesn't support \
+links on \"%s\".
+;
+;
+MSGID_LINKSNOTSUPPORTED_GADGETS (//)
+Ignore|Ignore All|Copy|Copy All|Abort
+;
+;
+MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT (//)
+Finished: %lU / %lU Objects
+;
+;
+MSGID_FILETRANSFER_DETAILS_SIZE (//)
+Copied: %s / %s
+;
+;
+MSGID_FILETRANSFER_DETAILS_SPEED (//)
+Average Speed: %s/s
+;
 ; ==============================================
 ;
 MSGID_DROPMENU_DROPMENUTITLE (10000//)
