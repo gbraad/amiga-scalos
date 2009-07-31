@@ -1330,7 +1330,7 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 			if (elapsedTime > 1000)
 				Speed = Div64(inst->ftci_CurrentBytes, Make64(elapsedTime / 1000), NULL);
 			else
-				Speed = 0;
+				Speed = Make64(0);
 
 			if (PercentFinished && elapsedTime)
 				{
@@ -1622,12 +1622,6 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 		ng.ng_TopEdge = 10 + inst->ftci_TextAttr.ta_YSize;
 		ng.ng_Width = inst->ftci_WindowWidth - 10 - 10;
 		ng.ng_Height = inst->ftci_TextAttr.ta_YSize + 4;
-		ng.ng_GadgetText = NULL;
-		ng.ng_TextAttr = &inst->ftci_TextAttr;
-		ng.ng_GadgetID = 0;
-		ng.ng_Flags = PLACETEXT_LEFT;
-		ng.ng_VisualInfo = iInfos.xii_iinfos.ii_visualinfo;
-		ng.ng_UserData = NULL;
 
 #ifdef SHOW_EVERY_OBJECT
 		d1(kprintf("%s/%s/%ld: Line1Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->ftci_Line1Buffer));
@@ -1756,8 +1750,6 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 		ng.ng_Height = inst->ftci_TextAttr.ta_YSize + 4 + 2;
 		ng.ng_Width = 5 + 5 + Scalos_TextLength(&inst->ftci_Screen->RastPort, ng.ng_GadgetText, strlen(ng.ng_GadgetText));
 		ng.ng_LeftEdge = (inst->ftci_WindowWidth - ng.ng_Width) / 2;
-		ng.ng_Flags = PLACETEXT_IN;
-		ng.ng_GadgetID = GID_CancelButton;
 
 		stccpy(ImageNameNrm, FILETRANS_GADGET_IMAGE_BASENAME, Max_PathLen);
 		AddPart(ImageNameNrm, "ButtonCancelNormal", Max_PathLen);
@@ -1790,7 +1782,7 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 				GA_Width, ng.ng_Width,
 				GA_Height, ng.ng_Height,
 				GA_Previous, (ULONG) gad,
-				GA_ID, ng.ng_GadgetID,
+				GA_ID, GID_CancelButton,
 				GA_RelVerify, TRUE,
 				GA_Image, (ULONG) inst->ftci_CancelButtonFrame,
 				GA_Text, (ULONG) ng.ng_GadgetText,
@@ -1807,7 +1799,7 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			inst->ftci_CancelButtonGadget = (struct Gadget *) SCA_NewScalosObjectTags("ButtonGadget.sca",
 				GA_Left, (inst->ftci_WindowWidth - ImgWidth) / 2,
 				GA_Top, ng.ng_TopEdge,
-				GA_ID, ng.ng_GadgetID,
+				GA_ID, GID_CancelButton,
 				GA_RelVerify, TRUE,
 				GA_Image, (ULONG) inst->ftci_CancelButtonImage,
 				GA_Previous, (ULONG) gad,

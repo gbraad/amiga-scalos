@@ -2249,7 +2249,7 @@ static LONG CopyLinkContents(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 {
 	BPTR oldDir;
 	struct FileInfoBlock *fib;
-	LONG Result = RETURN_OK;
+	LONG Result;
 	BPTR LinkSrcDirLock = BNULL;
 	BPTR fLock = BNULL;
 
