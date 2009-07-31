@@ -1,7 +1,7 @@
 ;scalos.ct
 ; $Date$
 ; $Revision$
-;
+; $Id$
 ## version $VER: scalos.catalog 41.6 (05 Jan 2009 23:43:19 )
 ## codeset 0
 ## language français
@@ -1232,33 +1232,28 @@ MSGID_ABOUT_CONFIRM_GADGETS
 Relancer | Mise en veille | Annuler
 ;Reboot|Shutdown|Cancel
 ;
-;+++translateme+++
 MSGID_LINKSNOTSUPPORTED_BODY
-Failed to create link for \"%s\"\n\
-Seems like file system doesn't support \
-links on \"%s\".
+Impossible de créer un lien pour \"%s\"\n\
+Il semble que le fichier système ne supporte pas\
+les liens sur \"%s\".
 ;Failed to create link for \"%s\"\n\
 ;Seems like file system doesn't support \
 ;links on \"%s\".
 ;
-;+++translateme+++
 MSGID_LINKSNOTSUPPORTED_GADGETS
-Ignore|Ignore All|Copy|Copy All|Abort
+Ignorer|Tout ignorer|Copier|Tout copier|Annuler
 ;Ignore|Ignore All|Copy|Copy All|Abort
 ;
-;+++translateme+++
 MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT
-Finished: %lU / %lU Objects
+Terminé : %lU / %lU Objets
 ;Finished: %lU / %lU Objects
 ;
-;+++translateme+++
 MSGID_FILETRANSFER_DETAILS_SIZE
-Copied: %s / %s
+Copié : %s / %s
 ;Copied: %s / %s
 ;
-;+++translateme+++
 MSGID_FILETRANSFER_DETAILS_SPEED
-Average Speed: %s/s
+Vitesse moyenne : %s/s
 ;Average Speed: %s/s
 ;
 ; ==============================================
