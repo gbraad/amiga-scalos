@@ -1392,11 +1392,12 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 
 			ScaFormatStringMaxLength(inst->ftci_Line5Buffer, sizeof(inst->ftci_Line5Buffer),
 				GetLocString(MSGID_FILETRANSFER_DETAILS_SIZE),
-				CurrentBytesBuffer, TotalBytesBuffer);
+				(ULONG) CurrentBytesBuffer,
+				(ULONG) TotalBytesBuffer);
 
 			ScaFormatStringMaxLength(inst->ftci_Line6Buffer, sizeof(inst->ftci_Line6Buffer),
 				GetLocString(MSGID_FILETRANSFER_DETAILS_SPEED),
-				SpeedBuffer);
+				(ULONG) SpeedBuffer);
 
 			FileTransClass_UpdateTextGadget(inst->ftci_Window,
 				inst->ftci_TextLineGadgets[2], inst->ftci_Line3Buffer);
