@@ -30,7 +30,9 @@ RANLIB		=	ppc-morphos-ranlib
 STRIP		=	ppc-morphos-strip
 DUMP		=	ppc-morphos-objdump
 
-SVNVERSION	=	$(shell svnversion -n)
+#ifndef SVNVERSION
+	SVNVERSION := $(shell svnversion -n)
+#endif
 
 CODETYPE	=	PPC
 
