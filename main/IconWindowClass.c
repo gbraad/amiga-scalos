@@ -146,6 +146,8 @@ static ULONG IconWindowClass_HistoryBack(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_HistoryForward(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_StartNotify(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_Browse(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_StartPopOpenTimer(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_StopPopOpenTimer(Class *cl, Object *o, Msg msg);
 
 static SAVEDS(ULONG) IconWinBrowseProc(APTR aptr, struct SM_RunProcess *msg);
 static ULONG IconWinNotify(struct internalScaWindowTask *iwt, struct IntuiMessage *im);
@@ -472,6 +474,14 @@ static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 	case SCCM_IconWin_WBStartupFinished:
 		// currently No-Op
 		Result = 0;
+		break;
+
+	case SCCM_IconWin_StartPopOpenTimer:
+		Result = IconWindowClass_StartPopOpenTimer(cl, o, msg);
+		break;
+
+	case SCCM_IconWin_StopPopOpenTimer:
+		Result = IconWindowClass_StopPopOpenTimer(cl, o, msg);
 		break;
 
 	default:
@@ -1193,7 +1203,8 @@ static ULONG IconWindowClass_Open(Class *cl, Object *o, Msg msg)
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct msg_Open *mop = (struct msg_Open *) msg;
 
-	d1(KPrintF("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, mop->mop_IconNode, GetIconName(mop->mop_IconNode)));
+	d1(KPrintF("%s/%s/%ld: in=%08lx  <%s>  mop_Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, \
+		mop->mop_IconNode, GetIconName(mop->mop_IconNode), mop->mop_Flags));
 
 	return (ULONG) IconDoubleClick(iwt, mop->mop_IconNode, mop->mop_Flags);
 }
@@ -3308,6 +3319,45 @@ static ULONG IconWindowClass_Browse(Class *cl, Object *o, Msg msg)
 	return 0;
 }
 
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_StartPopOpenTimer(Class *cl, Object *o, Msg msg)
+{
+	//struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
+	struct msg_StartPopOpenTimer *spot = (struct msg_StartPopOpenTimer *) msg;
+
+	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  dh=%08lx  spot_IconNode=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
+		iwt, iwt->iwt_WinTitle, spot->spot_DragHandle, \
+		spot->spot_IconNode, GetIconName(spot->spot_IconNode)));
+
+	if (spot->spot_DragHandle)
+		{
+		spot->spot_DragHandle->drgh_PopOpenDestWindow = (struct internalScaWindowTask *) spot->spot_DestWindow;
+		spot->spot_DragHandle->drgh_PopOpenIcon = spot->spot_IconNode;
+		spot->spot_DragHandle->drgh_PopOpenTickCount = 3 * 10;	   // ~10 ticks/s
+		}
+
+	return 0;
+}
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_StopPopOpenTimer(Class *cl, Object *o, Msg msg)
+{
+	//struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
+	struct msg_StopPopOpenTimer *stop = (struct msg_StopPopOpenTimer *) msg;
+
+	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  dh=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, \
+		iwt->iwt_WinTitle, stop->stop_DragHandle));
+
+	if (stop->stop_DragHandle)
+		{
+		stop->stop_DragHandle->drgh_PopOpenDestWindow = NULL;
+		stop->stop_DragHandle->drgh_PopOpenIcon = NULL;
+		stop->stop_DragHandle->drgh_PopOpenTickCount = 0;
+		}
+
+	return 0;
+}
 //----------------------------------------------------------------------------
 
 static SAVEDS(ULONG) IconWinBrowseProc(APTR aptr, struct SM_RunProcess *msg)

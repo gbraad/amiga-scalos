@@ -720,13 +720,18 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 	BPTR oldDir;
 	BOOL Success = FALSE;
 
-	d1(KPrintF("%s/%s/%ld: BEGIN\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: BEGIN  Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, Flags));
 
 	do	{
 		struct IBox *WindowRect;
 		BOOL OpenNewWindow;
 		struct Process *myProcess = (struct Process *) FindTask(NULL);
 		struct MsgPort *ReplyPort;
+		ULONG noActivate;
+		ULONG isDdPopup;
+
+		noActivate = (Flags & ICONWINOPENF_DoNotActivateWindow) ? 1 : 0;
+		isDdPopup = (Flags & ICONWINOPENF_DdPopupWindow) ? 1 : 0;
 
 		OpenNewWindow = (Flags & ICONWINOPENF_NewWindow)
 			|| !(iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_BrowserMode);
@@ -779,6 +784,8 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 					SCA_MessagePort, (ULONG) ReplyPort,
 					SCA_ShowAllMode, ShowFlags & DDFLAGS_SHOWMASK,
 					SCA_ViewModes, ViewBy,
+					SCA_NoActivateWindow, noActivate,
+					SCA_DdPopupWindow, isDdPopup,
 					SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
 					TAG_END);
 				}
@@ -789,6 +796,8 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 					GetIconName(in),
 					SCA_ShowAllMode, ShowFlags & DDFLAGS_SHOWMASK,
 					SCA_ViewModes, ViewBy,
+					SCA_DdPopupWindow, isDdPopup,
+					SCA_NoActivateWindow, noActivate,
 					SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
 					TAG_END);
 				Success = TRUE;
@@ -814,6 +823,8 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 						SCA_Flags, SCAF_OpenWindow_ScalosPort,
 						SCA_MessagePort, (ULONG) ReplyPort,
 						SCA_ShowAllMode, iwt->iwt_OldShowType,
+						SCA_DdPopupWindow, isDdPopup,
+						SCA_NoActivateWindow, noActivate,
 						SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
 						TAG_END);
 					}
@@ -823,6 +834,8 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 						SCCM_IconWin_NewPath,
 						GetIconName(in),
 						SCA_ShowAllMode, iwt->iwt_OldShowType,
+						SCA_DdPopupWindow, isDdPopup,
+						SCA_NoActivateWindow, noActivate,
 						SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
 						TAG_END);
 					Success = TRUE;
@@ -838,6 +851,8 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 					{
 					Success = SCA_OpenIconWindowTags(SCA_IconNode, (ULONG) in,
 						SCA_Flags, SCAF_OpenWindow_ScalosPort,
+						SCA_DdPopupWindow, isDdPopup,
+						SCA_NoActivateWindow, noActivate,
 						SCA_MessagePort, (ULONG) ReplyPort,
 						SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
 						TAG_END);

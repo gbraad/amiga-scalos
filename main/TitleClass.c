@@ -1172,6 +1172,12 @@ static void TitleClassGetDiskInfo(struct InfoData *id)
 
 void TitleClass_Convert64KMG(ULONG64 Number, STRPTR Buffer, size_t MaxLen)
 {
+	TitleClass_Convert64KMGRounded(Number, Buffer, MaxLen, 0);
+}
+
+
+void TitleClass_Convert64KMGRounded(ULONG64 Number, STRPTR Buffer, size_t MaxLen, ULONG Round)
+{
 	ULONG MsgID = MSGID_BYTENAME;
 
 	while (Cmp64(Number, Make64(10000)) >= 0 && MsgID < MSGID_HBYTENAME)
@@ -1180,6 +1186,21 @@ void TitleClass_Convert64KMG(ULONG64 Number, STRPTR Buffer, size_t MaxLen)
 		MsgID++;
 
 		d1(kprintf("%s/%s/%ld: Number=%lu %lu  MsgID=%ld\n", __FILE__, __FUNC__, __LINE__, ULONG64_HIGH(Number), ULONG64_LOW(Number), MsgID));
+		}
+
+	if (Round)
+		{
+		ULONG64 ten = Make64(10);
+		ULONG n;
+
+		for (n = 0; Cmp64(Number, Make64(Round)) > 0; n++)
+			{
+			Number = Div64(Number, ten, NULL);
+			}
+		while (n--)
+			{
+			Number = Mul64(Number, ten, NULL);
+			}
 		}
 
 	Convert64(ScalosLocale, Number, Buffer, MaxLen);

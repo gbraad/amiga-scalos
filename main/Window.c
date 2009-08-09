@@ -1382,6 +1382,7 @@ struct Window *LockedOpenWindowTagList(struct NewWindow *nw, struct TagItem *Tag
 {
 	struct Window *win;
 
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 	ScalosObtainSemaphore(&LayersSema);
 	d1(kprintf("%s/%s/%ld: ScalosObtainSemaphore(&LayersSema) \n", __FILE__, __FUNC__, __LINE__));
 	win = OpenWindowTagList(nw, TagList);
@@ -1520,118 +1521,6 @@ CONST_STRPTR GetIconName(const struct ScaIconNode *in)
 		IconName = "";
 
 	return IconName;
-}
-
-
-void WindowBackFill(struct RastPort *rp,
-	struct BackFillMsg *msg, struct BitMap *bitmap,
-	LONG bmWidth, LONG bmHeight, WORD BGPen,
-	LONG XOffset, LONG YOffset, APTR MaskPlane)
-{
-	if (bitmap)
-		{
-		LONG x, y;
-		LONG SrcX, SrcY;
-		LONG h;
-		LONG msgOffsetX, msgOffsetY;
-
-		d1(kprintf("%s/%s/%ld: XOffset=%ld  YOffset=%ld\n", \
-			__FILE__, __FUNC__, __LINE__, XOffset, YOffset));
-
-		msgOffsetX = msg->bfm_OffsetX % bmWidth;
-		msgOffsetY = msg->bfm_OffsetY % bmHeight;
-
-		if (YOffset < 0)
-			SrcY = bmHeight - (-YOffset % bmHeight);
-		else
-			SrcY = YOffset;
-
-		SrcY += msgOffsetY;
-		SrcY %= bmHeight;
-
-		h = bmHeight - SrcY;
-
-		d1(kprintf("%s/%s/%ld: SrcY=%ld\n", __FILE__, __FUNC__, __LINE__, SrcY));
-
-		d1(kprintf("%s/%s/%ld: MinX=%ld MinY=%ld  MaxX=%ld MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, \
-			msg->bfm_Rect.MinX, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxX, msg->bfm_Rect.MaxY));
-
-		for (y = msg->bfm_Rect.MinY; y <= msg->bfm_Rect.MaxY; )
-			{
-			LONG w;
-
-			if (XOffset < 0)
-				SrcX = bmWidth - (-XOffset % bmWidth);
-			else
-				SrcX = XOffset;
-
-			SrcX += msgOffsetX;
-			SrcX %= bmWidth;
-
-			w = bmWidth - SrcX;
-
-			if ((y + h) > msg->bfm_Rect.MaxY)
-				h = 1 + msg->bfm_Rect.MaxY - y;
-
-			d1(kprintf("%s/%s/%ld: SrcX=%ld  y=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, SrcX, y, h));
-
-			for (x = msg->bfm_Rect.MinX; x <= msg->bfm_Rect.MaxX; )
-				{
-				if (x + w > msg->bfm_Rect.MaxX)
-					w = 1 + msg->bfm_Rect.MaxX - x;
-
-				d1(kprintf("%s/%s/%ld: x=%ld  y=%ld  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, x, y, w, h));
-
-				if (rp->Layer)
-					{
-					if (MaskPlane)
-						{
-						BltMaskBitMapRastPort(bitmap,
-							SrcX, SrcY,
-							rp, x, y,
-							w, h,
-							ABC | ABNC | ANBC,
-							MaskPlane);
-						}
-					else
-						{
-						BltBitMapRastPort(bitmap,
-							SrcX, SrcY,
-							rp, x, y,
-							w, h,
-							ABC | ABNC);
-						}
-					}
-				else
-					{
-					BltBitMap(bitmap,
-						SrcX, SrcY,
-						rp->BitMap, x, y,
-						w, h,
-						ABC | ABNC,
-						~0,
-						NULL
-						);
-					}
-
-				x += w;
-				w = bmWidth;
-				SrcX = 0;
-				}
-
-			y += h;
-			h = bmHeight;
-			SrcY = 0;
-			}
-		}
-	else
-		{
-		SetAPen(rp, BGPen);
-		SetDrMd(rp, JAM1);
-
-		RectFill(rp, msg->bfm_Rect.MinX, msg->bfm_Rect.MinY, 
-			msg->bfm_Rect.MaxX, msg->bfm_Rect.MaxY);
-		}
 }
 
 

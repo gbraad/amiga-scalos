@@ -643,6 +643,10 @@ SCCM_IconWin_DragLeave		equ	SCC_Dummy+150
 SCCM_IconWin_DragDrop		EQU	SCC_Dummy+113
 SCCM_IconWin_Open		EQU	SCC_Dummy+114
 ;APTR	iconnode	(IconNode to open or NULL)
+;ULONG	      Flags
+	BITDEF	ICONWINOPEN,IgnoreFileTypes,0
+	BITDEF	ICONWINOPEN,NewWindow,1
+	BITDEF	ICONWINOPEN,DoNotActivateWindow,2
 ;Result: BOOL
 
 SCCM_IconWin_UpdateIcon		EQU	SCC_Dummy+115
@@ -797,6 +801,12 @@ SCCM_IconWin_Browse		equ	SCC_Dummy+207
 ; ./.
 
 SCCM_IconWin_WBStartupFinished	equ	SCC_Dummy+208
+; ./.
+
+SCCM_IconWin_StartPopOpenTimer	equ	SCC_Dummy+213
+; struct ScaIconNode *spot_IconNode;
+
+SCCM_IconWin_StopPopOpenTimer	equ	SCC_Dummy+214
 ; ./.
 
 ;---------------- DeviceWindow Class ----------------------------
@@ -1337,6 +1347,19 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
 	APTR 	npa_Path
 	LABEL	npa_SIZEOF
 
+; SCCM_IconWin_StartPopOpenTimer
+    STRUCTURE msg_StartPopOpenTimer,0
+	ULONG 	spot_MethodID
+	APTR	spot_DestWindow
+	APPT	spot_DragHandle
+	APTR	spot_IconNode
+	LABEL	spot_SIZEOF
+
+; SCCM_IconWin_StopPopOpenTimer
+    STRUCTURE msg_StopPopOpenTimer
+	ULONG 	stop_MethodID
+	APTR	stop_DragHandle
+	LABEL	stop_SIZEOF
 
 ; --- TextWindowClass methods ------------------------------------------
 

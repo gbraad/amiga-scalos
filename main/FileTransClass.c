@@ -1384,7 +1384,7 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 
 			TitleClass_Convert64KMG(inst->ftci_CurrentBytes, CurrentBytesBuffer, sizeof(CurrentBytesBuffer));
 			TitleClass_Convert64KMG(inst->ftci_TotalBytes, TotalBytesBuffer, sizeof(TotalBytesBuffer));
-			TitleClass_Convert64KMG(Speed, SpeedBuffer, sizeof(SpeedBuffer));
+			TitleClass_Convert64KMGRounded(Speed, SpeedBuffer, sizeof(SpeedBuffer), 99);
 
 			ScaFormatStringMaxLength(inst->ftci_Line4Buffer, sizeof(inst->ftci_Line4Buffer),
 				GetLocString(MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT),

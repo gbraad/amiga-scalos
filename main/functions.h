@@ -98,6 +98,16 @@ BOOL BackdropWait(BPTR dirLock);
 ///
 /* ------------------------------------------------- */
 
+// defined in BackFill.c
+///
+SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct BackFillMsg *msg);
+void WindowBackFill(struct RastPort *rp,
+	struct BackFillMsg *msg, struct BitMap *bitmap,
+	LONG bmWidth, LONG bmHeight, WORD BGPen,
+	LONG XOffset, LONG YOffset, APTR MaskPlane);
+///
+/* ------------------------------------------------- */
+
 // defined in ButtonClassGadget.c
 ///
 struct ScalosClass *initButtonGadgetClass(const struct PluginClass *plug);
@@ -212,7 +222,7 @@ void ScalosDropRemoveIcon(BPTR DirLock, CONST_STRPTR IconName);
 ///
 void InitDrag(struct IntuiMessage *iMsg, struct internalScaWindowTask *iwt);
 void RestoreDragIcons(struct internalScaWindowTask *iwt);
-void ReLockDrag(struct DragHandle *dh, BOOL wasLocked);
+void ReLockDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked);
 LIBFUNC_P2_PROTO(void, sca_LockDrag,
 	A0, struct DragHandle *, dh,
 	A6, struct ScalosBase *, ScalosBase);
@@ -851,6 +861,7 @@ HOOKFUNC GetTextIconSortFunction(struct internalScaWindowTask *iwt);
 ///
 struct ScalosClass *initTitleClass(const struct PluginClass *plug);
 void TitleClass_Convert64KMG(ULONG64 Number, STRPTR Buffer, size_t MaxLen);
+void TitleClass_Convert64KMGRounded(ULONG64 Number, STRPTR Buffer, size_t MaxLen, ULONG Round);
 ///
 /* ------------------------------------------------- */
 
@@ -955,10 +966,6 @@ VOID LockedSetWindowTitles(struct Window *win,
 void SafeSetMenuStrip(struct Window *win);
 void SafeClearMenuStrip(struct Window *win);
 CONST_STRPTR GetIconName(const struct ScaIconNode *in);
-void WindowBackFill(struct RastPort *rp,
-	struct BackFillMsg *msg, struct BitMap *bitmap,
-	LONG bmWidth, LONG bmHeight, WORD BGPen,
-	LONG XOffset, LONG YOffset, APTR MaskPlane);
 ULONG DisposeScalosWindow(struct internalScaWindowTask *iwt, struct ScaWindowStruct **WindowList);
 void AdjustRenamedWindowName(BPTR objLock);
 void LockWindow(struct internalScaWindowTask *iwt);

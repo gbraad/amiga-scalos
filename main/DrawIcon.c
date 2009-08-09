@@ -89,6 +89,7 @@ void DrawIconObject(struct internalScaWindowTask *iwt, Object *IconObj, ULONG Fl
 	ULONG IconOverlayType = ICONOVERLAY_None;
 	LONG BoundsLeft, BoundsRight, BoundsTop, BoundsBottom;
 	ULONG ScreenDepth;
+	ULONG WasLocked = FALSE;
 
 	d1(KPrintF("%s/%s/%ld: START IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 
@@ -106,6 +107,11 @@ void DrawIconObject(struct internalScaWindowTask *iwt, Object *IconObj, ULONG Fl
 	if (BoundsLeft - iwt->iwt_InnerLeft > iwt->iwt_InnerWidth
 		|| BoundsTop - iwt->iwt_InnerTop > iwt->iwt_InnerHeight)
 		return;
+
+	if ((iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow) && iInfos.xii_GlobalDragHandle)
+		{
+		WasLocked = SCA_UnlockDrag(iInfos.xii_GlobalDragHandle);
+		}
 
 	ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
@@ -191,6 +197,8 @@ void DrawIconObject(struct internalScaWindowTask *iwt, Object *IconObj, ULONG Fl
 		d1(KPrintF("%s/%s/%ld: GFLG_DISABLED\n", __FILE__, __FUNC__, __LINE__));
 		DrawIconObjectDisabled(iwt, IconObj);
 		}
+
+	ReLockDrag(iInfos.xii_GlobalDragHandle, iwt, WasLocked);
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }

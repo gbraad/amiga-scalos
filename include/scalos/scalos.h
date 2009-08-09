@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+213)
+** next Tag to use :	(SCC_Dummy+215)
 */
 
 #ifndef DOS_DOS_H
@@ -131,6 +131,7 @@ struct internalScaWindowTask;
 #define	SCA_CheckOverlappingIcons	(SCA_TagBase+29)	// ULONG
 #define SCA_TransparencyActive		(SCA_TagBase+30)	// ULONG - percentage of opacity in active window state, 0=transparent, 100=opaque
 #define SCA_TransparencyInactive	(SCA_TagBase+31)	// ULONG - percentage of opacity in inactive window state, 0=transparent, 100=opaque
+#define SCA_DdPopupWindow		(SCA_TagBase+32)	// ULONG - Flag: this window has popped up during D&D operation
 
 #define SCAB_WBStart_NoIcon		0
 #define SCAB_WBStart_Wait		1
@@ -310,6 +311,8 @@ struct ScaWindowStruct
 #define WSV_FlagF_BrowserMode		(1 << WSV_FlagB_BrowserMode)
 #define WSV_FlagB_CheckOverlappingIcons	14		// prevent icons from overlapping each other
 #define WSV_FlagF_CheckOverlappingIcons	(1 << WSV_FlagB_CheckOverlappingIcons)
+#define WSV_FlagB_DdPopupWindow 	15		// this window has popped up during a D&D operation
+#define WSV_FlagF_DdPopupWindow		(1 << WSV_FlagB_DdPopupWindow)
 
 // ws_WindowType:
 #define WSV_Type_IconWindow	0		// Window filled with icons
@@ -1103,8 +1106,12 @@ struct ScalosNodeList
 // Result: BOOL
 #define	ICONWINOPENB_IgnoreFileTypes		0
 #define ICONWINOPENB_NewWindow			1
+#define ICONWINOPENB_DoNotActivateWindow	2
+#define ICONWINOPENB_DdPopupWindow		3
 #define	ICONWINOPENF_IgnoreFileTypes		(1 << ICONWINOPENB_IgnoreFileTypes)
 #define ICONWINOPENF_NewWindow			(1 << ICONWINOPENB_NewWindow)
+#define ICONWINOPENF_DoNotActivateWindow	(1 << ICONWINOPENB_DoNotActivateWindow)
+#define ICONWINOPENF_DdPopupWindow		(1 << ICONWINOPENB_DdPopupWindow)
 
 // ---------------------------------------------------------------------------
 
@@ -1426,6 +1433,17 @@ enum sgttGadgetIDs
 #define	SCCM_IconWin_WBStartupFinished		(SCC_Dummy+208)
 // ./.
 
+// ---------------------------------------------------------------------------
+
+#define	SCCM_IconWin_StartPopOpenTimer		(SCC_Dummy+213)
+// struct ScaWindowTask *spot_DestWindow;
+// struct DragHandle *spot_DragHandle;
+// struct ScaIconNode *spot_IconNode;
+
+// ---------------------------------------------------------------------------
+
+#define SCCM_IconWin_StopPopOpenTimer		(SCC_Dummy+214)
+// struct DragHandle *stop_DragHandle;
 
 // ---------------------------------------------------------------------------
 // ---------------- DeviceWindow Class ----------------------------
@@ -2339,6 +2357,22 @@ struct msg_NewPath
 	ULONG npa_MethodID;
 	CONST_STRPTR npa_Path;
 	ULONG npa_TagList[0];
+	};
+
+// SCCM_IconWin_StartPopOpenTimer
+struct msg_StartPopOpenTimer
+	{
+	ULONG spot_MethodID;
+	struct ScaWindowTask *spot_DestWindow;
+	struct DragHandle *spot_DragHandle;
+	struct ScaIconNode *spot_IconNode;
+	};
+
+// SCCM_IconWin_StopPopOpenTimer
+struct msg_StopPopOpenTimer
+	{
+	ULONG stop_MethodID;
+	struct DragHandle *stop_DragHandle;
 	};
 
 // --- TextWindowClass methods ------------------------------------------

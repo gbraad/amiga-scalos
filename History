@@ -8,7 +8,14 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20090729	jl	- Improvement: added more details to copy/move progress window. Cancel
+41.7    20090809	jl	- Improvement: data transfer speed in copy/move progress window is now
+				  rounded to two decimals.
+				- Improvement: added support for dynamic window resizing with
+				  MorphOS 2.3 Advanced Display Engine.
+				- Improvement: added experimental new feature: drawers and volumes pop up when
+				  mouse pointer stays longer than 3 seconds over them during Drag&Drop. All
+				  popped up windows automatically close when D&D is finished.
+	20090729	jl	- Improvement: added more details to copy/move progress window. Cancel
 				  button now had themed image. Copy/move progress window is now sizeable.
 				- Improvement: Copy/move recognizes if destination file system does not support
 				  links, and asks the user whether to skip the link(s), copy the link contents,
