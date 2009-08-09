@@ -828,33 +828,55 @@ static void DoDragScroll(struct internalScaWindowTask *iwtSrc, struct internalSc
 		if (WindowLocked)
 			iwtDest->iwt_DragFlags |= DRAGFLAGF_WindowLocked;
 
-		if (WasLocked)
-			SCA_LockDrag(dh);
+		ReLockDrag(dh, iwtSrc, WasLocked);
 		}
 }
 
 
 void IDCMPDragIntuiTicks(struct internalScaWindowTask *iwt, struct IntuiMessage *msg)
 {
-	struct internalScaWindowTask *swit;
+	struct internalScaWindowTask *iwtUnderPointer;
 	struct ScaIconNode *in;
 	struct ScaIconNode *inOuterBounds;
 	struct Window *foreignWin;
+	struct DragHandle *dh;
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	QueryObjectUnderPointer(&swit, &in, &inOuterBounds, &foreignWin);
+	QueryObjectUnderPointer(&iwtUnderPointer, &in, &inOuterBounds, &foreignWin);
 
-	d1(KPrintF("%s/%s/%ld: swit=%08lx\n", __FILE__, __FUNC__, __LINE__, swit));
+	d1(KPrintF("%s/%s/%ld: iwtUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, iwtUnderPointer));
 
-	if (swit)
+	if (iwtUnderPointer)
 		{
 		// Pointer is inside a Scalos Window
-		DoDragScroll(iwt, swit);
+		DoDragScroll(iwt, iwtUnderPointer);
 
 		if (in)
-			ScalosUnLockIconList(swit);
+			ScalosUnLockIconList(iwtUnderPointer);
 		SCA_UnLockWindowList();
+		}
+
+	dh = iInfos.xii_GlobalDragHandle;
+
+	if (dh && dh->drgh_PopOpenTickCount && dh->drgh_PopOpenDestWindow && dh->drgh_PopOpenIcon)
+		{
+		d1(KPrintF("%s/%s/%ld: drgh_PopOpenTickCount=%lu\n", __FILE__, __FUNC__, __LINE__, dh->drgh_PopOpenTickCount));
+
+		if (0 == --dh->drgh_PopOpenTickCount)
+			{
+			ULONG WasLocked;
+
+			ClassHideDragBobs(iwt, dh);
+			WasLocked = SCA_UnlockDrag(dh);
+
+			DoMethod(dh->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
+				SCCM_IconWin_Open,
+				dh->drgh_PopOpenIcon,
+				ICONWINOPENF_DoNotActivateWindow | ICONWINOPENF_IgnoreFileTypes | ICONWINOPENF_DdPopupWindow);
+
+			ReLockDrag(dh, iwt, WasLocked);
+			}
 		}
 }
 

@@ -48,20 +48,20 @@
 
 //----------------------------------------------------------------------------
 
-#define	NO_BOB_POSITION		0x8000
+#define	NO_BOB_POSITION						0x8000
 
-#define	PATH_POINTER_ICONS		"THEME:PointerIcons/"
-#define	PATH_POINTER_ICONS_FALLBACK	"ENV:Scalos/"
+#define	PATH_POINTER_ICONS					"THEME:PointerIcons/"
+#define	PATH_POINTER_ICONS_FALLBACK				"ENV:Scalos/"
 
-#define	NAME_FORBIDDEN		PATH_POINTER_ICONS "forbidden"
-#define	NAME_COPYING		PATH_POINTER_ICONS "copying"
-#define	NAME_MAKELINK		PATH_POINTER_ICONS "makelink"
-#define	NAME_MOVING		PATH_POINTER_ICONS "moving"
+#define	NAME_FORBIDDEN		PATH_POINTER_ICONS 		"forbidden"
+#define	NAME_COPYING		PATH_POINTER_ICONS 		"copying"
+#define	NAME_MAKELINK		PATH_POINTER_ICONS 		"makelink"
+#define	NAME_MOVING		PATH_POINTER_ICONS 		"moving"
 
-#define	NAME_FORBIDDEN_FALLBACK	PATH_POINTER_ICONS_FALLBACK "forbidden"
-#define	NAME_COPYING_FALLBACK	PATH_POINTER_ICONS_FALLBACK "copying"
-#define	NAME_MAKELINK_FALLBACK	PATH_POINTER_ICONS_FALLBACK "makelink"
-#define	NAME_MOVING_FALLBACK	PATH_POINTER_ICONS_FALLBACK "moving"
+#define	NAME_FORBIDDEN_FALLBACK	PATH_POINTER_ICONS_FALLBACK	"forbidden"
+#define	NAME_COPYING_FALLBACK	PATH_POINTER_ICONS_FALLBACK	"copying"
+#define	NAME_MAKELINK_FALLBACK	PATH_POINTER_ICONS_FALLBACK	"makelink"
+#define	NAME_MOVING_FALLBACK	PATH_POINTER_ICONS_FALLBACK	"moving"
 
 //----------------------------------------------------------------------------
 
@@ -153,8 +153,8 @@ static void BlitARGBMaskAlpha(ULONG SrcWidth, ULONG SrcHeight,
 static struct Hook CompareLeftUpHook = 
 	{
 	{ NULL, NULL },
-	HOOKFUNC_DEF(CompareLeftUpFunc), // h_Entry + h_SubEntry
-	NULL,				// h_Data
+	HOOKFUNC_DEF(CompareLeftUpFunc),	// h_Entry + h_SubEntry
+	NULL,					// h_Data
 	};
 
 //----------------------------------------------------------------------------
@@ -1084,15 +1084,32 @@ static LONG CompareLeftUpFunc(const struct ScaBob *bob1, const struct ScaBob *bo
 }
 
 
-void ReLockDrag(struct DragHandle *dh, BOOL wasLocked)
+void ReLockDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked)
 {
 	if (wasLocked)
 		{
+		BOOL Locked2;
+		BOOL Locked1 = dh->drgh_flags & DRGHF_LayersLocked;
+
 #if defined(__MORPHOS__)
 		if (DOSBase->dl_lib.lib_Version >= 51)
+			{
 			WaitTOF();
+			WaitBOVP(&iwt->iwt_WinScreen->ViewPort);
+			}
 #endif //defined(__MORPHOS__)
 		SCA_LockDrag(dh);
+
+		Locked2 = dh->drgh_flags & DRGHF_LayersLocked;
+#if 1
+		if (Locked2 && !Locked1)
+			{
+			SCA_DrawDrag(iwt->iwt_myDragHandle,
+				iwt->iwt_WinScreen->MouseX,
+				iwt->iwt_WinScreen->MouseY,
+				0);
+			}
+#endif
 		}
 }
 
@@ -1105,8 +1122,18 @@ LIBFUNC_P2(void, sca_LockDrag,
 
 	if (dh)
 		{
-		ScaLockScreenLayers();
-		dh->drgh_flags |= DRGHF_LayersLocked;
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_UnLockCount=%lu\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_UnLockCount));
+
+		if (dh->drgh_UnLockCount > 0)
+			{
+			if (0 == --dh->drgh_UnLockCount)
+				{
+				d1(kprintf("%s/%s/%ld: dh=%08lx  ScaLockScreenLayers\n", __FILE__, __FUNC__, __LINE__, dh));
+				ScalosObtainSemaphore(&LayersSema);
+				ScaLockScreenLayers();
+				dh->drgh_flags |= DRGHF_LayersLocked;
+				}
+			}
 		}
 }
 LIBFUNC_END
@@ -1120,11 +1147,20 @@ LIBFUNC_P2(ULONG, sca_UnlockDrag,
 
 	(void) ScalosBase;
 
-	if (dh && (dh->drgh_flags & DRGHF_LayersLocked))
+	if (dh)
 		{
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_UnLockCount=%lu\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_UnLockCount));
 		WasLocked = TRUE;
-		dh->drgh_flags &= ~DRGHF_LayersLocked;
-		ScaUnlockScreenLayers();
+
+		if (dh->drgh_flags & DRGHF_LayersLocked)
+			{
+			d1(kprintf("%s/%s/%ld: dh=%08lx  ScaUnlockScreenLayers\n", __FILE__, __FUNC__, __LINE__, dh));
+			dh->drgh_flags &= ~DRGHF_LayersLocked;
+			ScaUnlockScreenLayers();
+			ScalosReleaseSemaphore(&LayersSema);
+			}
+
+		dh->drgh_UnLockCount++;	// allow for nested sca_UnlockDrag() / sca_LockDrag() calls
 		}
 
 	return WasLocked;
@@ -1173,8 +1209,6 @@ LIBFUNC_P5(void, sca_DrawDrag,
 
 	if (!(dh->drgh_flags & DRGHF_LayersLocked))
 		{
-		ScalosObtainSemaphore(&LayersSema);
-
 		SCA_LockDrag(dh);
 		}
 
@@ -1868,8 +1902,8 @@ static BOOL ClipBlitOut(struct Screen *Scr, struct BitMap *SrcBM,
 		DstY = 0;
 		}
 
-	d1(kprintf("%s/%s/%ld: SrcX=%ld  SrcY=%ld  DstX=%ld  DstY=%ld  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
-		SrcX, SrcY, DstX, DstY, Width, Height));
+	d1(kprintf("%s/%s/%ld: DestRp=%08lx  SrcX=%ld  SrcY=%ld  DstX=%ld  DstY=%ld  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		&Scr->RastPort, SrcX, SrcY, DstX, DstY, Width, Height));
 
 	ClipBlit(&rp, SrcX, SrcY,
 		&Scr->RastPort, DstX, DstY,
@@ -2475,44 +2509,73 @@ LIBFUNC_P2(void, sca_EndDrag,
 {
 	(void)ScalosBase;
 
-	if (dh->drgh_flags & DRGHF_CustomBob)
+	d1(kprintf("%s/%s/%ld: START  dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
+
+	if (dh == iInfos.xii_GlobalDragHandle)
 		{
-		FreeCustomBobList(&dh->drgh_boblist);	// remove+free all bobs
+		struct ScaWindowStruct *ws, *wsNext;
 
-		FreeCustomBobList(&dh->drgh_SpecialBobList);	// free special bobs
+		iInfos.xii_GlobalDragHandle = NULL;
 
-		FreeSpeedBitMapAlloc(dh);
+		if (dh->drgh_flags & DRGHF_CustomBob)
+			{
+			FreeCustomBobList(&dh->drgh_boblist);	// remove+free all bobs
 
-		Scalos_DoneRastPort(&dh->drgh_Specific.drghs_DragHandle2.drgh2_rastport);
+			FreeCustomBobList(&dh->drgh_SpecialBobList);	// free special bobs
+
+			FreeSpeedBitMapAlloc(dh);
+
+			Scalos_DoneRastPort(&dh->drgh_Specific.drghs_DragHandle2.drgh2_rastport);
+			}
+		else
+			{
+			FreeBobList(dh);	// remove+free all bobs
+
+			dh->drgh_screen->RastPort.GelsInfo = dh->drgh_Specific.drghs_DragHandle1.drgh1_oldginfo;
+			}
+
+		while (dh->drgh_SpecialDragList)
+			{
+			d1(kprintf("%s/%s/%ld: Free dgn=%08lx\n", __FILE__, __FUNC__, __LINE__, dh->drgh_SpecialDragList));
+			SCA_FreeNode((struct ScalosNodeList *) &dh->drgh_SpecialDragList, &dh->drgh_SpecialDragList->drgn_Node);
+			}
+		while (dh->drgh_SpecialIconList)
+			{
+			if (dh->drgh_SpecialIconList->in_Icon)
+				DisposeIconObject(dh->drgh_SpecialIconList->in_Icon);
+
+			SCA_FreeNode((struct ScalosNodeList *) &dh->drgh_SpecialIconList, &dh->drgh_SpecialIconList->in_Node);
+			}
+
+		if (dh->drgh_flags & DRGHF_LayersLocked)
+			{
+			SCA_UnlockDrag(dh);
+			}
+
+		ScalosFreeVecPooled(dh);
+
+		// Close all windows that have popped up during D&D
+		SCA_LockWindowList(SCA_LockWindowList_Exclusiv);
+
+		for (ws = winlist.wl_WindowStruct; ws; ws = wsNext)
+			{
+			wsNext = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ;
+
+			if (ws->ws_Flags & WSV_FlagF_DdPopupWindow)
+				{
+				struct SM_CloseWindow *msg;
+
+				msg = (struct SM_CloseWindow *) SCA_AllocMessage(MTYP_CloseWindow, 0);
+				if (msg)
+					{
+					msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
+					PutMsg(ws->ws_MessagePort, &msg->ScalosMessage.sm_Message);
+					}
+				}
+			}
+
+		SCA_UnLockWindowList();
 		}
-	else
-		{
-		FreeBobList(dh);	// remove+free all bobs
-
-		dh->drgh_screen->RastPort.GelsInfo = dh->drgh_Specific.drghs_DragHandle1.drgh1_oldginfo;
-		}
-
-	while (dh->drgh_SpecialDragList)
-		{
-		d1(kprintf("%s/%s/%ld: Free dgn=%08lx\n", __FILE__, __FUNC__, __LINE__, dh->drgh_SpecialDragList));
-		SCA_FreeNode((struct ScalosNodeList *) &dh->drgh_SpecialDragList, &dh->drgh_SpecialDragList->drgn_Node);
-		}
-	while (dh->drgh_SpecialIconList)
-		{
-		if (dh->drgh_SpecialIconList->in_Icon)
-			DisposeIconObject(dh->drgh_SpecialIconList->in_Icon);
-
-		SCA_FreeNode((struct ScalosNodeList *) &dh->drgh_SpecialIconList, &dh->drgh_SpecialIconList->in_Node);
-		}
-
-	if (dh->drgh_flags & DRGHF_LayersLocked)
-		{
-		SCA_UnlockDrag(dh);
-
-		ScalosReleaseSemaphore(&LayersSema);
-		}
-
-	FreeVec(dh);
 }
 LIBFUNC_END
 
@@ -2525,60 +2588,61 @@ LIBFUNC_P2(struct DragHandle *, sca_InitDrag,
 
 	(void) ScalosBase;
 
-	if (NULL == Scr)
-		Scr = iInfos.xii_iinfos.ii_Screen;
-
-	Depth = GetBitMapAttr(Scr->RastPort.BitMap, BMA_DEPTH);
-
-	if (DRAGMETHOD_Custom == CurrentPrefs.pref_DragMethod || Depth > 8)
-		{
-		struct DragHandle *dh2;
-
-		dh2 = AllocVec(sizeof(struct DragHandle), MEMF_PUBLIC | MEMF_CLEAR);
-		if (NULL == dh2)
-			return NULL;
-
-		dh2->drgh_screen = Scr;
-		dh2->drgh_flags |= DRGHF_CustomBob;
-
-		Scalos_InitRastPort(&dh2->drgh_Specific.drghs_DragHandle2.drgh2_rastport);
-
-		if (CyberGfxBase && CurrentPrefs.pref_RealTransFlag && Depth > 8)
-			dh2->drgh_flags |= DRGHF_RealTranspPossible;
-
-		d1(KPrintF("%s/%s/%ld: CyberGfxBase=%08lx  pref_RealTransFlag=%ld  Depth=%ld\n", \
-			__FILE__, __FUNC__, __LINE__, CyberGfxBase, CurrentPrefs.pref_RealTransFlag, Depth));
-
-		ScalosInitSemaphore(&dh2->drgh_BobListSemaphore);
-
-		return (struct DragHandle *) dh2;
-		}
-	else
+	if (NULL == iInfos.xii_GlobalDragHandle)
 		{
 		struct DragHandle *dh;
 
-		dh = AllocVec(sizeof(struct DragHandle), MEMF_PUBLIC | MEMF_CLEAR);
+		if (NULL == Scr)
+			Scr = iInfos.xii_iinfos.ii_Screen;
+
+		Depth = GetBitMapAttr(Scr->RastPort.BitMap, BMA_DEPTH);
+
+		dh = ScalosAllocVecPooled(sizeof(struct DragHandle));
 		if (NULL == dh)
 			return NULL;
 
+		memset(dh, 0, sizeof(struct DragHandle));
+
 		dh->drgh_screen = Scr;
+		dh->drgh_UnLockCount = 1;
 
-		dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.leftmost = 0;
-		dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.topmost = 0;
-		dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.rightmost = Scr->Width - 1;
-		dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.bottommost = Scr->Height - 1;
+		if (DRAGMETHOD_Custom == CurrentPrefs.pref_DragMethod || Depth > 8)
+			{
+			dh->drgh_flags |= DRGHF_CustomBob;
 
-		InitGels(&dh->drgh_Specific.drghs_DragHandle1.drgh1_vshead, 
-			&dh->drgh_Specific.drghs_DragHandle1.drgh1_vstail, 
-			&dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo);
+			Scalos_InitRastPort(&dh->drgh_Specific.drghs_DragHandle2.drgh2_rastport);
 
-		dh->drgh_Specific.drghs_DragHandle1.drgh1_oldginfo = dh->drgh_screen->RastPort.GelsInfo;
-		dh->drgh_screen->RastPort.GelsInfo = &dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo;
+			if (CyberGfxBase && CurrentPrefs.pref_RealTransFlag && Depth > 8)
+				dh->drgh_flags |= DRGHF_RealTranspPossible;
 
-		ScalosInitSemaphore(&dh->drgh_BobListSemaphore);
+			d1(KPrintF("%s/%s/%ld: CyberGfxBase=%08lx  pref_RealTransFlag=%ld  Depth=%ld\n", \
+				__FILE__, __FUNC__, __LINE__, CyberGfxBase, CurrentPrefs.pref_RealTransFlag, Depth));
 
-		return dh;
+			ScalosInitSemaphore(&dh->drgh_BobListSemaphore);
+
+			iInfos.xii_GlobalDragHandle = dh;
+			}
+		else
+			{
+			dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.leftmost = 0;
+			dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.topmost = 0;
+			dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.rightmost = Scr->Width - 1;
+			dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo.bottommost = Scr->Height - 1;
+
+			InitGels(&dh->drgh_Specific.drghs_DragHandle1.drgh1_vshead, 
+				&dh->drgh_Specific.drghs_DragHandle1.drgh1_vstail, 
+				&dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo);
+
+			dh->drgh_Specific.drghs_DragHandle1.drgh1_oldginfo = dh->drgh_screen->RastPort.GelsInfo;
+			dh->drgh_screen->RastPort.GelsInfo = &dh->drgh_Specific.drghs_DragHandle1.drgh1_gelsinfo;
+
+			ScalosInitSemaphore(&dh->drgh_BobListSemaphore);
+
+			iInfos.xii_GlobalDragHandle = dh;
+			}
 		}
+
+	return iInfos.xii_GlobalDragHandle;
 }
 LIBFUNC_END
 

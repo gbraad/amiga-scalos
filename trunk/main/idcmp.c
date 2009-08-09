@@ -211,7 +211,8 @@ ULONG IDCMPRefreshWindow(struct internalScaWindowTask *iwt, struct IntuiMessage 
 		iwt->iwt_WindowTask.wt_Window->WLayer->Flags));
 
 #if defined(__MORPHOS__)
-	RefreshWindowFrame(iwt->iwt_WindowTask.wt_Window);
+	if (NULL == FindTask("« LayerInfoTask »"))
+		RefreshWindowFrame(iwt->iwt_WindowTask.wt_Window);
 #endif /* __MORPHOS__ */
 
 	EndRefresh(iwt->iwt_WindowTask.wt_Window, TRUE);
@@ -866,10 +867,14 @@ static ULONG IDCMPUpdate(struct internalScaWindowTask *iwt, struct IntuiMessage 
 }
 
 
+// IntuiTicks are issued about 10 times per second
 static ULONG IDCMPIntuiTicks(struct internalScaWindowTask *iwt, struct IntuiMessage *iMsg)
 {
 	iwt->iwt_LockCount.tv_secs = iMsg->Seconds;
 	iwt->iwt_LockCount.tv_micro = iMsg->Micros;
+
+	d1(KPrintF("%s/%s/%ld: Class=%08lx  Code=%ld  IAddress=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, iMsg->Class, iMsg->Code, iMsg->IAddress));
 
 	switch (iwt->iwt_MoveGadId)
 		{
@@ -963,12 +968,50 @@ static ULONG IDCMPChangeWindow(struct internalScaWindowTask *iwt, struct IntuiMe
 {
 	d1(KPrintF("%s/%s/%ld: START  iwt=%08lx  <%s>  IDCMPWindow=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, iMsg->IDCMPWindow));
-	d1(KPrintF("%s/%s/%ld: Code=%ld\n", __FILE__, __FUNC__, __LINE__, iMsg->Code));
+	d1(KPrintF("%s/%s/%ld: Class=%08lx  Code=%ld  IAddress=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, iMsg->Class, iMsg->Code, iMsg->IAddress));
 
 	if (CWCODE_MOVESIZE == iMsg->Code)
 		{
 		DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_ChangeWindow);
 		}
+#if defined(__MORPHOS__)
+	else if (2 == iMsg->Code)
+		{
+		// MorphOS 2.3 "Enhanced Display Engine" special
+		// dynmic window resizing generates tons of this msg
+		// and application is reponsible to actually change the window size
+		WORD WinX = ((ULONG) iMsg->IAddress) >> 16;
+		WORD WinY = ((ULONG) iMsg->IAddress) & 0x0000ffff;
+		UWORD NewWidth, NewHeight;
+
+		d1(KPrintF("%s/%s/%ld: Class=%08lx  Code=%ld  IAddress=%08lx  MouseX=%ld  MouseY=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, iMsg->Class, iMsg->Code, iMsg->IAddress,\
+			iMsg->MouseX, iMsg->MouseY));
+
+		NewWidth = iMsg->MouseX - WinX;
+		NewHeight = iMsg->MouseY - WinY;
+
+		d1(KPrintF("%s/%s/%ld: NewWidth=%ld  NewHeight=%ld\n", __FILE__, __FUNC__, __LINE__, NewWidth, NewHeight));
+
+		if ((abs(NewWidth - iwt->iwt_WindowTask.wt_Window->Width) > 2) ||
+			(abs(NewHeight - iwt->iwt_WindowTask.wt_Window->Height) > 2) )
+			{
+			ChangeWindowBox(iwt->iwt_WindowTask.wt_Window,
+				WinX, WinY,
+				NewWidth,
+				NewHeight);
+			}
+		}
+	else if (3 == iMsg->Code)
+		{
+		// MorphOS 2.3 "Enhanced Display Engine" special
+		// LMB has been released - end of window sizing
+		d1(KPrintF("%s/%s/%ld: Class=%08lx  Code=%ld  IAddress=%08lx  MouseX=%ld  MouseY=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, iMsg->Class, iMsg->Code, iMsg->IAddress,\
+			iMsg->MouseX, iMsg->MouseY));
+		}
+#endif //defined(__MORPHOS__)
 
 	return 0;
 }

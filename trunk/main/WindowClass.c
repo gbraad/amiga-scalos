@@ -61,39 +61,21 @@
 #define	ICONIFIED_ICON_NAME	"def_iconify"
 
 #if defined(__MORPHOS__)
-#define	WA_Dunno		(WA_Dummy + 150)
 
-struct Dunno
-	{
-	struct MinNode do_Node;
-	ULONG do_Unknown1[8];
-	};
-struct Dunno2
-	{
-	struct MinNode do2_Node;
-	ULONG do2_Unknown1;
-	UWORD do2_Unknown2[12];
-	};
+// Set this undocumented tag with non-zero argument to allow dynamic window resize on Morphos 2.x
+// When set, we will receive lots of IDCMP_NEWSIZE messages during window resize.
+#define	WA_DynamicResize1	(WA_Dummy + 150)
 
-struct Dunno3
-	{
-	struct MinNode do3_Node;
-	ULONG do3_Unknown1;
-	ULONG do3_Unknown2;
-	struct MinList do3_List;
-	UWORD do3_Words[9];
-	};
-
+// Set this undocumented tag with non-zero argument to allow dynamic window resize on
+// Morphos 2.3 with Enhanced Display Engine.
+// Then we will receive IDCMP_CHANGEWINDOW messages with Code=2 or Code=3
+// and need to react by actively calling ChangeWindowBox()
+#define	WA_DynamicResize2	(WA_Dummy + 147)
 #endif /* __MORPHOS__ */
 
 struct WindowClassInstance
 	{
 	ULONG wci_Transparency;
-#if defined(__MORPHOS__)
-	struct Dunno wci_dunno1;
-	struct Dunno2 wci_dunno2;
-	struct Dunno3 wci_dunno3;
-#endif /* __MORPHOS__ */
 	ULONG wci_Dummy;
 	};
 
@@ -519,6 +501,11 @@ static ULONG WindowClass_SetInnerSize(Class *cl, Object *o, Msg msg)
 			iwt->iwt_InnerWidth = iwt->iwt_WindowTask.wt_Window->Width - iwt->iwt_InnerLeft - iwt->iwt_InnerRight;
 			iwt->iwt_InnerHeight = iwt->iwt_WindowTask.wt_Window->Height - iwt->iwt_InnerTop - iwt->iwt_InnerBottom;
 
+			d1(kprintf("%s/%s/%ld: iwt_InnerWidth=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerWidth, iwt->iwt_InnerHeight));
+			d1(kprintf("%s/%s/%ld: GZZWidth=%ld  GZZHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_Window->GZZWidth, iwt->iwt_WindowTask.wt_Window->GZZHeight));
+			d1(kprintf("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_Window->Width, iwt->iwt_WindowTask.wt_Window->Height));
+			d1(kprintf("%s/%s/%ld: BorderLeft=%ld  BorderRight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_Window->BorderLeft, iwt->iwt_WindowTask.wt_Window->BorderRight));
+
 			iwt->iwt_RemRegion = NULL;
 
 			DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_RemClipRegion, origClipRegion);
@@ -770,9 +757,17 @@ static struct Window *CheckWindowPing(Class *cl, Object *o, Msg msg)
 static struct Window *WindowClass_Open(Class *cl, Object *o, Msg msg)
 {
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
+	ULONG WasLocked = FALSE;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  wt_Window=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, iwt->iwt_WindowTask.wt_Window));
+
+	if ((iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow) && iInfos.xii_GlobalDragHandle)
+		{
+		WasLocked = SCA_UnlockDrag(iInfos.xii_GlobalDragHandle);
+		}
+
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	iwt->iwt_WindowTask.wt_Window = ScaOpenWindow(iwt, cl, o);
 
@@ -795,6 +790,8 @@ static struct Window *WindowClass_Open(Class *cl, Object *o, Msg msg)
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		}
+
+	ReLockDrag(iInfos.xii_GlobalDragHandle, iwt, WasLocked);
 
 	d1(kprintf("%s/%s/%ld: wt_Window=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_Window));
 
@@ -892,26 +889,6 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 	else
 		inst->wci_Transparency = ws->ws_WindowOpacityActive;
 
-#if defined(__MORPHOS__)
-	memset(&inst->wci_dunno1, 0, sizeof(inst->wci_dunno1));
-	memset(&inst->wci_dunno2, 0, sizeof(inst->wci_dunno2));
-	memset(&inst->wci_dunno3, 0, sizeof(inst->wci_dunno3));
-	inst->wci_dunno1.do_Node.mln_Succ = &inst->wci_dunno2.do2_Node;
-	inst->wci_dunno1.do_Unknown1[6] = (ULONG) &inst->wci_dunno3;
-	inst->wci_dunno2.do2_Node.mln_Pred = &inst->wci_dunno1.do_Node;
-	inst->wci_dunno2.do2_Node.mln_Succ = &inst->wci_dunno3.do3_Node;
-	inst->wci_dunno2.do2_Node.mln_Pred = &inst->wci_dunno2.do2_Node;
-	inst->wci_dunno2.do2_Unknown2[1] = 0x0100;
-	inst->wci_dunno2.do2_Unknown2[2] = 0x0100;
-	inst->wci_dunno2.do2_Unknown2[3] = 0x0100;
-	inst->wci_dunno2.do2_Unknown2[4] = 0x0001;
-	inst->wci_dunno2.do2_Unknown2[5] = 0x0100;
-
-	inst->wci_dunno3.do3_Unknown1 = 0x0f000000;
-	inst->wci_dunno3.do3_Words[8] = ~0;
-	NewList((struct List *) &inst->wci_dunno3.do3_List);
-#endif //defined(__MORPHOS__)
-
 	d1(KPrintF("%s/%s/%ld: WA_Width=%ld  WA_Height=%ld  wci_Transparency=%ld\n", __FILE__, __FUNC__, __LINE__, \
 		ws->ws_Width + iwt->iwt_ExtraWidth, ws->ws_Height + iwt->iwt_ExtraHeight, inst->wci_Transparency));
 
@@ -938,8 +915,8 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 		WA_Top, ws->ws_Top,
 		WA_Left, ws->ws_Left,
 #if defined(__MORPHOS__)
-//		  WA_Dunno, &inst->wci_dunno1,
-		WA_Dunno, 1,
+		WA_DynamicResize1, 1,
+		WA_DynamicResize2, 1,
 #endif //defined(__MORPHOS__)
 #if defined(__MORPHOS__) && defined(WA_Opacity)
 		iwt->iwt_BackDrop ? TAG_IGNORE : WA_Opacity, inst->wci_Transparency * (ULONG_MAX / 100),

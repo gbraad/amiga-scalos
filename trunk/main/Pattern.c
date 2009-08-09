@@ -72,7 +72,6 @@ static BOOL ReadBackFill_NoGuiGfx(struct internalScaWindowTask *iwt, struct Patt
 	struct PatternInfo *ptInfo, struct Screen *scr);
 static BOOL ReadBackFill_Enhanced(struct internalScaWindowTask *iwt, struct PatternNode *ptNode,
 	struct PatternInfo *ptInfo, struct Screen *scr);
-static SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct BackFillMsg *msg);
 static void PatternFreeNodeBitMap(struct PatternNode *ptNode);
 static void PatternFreeInfoBitMap(struct PatternInfo *ptInfo);
 static BOOL PatternCreateCenteredBitMap(struct internalScaWindowTask *iwt,
@@ -955,48 +954,6 @@ static BOOL ReadBackFill_Enhanced(struct internalScaWindowTask *iwt, struct Patt
 	d1(KPrintF("%s/%s/%ld: END Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
-}
-
-
-// object == (struct RastPort *) result->RastPort
-// message == [ (Layer *) layer, (struct Rectangle) bounds,
-//              (LONG) offsetx, (LONG) offsety ]
-
-static SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct BackFillMsg *msg)
-{
-	struct RastPort rpCopy;
-	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) bfHook->h_Data;
-	struct PatternInfo *ptInfo = &iwt->iwt_WindowTask.wt_PatternInfo;
-
-	d1(KPrintF("\nSTART " "%s/%s/%ld: ptinfo=bfHook=%08lx  rp=%08lx  msg=%08lx\n", \
-		__FILE__, __FUNC__, __LINE__, bfHook, rp, msg));
-
-	d1(KPrintF("\n" "%s/%s/%ld: RastPort=%08lx\n", __FILE__, __FUNC__, __LINE__, rp));
-	d1(KPrintF("%s/%s/%ld: Rect=%ld %ld %ld %ld\n", __FILE__, __FUNC__, __LINE__, \
-		msg->bfm_Rect.MinX, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxX, msg->bfm_Rect.MaxY));
-	d1(KPrintF("%s/%s/%ld: Layer=%08lx  OffsetX=%ld  OffsetY=%ld\n", __FILE__, __FUNC__, __LINE__, \
-		msg->bfm_Layer, msg->bfm_OffsetX, msg->bfm_OffsetY));
-
-	d1(KPrintF("\n" "%s/%s/%ld: ptinf_bitmap=%08lx\n", __FILE__, __FUNC__, __LINE__, ptInfo->ptinf_bitmap));
-	if (ptInfo->ptinf_bitmap)
-		d1(KPrintF("\n" "%s/%s/%ld: ptinf_bitmap  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
-			GetBitMapAttr(ptInfo->ptinf_bitmap, BMA_WIDTH), GetBitMapAttr(ptInfo->ptinf_bitmap, BMA_HEIGHT)));
-
-	d1(KPrintF("\n" "%s/%s/%ld: rp->bitmap=%08lx  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
-		rp->BitMap, GetBitMapAttr(rp->BitMap, BMA_WIDTH), GetBitMapAttr(rp->BitMap, BMA_HEIGHT)));
-
-	rpCopy = *rp;
-	rpCopy.Layer = NULL;
-
-	WindowBackFill(&rpCopy, msg, ptInfo->ptinf_bitmap,
-		ptInfo->ptinf_width, ptInfo->ptinf_height,
-		iwt->iwt_WinDrawInfo->dri_Pens[BACKGROUNDPEN],
-		iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset,
-		NULL);
-
-	d1(KPrintF("\n " "%s/%s/%ld: finished\n", __FILE__, __FUNC__, __LINE__));
-
-	return 0;
 }
 
 

@@ -57,6 +57,7 @@ static const struct TagItem FlagMapTable[] =
 	{ SCA_NoActivateWindow, WSV_FlagF_NoActivateWindow },
 	{ SCA_BrowserMode, WSV_FlagF_BrowserMode },
 	{ SCA_CheckOverlappingIcons, WSV_FlagF_CheckOverlappingIcons },
+	{ SCA_DdPopupWindow, WSV_FlagF_DdPopupWindow },
 	{ TAG_END, 0 },
 	};
 

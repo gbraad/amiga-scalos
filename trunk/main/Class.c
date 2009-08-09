@@ -334,9 +334,29 @@ ULONG ClassDragEnter(struct DragEnter *drge, struct internalScaWindowTask *iwtDe
 
 		if (iwtSrc->iwt_DragMayDrop)
 			{
+			ULONG IconType;
+
 			d1(kprintf("%s/%s/%ld: icon=%08lx <%s>  Type=%ld\n", __FILE__, __FUNC__, __LINE__, drge->drage_Icon, drge->drage_Icon->in_Name));
 
 			ClassSelectIcon(iwtDest->iwt_WindowTask.mt_WindowStruct, drge->drage_Icon, TRUE);
+
+			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+			GetAttr(IDTA_Type, drge->drage_Icon->in_Icon, &IconType);
+			switch (IconType)
+				{
+			case WBDRAWER:
+			case WBDISK:
+			case WBGARBAGE:
+			case WB_TEXTICON_DRAWER:
+				DoMethod(iwtSrc->iwt_WindowTask.mt_MainObject,
+					SCCM_IconWin_StartPopOpenTimer,
+					iwtDest,
+					dh, drge->drage_Icon);
+				break;
+			default:
+				break;
+				}
 
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -357,7 +377,7 @@ ULONG ClassDragEnter(struct DragEnter *drge, struct internalScaWindowTask *iwtDe
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	ReLockDrag(dh, WasLocked);
+	ReLockDrag(dh, iwtSrc, WasLocked);
 
 	d1(kprintf("%s/%s/%ld: Finished. \n", __FILE__, __FUNC__, __LINE__));
 
@@ -388,6 +408,8 @@ ULONG ClassDragLeave(struct DragEnter *drge, struct internalScaWindowTask *iwtDe
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
+	DoMethod(iwtSrc->iwt_WindowTask.mt_MainObject, SCCM_IconWin_StopPopOpenTimer, dh);
+
 	if (drge->drage_Icon)
 		{
 		// pointer left icon area
@@ -417,7 +439,7 @@ ULONG ClassDragLeave(struct DragEnter *drge, struct internalScaWindowTask *iwtDe
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	ReLockDrag(dh, WasLocked);
+	ReLockDrag(dh, iwtSrc, WasLocked);
 
 	d1(kprintf("%s/%s/%ld: Finished. \n", __FILE__, __FUNC__, __LINE__));
 

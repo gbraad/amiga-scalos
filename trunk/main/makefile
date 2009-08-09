@@ -90,6 +90,7 @@ SRCS  =	about.c			\
 	AppMenu.c		\
 	AutoUpdate.c		\
 	Backdrop.c		\
+	BackFill.c		\
         BTree.c			\
 	ButtonGadgetClass.c	\
 	Class.c			\
@@ -236,6 +237,7 @@ $(OBJDIR)/AppMenu.o			: AppMenu.c $(CHEADERS)
 $(OBJDIR)/argb.o			: argb.c $(CHEADERS)
 $(OBJDIR)/AutoUpdate.o			: AutoUpdate.c $(CHEADERS)
 $(OBJDIR)/Backdrop.o			: Backdrop.c $(CHEADERS)
+$(OBJDIR)/BackFill.o			: BackFill.c $(CHEADERS)
 $(OBJDIR)/BTree.o			: BTree.c BTree.h $(CHEADERS)
 $(OBJDIR)/ButtonGadgetClass.o		: ButtonGadgetClass.c $(CHEADERS)
 $(OBJDIR)/Class.o			: Class.c ../include/DefIcons.h $(CHEADERS)

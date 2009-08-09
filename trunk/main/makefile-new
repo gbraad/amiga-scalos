@@ -19,6 +19,7 @@ OBJS	=	$(OBJDIR)/about.o                   \
 			$(OBJDIR)/AppMenu.o                 \
 			$(OBJDIR)/AutoUpdate.o              \
 			$(OBJDIR)/Backdrop.o                \
+			$(OBJDIR)/BackFill.o                \
 			$(OBJDIR)/BTree.o		    \
 			$(OBJDIR)/ButtonGadgetClass.o       \
 			$(OBJDIR)/Class.o                   \

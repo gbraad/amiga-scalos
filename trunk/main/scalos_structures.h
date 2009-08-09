@@ -444,8 +444,6 @@ struct internalScaWindowTask
 	struct WindowHistoryEntry *iwt_CurrentHistoryEntry;	// Pointer to "current" entry in iwt_HistoryList
 
 	struct FileRequester *iwt_AslFileRequest;	// ASL file requester, e.g. for SCCM_IconWin_Browse
-
-	struct ScalosRootTimer *iwt_DragScrollTimer;	// timer handle for periodic drag scrolling
         };
 
 //-----------------------------------------------------------------------
@@ -769,6 +767,12 @@ struct DragHandle
 	ULONG	drgh_DrawerCount;			// +jl+ 20010813 number of drawers being dragged
 	ULONG	drgh_FileCount;				// +jl+ 20010813 number of files being dragged
 	ULONG	drgh_DeviceCount;			// +jl+ 20011112 number of devices being dragged
+
+	ULONG	drgh_UnLockCount;			// counter for nesting sca_UnlockDrag()
+
+	struct 	ScaIconNode *drgh_PopOpenIcon;
+	ULONG 	drgh_PopOpenTickCount;			   // IntuiTicks Counter
+	struct 	internalScaWindowTask *drgh_PopOpenDestWindow;
 
 	union
 		{
@@ -1335,6 +1339,7 @@ struct extendedScaInternInfos
 {
 	struct ScaInternInfos xii_iinfos;		// public part of ScaInternInfos
 	struct GlobalGadgetDef xii_GlobalGadgetUnderPointer;
+	struct DragHandle *xii_GlobalDragHandle;
 };
 
 //---------------------------------------------------------------
