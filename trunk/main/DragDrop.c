@@ -186,6 +186,22 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 				SameWindow(iwt, iwtDest, x, y);
 			else
 				DragDropFinish(iwt, iwt->iwt_WindowTask.mt_WindowStruct, iwtDest->iwt_WindowTask.mt_WindowStruct, x, y, &drops);
+
+			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+			// if iwtDest was a Popup window, close it now!
+			if (iwtDest->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow)
+				{
+				struct SM_CloseWindow *msg;
+
+				msg = (struct SM_CloseWindow *) SCA_AllocMessage(MTYP_CloseWindow, 0);
+				if (msg)
+					{
+					msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
+					PutMsg(iwtDest->iwt_WindowTask.mt_WindowStruct->ws_MessagePort, &msg->ScalosMessage.sm_Message);
+					}
+				}
+			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			}
 		break;
 

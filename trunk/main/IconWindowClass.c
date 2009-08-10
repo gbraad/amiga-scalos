@@ -3330,11 +3330,11 @@ static ULONG IconWindowClass_StartPopOpenTimer(Class *cl, Object *o, Msg msg)
 		iwt, iwt->iwt_WinTitle, spot->spot_DragHandle, \
 		spot->spot_IconNode, GetIconName(spot->spot_IconNode)));
 
-	if (spot->spot_DragHandle)
+	if (spot->spot_DragHandle && CurrentPrefs.pref_EnablePopupWindows)
 		{
 		spot->spot_DragHandle->drgh_PopOpenDestWindow = (struct internalScaWindowTask *) spot->spot_DestWindow;
 		spot->spot_DragHandle->drgh_PopOpenIcon = spot->spot_IconNode;
-		spot->spot_DragHandle->drgh_PopOpenTickCount = 3 * 10;	   // ~10 ticks/s
+		spot->spot_DragHandle->drgh_PopOpenTickCount = CurrentPrefs.pref_PopupWindowDelaySeconds * 10;	   // ~10 ticks/s
 		}
 
 	return 0;

@@ -1,7 +1,7 @@
 #ifndef SCALOS_PREFERENCES_H
 #define SCALOS_PREFERENCES_H
 /*
-**  $VER: preferences.i 41.6 (02 Jan 20096 17:02:08)
+**  $VER: preferences.i 41.7 (10 Aug 2009 17:02:08)
 **
 ** $Date: 2009-01-12 19:48:06 +0200 (Mo, 12 Jan 2009) $
 ** $Revision: 2977 $
@@ -155,6 +155,8 @@ struct PrefsStruct
 #define SCP_SelTextRectRadius		0x80000087	// UWORD - Radius for selected icon text rectangle corners
 #define SCP_ActiveWindowTransparency	0x80000088	// UWORD - percentage of active Scalos window opacity (0=transparent, 100=opaque)
 #define SCP_InactiveWindowTransparency	0x80000089	// UWORD - percentage of inactive Scalos window opacity (0=transparent, 100=opaque)
+#define SCP_PopupWindowsEnable		0x8000008a	// BYTE - enable "spring-loaded" popup windows during D&D
+#define SCP_PopupWindowsDelay		0x8000008b	// UWORD - Time in s before drawer window pops up during D&D
 
 //---------------------------------------------------------------
 

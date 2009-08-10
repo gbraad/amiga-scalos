@@ -873,7 +873,8 @@ void IDCMPDragIntuiTicks(struct internalScaWindowTask *iwt, struct IntuiMessage 
 			DoMethod(dh->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
 				SCCM_IconWin_Open,
 				dh->drgh_PopOpenIcon,
-				ICONWINOPENF_DoNotActivateWindow | ICONWINOPENF_IgnoreFileTypes | ICONWINOPENF_DdPopupWindow);
+				ICONWINOPENF_DoNotActivateWindow | ICONWINOPENF_NewWindow
+					| ICONWINOPENF_IgnoreFileTypes | ICONWINOPENF_DdPopupWindow);
 
 			ReLockDrag(dh, iwt, WasLocked);
 			}

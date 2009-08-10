@@ -8,7 +8,12 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20090809	jl	- Improvement: data transfer speed in copy/move progress window is now
+41.7    20090810	jl	- Improvement: enhancements for popup window feature: now works with single-window.
+				  Added preferences options to enable/disable popup window feature
+				  and to adjust popup delay.
+				- Bugfix: information.module: icon drop zone drop marks were not displayed
+				  correctly under MorphOS 2.3.
+	20090809	jl	- Improvement: data transfer speed in copy/move progress window is now
 				  rounded to two decimals.
 				- Improvement: added support for dynamic window resizing with
 				  MorphOS 2.3 Advanced Display Engine.

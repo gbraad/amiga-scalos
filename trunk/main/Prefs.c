@@ -215,11 +215,14 @@ static const struct ScalosPrefs DefaultPrefs =
 	TRUE,					// pref_DisplayStatusBar
 	TRUE,					// pref_EnableTooltips
 	TRUE,					// pref_EnableSplash
+	TRUE,					// pref_EnablePopupWindows
 	5,					// pref_SplashHoldTime
 
 	{ 0, 1, 2, 3, 4, 5, -1 },		// pref_ColumnsArray
 
 	3,					// pref_TypeRestartTime
+
+	3,					// pref_PopupWindowDelaySeconds
 
 	10000,					// pref_FileCountTimeout
 	1000,					// pref_FileTransWindowDelay
@@ -1072,10 +1075,12 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DefaultWindowSize, &NewPrefs->pref_DefWindowBox, sizeof(NewPrefs->pref_DefWindowBox));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconCleanupSpace, &NewPrefs->pref_CleanupSpace, sizeof(NewPrefs->pref_CleanupSpace));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SplashWindowEnable, &NewPrefs->pref_EnableSplash, sizeof(NewPrefs->pref_EnableSplash));
+		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupWindowsEnable, &NewPrefs->pref_EnablePopupWindows, sizeof(NewPrefs->pref_EnablePopupWindows));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SplashWindowHoldTime, &NewPrefs->pref_SplashHoldTime, sizeof(NewPrefs->pref_SplashHoldTime));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_StatusBarEnable, &NewPrefs->pref_DisplayStatusBar, sizeof(NewPrefs->pref_DisplayStatusBar));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ToolTipsEnable, &NewPrefs->pref_EnableTooltips, sizeof(NewPrefs->pref_EnableTooltips));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ToolTipPopupDelay, &NewPrefs->pref_ToolTipDelaySeconds, sizeof(NewPrefs->pref_ToolTipDelaySeconds));
+		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupWindowsDelay, &NewPrefs->pref_PopupWindowDelaySeconds, sizeof(NewPrefs->pref_PopupWindowDelaySeconds));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ShowDragDropObjCount, &NewPrefs->pref_ShowDDCountText, sizeof(NewPrefs->pref_ShowDDCountText));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DragDropIconsSingle, &NewPrefs->pref_UseOldDragIcons, sizeof(NewPrefs->pref_UseOldDragIcons));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TextWindowsStriped, &NewPrefs->pref_TextWindowStriped, sizeof(NewPrefs->pref_TextWindowStriped));

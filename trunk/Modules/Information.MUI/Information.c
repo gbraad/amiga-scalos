@@ -2635,7 +2635,10 @@ static void DropZoneMsgHandler(struct DropZoneMsg *dzm)
 			DoMethod(dz->dz_Object, MUIM_DragBegin, NULL);
 #if defined(__MORPHOS__)
 			if (DOSBase->dl_lib.lib_Version >= 51)
+				{
+				Delay(1);
 				WaitTOF();
+				}
 #endif //defined(__MORPHOS__)
 			}
 		break;
@@ -2644,7 +2647,10 @@ static void DropZoneMsgHandler(struct DropZoneMsg *dzm)
 		DoMethod(dz->dz_Object, MUIM_DragFinish, NULL, FALSE);
 #if defined(__MORPHOS__)
 		if (DOSBase->dl_lib.lib_Version >= 51)
+			{
+			Delay(1);
 			WaitTOF();
+			}
 #endif //defined(__MORPHOS__)
 		break;
 		}

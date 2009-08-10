@@ -117,11 +117,14 @@ struct ScalosPrefs
 	BYTE pref_DisplayStatusBar;				// +jl+ 30010731 Flag: display status bar in scalos windows
 	BYTE pref_EnableTooltips;				// +jl+ 20010626 Flag: enable icon tool tips
 	BYTE pref_EnableSplash;					// +jl+ 20010626 Flag: enable Splash window on startup
+	BYTE pref_EnablePopupWindows;				// Flag: enable "spring-loaded" popup windows during D&D
 	UWORD pref_SplashHoldTime;				// +jl+ 20030705 Hold time for splash window in seconds
 
 	BYTE pref_ColumnsArray[WIDTHARRAY_MAX];   		// +jl+ 20010311 Text window title columns
 
 	UWORD pref_TypeRestartTime;				// +jl+ 20011005 Time in s before restarting keyboard icon selection
+
+	UWORD pref_PopupWindowDelaySeconds;			// Time in s before drawer window pops up during D&D
 
 	ULONG pref_FileCountTimeout;				// +jl+ 20011214 Timeout for file transfer counting in ms
 	ULONG pref_FileTransWindowDelay;			// +jl+ 20011215 Open delay for file transfer window in ms
