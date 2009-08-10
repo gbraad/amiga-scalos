@@ -1,7 +1,7 @@
 	IFND	PREFERENCES_I
 PREFERENCES_I	SET	1
 **
-**	$VER: preferences.i 41.6 (02 Jan 2009 19:02:08)
+**	$VER: preferences.i 41.7 (10 Aug 2009 19:02:08)
 **
 **      preferences.library include
 **
@@ -140,6 +140,8 @@ SCP_SelTextRectBorderY		EQU	$80000086	; UWORD - Additional vertical border aroun
 SCP_SelTextRectRadius		EQU	$80000087	; UWORD - Radius for selected icon text rectangle corners
 SCP_ActiveWindowTransparency	EQU	$80000088	; UWORD - percentage of active Scalos window opacity (0=transparent, 100=opaque)
 SCP_InactiveWindowTransparency	EQU	$80000089	; UWORD - percentage of inactive Scalos window opacity (0=transparent, 100=opaque)
+SCP_PopupWindowsEnable		EQU	$8000008a	; BYTE - enable "spring-loaded" popup windows during D&D
+SCP_PopupWindowsDelay		EQU	$8000008b	; UWORD - Time in s before drawer window pops up during D&D
 
 
 	ENDC	; PREFERENCES_I

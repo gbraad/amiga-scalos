@@ -740,6 +740,7 @@ struct DragHandle2
 	struct	BitMap *drgh2_bufferbitmap2;	// Bitmap for big offset moving
 	struct	ARGB *drgh2_transbuffer;	// Buffer for Real Transparency
 	struct	ARGB *drgh2_transbuffer2;	// Buffer for Real Transparency
+	struct	Window *drgh2_FgWindow;		// Foreground window
 	struct	RastPort drgh2_rastport;
 	};
 
