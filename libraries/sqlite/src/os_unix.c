@@ -303,6 +303,7 @@ static int lockTrace(int fd, int op, struct flock *p){
   char *zOpName, *zType;
   int s;
   int savedErrno;
+#if 0
   if( op==F_GETLK ){
     zOpName = "GETLK";
   }else if( op==F_SETLK ){
@@ -343,6 +344,7 @@ static int lockTrace(int fd, int op, struct flock *p){
     sqlite3DebugPrintf("fcntl-failure-reason: %s %d %d %d\n",
        zType, (int)l2.l_start, (int)l2.l_len, (int)l2.l_pid);
   }
+#endif
   errno = savedErrno;
   return s;
 }
@@ -825,7 +827,7 @@ static void testThreadLockingBehavior(int fd_orig){
   struct threadTestData d;
   struct flock l;
   pthread_t t;
-
+#if 0
   fd = dup(fd_orig);
   if( fd<0 ) return;
   memset(&l, 0, sizeof(l));
@@ -839,13 +841,15 @@ static void testThreadLockingBehavior(int fd_orig){
   d.fd = fd;
   d.lock = l;
   d.lock.l_type = F_WRLCK;
-  pthread_create(&t, 0, threadLockingTest, &d);
-  pthread_join(t, 0);
+  if( pthread_create(&t, 0, threadLockingTest, &d)==0 ){
+    pthread_join(t, 0);
+  }
   close(fd);
+#endif
   if( d.result!=0 ) return;
   threadsOverrideEachOthersLocks = (d.lock.l_type==F_UNLCK);
 }
-#endif /* SQLITE_THERADSAFE && defined(__linux__) */
+#endif /* SQLITE_THREADSAFE && defined(__linux__) */
 
 /*
 ** Release a unixLockInfo structure previously allocated by findLockInfo().
@@ -1088,7 +1092,7 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
 
   assert( pFile );
   unixEnterMutex(); /* Because pFile->pLock is shared across threads */
-
+#if 0
   /* Check if a thread in this process holds such a lock */
   if( pFile->pLock->locktype>SHARED_LOCK ){
     reserved = 1;
@@ -1112,7 +1116,7 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
     }
   }
 #endif
-  
+#endif
   unixLeaveMutex();
   OSTRACE4("TEST WR-LOCK %d %d %d\n", pFile->h, rc, reserved);
 
@@ -1213,6 +1217,7 @@ static int unixLock(sqlite3_file *id, int locktype){
   /* This mutex is needed because pFile->pLock is shared across threads
   */
   unixEnterMutex();
+#if 0
 
   /* Make sure the current thread owns the pFile.
   */
@@ -1371,6 +1376,7 @@ static int unixLock(sqlite3_file *id, int locktype){
   }
 
 end_lock:
+#endif
   unixLeaveMutex();
   OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype), 
       rc==SQLITE_OK ? "ok" : "failed");
@@ -1403,6 +1409,7 @@ static int unixUnlock(sqlite3_file *id, int locktype){
     return SQLITE_MISUSE;
   }
   unixEnterMutex();
+#if 0
   h = pFile->h;
   pLock = pFile->pLock;
   assert( pLock->cnt!=0 );
@@ -1519,6 +1526,7 @@ static int unixUnlock(sqlite3_file *id, int locktype){
   }
 	
 end_unlock:
+#endif
   unixLeaveMutex();
   if( rc==SQLITE_OK ) pFile->locktype = locktype;
   return rc;
