@@ -40,7 +40,7 @@ OBJ_DIR	= .sasobj
 
 #############################################################
 
-CFLAGS 		= optimize nostackcheck nover dbg=s DATA=far idir=//include
+CFLAGS 		= optimize nostackcheck nover dbg=s DATA=far idlen=64 idir=//include
 LNFLAGS		= quiet batch noicons stripdebug SD
 LNDBFLAGS 	= quiet batch noicons addsym SD
 
