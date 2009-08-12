@@ -240,7 +240,8 @@ BOOL GenerateThumbnails(struct internalScaWindowTask *iwt)
 				&sMsg, sizeof(sMsg), iwt->iwt_WindowTask.wt_IconPort);
 			}
 
-		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
+		if (!Success)
+			ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
 		}
 
 	d1(KPrintF("%s/%s/%ld:  END\n", __FILE__, __FUNC__, __LINE__));
@@ -285,7 +286,9 @@ static SAVEDS(ULONG) GenerateThumbnailProcess(struct SM_StartProg *sMsg, struct 
 	struct Process *myProc = (struct Process *) FindTask(NULL);
 	char TaskName[256];
 
-	ScalosObtainSemaphoreShared(iwt->iwt_WindowTask.wt_WindowSemaphore);
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	// iwt->iwt_WindowTask.wt_WindowSemaphore has alraeyd been lock in GenerateThumbnails() !!
 
 	ScaFormatStringMaxLength(TaskName, sizeof(TaskName),
 		"Scalos_CreateThumbnails <%s>", (ULONG) iwt->iwt_WindowTask.mt_WindowStruct->ws_Name);
@@ -375,6 +378,8 @@ static SAVEDS(ULONG) GenerateThumbnailProcess(struct SM_StartProg *sMsg, struct 
 
 	// Semaphore has been locked in GenerateThumbnails()
 	ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }
