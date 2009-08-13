@@ -255,7 +255,7 @@ BOOL ScaAttemptSemaphoreListA(struct TagItem *OriginalTagList)
 		}
 	Permit();
 
-	d1(kprintf("%s/%s/%ld: END  AllObtained=%ld\n", __FILE__, __FUNC__, __LINE__, AllObtained));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }

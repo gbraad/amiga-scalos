@@ -454,6 +454,13 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 					// defer quit until child process has finished!
 					Finished = FALSE;
 					}
+				d1(KPrintF("%s/%s/%ld: iwt_IconPortOutstanding=%ld  iwt_AsyncLayoutPending=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_IconPortOutstanding, iwt->iwt_AsyncLayoutPending));
+
+				if (Finished && (iwt->iwt_IconPortOutstanding || iwt->iwt_AsyncLayoutPending))
+					{
+					ScalosReleaseSemaphore(&iwt->iwt_ChildProcessSemaphore);
+					ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
+					}
 				}
 			} while ((!WinSemaLocked && !Finished) || iwt->iwt_IconPortOutstanding || iwt->iwt_AsyncLayoutPending);
 		} while (0);
@@ -631,12 +638,20 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 			}
 		}
 
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	if (msgStart)
 		ReplyMsg(&msgStart->ScalosMessage.sm_Message);
 
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	SCA_FreeAllNodes((struct ScalosNodeList *)(APTR) &dummyList);
 
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	ScalosReleaseSemaphore(&QuitSemaphore);
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
 }
 
