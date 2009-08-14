@@ -2348,13 +2348,6 @@ static ULONG IconWindowClass_AddToStatusBar(Class *cl, Object *o, Msg msg)
 
 	if (iwt->iwt_StatusBar)
 		{
-		ULONG WasLocked = FALSE;
-
-		if ((iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow) && iInfos.xii_GlobalDragHandle)
-			{
-			WasLocked = SCA_UnlockDrag(iInfos.xii_GlobalDragHandle);
-			}
-
 		DoGadgetMethod(iwt->iwt_StatusBar, iwt->iwt_WindowTask.wt_Window, NULL,
 			OM_ADDMEMBER,
 			NULL,
@@ -2363,8 +2356,6 @@ static ULONG IconWindowClass_AddToStatusBar(Class *cl, Object *o, Msg msg)
 
 		if (iwt->iwt_WindowTask.wt_Window)
 			RefreshGList(iwt->iwt_StatusBar, iwt->iwt_WindowTask.wt_Window, NULL, 1);
-
-		ReLockDrag(iInfos.xii_GlobalDragHandle, iwt, WasLocked);
 		}
 
 	return 1;
@@ -2381,13 +2372,6 @@ static ULONG IconWindowClass_RemFromStatusBar(Class *cl, Object *o, Msg msg)
 
 	if (iwt->iwt_StatusBar)
 		{
-		ULONG WasLocked = FALSE;
-
-		if ((iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow) && iInfos.xii_GlobalDragHandle)
-			{
-			WasLocked = SCA_UnlockDrag(iInfos.xii_GlobalDragHandle);
-			}
-
 		DoGadgetMethod(iwt->iwt_StatusBar, iwt->iwt_WindowTask.wt_Window, NULL,
 			OM_REMMEMBER,
 			NULL,
@@ -2395,8 +2379,6 @@ static ULONG IconWindowClass_RemFromStatusBar(Class *cl, Object *o, Msg msg)
 
 		if (iwt->iwt_WindowTask.wt_Window)
 			RefreshGList(iwt->iwt_StatusBar, iwt->iwt_WindowTask.wt_Window, NULL, 1);
-
-		ReLockDrag(iInfos.xii_GlobalDragHandle, iwt, WasLocked);
 		}
 
 	return 1;
@@ -2414,13 +2396,6 @@ static ULONG IconWindowClass_UpdateStatusBar(Class *cl, Object *o, Msg msg)
 
 	if (iwt->iwt_StatusBar)
 		{
-		ULONG WasLocked = FALSE;
-
-		if ((iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow) && iInfos.xii_GlobalDragHandle)
-			{
-			WasLocked = SCA_UnlockDrag(iInfos.xii_GlobalDragHandle);
-			}
-
 		SetAttrsA(mub->mub_Member, (struct TagItem *) mub->mub_TagList);
 
 		DoGadgetMethod(iwt->iwt_StatusBar,
@@ -2429,8 +2404,6 @@ static ULONG IconWindowClass_UpdateStatusBar(Class *cl, Object *o, Msg msg)
 			NULL,			// GadgetInfo gets filled in here by DoGadgetMethod()
 			(ULONG) mub->mub_Member,
 			NULL);
-
-		ReLockDrag(iInfos.xii_GlobalDragHandle, iwt, WasLocked);
 		}
 
 	return 1;
