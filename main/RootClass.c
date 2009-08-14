@@ -337,11 +337,12 @@ static ULONG RootClass_RunProcess(Class *cl, Object *o, Msg msg)
 
 		d1(kprintf("%s/%s/%ld: wt_IconPort=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_IconPort));
 
-		RunProcess(&iwt->iwt_WindowTask, mrp->mrp_EntryPoint, 
+		Result = RunProcess(&iwt->iwt_WindowTask, mrp->mrp_EntryPoint,
 			(mrp->mrp_ArgSize + 3) / sizeof(LONG), 
 			(struct WBArg *) mrp->mrp_Args, iwt->iwt_WindowTask.wt_IconPort);
 
-		Result = WaitReply(iwt->iwt_WindowTask.wt_IconPort, iwt, MTYP_RunProcess);
+		if (Result)
+			Result = WaitReply(iwt->iwt_WindowTask.wt_IconPort, iwt, MTYP_RunProcess);
 
 		if (iwt->iwt_IconPortOutstanding > 0)
 			iwt->iwt_IconPortOutstanding--;

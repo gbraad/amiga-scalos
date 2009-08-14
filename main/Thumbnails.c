@@ -242,7 +242,7 @@ BOOL GenerateThumbnails(struct internalScaWindowTask *iwt)
 				&sMsg, sizeof(sMsg), iwt->iwt_WindowTask.wt_IconPort);
 			}
 
-		if (!Success)
+		if (!Success && (iwt->iwt_IconPortOutstanding > 0))
 			--iwt->iwt_IconPortOutstanding;
 
 		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
@@ -382,7 +382,9 @@ static SAVEDS(ULONG) GenerateThumbnailProcess(struct SM_StartProg *sMsg, struct 
 
 	// Semaphore has been locked in GenerateThumbnails()
 	ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
-	--iwt->iwt_IconPortOutstanding;
+
+	if (iwt->iwt_IconPortOutstanding > 0)
+		--iwt->iwt_IconPortOutstanding;
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
