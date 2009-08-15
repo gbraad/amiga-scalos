@@ -94,7 +94,7 @@ BOOL RunProcess(struct ScaWindowTask *wt, RUNPROCFUNC Routine, ULONG NumLongs,
 BOOL ChildProcessRun(struct internalScaWindowTask *iwt, struct ScalosMessage *msg, ULONG FirstTag, ...)
 {
 	va_list args;
-	struct TagItem *TagList = NULL;;
+	struct TagItem *TagList = NULL;
 	BOOL Success = FALSE;
 	struct SM_StartChildProcess *mStart = NULL;
 	struct MsgPort *StartReplyPort;
