@@ -112,6 +112,16 @@ void WindowBackFill(struct RastPort *rp,
 ///
 struct ScalosClass *initButtonGadgetClass(const struct PluginClass *plug);
 ///
+
+/* ------------------------------------------------- */
+
+// defined in ChildProcess.c
+///
+// NumLongs : number of longwords in ArgArray (!!not number of entries!!)
+BOOL RunProcess(struct ScaWindowTask *iwt, RUNPROCFUNC Routine, ULONG NumLongs,
+	struct WBArg *ArgArray, struct MsgPort *ReplyPort);
+BOOL ChildProcessRun(struct internalScaWindowTask *iwt, struct ScalosMessage *msg, ULONG FirstTag, ...);
+///
 /* ------------------------------------------------- */
 
 // defined in Class.c
@@ -388,10 +398,6 @@ struct ScalosClass *initFrameImageClass(const struct PluginClass *plug);
 LIBFUNC_P2_PROTO(BOOL, sca_OpenIconWindow,
 	A0, struct TagItem *, TagList,
 	A6, struct ScalosBase *, ScalosBase);
-
-// NumLongs : number of longwords in ArgArray (!!not number of entries!!)
-BOOL RunProcess(struct ScaWindowTask *iwt, RUNPROCFUNC Routine, ULONG NumLongs,
-	struct WBArg *ArgArray, struct MsgPort *ReplyPort);
 BPTR DiskInfoLock(const struct ScaIconNode *in);
 STRPTR GetWsNameFromLock(BPTR WsLock);
 Object *FunctionsFindIconObjectForPath(CONST_STRPTR Path, BOOL *WindowListLocked,
@@ -665,7 +671,6 @@ void RefreshIcons(struct internalScaWindowTask *iwt, struct Region *DrawingRegio
 STRPTR AllocPathBuffer(void);
 void FreePathBuffer(STRPTR Buffer);
 ULONG ChipMemAttr(void);
-SAVEDS(void) INTERRUPT ProcRunnerTask(void);
 LONG ScaSameLock(BPTR Lock1, BPTR Lock2);
 void DisplayScreenTitleError(struct internalScaWindowTask *iwt, ULONG MsgId);
 BOOL ExistsAssign(CONST_STRPTR AssignName);

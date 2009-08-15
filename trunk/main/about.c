@@ -140,14 +140,11 @@ void AboutProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg
 static LONG RunAbout(struct internalScaWindowTask *iwt, LONG lOkenabled, struct MsgPort *mp_Replyport)
 {
 	struct SM_RunProcess	*smrp_Message;	/* Message allocated for running procedure */
-	struct Process		*pr_Newproc;	/* new process created */
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	if (NULL != (smrp_Message = (struct SM_RunProcess *) SCA_AllocMessage(MTYP_RunProcess, 4)) )
 		{
-		STATIC_PATCHFUNC(ProcRunnerTask);
-
 		smrp_Message->ScalosMessage.sm_Message.mn_ReplyPort = mp_Replyport;
 		smrp_Message->EntryPoint = NewAbout;
 		smrp_Message->Flags = lOkenabled;
@@ -155,19 +152,14 @@ static LONG RunAbout(struct internalScaWindowTask *iwt, LONG lOkenabled, struct 
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		if (NULL != (pr_Newproc = CreateNewProcTags(NP_Priority, -5,
-					NP_CommandName, (ULONG) bAboutname,
-					NP_Name, (ULONG) bAboutname,
-					NP_Entry, (ULONG) PATCH_NEWFUNC(ProcRunnerTask),
-					TAG_DONE)) )
-			{
-			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-			PutMsg(&pr_Newproc->pr_MsgPort, (struct Message *)smrp_Message);
-			return(1);
-			}
-		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		ChildProcessRun(iwt,
+			&smrp_Message->ScalosMessage,
+			NP_Priority, -5,
+			NP_CommandName, (ULONG) bAboutname,
+			NP_Name, (ULONG) bAboutname,
+			TAG_DONE);
 
-		SCA_FreeMessage((struct ScalosMessage *)smrp_Message);
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		}
 	return(0);
 }

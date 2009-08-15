@@ -476,7 +476,6 @@ static BOOL SetBackFill_AsyncRead(struct internalScaWindowTask *iwt,
 {
 	struct SM_AsyncBackFill *msg = NULL;
 	BOOL Success = FALSE;
-	struct Process *bfProc;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx <%s>  ptn=%08lx  ptinf=%08lx  scr=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, ptNode, ptInfo, scr));
@@ -484,8 +483,6 @@ static BOOL SetBackFill_AsyncRead(struct internalScaWindowTask *iwt,
 	if (ScalosAttemptSemaphoreShared(&iwt->iwt_ChildProcessSemaphore))
 		{
 		do	{
-			STATIC_PATCHFUNC(ProcRunnerTask);
-
 			if (iwt->iwt_AsyncLayoutPending)
 				break;
 
@@ -514,23 +511,21 @@ static BOOL SetBackFill_AsyncRead(struct internalScaWindowTask *iwt,
 			d1(kprintf("%s/%s/%ld: msg=%08lx  ptinf=%08lx  PatternInfoCopy=%08lx\n", \
 				__FILE__, __FUNC__, __LINE__, msg, ptInfo, msg->smab_PatternInfoCopy));
 
-			bfProc = CreateNewProcTags(NP_StackSize, CurrentPrefs.pref_DefaultStackSize,
-					NP_Priority, PatternPrefs.patt_AsyncProcTaskPri,
-					NP_CommandName, (ULONG) "Scalos_Async_Backfill",
-					NP_Name, (ULONG) "Scalos_Async_Backfill",
-					NP_Entry, (ULONG) PATCH_NEWFUNC(ProcRunnerTask),
-					TAG_END);
-			if (NULL == bfProc)
+			if (!ChildProcessRun(iwt,
+				&msg->ScalosMessage,
+				NP_CommandName, (ULONG) "Scalos_Async_Backfill",
+				NP_Name, (ULONG) "Scalos_Async_Backfill",
+				TAG_END))
 				{
 				iwt->iwt_AsyncLayoutPending = FALSE;
 				break;
 				}
 
+			msg = NULL;	// ChildProcessRun has freed our message
+
 			d1(KPrintF("%s/%s/%ld: msg=%08lx  ReplyPort=%08lx  Len=%lu\n", \
 				__FILE__, __FUNC__, __LINE__, msg, msg->ScalosMessage.sm_Message.mn_ReplyPort, msg->ScalosMessage.sm_Message.mn_Length));
 
-			PutMsg(&bfProc->pr_MsgPort, &msg->ScalosMessage.sm_Message);
-			msg = NULL;
 			Success = TRUE;
 			} while (0);
 

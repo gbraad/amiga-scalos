@@ -144,8 +144,9 @@ MTYP_SetThumbnailImage_Remapped	equ	31
 MTYP_SetThumbnailImage_ARGB     equ	32
 MTYP_NewWindowPath		equ	33
 MTYP_PrefsChanged		equ	34
+MTYP_StartChildProcess		equ	35
 
-mtyp_max = 35
+mtyp_max = 36
 
     STRUCTURE ScalosMessage,MN_SIZE
 	ULONG	Signature	;("IMSG")
@@ -333,6 +334,11 @@ mtyp_max = 35
 	;struct ScalosMessage    ScalosMessage;
 	ULONG	smpc_Flags;			; ULONG
 	LABEL	smpc_SIZEOF
+
+   STRUCTURE SM_StartChildProcess,sm_SIZEOF
+	;struct ScalosMessage    ScalosMessage;
+	APTR	smscp_WindowTask
+	LABEL	smscp_SIZEOF
 
 ;---------------------------------------------------------------------------
 
