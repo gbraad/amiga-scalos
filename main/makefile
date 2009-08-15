@@ -93,6 +93,7 @@ SRCS  =	about.c			\
 	BackFill.c		\
         BTree.c			\
 	ButtonGadgetClass.c	\
+	ChildProcess.c		\
 	Class.c			\
 	cleanup.c		\
 	CLIStart.c		\
@@ -240,6 +241,7 @@ $(OBJDIR)/Backdrop.o			: Backdrop.c $(CHEADERS)
 $(OBJDIR)/BackFill.o			: BackFill.c $(CHEADERS)
 $(OBJDIR)/BTree.o			: BTree.c BTree.h $(CHEADERS)
 $(OBJDIR)/ButtonGadgetClass.o		: ButtonGadgetClass.c $(CHEADERS)
+$(OBJDIR)/ChildProcess.o		: ChildProcess.c $(CHEADERS)
 $(OBJDIR)/Class.o			: Class.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/cleanup.o			: cleanup.c $(CHEADERS)
 $(OBJDIR)/CLIStart.o			: CLIStart.c ../include/DefIcons.h $(CHEADERS)

@@ -327,25 +327,30 @@ static ULONG RootClass_RunProcess(Class *cl, Object *o, Msg msg)
 	struct RootClassInstance *inst = INST_DATA(cl, o);
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) inst->rci_RootList.rl_WindowTask;
 	struct msg_RunProcess *mrp = (struct msg_RunProcess *) msg;
-	ULONG Result;
+	ULONG Result = FALSE;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, mrp->mrp_ReplyPort));
 
 	if (SCCV_RunProcess_WaitReply == (ULONG) mrp->mrp_ReplyPort)
 		{
-		iwt->iwt_IconPortOutstanding++;
+		if (ScalosAttemptSemaphoreShared(&iwt->iwt_ChildProcessSemaphore))
+			{
+			iwt->iwt_IconPortOutstanding++;
 
-		d1(kprintf("%s/%s/%ld: wt_IconPort=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_IconPort));
+			d1(kprintf("%s/%s/%ld: wt_IconPort=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_IconPort));
 
-		Result = RunProcess(&iwt->iwt_WindowTask, mrp->mrp_EntryPoint,
-			(mrp->mrp_ArgSize + 3) / sizeof(LONG), 
-			(struct WBArg *) mrp->mrp_Args, iwt->iwt_WindowTask.wt_IconPort);
+			Result = RunProcess(&iwt->iwt_WindowTask, mrp->mrp_EntryPoint,
+				(mrp->mrp_ArgSize + 3) / sizeof(LONG),
+				(struct WBArg *) mrp->mrp_Args, iwt->iwt_WindowTask.wt_IconPort);
 
-		if (Result)
-			Result = WaitReply(iwt->iwt_WindowTask.wt_IconPort, iwt, MTYP_RunProcess);
+			if (Result)
+				Result = WaitReply(iwt->iwt_WindowTask.wt_IconPort, iwt, MTYP_RunProcess);
 
-		if (iwt->iwt_IconPortOutstanding > 0)
-			iwt->iwt_IconPortOutstanding--;
+			if (iwt->iwt_IconPortOutstanding > 0)
+				iwt->iwt_IconPortOutstanding--;
+
+			ScalosReleaseSemaphore(&iwt->iwt_ChildProcessSemaphore);
+			}
 		}
 	else
 		{

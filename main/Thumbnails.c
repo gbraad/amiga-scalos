@@ -231,21 +231,12 @@ BOOL GenerateThumbnails(struct internalScaWindowTask *iwt)
 
 		d1(KPrintF("%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
 
-		ScalosObtainSemaphoreShared(iwt->iwt_WindowTask.wt_WindowSemaphore);
-
-		iwt->iwt_IconPortOutstanding++;
-
 		if (!iwt->iwt_CloseWindow)
 			{
 			Success = DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 				SCCM_RunProcess, GenerateThumbnailProcess,
 				&sMsg, sizeof(sMsg), iwt->iwt_WindowTask.wt_IconPort);
 			}
-
-		if (!Success && (iwt->iwt_IconPortOutstanding > 0))
-			--iwt->iwt_IconPortOutstanding;
-
-		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
 		}
 
 	d1(KPrintF("%s/%s/%ld:  END\n", __FILE__, __FUNC__, __LINE__));

@@ -228,8 +228,9 @@ enum WindowDropMarkTypes
 #define MTYP_SetThumbnailImage_ARGB     32
 #define MTYP_NewWindowPath		33
 #define MTYP_PrefsChanged		34
+#define MTYP_StartChildProcess		35
 
-#define	MTYP_MAX			35	// must always be 1 larger than last MTYP_??5
+#define	MTYP_MAX			36	// must always be 1 larger than last MTYP_??5
 
 // ---------------------------------------------------------------------------
 
@@ -678,6 +679,12 @@ struct SM_PrefsChanged
 	{
 	struct ScalosMessage    ScalosMessage;
 	ULONG smpc_Flags;
+	};
+
+struct SM_StartChildProcess
+	{
+	struct ScalosMessage    ScalosMessage;
+	struct ScaWindowTask	*smscp_WindowTask;
 	};
 
 // ------------------------------------------------------------------
