@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+215)
+** next Tag to use :	(SCC_Dummy+218)
 */
 
 #ifndef DOS_DOS_H
@@ -229,8 +229,9 @@ enum WindowDropMarkTypes
 #define MTYP_NewWindowPath		33
 #define MTYP_PrefsChanged		34
 #define MTYP_StartChildProcess		35
+#define MTYP_RootEvent			36
 
-#define	MTYP_MAX			36	// must always be 1 larger than last MTYP_??5
+#define	MTYP_MAX			37	// must always be 1 larger than last MTYP_??5
 
 // ---------------------------------------------------------------------------
 
@@ -687,6 +688,16 @@ struct SM_StartChildProcess
 	struct ScaWindowTask	*smscp_WindowTask;
 	};
 
+struct SM_RootEvent
+	{
+	struct ScalosMessage    ScalosMessage;
+	ULONG 			smre_MethodID;		// the MethodID of the event
+	APTR 			smre_EventHandle;	// the handle that had been returned by SCCM_AddListener
+	Class 			*smre_Class;		// Class variable of the method call
+	Object 			*smre_Object;		// Object variable of the method call
+	Msg 			*smre_Message;		// msg variable of the method call - might no longer be valid when event is received!
+	};
+
 // ------------------------------------------------------------------
 
 struct ScaBackdropIcon
@@ -893,6 +904,23 @@ struct ScalosNodeList
 
 #define SCCM_GetLocalizedString			(SCC_Dummy+190)
 // ULONG StringID
+
+// ---------------------------------------------------------------------------
+
+#define	SCCM_WindowStartComplete 		(SCC_Dummy+215)
+// ./.
+
+// ---------------------------------------------------------------------------
+
+#define	SCCM_AddListener 			(SCC_Dummy+216)
+// ULONG - the method we want to be informed about
+// struct MsgPort * - Message port to forward the events to
+// ULONG - number of times we want to receive messages
+
+// ---------------------------------------------------------------------------
+
+#define	SCCM_RemListener 			(SCC_Dummy+217)
+// APTR - The handle returned by SCCM_AddListener
 
 // ---------------------------------------------------------------------------
 
@@ -2101,6 +2129,22 @@ struct msg_GetLocString
 	{
 	ULONG mgl_MethodID;
 	ULONG mgl_StringID;
+	};
+
+// SCCM_AddListener
+struct msg_AddListener
+	{
+	ULONG mal_MethodID;
+	ULONG mal_Method;		// the method we want to be informed about
+	struct MsgPort *mal_Port;	// Message port to forward the events to
+	ULONG mal_Count;		// number of times we want to receive messages
+	};
+
+// SCCM_RemoveListener
+struct msg_RemoveListener
+	{
+	ULONG mrl_MethodID;
+	APTR mrl_EventHandle;		// The handle returned by SCCM_AddListener
 	};
 
 // --- DeviceWindowClass methods ----------------------------------------

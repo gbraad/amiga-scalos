@@ -572,7 +572,6 @@ struct ScaIconNode *CheckMouseIconOuterBounds(struct ScaIconNode **IconList,
 ///
 /* ------------------------------------------------- */
 
-
 // defined in OpenDrawerByName.c
 ///
 struct ScaWindowStruct *OpenDrawerByName(CONST_STRPTR Path, struct TagItem *TagList);

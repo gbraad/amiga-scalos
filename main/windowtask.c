@@ -353,6 +353,8 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 
 		SetMenuOnOff(iwt);
 
+		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_WindowStartComplete);
+
 		do	{
 			d1(KPrintF("%s/%s/%ld: iwt=%08lx  Finished=%ld  iwt_CloseWindow=%ld\n", __FILE__, __FUNC__, __LINE__, iwt, Finished, iwt->iwt_CloseWindow));
 

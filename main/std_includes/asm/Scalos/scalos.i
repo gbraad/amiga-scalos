@@ -536,6 +536,7 @@ SCCM_Ping               	equ	SCC_Dummy+140	; Timer Ping
 SCCM_AddToClipboard		equ	SCC_Dummy+172
 SCCM_ClearClipboard		equ	SCC_Dummy+173
 SCCM_GetLocalizedString		equ	SCC_Dummy+190
+SCCM_WindowStartComplete 	equ	SCC_Dummy+215
 
 ;-------------------- Title Class -------------------------------
 ;Name: "Title.sca"

@@ -39,6 +39,16 @@
 #include "functions.h"
 #include "Variables.h"
 
+//-----------------------------------------------------------------------
+
+// local data definitions
+
+struct PopOpenData
+	{
+	struct internalScaWindowTask *pod_ParentWindowTask;
+	struct DragHandle *pod_DragHandle;
+	};
+
 //----------------------------------------------------------------------------
 
 // local functions
@@ -49,6 +59,7 @@ static ULONG DragMayCopy(struct internalScaWindowTask *iwt, ULONG Qualifier);
 static BOOL IsIconifiedScalosWindow(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static void CheckNeedScroll(struct internalScaWindowTask *iwt, WORD xw, WORD yw);
 static void DoDragScroll(struct internalScaWindowTask *iwtSrc, struct internalScaWindowTask *iwtDest);
+static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *sMsg, struct SM_RunProcess *msg);
 
 //----------------------------------------------------------------------------
 
@@ -865,20 +876,103 @@ void IDCMPDragIntuiTicks(struct internalScaWindowTask *iwt, struct IntuiMessage 
 
 		if (0 == --dh->drgh_PopOpenTickCount)
 			{
-			ULONG WasLocked;
+			struct PopOpenData pod;
 
-			ClassHideDragBobs(iwt, dh);
-			WasLocked = SCA_UnlockDrag(dh);
+			pod.pod_ParentWindowTask = iwt;
+			pod.pod_DragHandle = dh;
 
-			DoMethod(dh->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
-				SCCM_IconWin_Open,
-				dh->drgh_PopOpenIcon,
-				ICONWINOPENF_DoNotActivateWindow | ICONWINOPENF_NewWindow
-					| ICONWINOPENF_IgnoreFileTypes | ICONWINOPENF_DdPopupWindow);
+			d1(KPrintF("%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
 
-			ReLockDrag(dh, iwt, WasLocked);
+			if (!iwt->iwt_CloseWindow)
+				{
+				DoMethod(dh->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
+					SCCM_RunProcess,
+					PopOpenProcess,
+					&pod,
+					sizeof(pod),
+					dh->drgh_PopOpenDestWindow->iwt_WindowTask.wt_IconPort);
+				}
 			}
 		}
 }
+
+
+static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProcess *msg)
+{
+	struct MsgPort *myPort;
+	APTR eventHandle = NULL;
+
+	d2(KPrintF("%s/%s/%ld:  START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		ULONG Success;
+		ULONG WasLocked;
+		struct SM_RootEvent *smre;
+
+		myPort = CreateMsgPort();
+		d2(KPrintF("%s/%s/%ld:  myPort=%08lx\n", __FILE__, __FUNC__, __LINE__, myPort));
+		if (NULL == myPort)
+			break;
+
+		ClassHideDragBobs(pod->pod_ParentWindowTask, pod->pod_DragHandle);
+		WasLocked = SCA_UnlockDrag(pod->pod_DragHandle);
+
+		d2(KPrintF("%s/%s/%ld: before SCCM_AddListener\n", __FILE__, __FUNC__, __LINE__));
+
+		eventHandle = (APTR) DoMethod(pod->pod_DragHandle->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
+			SCCM_AddListener,
+			SCCM_WindowStartComplete,
+			myPort,
+			1);
+		d2(KPrintF("%s/%s/%ld:  eventHandle=%08lx\n", __FILE__, __FUNC__, __LINE__, eventHandle));
+		if (NULL == eventHandle)
+			break;
+
+		Success = DoMethod(pod->pod_DragHandle->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
+			SCCM_IconWin_Open,
+			pod->pod_DragHandle->drgh_PopOpenIcon,
+			ICONWINOPENF_DoNotActivateWindow | ICONWINOPENF_NewWindow
+				| ICONWINOPENF_IgnoreFileTypes | ICONWINOPENF_DdPopupWindow);
+
+		d2(KPrintF("%s/%s/%ld:  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+		if (!Success)
+			break;
+
+		d2(KPrintF("%s/%s/%ld: wait for SCCM_WindowStartComplete event\n", __FILE__, __FUNC__, __LINE__));
+
+		// wait for SCCM_WindowStartComplete event
+		WaitPort(myPort);
+		smre = (struct SM_RootEvent *) GetMsg(myPort);
+
+		d2(KPrintF("%s/%s/%ld:  smre=%08lx\n", __FILE__, __FUNC__, __LINE__, smre));
+
+		if (smre)
+			{
+			SCA_FreeMessage(&smre->ScalosMessage);	// no need to reply to msg, just free it!
+			}
+
+		// Check whether pod->pod_DragHandle is still valid
+		if (iInfos.xii_GlobalDragHandle != pod->pod_DragHandle)
+			break;
+
+		d2(KPrintF("%s/%s/%ld:  before ReLockDrag\n", __FILE__, __FUNC__, __LINE__));
+
+		ReLockDrag(pod->pod_DragHandle, pod->pod_ParentWindowTask, WasLocked);
+		} while (0);
+
+	if (eventHandle)
+		{
+		 DoMethod(pod->pod_DragHandle->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
+			SCCM_RemListener,
+			eventHandle);
+		}
+	if (myPort)
+		DeleteMsgPort(myPort);
+
+	d2(KPrintF("%s/%s/%ld:  END\n", __FILE__, __FUNC__, __LINE__));
+
+	return 0;
+}
+
 
 

@@ -53,6 +53,14 @@ struct RootClassInstance
 	struct ScaRootList rci_RootList;
 	};
 
+struct EventListener
+	{
+	struct Node el_Node;
+	ULONG el_Method;
+	struct MsgPort *el_Port;
+	ULONG el_Count;
+	};
+
 //----------------------------------------------------------------------------
 
 // local functions
@@ -67,16 +75,27 @@ static ULONG RootClass_RunProcess(Class *cl, Object *o, Msg msg);
 static ULONG RootClass_AddToClipboard(Class *cl, Object *o, Msg msg);
 static ULONG RootClass_ClearClipboard(Class *cl, Object *o, Msg msg);
 static ULONG RootClass_GetLocalizedString(Class *cl, Object *o, Msg msg);
+static struct EventListener *RootClass_AddListener(Class *cl, Object *o, Msg msg);
+static ULONG RootClass_RemListener(Class *cl, Object *o, Msg msg);
 static ULONG RootMessageUnIconify(struct internalScaWindowTask *iwt, struct AppMessage *appMsg);
 static void SnapshotIconifiedIcon(struct internalScaWindowTask *iwt);
 static void UnSnapshotIconifiedIcon(struct internalScaWindowTask *iwt);
 static void UnShadowIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+static void GenerateEvents(Class *cl, Object *o, Msg msg);
 
 //----------------------------------------------------------------------------
 
 // public data items :
 
 //----------------------------------------------------------------------------
+
+// private data items :
+
+static struct List ListenerList;
+static SCALOSSEMAPHORE ListenerSema;
+
+//----------------------------------------------------------------------------
+
 
 
 Class * initRootClass(void)
@@ -89,6 +108,9 @@ Class * initRootClass(void)
 	ScalosObtainSemaphore(&ClassListSemaphore);
 
 	d1(kprintf("%s/%s/%d: Got Semaphore\n", __FILE__, __FUNC__, __LINE__));
+
+	NewList(&ListenerList);
+	ScalosInitSemaphore(&ListenerSema);
 
 	do	{
 		classNode = (struct ScalosClass *) SCA_AllocStdNode((struct ScalosNodeList *)(APTR) &ScalosClassList, NTYP_PluginClass);
@@ -124,6 +146,8 @@ static ULONG RootClass_Dispatcher(Class *cl, Object *o, Msg msg)
 {
 	ULONG Result;
 
+	GenerateEvents(cl, o, msg);
+
 	switch (msg->MethodID)
 		{
 	case OM_NEW:
@@ -156,6 +180,19 @@ static ULONG RootClass_Dispatcher(Class *cl, Object *o, Msg msg)
 
 	case SCCM_GetLocalizedString:
 		Result = (ULONG) RootClass_GetLocalizedString(cl, o, msg);
+		break;
+
+	case SCCM_WindowStartComplete:
+		d2(kprintf("%s/%s/%d: SCCM_WindowStartComplete\n", __FILE__, __FUNC__, __LINE__));
+		Result = 0;
+		break;
+
+	case SCCM_AddListener:
+		Result = (ULONG) RootClass_AddListener(cl, o, msg);
+		break;
+
+	case SCCM_RemListener:
+		Result = RootClass_RemListener(cl, o, msg);
 		break;
 
 	default:
@@ -454,6 +491,52 @@ static ULONG RootClass_GetLocalizedString(Class *cl, Object *o, Msg msg)
 }
 
 
+static struct EventListener *RootClass_AddListener(Class *cl, Object *o, Msg msg)
+{
+	const struct msg_AddListener *mal = (const struct msg_AddListener *) msg;
+	struct EventListener *el;
+
+	el = ScalosAllocVecPooled(sizeof(struct EventListener));
+	if (el)
+		{
+		el->el_Method = mal->mal_Method;
+		el->el_Port = mal->mal_Port;
+		el->el_Count = mal->mal_Count;
+
+		ScalosObtainSemaphore(&ListenerSema);
+		AddTail(&ListenerList, &el->el_Node);
+		ScalosReleaseSemaphore(&ListenerSema);
+		};
+
+	return el;
+}
+
+
+static ULONG RootClass_RemListener(Class *cl, Object *o, Msg msg)
+{
+	const struct msg_RemoveListener *mrl = (const struct msg_RemoveListener *) msg;
+	struct EventListener *el;
+
+	ScalosObtainSemaphore(&ListenerSema);
+
+	for (el = (struct EventListener *) ListenerList.lh_Head;
+		el != (struct EventListener *) &ListenerList.lh_Tail;
+		el = (struct EventListener *) el->el_Node.ln_Succ)
+		{
+		if ((APTR) el == mrl->mrl_EventHandle)
+			{
+			Remove(&el->el_Node);
+			ScalosFreeVecPooled(el);
+			break;
+			}
+		}
+
+	ScalosReleaseSemaphore(&ListenerSema);
+
+	return 0;
+}
+
+
 // process message vom iconified window's AppIcon
 static ULONG RootMessageUnIconify(struct internalScaWindowTask *iwt, struct AppMessage *appMsg)
 {
@@ -619,4 +702,44 @@ static void UnShadowIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 	SCA_UnLockWindowList();
 }
 
+
+static void GenerateEvents(Class *cl, Object *o, Msg msg)
+{
+	struct RootClassInstance *inst = INST_DATA(cl, o);
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) inst->rci_RootList.rl_WindowTask;
+	struct EventListener *el;
+
+	ScalosObtainSemaphore(&ListenerSema);
+
+	for (el = (struct EventListener *) ListenerList.lh_Head;
+		el != (struct EventListener *) &ListenerList.lh_Tail;
+		el = (struct EventListener *) el->el_Node.ln_Succ)
+		{
+		if (msg->MethodID == el->el_Method)
+			{
+			struct SM_RootEvent *smre = (struct SM_RootEvent *) SCA_AllocMessage(MTYP_RootEvent, 0);
+
+			if (smre)
+				{
+				smre->smre_MethodID = msg->MethodID;
+				smre->smre_EventHandle = el;
+				smre->smre_Class = cl;
+				smre->smre_Object = o;
+				smre->smre_Message = msg;
+				smre->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
+
+				PutMsg(el->el_Port, &smre->ScalosMessage.sm_Message);
+				}
+
+			if (1 == el->el_Count--)
+				{
+				Remove(&el->el_Node);
+				ScalosFreeVecPooled(el);
+				}
+			break;
+			}
+		}
+
+	ScalosReleaseSemaphore(&ListenerSema);
+}
 

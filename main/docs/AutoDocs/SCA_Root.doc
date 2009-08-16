@@ -9,6 +9,7 @@ Root.sca/SCCM_HandleMessages
 Root.sca/SCCM_Message
 Root.sca/SCCM_RunProcess
 Root.sca/SCCM_Ping
+Root.sca/SCCM_WindowStartComplete
 Root.sca/--background
 
     NAME
@@ -205,4 +206,23 @@ Root.sca/SCCM_Ping
 	nothing
 
     SEE ALSO
-
+Root.sca/SCCM_WindowStartComplete
+    NAME
+        SCCM_WindowStartComplete
+
+    SYNOPSIS
+	void DoMethod(obj,SCCM_WindowStartComplete);
+
+    FUNCTION
+	This method is issued whenever a new windows has been opened
+	and initialized completely.
+
+    INPUTS
+	none
+
+    RESULT
+	nothing
+
+    SEE ALSO
+R
+

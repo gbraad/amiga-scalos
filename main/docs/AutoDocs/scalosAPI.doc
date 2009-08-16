@@ -29,6 +29,7 @@ scalosAPI/SM_ShowPopupMenu
 scalosAPI/SM_ShowStatusBar
 scalosAPI/SM_ShowTitle
 scalosAPI/SM_Sleep
+scalosAPI/SM_StartChildProcess
 scalosAPI/SM_UnIconify
 scalosAPI/SM_Update
 scalosAPI/SM_UpdateIcon
@@ -781,5 +782,25 @@ scalosAPI/SM_Wakeup
 
     SEE ALSO
 
-
+scalosAPI/SM_StartChildProcess
+    NAME
+        SM_StartChildProcess
+
+    SYNOPSIS
+	ULONG   smscp_WindowTask
+
+    FUNCTION
+	This message is internally used to synchronize startup
+	of child processes.
+
+    INPUTS
+	smscp_WindowTask - parent WindowTask that is starting
+		the child process.
+
+    RESULT
+	nothing
+
+    SEE ALSO
+
+s
 
