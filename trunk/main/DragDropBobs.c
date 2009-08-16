@@ -1087,7 +1087,7 @@ static LONG CompareLeftUpFunc(const struct ScaBob *bob1, const struct ScaBob *bo
 
 void ReLockDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked)
 {
-	if (wasLocked)
+	if (wasLocked && (iInfos.xii_GlobalDragHandle == dh))
 		{
 		BOOL Locked2;
 		BOOL Locked1 = dh->drgh_flags & DRGHF_LayersLocked;
