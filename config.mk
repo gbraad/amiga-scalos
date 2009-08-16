@@ -51,7 +51,7 @@ OPTIMIZE	=	-O2 -fomit-frame-pointer -fschedule-insns2 -fbranch-count-reg -fno-st
 
 INCLUDES	=	-I$(TOPLEVEL)/ppc-mos-include -I$(TOPLEVEL)/include
 
-DEBUG		=	-ggdb
+DEBUG		=	-g -gstabs
 
 LFLAGS		=       -L $(TOPLEVEL)/ppc-mos-gcc-lib \
 			-noixemul -laboxstubs -ldebug
