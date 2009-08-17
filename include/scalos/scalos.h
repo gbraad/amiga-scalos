@@ -695,7 +695,7 @@ struct SM_RootEvent
 	APTR 			smre_EventHandle;	// the handle that had been returned by SCCM_AddListener
 	Class 			*smre_Class;		// Class variable of the method call
 	Object 			*smre_Object;		// Object variable of the method call
-	Msg 			*smre_Message;		// msg variable of the method call - might no longer be valid when event is received!
+	Msg 			smre_Message;		// msg variable of the method call - might no longer be valid when event is received!
 	};
 
 // ------------------------------------------------------------------
