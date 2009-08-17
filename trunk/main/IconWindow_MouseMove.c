@@ -950,7 +950,7 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 			{
 			SCA_FreeMessage(&smre->ScalosMessage);	// no need to reply to msg, just free it!
 			}
-
+		Delay(5);
 		// Check whether pod->pod_DragHandle is still valid
 		if (iInfos.xii_GlobalDragHandle != pod->pod_DragHandle)
 			break;
