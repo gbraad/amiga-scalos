@@ -705,8 +705,6 @@ static void UnShadowIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 
 static void GenerateEvents(Class *cl, Object *o, Msg msg)
 {
-	struct RootClassInstance *inst = INST_DATA(cl, o);
-	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) inst->rci_RootList.rl_WindowTask;
 	struct EventListener *el;
 
 	ScalosObtainSemaphore(&ListenerSema);

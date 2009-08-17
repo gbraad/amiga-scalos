@@ -1574,11 +1574,12 @@ static void MouseRelease(struct internalScaWindowTask *iwt, struct IntuiMessage 
 
 void AbortFunctions(struct internalScaWindowTask *iwt)
 {
-	d1(kprintf("%s/%s/%ld: iwt_MoveGadId=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_MoveGadId));
+	d2(kprintf("%s/%s/%ld: iwt_MoveGadId=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_MoveGadId));
 
 	switch (iwt->iwt_MoveGadId)
 		{
 	case VGADGETID_DRAGMOUSEMOVE:
+		ClosePopupWindows(iInfos.xii_GlobalDragHandle, TRUE);
 		EndDrag(iwt);
 		IconWin_EndDrag(iwt);
 		RestoreDragIcons(iwt);

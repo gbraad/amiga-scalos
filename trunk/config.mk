@@ -103,7 +103,7 @@ OPTIMIZE	=	-O2 -fomit-frame-pointer -fschedule-insns2 -fbranch-count-reg -fno-st
 
 INCLUDES	=	-I$(TOPLEVEL)/ppc-aos4-include -I$(TOPLEVEL)/include
 
-DEBUG		=	-g
+DEBUG		=	-g -gstabs
 
 LFLAGS		=       -mcrt=$(OS4_CRT) -L $(TOPLEVEL)/ppc-aos4-gcc-lib \
 			-lm -ldebug

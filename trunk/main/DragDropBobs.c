@@ -144,7 +144,6 @@ static void BlitARGBMaskAlpha(ULONG SrcWidth, ULONG SrcHeight,
 		ULONG DestWidth, struct ARGB *Dest, LONG DestLeft, LONG DestTop,
 		const struct BitMap *MaskBM, ULONG Trans,
 		const UBYTE *Alpha, LONG AlphaLeft, ULONG AlphaWidth);
-static void ClosePopupWindows(struct DragHandle *dh);
 //static void DumpBitMap(struct BitMap *bm);
 
 //----------------------------------------------------------------------------
@@ -2553,7 +2552,7 @@ LIBFUNC_P2(void, sca_EndDrag,
 
 		ScalosFreeVecPooled(dh);
 
-		ClosePopupWindows(dh);
+		ClosePopupWindows(dh, FALSE);
 		}
 }
 LIBFUNC_END
@@ -3212,7 +3211,7 @@ static void BlitARGBMaskAlpha(ULONG SrcWidth, ULONG SrcHeight,
 
 //----------------------------------------------------------------------------
 
-static void ClosePopupWindows(struct DragHandle *dh)
+void ClosePopupWindows(struct DragHandle *dh, BOOL CloseAll)
 {
 	struct ScaWindowStruct *ws, *wsNext;
 	struct internalScaWindowTask *iwtUnderMouse;
@@ -3239,7 +3238,7 @@ static void ClosePopupWindows(struct DragHandle *dh)
 		{
 		wsNext = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ;
 
-		if ((ws != iwtUnderMouse->iwt_WindowTask.mt_WindowStruct) && (ws->ws_Flags & WSV_FlagF_DdPopupWindow))
+		if ((CloseAll || (ws != iwtUnderMouse->iwt_WindowTask.mt_WindowStruct)) && (ws->ws_Flags & WSV_FlagF_DdPopupWindow))
 			{
 			struct SM_CloseWindow *msg;
 
