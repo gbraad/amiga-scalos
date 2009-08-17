@@ -158,6 +158,8 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 
 		SCA_UnLockWindowList();
 
+		ClosePopupWindows(iInfos.xii_GlobalDragHandle, TRUE);
+
 		if (iwt->iwt_DragIconList)
 			{
 			RestoreDragIcons(iwt);
