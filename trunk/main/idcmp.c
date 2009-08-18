@@ -1574,7 +1574,7 @@ static void MouseRelease(struct internalScaWindowTask *iwt, struct IntuiMessage 
 
 void AbortFunctions(struct internalScaWindowTask *iwt)
 {
-	d2(kprintf("%s/%s/%ld: iwt_MoveGadId=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_MoveGadId));
+	d1(kprintf("%s/%s/%ld: iwt_MoveGadId=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_MoveGadId));
 
 	switch (iwt->iwt_MoveGadId)
 		{

@@ -232,6 +232,8 @@ void ScalosDropRemoveIcon(BPTR DirLock, CONST_STRPTR IconName);
 ///
 void InitDrag(struct IntuiMessage *iMsg, struct internalScaWindowTask *iwt);
 void RestoreDragIcons(struct internalScaWindowTask *iwt);
+BOOL SuspendDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt);
+void ResumeDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked);
 void ReLockDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked);
 LIBFUNC_P2_PROTO(void, sca_LockDrag,
 	A0, struct DragHandle *, dh,

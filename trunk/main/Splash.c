@@ -672,7 +672,7 @@ static BOOL OpenSplash(WORD iWidth, WORD iHeight)
 		WA_SizeGadget, FALSE,
 		WA_DragBar, FALSE,
 		WA_DepthGadget, FALSE,
-		WA_Borderless, FALSE,
+		WA_Borderless, TRUE,
 		WA_SmartRefresh, TRUE,
 		WA_NewLookMenus, TRUE,
 		WA_BackFill, &BackFillHook,

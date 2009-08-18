@@ -757,17 +757,9 @@ static struct Window *CheckWindowPing(Class *cl, Object *o, Msg msg)
 static struct Window *WindowClass_Open(Class *cl, Object *o, Msg msg)
 {
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
-	ULONG WasLocked = FALSE;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  wt_Window=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, iwt->iwt_WindowTask.wt_Window));
-
-	if ((iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow) && iInfos.xii_GlobalDragHandle)
-		{
-		WasLocked = SCA_UnlockDrag(iInfos.xii_GlobalDragHandle);
-		}
-
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	iwt->iwt_WindowTask.wt_Window = ScaOpenWindow(iwt, cl, o);
 
@@ -790,8 +782,6 @@ static struct Window *WindowClass_Open(Class *cl, Object *o, Msg msg)
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		}
-
-	ReLockDrag(iInfos.xii_GlobalDragHandle, iwt, WasLocked);
 
 	d1(kprintf("%s/%s/%ld: wt_Window=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_Window));
 

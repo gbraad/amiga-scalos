@@ -1084,33 +1084,69 @@ static LONG CompareLeftUpFunc(const struct ScaBob *bob1, const struct ScaBob *bo
 }
 
 
+BOOL SuspendDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt)
+{
+	BOOL WasLocked = FALSE;
+
+	if (dh)
+		{
+		if (!(dh->drgh_flags & DRGHF_LockSuspended))
+			{
+			ClassHideDragBobs(iwt, dh);
+			WasLocked = SCA_UnlockDrag(dh);
+			dh->drgh_flags |= DRGHF_LockSuspended;
+			}
+		}
+
+	return WasLocked;
+}
+
+
+void ResumeDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked)
+{
+	if (dh)
+		{
+		if (dh->drgh_flags & DRGHF_LockSuspended)
+			{
+			ReLockDrag(dh, iwt, wasLocked);
+			dh->drgh_flags &= ~DRGHF_LockSuspended;
+			}
+		}
+}
+
+
 void ReLockDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked)
 {
-	if (wasLocked && (iInfos.xii_GlobalDragHandle == dh))
+	d1(kprintf("%s/%s/%ld: START dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
+
+	if (wasLocked && (iInfos.xii_GlobalDragHandle == dh) && dh)
 		{
 		BOOL Locked2;
 		BOOL Locked1 = dh->drgh_flags & DRGHF_LayersLocked;
+
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%08lx\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_flags));
 
 #if defined(__MORPHOS__)
 		if (DOSBase->dl_lib.lib_Version >= 51)
 			{
 			WaitTOF();
-			WaitBOVP(&iwt->iwt_WinScreen->ViewPort);
+			if (iwt)
+				WaitBOVP(&iwt->iwt_WinScreen->ViewPort);
 			}
 #endif //defined(__MORPHOS__)
 		SCA_LockDrag(dh);
 
 		Locked2 = dh->drgh_flags & DRGHF_LayersLocked;
-#if 1
-		if (Locked2 && !Locked1)
+
+		if (iwt && Locked2 && !Locked1)
 			{
 			SCA_DrawDrag(iwt->iwt_myDragHandle,
 				iwt->iwt_WinScreen->MouseX,
 				iwt->iwt_WinScreen->MouseY,
 				0);
 			}
-#endif
 		}
+	d1(kprintf("%s/%s/%ld: END dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
 }
 
 
@@ -1122,17 +1158,14 @@ LIBFUNC_P2(void, sca_LockDrag,
 
 	if (dh)
 		{
-		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_UnLockCount=%lu\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_UnLockCount));
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%l08lx\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_flags));
 
-		if (dh->drgh_UnLockCount > 0)
+		if (!(dh->drgh_flags & DRGHF_LockSuspended) && !(dh->drgh_flags & DRGHF_LayersLocked))
 			{
-			if (0 == --dh->drgh_UnLockCount)
-				{
-				d1(kprintf("%s/%s/%ld: dh=%08lx  ScaLockScreenLayers\n", __FILE__, __FUNC__, __LINE__, dh));
-				ScalosObtainSemaphore(&LayersSema);
-				ScaLockScreenLayers();
-				dh->drgh_flags |= DRGHF_LayersLocked;
-				}
+			d1(kprintf("%s/%s/%ld: dh=%08lx  ScaLockScreenLayers\n", __FILE__, __FUNC__, __LINE__, dh));
+			ScalosObtainSemaphore(&LayersSema);
+			ScaLockScreenLayers();
+			dh->drgh_flags |= DRGHF_LayersLocked;
 			}
 		}
 }
@@ -1149,7 +1182,7 @@ LIBFUNC_P2(ULONG, sca_UnlockDrag,
 
 	if (dh)
 		{
-		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_UnLockCount=%lu\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_UnLockCount));
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%l08lx\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_flags));
 		WasLocked = TRUE;
 
 		if (dh->drgh_flags & DRGHF_LayersLocked)
@@ -1159,8 +1192,6 @@ LIBFUNC_P2(ULONG, sca_UnlockDrag,
 			ScaUnlockScreenLayers();
 			ScalosReleaseSemaphore(&LayersSema);
 			}
-
-		dh->drgh_UnLockCount++;	// allow for nested sca_UnlockDrag() / sca_LockDrag() calls
 		}
 
 	return WasLocked;
@@ -1181,6 +1212,9 @@ LIBFUNC_P5(void, sca_DrawDrag,
 		__FILE__, __FUNC__, __FUNC__, __LINE__, dh, XOffset, YOffset, Flags));
 
 	if (NULL == dh)
+		return;
+
+	if (dh->drgh_flags & DRGHF_LockSuspended)
 		return;
 
 	ScalosObtainSemaphore(&dh->drgh_BobListSemaphore);
@@ -2582,7 +2616,6 @@ LIBFUNC_P2(struct DragHandle *, sca_InitDrag,
 		memset(dh, 0, sizeof(struct DragHandle));
 
 		dh->drgh_screen = Scr;
-		dh->drgh_UnLockCount = 1;
 
 		if (DRAGMETHOD_Custom == CurrentPrefs.pref_DragMethod || Depth > 8)
 			{

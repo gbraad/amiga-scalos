@@ -914,8 +914,7 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 		if (NULL == myPort)
 			break;
 
-		ClassHideDragBobs(pod->pod_ParentWindowTask, pod->pod_DragHandle);
-		WasLocked = SCA_UnlockDrag(pod->pod_DragHandle);
+		WasLocked = SuspendDrag(pod->pod_DragHandle, pod->pod_ParentWindowTask);
 
 		d2(KPrintF("%s/%s/%ld: before SCCM_AddListener\n", __FILE__, __FUNC__, __LINE__));
 
@@ -950,14 +949,14 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 			{
 			SCA_FreeMessage(&smre->ScalosMessage);	// no need to reply to msg, just free it!
 			}
-		Delay(5);
+//		Delay(5);
 		// Check whether pod->pod_DragHandle is still valid
 		if (iInfos.xii_GlobalDragHandle != pod->pod_DragHandle)
 			break;
 
 		d2(KPrintF("%s/%s/%ld:  before ReLockDrag\n", __FILE__, __FUNC__, __LINE__));
 
-		ReLockDrag(pod->pod_DragHandle, pod->pod_ParentWindowTask, WasLocked);
+		ResumeDrag(pod->pod_DragHandle, pod->pod_ParentWindowTask, WasLocked);
 		} while (0);
 
 	if (eventHandle)
