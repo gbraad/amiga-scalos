@@ -769,8 +769,6 @@ struct DragHandle
 	ULONG	drgh_FileCount;				// +jl+ 20010813 number of files being dragged
 	ULONG	drgh_DeviceCount;			// +jl+ 20011112 number of devices being dragged
 
-	ULONG	drgh_UnLockCount;			// counter for nesting sca_UnlockDrag()
-
 	struct 	ScaIconNode *drgh_PopOpenIcon;
 	ULONG 	drgh_PopOpenTickCount;			   // IntuiTicks Counter
 	struct 	internalScaWindowTask *drgh_PopOpenDestWindow;
@@ -807,6 +805,8 @@ struct DragHandle
 #define	DRGF_DragStarted		(1 << DRGB_DragStarted)
 #define	DRGHB_ForceMoveIndicatorVisible	11
 #define	DRGHF_ForceMoveIndicatorVisible	(1 << DRGHB_ForceMoveIndicatorVisible)
+#define	DRGHB_LockSuspended 		12
+#define DRGHF_LockSuspended		(1 << DRGHB_LockSuspended)
 
 // 0 = Layers Locked ?
 // 1 = Custom Bob

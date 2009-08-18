@@ -183,7 +183,7 @@ static ULONG RootClass_Dispatcher(Class *cl, Object *o, Msg msg)
 		break;
 
 	case SCCM_WindowStartComplete:
-		d2(kprintf("%s/%s/%d: SCCM_WindowStartComplete\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%d: SCCM_WindowStartComplete\n", __FILE__, __FUNC__, __LINE__));
 		Result = 0;
 		break;
 
