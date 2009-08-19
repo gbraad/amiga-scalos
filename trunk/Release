@@ -109,6 +109,7 @@ say "Copying Modules..."
 'copy Modules/Empty_Trashcan.MUI/Empty_Trashcan.module "RAM:ScalosBeta/modules/" clone quiet'
 'copy Modules/Exchange.MUI/Exchange.module "RAM:ScalosBeta/modules/" clone quiet'
 'copy Modules/Find.MUI/Find.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/FormatDisk.Gadtools/Format_Disk.module "RAM:ScalosBeta/modules/" clone quiet'
 'copy Modules/Execute_Command.MUI/Execute_Command.module "RAM:ScalosBeta/modules/" clone quiet'
 'copy Modules/Information.MUI/Information.module "RAM:ScalosBeta/modules/" clone quiet'
 'copy Modules/NewDrawer.MUI/NewDrawer.module "RAM:ScalosBeta/modules/" clone quiet'
