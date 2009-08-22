@@ -300,11 +300,7 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 				WA_Width, lWidest,
 				WA_Top, (iInfos.xii_iinfos.ii_Screen->Height - WindowHeight + 1)/2,
 				WA_Left, (iInfos.xii_iinfos.ii_Screen->Width - lWidest + 1)/2,
-#if defined(__MORPHOS__) && defined(WA_Opacity)
-				WA_Opacity, 0x0,
-#elif defined(__amigaos4__) && defined(WA_Opaqueness)
-				WA_Opaqueness, 0,
-#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
+				WA_SCA_Opaqueness, SCALOS_OPAQUENESS(0),
 				TAG_DONE);
 
 		if (NULL == abi->abi_Window)

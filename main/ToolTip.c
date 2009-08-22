@@ -894,11 +894,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 #elif defined(WA_StayTop)
 			WA_StayTop, TRUE,
 #endif //defined(WA_StayTop)
-#if defined(__MORPHOS__) && defined(WA_Opacity)
-			WA_Opacity, 0x0,
-#elif defined(__amigaos4__) && defined(WA_Opaqueness)
-			WA_Opaqueness, 0,
-#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
+			WA_SCA_Opaqueness, SCALOS_OPAQUENESS(0),
 			WA_PubScreen, iInfos.xii_iinfos.ii_Screen,
 			TAG_END);
 

@@ -872,7 +872,8 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 	else
 		WindowFlags |= WFLG_SIMPLE_REFRESH;
 
-	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d2(KPrintF("%s/%s/%ld: iwt_BackDrop=%ld  ws_Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_BackDrop, ws->ws_Flags));
+	d2(KPrintF("%s/%s/%ld: WA_Activate=%ld\n", __FILE__, __FUNC__, __LINE__, (ws->ws_Flags & WSV_FlagF_NoActivateWindow) ? 0 : 1));
 
 	if (ws->ws_Flags & WSV_FlagF_NoActivateWindow)
 		inst->wci_Transparency = ws->ws_WindowOpacityInactive;
@@ -892,7 +893,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 		WA_MaxWidth, ~0,
 		WA_MinHeight, 65,
 		WA_MinWidth, 92+20,
-		WA_Activate, !(ws->ws_Flags & WSV_FlagF_NoActivateWindow),
+		WA_Activate, (ws->ws_Flags & WSV_FlagF_NoActivateWindow) ? 0 : 1,
 		WA_CustomScreen, iwt->iwt_WinScreen,
 		WA_IDCMP, 0L,
 		WA_HelpGroup, HelpGroupID,
@@ -908,11 +909,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 		WA_DynamicResize1, 1,
 		WA_DynamicResize2, 1,
 #endif //defined(__MORPHOS__)
-#if defined(__MORPHOS__) && defined(WA_Opacity)
-		iwt->iwt_BackDrop ? TAG_IGNORE : WA_Opacity, inst->wci_Transparency * (ULONG_MAX / 100),
-#elif defined(__amigaos4__) && defined(WA_Opaqueness)
-		iwt->iwt_BackDrop ? TAG_IGNORE : WA_Opaqueness, (inst->wci_Transparency * 255) / 100,
-#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
+		WA_SCA_Opaqueness, SCALOS_OPAQUENESS(inst->wci_Transparency),
 		TAG_END);
 
 	d1(KPrintF("%s/%s/%ld: win=%08lx\n", __FILE__, __FUNC__, __LINE__, win));
@@ -1463,70 +1460,41 @@ static ULONG WindowClass_SetTransparency(Class *cl, Object *o, ULONG NewTranspar
 
 	if (ws->ws_Window && !iwt->iwt_BackDrop)
 		{
+		ULONG Transparency;
+		const ULONG Step = 10;
+
+		for (Transparency = inst->wci_Transparency; Transparency != NewTransparency; )
+			{
+			d1(KPrintF("%s/%s/%ld: Transparency=%ld\n", __FILE__, __FUNC__, __LINE__, Transparency));
+
+			if (Transparency < NewTransparency)
+				{
+				if (( NewTransparency - Transparency) > Step)
+					Transparency += Step;
+				else
+					Transparency = NewTransparency;
+				}
+			else
+				{
+				if ((Transparency - NewTransparency) > Step)
+					Transparency -= Step;
+				else
+					Transparency = NewTransparency;
+				}
+
 #if defined(__MORPHOS__) && defined(WA_Opacity)
-		ULONG Transparency;
-		const ULONG Step = 10;
-
-		for (Transparency = inst->wci_Transparency; Transparency != NewTransparency; )
-			{
-			d1(KPrintF("%s/%s/%ld: Transparency=%ld\n", __FILE__, __FUNC__, __LINE__, Transparency));
-
-			if (Transparency < NewTransparency)
-				{
-				if (( NewTransparency - Transparency) > Step)
-					Transparency += Step;
-				else
-					Transparency = NewTransparency;
-				}
-			else
-				{
-				if ((Transparency - NewTransparency) > Step)
-					Transparency -= Step;
-				else
-					Transparency = NewTransparency;
-				}
-
 			SetAttrs(ws->ws_Window,
-				WA_Opacity, Transparency * (ULONG_MAX / 100),
+				WA_SCA_Opaqueness, SCALOS_OPAQUENESS(Transparency),
 				TAG_END);
-
-			if (Transparency != NewTransparency)
-				Delay(1);
-			}
-
-#endif //defined(__MORPHOS__) && defined(WA_Opacity)
-#if defined(__amigaos4__) && defined(WA_Opaqueness)
-		ULONG Transparency;
-		const ULONG Step = 10;
-
-		for (Transparency = inst->wci_Transparency; Transparency != NewTransparency; )
-			{
-			d1(KPrintF("%s/%s/%ld: Transparency=%ld\n", __FILE__, __FUNC__, __LINE__, Transparency));
-
-			if (Transparency < NewTransparency)
-				{
-				if (( NewTransparency - Transparency) > Step)
-					Transparency += Step;
-				else
-					Transparency = NewTransparency;
-				}
-			else
-				{
-				if ((Transparency - NewTransparency) > Step)
-					Transparency -= Step;
-				else
-					Transparency = NewTransparency;
-				}
-
+#elif defined(__amigaos4__) && defined(WA_Opaqueness)
 			SetWindowAttrs(ws->ws_Window,
 				WA_OverrideOpaqueness, TRUE,
-				WA_Opaqueness,  (Transparency * 255 ) / 100,
+				WA_SCA_Opaqueness, SCALOS_OPAQUENESS(Transparency),
 				TAG_END);
-
+#endif
 			if (Transparency != NewTransparency)
 				Delay(1);
 			}
-#endif //defined(__amigaos4__) && defined(WA_Opaqueness)
 		}
 	inst->wci_Transparency = NewTransparency;
 
