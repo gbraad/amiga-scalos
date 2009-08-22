@@ -3256,6 +3256,8 @@ void ClosePopupWindows(struct DragHandle *dh, BOOL CloseAll)
 
 	QueryObjectUnderPointer(&iwtUnderMouse, &in, &inOuterBounds, &foreignWin);
 
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	// Close all windows that have popped up during D&D
 	if (NULL == iwtUnderMouse)
 		{
@@ -3267,11 +3269,15 @@ void ClosePopupWindows(struct DragHandle *dh, BOOL CloseAll)
 			ScalosUnLockIconList(iwtUnderMouse);
 		}
 
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	for (ws = winlist.wl_WindowStruct; ws; ws = wsNext)
 		{
 		wsNext = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ;
 
-		if ((CloseAll || (ws != iwtUnderMouse->iwt_WindowTask.mt_WindowStruct)) && (ws->ws_Flags & WSV_FlagF_DdPopupWindow))
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+		if ((CloseAll || (NULL == iwtUnderMouse) || (ws != iwtUnderMouse->iwt_WindowTask.mt_WindowStruct)) && (ws->ws_Flags & WSV_FlagF_DdPopupWindow))
 			{
 			struct SM_CloseWindow *msg;
 
@@ -3282,6 +3288,7 @@ void ClosePopupWindows(struct DragHandle *dh, BOOL CloseAll)
 				PutMsg(ws->ws_MessagePort, &msg->ScalosMessage.sm_Message);
 				}
 			}
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		}
 
 	SCA_UnLockWindowList();
