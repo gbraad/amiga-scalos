@@ -98,9 +98,9 @@
 
 #ifndef __amigaos4__
 	#define	WBENCHMSG	_WBenchMsg
-#else
+#else // __amigaos4__
 	#define WBENCHMSG	WBenchMsg
-#endif
+#endif // __amigaos4__
 
 #if defined(__MORPHOS__) || defined(__amigaos4__)
 	#define	LIB_REG(x, arg)	arg
@@ -113,9 +113,9 @@
 	#define	T_LOCALEBASE	struct Library *
 #ifndef __USE_BASETYPE__
 	#define	T_UTILITYBASE	struct Library *
-#else
+#else // __USE_BASETYPE__
 	#define T_UTILITYBASE	struct UtilityBase *
-#endif
+#endif // __USE_BASETYPE__
 	#define	T_INPUTBASE	struct Library *
 	#define T_REXXSYSBASE   struct Library *
 	#define T_TIMERBASE	struct Library *
@@ -124,9 +124,9 @@
 
 #ifdef __amigaos4__
 	#define GCC_PLATFORM	"AmigaOS4/PPC"
-#else
+#else // __amigaos4__
 	#define GCC_PLATFORM	"MorphOS/PPC"
-#endif
+#endif // __amigaos4__
 
 #else /* __MORPHOS__ || __amigaos4__ */
 	#define	LIB_REG(x, arg)	REG(x, arg)
@@ -145,7 +145,7 @@
 	#define T_INPUTDEVICE	struct Device *
 
 	#define	GCC_PLATFORM	"68K"
-#endif /* __MORPHOS__*/
+#endif  /* __MORPHOS__ || __amigaos4__ */
 
 	#if defined(__GNUC_PATCHLEVEL__)
 		#define	COMPILER_STRING	" (GCC " STR(__GNUC__) "." STR(__GNUC_MINOR__) "." STR(__GNUC_PATCHLEVEL__) " " GCC_PLATFORM ")"
@@ -194,6 +194,18 @@
 /* Cut down on the load by not including old intuition defines */
 #define INTUI_V36_NAMES_ONLY
 
+#if defined(__MORPHOS__) && defined(WA_Opacity)
+	#define	WA_SCA_Opaqueness       WA_Opacity
+	#define	SCALOS_OPAQUENESS(v)    ((v) * (ULONG_MAX / 100))
+#elif defined(__amigaos4__) && defined(WA_Opaqueness)
+	#define	WA_SCA_Opaqueness       WA_Opaqueness
+	#define	SCALOS_OPAQUENESS(v)    (((v) * 255) / 100)
+
+#else
+	#define	WA_SCA_Opaqueness       TAG_IGNORE
+	#define	SCALOS_OPAQUENESS(v)    (0)
+#endif
+
 
 #ifdef __MORPHOS__
 	#define	DISPATCHER_PROTO(Name) \
@@ -206,7 +218,7 @@
 	#define DISPATCHER_REF(Name) &GATE##Name##_Dispatcher
 	#define DISPATCHER_END }
 
-#else
+#else //__MORPHOS__
 	#define	DISPATCHER_PROTO(Name) \
 		static SAVEDS(ULONG) ASM Name##Dispatcher(REG(a0, struct IClass *cl), REG(a2, Object *obj), REG(a1, Msg msg))
 
@@ -214,20 +226,20 @@
 	#define DISPATCHER_REF(Name) Name##Dispatcher
 	#define DISPATCHER_END
 
-#endif
+#endif //__MORPHOS__
 
 #ifdef __amigaos4__
 	#define SETHOOKFUNC(hook, func) \
 		(hook).h_Entry = (HOOKFUNC)func
 	#define HOOKFUNC_DEF(func) \
 		(HOOKFUNC)func, NULL
-#else
+#else //__amigaos4__
 	#define SETHOOKFUNC(hook, func) \
 		(hook).h_Entry = (HOOKFUNC)HookEntry; \
 		(hook).h_SubEntry = (HOOKFUNC)func
 	#define HOOKFUNC_DEF(func) \
 		(HOOKFUNC)HookEntry, (HOOKFUNC)func
-#endif
+#endif //__amigaos4__
 
 // ==============================================================
 //  Library function stuff
