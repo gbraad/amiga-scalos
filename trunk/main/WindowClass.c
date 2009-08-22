@@ -872,8 +872,8 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 	else
 		WindowFlags |= WFLG_SIMPLE_REFRESH;
 
-	d2(KPrintF("%s/%s/%ld: iwt_BackDrop=%ld  ws_Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_BackDrop, ws->ws_Flags));
-	d2(KPrintF("%s/%s/%ld: WA_Activate=%ld\n", __FILE__, __FUNC__, __LINE__, (ws->ws_Flags & WSV_FlagF_NoActivateWindow) ? 0 : 1));
+	d1(KPrintF("%s/%s/%ld: iwt_BackDrop=%ld  ws_Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_BackDrop, ws->ws_Flags));
+	d1(KPrintF("%s/%s/%ld: WA_Activate=%ld\n", __FILE__, __FUNC__, __LINE__, (ws->ws_Flags & WSV_FlagF_NoActivateWindow) ? 0 : 1));
 
 	if (ws->ws_Flags & WSV_FlagF_NoActivateWindow)
 		inst->wci_Transparency = ws->ws_WindowOpacityInactive;
