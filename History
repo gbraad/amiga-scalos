@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7	20090812	jmc	- Upgraded libpng 1.2.37 to 1.2.39 (SAS/C and MOS).
+41.7    20090823	jl	- Improvement: added new FileTrans subdirectory to default theme.
+	20090812	jmc	- Upgraded libpng 1.2.37 to 1.2.39 (SAS/C and MOS).
 	20090811        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.17.
 	20090810	jl	- Improvement: enhancements for popup window feature: now works with single-window.
 				  Added preferences options to enable/disable popup window feature
