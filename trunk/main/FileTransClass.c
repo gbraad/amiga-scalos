@@ -1784,6 +1784,7 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 				GA_Previous, (ULONG) gad,
 				GA_ID, GID_CancelButton,
 				GA_RelVerify, TRUE,
+				GA_Underscore, '_',
 				GA_Image, (ULONG) inst->ftci_CancelButtonFrame,
 				GA_Text, (ULONG) ng.ng_GadgetText,
 				TAG_END);
