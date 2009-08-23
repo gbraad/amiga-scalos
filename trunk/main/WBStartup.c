@@ -52,7 +52,6 @@
 // local functions
 static SAVEDS(LONG) CompareStartPriFunc(struct Hook * hook, struct ScaIconNode * in2, struct ScaIconNode * in1);
 static void StartTool(BPTR DirLock, struct ScaIconNode *in);
-static void WBStartupFinished(void);
 
 //----------------------------------------------------------------------------
 
@@ -199,7 +198,7 @@ static void StartTool(BPTR DirLock, struct ScaIconNode *in)
 }
 
 
-static void WBStartupFinished(void)
+void WBStartupFinished(void)
 {
 	struct ScaWindowList *winList;
 

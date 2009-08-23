@@ -39,6 +39,7 @@
 #include <defs.h>
 #include <datatypes/iconobject.h>
 #include <scalos/scalos.h>
+#include <scalos/GadgetBar.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -64,6 +65,23 @@ struct SM_UpdateSplash
 	char	smu_String[1];		// String to display - variable length !!!
 	};
 
+struct SplashInstance
+	{
+	char spli_VersionText[256];
+	BOOL spli_fInitialized;
+	SCALOSSEMAPHORE spli_SplashSema;
+	struct MsgPort *spli_SplashPort;
+	struct Window *spli_SplashWindow;
+	ULONG spli_SplashWindowMask;
+	STRPTR spli_LastSplashText;
+	struct DatatypesImage *spli_SplashLogo;
+	struct DatatypesImage *spli_SplashBackground;
+	struct Hook spli_BackFillHook;
+	struct Gadget *spli_VersionGadget;
+	struct Gadget *spli_CompilerGadget;
+	struct Gadget *spli_TextGadget;
+	};
+
 struct SplashTimer
 	{
 	struct MsgPort *spt_ioPort;
@@ -80,33 +98,23 @@ enum SplashCommands { SPLCMD_Update, SPLCMD_Close, SPLCMD_AddUser, SPLCMD_RemUse
 
 static BOOL SendSplashMsg(ULONG Command, CONST_STRPTR Text);
 static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg);
-static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw);
-static BOOL OpenSplash(WORD iWidth, WORD iHeight);
-static void CloseSplash(void);
+static void UpdateSplash(struct SplashInstance *inst, CONST_STRPTR text, BOOL ForceRedraw);
+static BOOL OpenSplash(struct SplashInstance *inst, WORD iWidth, WORD iHeight);
+static void CloseSplash(struct SplashInstance *inst);
 static SAVEDS(ULONG) BackFillFunc(struct Hook *bfHook, struct RastPort *rp, struct BackFillMsg *msg);
 static BOOL InitSplashTimer(struct SplashTimer *Timer);
 static void CleanupSplashTimer(struct SplashTimer *Timer);
 static BOOL ReadSplashLogo(struct DatatypesImage **Logo);
-static void RenderSplashLogo(void);
+static void RenderSplashLogo(struct SplashInstance *inst);
+static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWidth, WORD *iHeight);
+static void SplashUpdateTextGadget(struct Window *win, struct Gadget *gad, CONST_STRPTR NewText);
+static void SplashChangeGadgetWidth(struct Window *win, struct Gadget *gad, ULONG NewWidth);
 
 //----------------------------------------------------------------------------
 
 // local Data
 
-static BOOL fInitialized = FALSE;
-static SCALOSSEMAPHORE SplashSema;
-struct MsgPort *SplashPort;
-static struct Window *SplashWindow = NULL;
-static ULONG SplashWindowMask = 0l;
-static STRPTR LastSplashText = NULL;
-static struct DatatypesImage *SplashLogo;
-static struct DatatypesImage *SplashBackground;
-static struct Hook BackFillHook =
-	{
-	{ NULL },
-	HOOKFUNC_DEF(BackFillFunc),
-	&SplashWindow
-	};
+struct SplashInstance splashInst;
 
 //----------------------------------------------------------------------------
 
@@ -117,7 +125,12 @@ static struct Hook BackFillHook =
 ULONG InitSplash(struct MsgPort *ReplyPort)
 {
 ///
-	ScalosInitSemaphore(&SplashSema);
+	struct SplashInstance *inst = &splashInst;
+
+	ScalosInitSemaphore(&inst->spli_SplashSema);
+
+	inst->spli_BackFillHook.h_Data = inst;
+	SETHOOKFUNC(inst->spli_BackFillHook, BackFillFunc);
 
 	d1(kprintf("%s/%s/%ld: ReplyPort=%08lx\n", __FILE__, __FUNC__, __LINE__, ReplyPort));
 
@@ -127,7 +140,7 @@ ULONG InitSplash(struct MsgPort *ReplyPort)
 		if (!RunProcess(&MainWindowTask->mwt.iwt_WindowTask, SplashProcess, 0, NULL, ReplyPort))
 			return ERROR_NO_FREE_STORE;
 
-		fInitialized = TRUE;
+		inst->spli_fInitialized = TRUE;
 		}
 
 	return RETURN_OK;
@@ -152,6 +165,7 @@ void SplashRemoveUser(void)
 void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 {
 ///
+	struct SplashInstance *inst = &splashInst;
 	char text[512];
 	va_list args;
 	ULONG *ArgList = NULL;
@@ -162,16 +176,16 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 	do	{
 		ULONG *pArg;
 
-		if (!fInitialized)
+		if (!inst->spli_fInitialized)
 			break;
 
 		if (!CurrentPrefs.pref_EnableSplash)
 			break;
 
-		ScalosObtainSemaphore(&SplashSema);
+		ScalosObtainSemaphore(&inst->spli_SplashSema);
 		SemaLocked = TRUE;
 
-		if (NULL == SplashPort || NULL == iInfos.xii_iinfos.ii_Screen)
+		if (NULL == inst->spli_SplashPort || NULL == iInfos.xii_iinfos.ii_Screen)
 			break;
 
 		va_start(args, NumArgs);
@@ -202,7 +216,7 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 	if (ArgList)
 		ScalosFreeVecPooled(ArgList);
 	if (SemaLocked)
-		ScalosReleaseSemaphore(&SplashSema);
+		ScalosReleaseSemaphore(&inst->spli_SplashSema);
 ///
 }
 
@@ -210,13 +224,14 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 static BOOL SendSplashMsg(ULONG Command, CONST_STRPTR Text)
 {
 ///
+	struct SplashInstance *inst = &splashInst;
 	struct SM_UpdateSplash *msg;
 	BOOL Result = FALSE;
 	size_t Len = sizeof(struct SM_UpdateSplash) - sizeof(struct SM_CloseWindow);
 
-	d1(KPrintF("%s/%s/%ld: Task=%08lx  SplashPort=%08lx  Cmd=%ld\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL), SplashPort, Command));
+	d1(KPrintF("%s/%s/%ld: Task=%08lx  inst->spli_SplashPort=%08lx  Cmd=%ld\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL), inst->spli_SplashPort, Command));
 
-	if (!fInitialized || NULL == SplashPort)
+	if (!inst->spli_fInitialized || NULL == inst->spli_SplashPort)
 		return FALSE;
 
 	if (Text)
@@ -242,7 +257,7 @@ static BOOL SendSplashMsg(ULONG Command, CONST_STRPTR Text)
 				strcpy(msg->smu_String, Text);
 
 			msg->ScalosMessage.sm_Message.mn_ReplyPort = SplashReplyPort;
-			PutMsg(SplashPort, (struct Message *) msg);
+			PutMsg(inst->spli_SplashPort, (struct Message *) msg);
 
 			d1(KPrintF("%s/%s/%ld: Task=%08lx  SplashReplyPort=%08lx  msg=%08lx\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL), SplashReplyPort, msg));
 
@@ -280,6 +295,7 @@ static BOOL SendSplashMsg(ULONG Command, CONST_STRPTR Text)
 static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 {
 ///
+	struct SplashInstance *inst = &splashInst;
 	struct SplashTimer CloseTimer;
 
 	memset(&CloseTimer, 0, sizeof(CloseTimer));
@@ -292,18 +308,18 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 
 		SetTaskPri(FindTask(NULL), SPLASH_PROCESS_TASK_PRI);
 
-		SplashPort = CreateMsgPort();
-		if (NULL == SplashPort)
+		inst->spli_SplashPort = CreateMsgPort();
+		if (NULL == inst->spli_SplashPort)
 			break;
 
-		d1(kprintf("%s/%s/%ld: SplashPort=%08lx\n", __FILE__, __FUNC__, __LINE__, SplashPort));
+		d1(kprintf("%s/%s/%ld: inst->spli_SplashPort=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->spli_SplashPort));
 
 		if (!InitSplashTimer(&CloseTimer))
 			break;
 
-		d1(kprintf("%s/%s/%ld: SplashPort=%08lx\n", __FILE__, __FUNC__, __LINE__, SplashPort));
+		d1(kprintf("%s/%s/%ld: inst->spli_SplashPort=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->spli_SplashPort));
 
-		SplashMask = 1 << SplashPort->mp_SigBit;
+		SplashMask = 1 << inst->spli_SplashPort->mp_SigBit;
 		ioMask = 1 << CloseTimer.spt_ioPort->mp_SigBit;
 
 		d1(kprintf("%s/%s/%ld: SplashMask=%08lx  ioMask=%08lx\n", __FILE__, __FUNC__, __LINE__, SplashMask, ioMask));
@@ -314,13 +330,13 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 
 			d1(kprintf("%s/%s/%ld: Mask=%08lx\n", __FILE__, __FUNC__, __LINE__, SplashMask | ioMask));
 
-			RcvdMask = Wait(SplashMask | ioMask | SplashWindowMask);
+			RcvdMask = Wait(SplashMask | ioMask | inst->spli_SplashWindowMask);
 
 			d1(kprintf("%s/%s/%ld: RcvdMask=%08lx\n", __FILE__, __FUNC__, __LINE__, RcvdMask));
 
 			if (RcvdMask & SplashMask)
 				{
-				while ((msg = (struct SM_UpdateSplash *) GetMsg(SplashPort)))
+				while ((msg = (struct SM_UpdateSplash *) GetMsg(inst->spli_SplashPort)))
 					{
 					d1(kprintf("%s/%s/%ld: msg=%08lx  Cmd=%ld  timerPending=%ld\n", __FILE__, __FUNC__, __LINE__, msg, msg->smu_Command, CloseTimer.spt_timerPending));
 
@@ -367,7 +383,7 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 							}
 
 						if (!Closed)
-							UpdateSplash(msg->smu_String, FALSE);
+							UpdateSplash(inst, msg->smu_String, FALSE);
 
 						Delay(SPLASH_MSG_HOLD_TICKS);
 						break;
@@ -397,13 +413,13 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 					Running = FALSE;
 					}
 				}
-			if (RcvdMask & SplashWindowMask)
+			if (RcvdMask & inst->spli_SplashWindowMask)
 				{
 				struct IntuiMessage *iMsg;
 
 				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-				while (SplashWindow && (iMsg = (struct IntuiMessage *) GetMsg(SplashWindow->UserPort)))
+				while (inst->spli_SplashWindow && (iMsg = (struct IntuiMessage *) GetMsg(inst->spli_SplashWindow->UserPort)))
 					{
 					ULONG mClass = iMsg->Class;
 //					UWORD mCode = iMsg->Code;
@@ -416,23 +432,23 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 						{
 					case IDCMP_MOUSEBUTTONS:
 						Closed = TRUE;
-						CloseSplash();
+						CloseSplash(inst);
 						break;
 
 					case IDCMP_CHANGEWINDOW:
 						d1(KPrintF("%s/%s/%ld: IDCMP_CHANGEWINDOW\n", __FILE__, __FUNC__, __LINE__));
-						EraseRect(SplashWindow->RPort,
-							SplashWindow->BorderLeft,
-							SplashWindow->BorderTop,
-							SplashWindow->Width - SplashWindow->BorderRight - 1,
-							SplashWindow->Height - SplashWindow->BorderBottom - 1
+						EraseRect(inst->spli_SplashWindow->RPort,
+							inst->spli_SplashWindow->BorderLeft,
+							inst->spli_SplashWindow->BorderTop,
+							inst->spli_SplashWindow->Width - inst->spli_SplashWindow->BorderRight - 1,
+							inst->spli_SplashWindow->Height - inst->spli_SplashWindow->BorderBottom - 1
 							);
 
-						RenderSplashLogo();
-						if (LastSplashText)
-							UpdateSplash(LastSplashText, TRUE);
+						RenderSplashLogo(inst);
+						if (inst->spli_LastSplashText)
+							UpdateSplash(inst, inst->spli_LastSplashText, TRUE);
 						else
-							UpdateSplash("", TRUE);
+							UpdateSplash(inst, "", TRUE);
 						break;
 					default:
 						break;
@@ -446,28 +462,28 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		ScalosObtainSemaphore(&SplashSema);
+		ScalosObtainSemaphore(&inst->spli_SplashSema);
 
 		d1(KPrintF("%s/%s/%ld: after ScalosObtainSemaphore\n", __FILE__, __FUNC__, __LINE__));
 
-		CloseSplash();
+		CloseSplash(inst);
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		DeleteMsgPort(SplashPort);
-		SplashPort = NULL;
+		DeleteMsgPort(inst->spli_SplashPort);
+		inst->spli_SplashPort = NULL;
 
-		ScalosReleaseSemaphore(&SplashSema);
+		ScalosReleaseSemaphore(&inst->spli_SplashSema);
 		} while (0);
 
-	d1(kprintf("%s/%s/%ld: SplashPort=%08lx\n", __FILE__, __FUNC__, __LINE__, SplashPort));
+	d1(kprintf("%s/%s/%ld: inst->spli_SplashPort=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->spli_SplashPort));
 
 	CleanupSplashTimer(&CloseTimer);
 
-	if (SplashPort)
+	if (inst->spli_SplashPort)
 		{
-		DeleteMsgPort(SplashPort);
-		SplashPort = NULL;
+		DeleteMsgPort(inst->spli_SplashPort);
+		inst->spli_SplashPort = NULL;
 		}
 		
 	return 0;
@@ -475,7 +491,7 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 }
 
 
-static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
+static void UpdateSplash(struct SplashInstance *inst, CONST_STRPTR text, BOOL ForceRedraw)
 {
 ///
 	d1(kprintf("%s/%s/%ld: text=<%s>\n", __FILE__, __FUNC__, __LINE__, text));
@@ -483,14 +499,13 @@ static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
 	if (iInfos.xii_iinfos.ii_Screen)
 		{
 		struct RastPort rp;
-		char VersionText[256];
 		struct TextExtent tExtT, tExtV, tExtS;
-		short y, iTop, iWidth, iHeight;
+		short iWidth, iHeight;
 		BOOL NeedDrawText = ForceRedraw;
 
 		d1(kprintf("%s/%s/%ld: text=<%s>\n", __FILE__, __FUNC__, __LINE__, text));
 
-		ScaFormatStringMaxLength(VersionText, sizeof(VersionText),
+		ScaFormatStringMaxLength(inst->spli_VersionText, sizeof(inst->spli_VersionText),
 			GetLocString(MSGID_PROGRESS_SCALOSVERSION), 
 			ScalosBase->scb_LibNode.lib_Version,
 			ScalosBase->scb_LibNode.lib_Revision,
@@ -501,7 +516,7 @@ static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
 		Scalos_SetFont(&rp, iInfos.xii_iinfos.ii_Screen->RastPort.Font, &ScreenTTFont);
 
 		Scalos_SetSoftStyle(&rp, FSF_BOLD, FSF_BOLD, &ScreenTTFont);
-		Scalos_TextExtent(&rp, VersionText, strlen(VersionText), &tExtV);
+		Scalos_TextExtent(&rp, inst->spli_VersionText, strlen(inst->spli_VersionText), &tExtV);
 
 		Scalos_SetSoftStyle(&rp, FS_NORMAL, FSF_BOLD, &ScreenTTFont);
 		Scalos_TextExtent(&rp, COMPILER_STRING, strlen(COMPILER_STRING), &tExtS);
@@ -516,222 +531,186 @@ static void UpdateSplash(CONST_STRPTR text, BOOL ForceRedraw)
 
 		d1(kprintf("%s/%s/%ld: iWidth=%ld  iHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
 
-		if (SplashLogo)
+		if (inst->spli_SplashLogo)
 			{
-			if (iWidth < SplashLogo->dti_BitMapHeader->bmh_Width + 2*5)
-				iWidth = SplashLogo->dti_BitMapHeader->bmh_Width + 2*5;
-			iHeight += SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
+			if (iWidth < inst->spli_SplashLogo->dti_BitMapHeader->bmh_Width + 2*5)
+				iWidth = inst->spli_SplashLogo->dti_BitMapHeader->bmh_Width + 2*5;
+			iHeight += inst->spli_SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
 
 			d1(kprintf("%s/%s/%ld: iWidth=%ld  iHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
 			}
 
-		if (SplashWindow)
+		if (inst->spli_SplashWindow)
 			{
-			WORD jWidth = SplashWindow->Width - SplashWindow->BorderLeft - SplashWindow->BorderRight;
-			WORD jHeight = SplashWindow->Height - SplashWindow->BorderTop - SplashWindow->BorderBottom;
+			WORD jWidth = inst->spli_SplashWindow->Width - inst->spli_SplashWindow->BorderLeft - inst->spli_SplashWindow->BorderRight;
+			WORD jHeight = inst->spli_SplashWindow->Height - inst->spli_SplashWindow->BorderTop - inst->spli_SplashWindow->BorderBottom;
 
 			if (jWidth < iWidth || jHeight < iHeight)
 				{
-				WORD NewWidth = SplashWindow->BorderLeft + SplashWindow->BorderRight + iWidth;
-				WORD NewHeight = SplashWindow->BorderTop + SplashWindow->BorderBottom + iHeight;
+				WORD NewWidth = inst->spli_SplashWindow->BorderLeft + inst->spli_SplashWindow->BorderRight + iWidth;
+				WORD NewHeight = inst->spli_SplashWindow->BorderTop + inst->spli_SplashWindow->BorderBottom + iHeight;
 
-				WindowToFront(SplashWindow);
+				WindowToFront(inst->spli_SplashWindow);
 
-				if (NewWidth > SplashWindow->Width || NewHeight > SplashWindow->Height)
+				if (NewWidth > inst->spli_SplashWindow->Width || NewHeight > inst->spli_SplashWindow->Height)
 					{
 					WORD NewLeftEdge = (iInfos.xii_iinfos.ii_Screen->Width - NewWidth) / 2;
 					WORD NewTopEdge = (iInfos.xii_iinfos.ii_Screen->Height - NewHeight) / 2;
 
-					ChangeWindowBox(SplashWindow,
+					ChangeWindowBox(inst->spli_SplashWindow,
 						NewLeftEdge, NewTopEdge,
 						NewWidth, NewHeight
 						);
 
+					SplashChangeGadgetWidth(inst->spli_SplashWindow, inst->spli_VersionGadget, NewWidth - 2 * 10);
+					SplashChangeGadgetWidth(inst->spli_SplashWindow, inst->spli_CompilerGadget, NewWidth - 2 * 10);
+					SplashChangeGadgetWidth(inst->spli_SplashWindow, inst->spli_TextGadget, NewWidth - 2 * 20);
+
 					NeedDrawText = TRUE;
 					}
-				}
-			else
-				{
-				iWidth = jWidth;
-				iHeight = jHeight;
 				}
 
 			d1(kprintf("%s/%s/%ld: iWidth=%ld  iHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
 			}
 		else
 			{
-			if (!OpenSplash(iWidth, iHeight))
+			if (!OpenSplash(inst, iWidth, iHeight))
 				return;
 
 			d1(kprintf("%s/%s/%ld: iWidth=%ld  iHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
 
-			if (SplashLogo)
-				{
-				if (iWidth < SplashLogo->dti_BitMapHeader->bmh_Width + 2*5)
-					iWidth = SplashLogo->dti_BitMapHeader->bmh_Width + 2*5;
-				iHeight += SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
-
-				d1(kprintf("%s/%s/%ld: iWidth=%ld  iHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
-				}
-
 			NeedDrawText = TRUE;
-			}
-
-		iTop = SplashWindow->BorderTop;
-
-		if (SplashLogo)
-			{
-			iTop += SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
 			}
 
 		d1(kprintf("%s/%s/%ld: MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, tExtT.te_Extent.MinY, tExtT.te_Extent.MaxY));
 
-		y = iTop + ((iHeight - iTop) - tExtV.te_Height) / 2
-			- tExtV.te_Extent.MinY + tExtV.te_Extent.MaxY - 2 * tExtV.te_Height;
-
 		if (NeedDrawText)
 			{
-			EraseRect(SplashWindow->RPort,
-				SplashWindow->BorderLeft,
-				iTop,
-				SplashWindow->Width - SplashWindow->BorderRight - 1,
-				SplashWindow->Height - SplashWindow->BorderBottom - 1
-				);
-
-			Move(SplashWindow->RPort, (iWidth - tExtV.te_Width) / 2, y);
-			Scalos_SetSoftStyle(SplashWindow->RPort, FSF_BOLD, FSF_BOLD, &ScreenTTFont);
-			Scalos_Text(SplashWindow->RPort, VersionText, strlen(VersionText));
-
-			y += (3 * tExtV.te_Height) / 2;
-
-			Move(SplashWindow->RPort, (iWidth - tExtS.te_Width) / 2, y);
-			Scalos_SetSoftStyle(SplashWindow->RPort, FS_NORMAL, FSF_BOLD, &ScreenTTFont);
-			Scalos_Text(SplashWindow->RPort, COMPILER_STRING, strlen(COMPILER_STRING));
-			}
-		else
-			{
-			y += (3 * tExtV.te_Height) / 2;
+			SplashUpdateTextGadget(inst->spli_SplashWindow, inst->spli_VersionGadget, inst->spli_VersionText);
+			SplashUpdateTextGadget(inst->spli_SplashWindow, inst->spli_CompilerGadget, COMPILER_STRING);
 			}
 
+		SplashUpdateTextGadget(inst->spli_SplashWindow, inst->spli_TextGadget, text);
 
-		y += (3 * tExtS.te_Height) / 2;
+		if (inst->spli_LastSplashText)
+			ScalosFreeVecPooled(inst->spli_LastSplashText);
 
-#if 0
-		{
-		SHORT y1 = y + tExtT.te_Extent.MinY;
-
-		Move(SplashWindow->RPort, SplashWindow->BorderLeft, y1);
-		Draw(SplashWindow->RPort, SplashWindow->Width - SplashWindow->BorderRight - 1, y1);
-		Draw(SplashWindow->RPort, SplashWindow->Width - SplashWindow->BorderRight - 1, y1 + tExtT.te_Height);
-		Draw(SplashWindow->RPort, SplashWindow->BorderLeft, y1 + tExtT.te_Height);
-		Draw(SplashWindow->RPort, SplashWindow->BorderLeft, y1);
-		}
-#endif
-
-		EraseRect(SplashWindow->RPort, 
-			SplashWindow->BorderLeft, 
-			y + tExtT.te_Extent.MinY,
-			SplashWindow->Width - SplashWindow->BorderRight - 1, 
-			y + tExtT.te_Extent.MinY + tExtT.te_Height);
-
-		Move(SplashWindow->RPort, (iWidth - tExtT.te_Width) / 2, y);
-		Scalos_SetSoftStyle(SplashWindow->RPort, FS_NORMAL, FSF_BOLD, &ScreenTTFont);
-		Scalos_Text(SplashWindow->RPort, text, strlen(text));
-
-		if (LastSplashText)
-			ScalosFreeVecPooled(LastSplashText);
-
-		LastSplashText = ScalosAllocVecPooled(strlen(text) + 1);
-		if (LastSplashText)
-			strcpy(LastSplashText, text);
+		inst->spli_LastSplashText = ScalosAllocVecPooled(strlen(text) + 1);
+		if (inst->spli_LastSplashText)
+			strcpy(inst->spli_LastSplashText, text);
 		}
 ///
 }
 
 
-static BOOL OpenSplash(WORD iWidth, WORD iHeight)
+static BOOL OpenSplash(struct SplashInstance *inst, WORD iWidth, WORD iHeight)
 {
 ///
+	struct Gadget *gList;
+	BOOL Success = FALSE;
+
 	d1(KPrintF("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, iWidth, iHeight));
 	d1(KPrintF("%s/%s/%ld: PubScreen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
 
-	if (ReadSplashLogo(&SplashLogo))
-		{
-		if (iWidth < SplashLogo->dti_BitMapHeader->bmh_Width + 2*5)
-			iWidth = SplashLogo->dti_BitMapHeader->bmh_Width + 2*5;
-		iHeight += SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
-		}
-	SplashBackground = CreateDatatypesImage("THEME:SplashBackground", 0);
+	do	{
+		if (ReadSplashLogo(&inst->spli_SplashLogo))
+			{
+			if (iWidth < inst->spli_SplashLogo->dti_BitMapHeader->bmh_Width + 2*5)
+				iWidth = inst->spli_SplashLogo->dti_BitMapHeader->bmh_Width + 2*5;
+			iHeight += inst->spli_SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
+			}
+		inst->spli_SplashBackground = CreateDatatypesImage("THEME:SplashBackground", 0);
 
-	SplashWindow = LockedOpenWindowTags(NULL,
-		WA_Left, (iInfos.xii_iinfos.ii_Screen->Width - iWidth) / 2,
-		WA_Top, (iInfos.xii_iinfos.ii_Screen->Height - iHeight) / 2,
-		WA_Activate, FALSE,
-		WA_InnerWidth, iWidth,
-		WA_InnerHeight, iHeight,
-		WA_SizeGadget, FALSE,
-		WA_DragBar, FALSE,
-		WA_DepthGadget, FALSE,
-		WA_Borderless, TRUE,
-		WA_SmartRefresh, TRUE,
-		WA_NewLookMenus, TRUE,
-		WA_BackFill, &BackFillHook,
+		gList = SplashCreateGadgets(inst, iWidth, &iHeight);
+		if (NULL == gList)
+			break;
+
+		inst->spli_SplashWindow = LockedOpenWindowTags(NULL,
+			WA_Left, (iInfos.xii_iinfos.ii_Screen->Width - iWidth) / 2,
+			WA_Top, (iInfos.xii_iinfos.ii_Screen->Height - iHeight) / 2,
+			WA_Activate, FALSE,
+			WA_InnerWidth, iWidth,
+			WA_InnerHeight, iHeight,
+			WA_SizeGadget, FALSE,
+			WA_DragBar, FALSE,
+			WA_DepthGadget, FALSE,
+			WA_Borderless, TRUE,
+			WA_SmartRefresh, TRUE,
+			WA_NewLookMenus, TRUE,
+			WA_Gadgets, gList,
+			WA_BackFill, &inst->spli_BackFillHook,
 #if defined(WA_FrontWindow)
-		WA_FrontWindow, TRUE,
+			WA_FrontWindow, TRUE,
 #elif defined(WA_StayTop)
-		WA_StayTop, TRUE,
+			WA_StayTop, TRUE,
 #endif /* WA_FrontWindow */
-		WA_SCA_Opaqueness, SCALOS_OPAQUENESS(0),
-		WA_IDCMP, IDCMP_CHANGEWINDOW | IDCMP_MOUSEBUTTONS,
-		WA_PubScreen, iInfos.xii_iinfos.ii_Screen,
-		TAG_END);
+			WA_SCA_Opaqueness, SCALOS_OPAQUENESS(0),
+			WA_IDCMP, IDCMP_CHANGEWINDOW | IDCMP_MOUSEBUTTONS,
+			WA_PubScreen, iInfos.xii_iinfos.ii_Screen,
+			TAG_END);
 
-	d1(kprintf("%s/%s/%ld: SplashWindow=%08lx\n", __FILE__, __FUNC__, __LINE__, SplashWindow));
+		d1(kprintf("%s/%s/%ld: inst->spli_SplashWindow=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->spli_SplashWindow));
 
-	if (NULL == SplashWindow)
-		{
-		return FALSE;
-		}
+		if (NULL == inst->spli_SplashWindow)
+			break;
 
-	SplashWindowMask = 1 << SplashWindow->UserPort->mp_SigBit;
+		inst->spli_SplashWindowMask = 1 << inst->spli_SplashWindow->UserPort->mp_SigBit;
 
-	Scalos_SetFont(SplashWindow->RPort, iInfos.xii_iinfos.ii_Screen->RastPort.Font, &ScreenTTFont);
-	SetAPen(SplashWindow->RPort, 1);
-	SetDrMd(SplashWindow->RPort, JAM1);
+		Scalos_SetFont(inst->spli_SplashWindow->RPort, iInfos.xii_iinfos.ii_Screen->RastPort.Font, &ScreenTTFont);
+		SetAPen(inst->spli_SplashWindow->RPort, 1);
+		SetDrMd(inst->spli_SplashWindow->RPort, JAM1);
 
-	RenderSplashLogo();
+		RenderSplashLogo(inst);
 
-	WindowFadeIn(SplashWindow);
+		WindowFadeIn(inst->spli_SplashWindow);
 
-	return TRUE;
+		Success = TRUE;
+		} while (0);
+
+	return Success;
 ///
 }
 
 
-static void CloseSplash(void)
+static void CloseSplash(struct SplashInstance *inst)
 {
 ///
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-	if (SplashWindow)
+	if (inst->spli_SplashWindow)
 		{
-		WindowFadeOut(SplashWindow);
-		SplashWindowMask = 0L;
-		LockedCloseWindow(SplashWindow);
-		SplashWindow = NULL;
+		WindowFadeOut(inst->spli_SplashWindow);
+		inst->spli_SplashWindowMask = 0L;
+		LockedCloseWindow(inst->spli_SplashWindow);
+		inst->spli_SplashWindow = NULL;
 		}
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-	DisposeDatatypesImage(&SplashLogo);
+	DisposeDatatypesImage(&inst->spli_SplashLogo);
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-	DisposeDatatypesImage(&SplashBackground);
+	DisposeDatatypesImage(&inst->spli_SplashBackground);
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	if (LastSplashText)
+	if (inst->spli_LastSplashText)
 		{
-		ScalosFreeVecPooled(LastSplashText);
-		LastSplashText = NULL;
+		ScalosFreeVecPooled(inst->spli_LastSplashText);
+		inst->spli_LastSplashText = NULL;
+		}
+	if (inst->spli_VersionGadget)
+		{
+		SCA_DisposeScalosObject((Object *) inst->spli_VersionGadget);
+		inst->spli_VersionGadget = NULL;
+		}
+	if (inst->spli_TextGadget)
+		{
+		SCA_DisposeScalosObject((Object *) inst->spli_TextGadget);
+		inst->spli_TextGadget = NULL;
+		}
+	if (inst->spli_CompilerGadget)
+		{
+		SCA_DisposeScalosObject((Object *) inst->spli_CompilerGadget);
+		inst->spli_CompilerGadget = NULL;
 		}
 ///
 }
@@ -743,6 +722,7 @@ static void CloseSplash(void)
 static SAVEDS(ULONG) BackFillFunc(struct Hook *bfHook, struct RastPort *rp, struct BackFillMsg *msg)
 {
 ///
+	struct SplashInstance *inst = (struct SplashInstance *) bfHook->h_Data;
 	struct RastPort rpCopy;
 
 	d1(kprintf("%s/%s/%ld: RastPort=%08lx\n", __FILE__, __FUNC__, __LINE__, rp));
@@ -754,11 +734,11 @@ static SAVEDS(ULONG) BackFillFunc(struct Hook *bfHook, struct RastPort *rp, stru
 	rpCopy = *rp;
 	rpCopy.Layer = NULL;
 
-	if (SplashBackground)
+	if (inst->spli_SplashBackground)
 		{
-		WindowBackFill(&rpCopy, msg, SplashBackground->dti_BitMap,
-			SplashBackground->dti_BitMapHeader->bmh_Width,
-			SplashBackground->dti_BitMapHeader->bmh_Height,
+		WindowBackFill(&rpCopy, msg, inst->spli_SplashBackground->dti_BitMap,
+			inst->spli_SplashBackground->dti_BitMapHeader->bmh_Width,
+			inst->spli_SplashBackground->dti_BitMapHeader->bmh_Height,
 			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
 			0, 0,
 			NULL);
@@ -856,31 +836,151 @@ static BOOL ReadSplashLogo(struct DatatypesImage **Logo)
 
 
 
-static void RenderSplashLogo(void)
+static void RenderSplashLogo(struct SplashInstance *inst)
 {
 ///
-	if (SplashLogo)
+	if (inst->spli_SplashLogo)
 		{
 		WORD x0, y0;
 		struct RastPort rp;
 
 		Scalos_InitRastPort(&rp);
 
-		rp.BitMap = SplashLogo->dti_BitMap;
+		rp.BitMap = inst->spli_SplashLogo->dti_BitMap;
 
-		y0 = SplashWindow->BorderTop + 5;
-		x0 = (SplashWindow->Width - SplashLogo->dti_BitMapHeader->bmh_Width) / 2;
+		y0 = inst->spli_SplashWindow->BorderTop + 5;
+		x0 = (inst->spli_SplashWindow->Width - inst->spli_SplashLogo->dti_BitMapHeader->bmh_Width) / 2;
 
-		DtImageDraw(SplashLogo,
-			SplashWindow->RPort,
+		DtImageDraw(inst->spli_SplashLogo,
+			inst->spli_SplashWindow->RPort,
 			x0,
 			y0,
-			SplashLogo->dti_BitMapHeader->bmh_Width,
-			SplashLogo->dti_BitMapHeader->bmh_Height
+			inst->spli_SplashLogo->dti_BitMapHeader->bmh_Width,
+			inst->spli_SplashLogo->dti_BitMapHeader->bmh_Height
 			);
 
 		Scalos_DoneRastPort(&rp);
 		}
+///
+}
+
+
+static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWidth, WORD *iHeight)
+{
+///
+	struct Gadget *gList = NULL;
+	BOOL Success = FALSE;
+
+	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		struct TextAttr tAttr;
+		struct Gadget *gad = NULL;
+		struct NewGadget ng;
+		LONG iTop;
+
+		AskFont(&iInfos.xii_iinfos.ii_Screen->RastPort, &tAttr);
+
+		iTop = iInfos.xii_iinfos.ii_Screen->WBorTop;
+
+		if (inst->spli_SplashLogo)
+			{
+			iTop += inst->spli_SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
+			}
+
+		d2(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+		ng.ng_Height = tAttr.ta_YSize + 4;
+		ng.ng_LeftEdge = 10;
+		ng.ng_TopEdge = iTop;
+		ng.ng_Width = iWidth - 10 - 10;
+
+		gad = gList = inst->spli_VersionGadget = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GBTDTA_Text, (ULONG) inst->spli_VersionText,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			GBTDTA_SoftStyle, FSF_BOLD,
+			TAG_END);
+		d2(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+		if (NULL == gad)
+			break;
+
+		ng.ng_TopEdge += (3 * tAttr.ta_YSize) / 2;
+
+		d1(kprintf("%s/%s/%ld: Line2Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->ftci_Line2Buffer));
+
+		gad = inst->spli_CompilerGadget = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) COMPILER_STRING,
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			TAG_END);
+		d2(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+		if (NULL == gad)
+			break;
+
+		ng.ng_TopEdge += (3 * tAttr.ta_YSize) / 2;
+
+		gad = inst->spli_TextGadget = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
+			GA_Left, ng.ng_LeftEdge,
+			GA_Top, ng.ng_TopEdge,
+			GA_Width, ng.ng_Width,
+			GA_Height, ng.ng_Height,
+			GA_Previous, (ULONG) gad,
+			GBTDTA_Text, (ULONG) "",
+			GBTDTA_DrawMode, JAM1,
+			GBTDTA_Justification, GACT_STRINGCENTER,
+			TAG_END);
+		d2(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+		if (NULL == gad)
+			break;
+
+		*iHeight = ng.ng_TopEdge + (2 * tAttr.ta_YSize);
+
+		Success = TRUE;
+		} while (0);
+
+	d2(kprintf("%s/%s/%ld: END  gList=%08lx  Success=%ld\n", __FILE__, __FUNC__, __LINE__, gList, Success));
+
+	return Success ? gList : NULL;
+///
+}
+
+
+static void SplashUpdateTextGadget(struct Window *win, struct Gadget *gad, CONST_STRPTR NewText)
+{
+///
+	SetGadgetAttrs(gad, win, NULL,
+		GBTDTA_Text, (ULONG) NewText,
+		TAG_END);
+	EraseRect(win->RPort,
+		gad->LeftEdge, gad->TopEdge,
+		gad->LeftEdge + gad->Width - 1,
+		gad->TopEdge + gad->Height -1);
+	RefreshGList(gad, win, NULL, 1);
+///
+}
+
+
+static void SplashChangeGadgetWidth(struct Window *win, struct Gadget *gad, ULONG NewWidth)
+{
+///
+	SetGadgetAttrs(gad, win, NULL,
+		GA_Width, NewWidth,
+		TAG_END);
+	EraseRect(win->RPort,
+		gad->LeftEdge, gad->TopEdge,
+		gad->LeftEdge + gad->Width - 1,
+		gad->TopEdge + gad->Height -1);
+	RefreshGList(gad, win, NULL, 1);
 ///
 }
 

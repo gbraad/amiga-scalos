@@ -1609,6 +1609,10 @@ static void ScalosMain(LONG *ArgArray)
 			RunProcess(&MainWindowTask->mwt.iwt_WindowTask, 
 				(RUNPROCFUNC) WBStartup, 0, NULL, iInfos.xii_iinfos.ii_MainMsgPort);
 			}
+		else
+			{
+			WBStartupFinished();
+			}
 
 		LINE_TRACE;
 

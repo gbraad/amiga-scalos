@@ -943,6 +943,7 @@ void RemWBProgram(struct WBStartup *wbStart);
 // defined in WBStartup.c
 ///
 SAVEDS(void) INTERRUPT WBStartup(void);
+void WBStartupFinished(void);
 ///
 /* ------------------------------------------------- */
 
