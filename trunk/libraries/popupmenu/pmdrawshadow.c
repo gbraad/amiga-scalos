@@ -79,7 +79,7 @@ void PM_DrawShadow(struct PM_Window *w, int x, int y, int xb, int yb, UBYTE Type
 		struct RGB *pRGB;
 		const ULONG MaxAlpha = 150;
 
-		if (NULL == CyberGfx)
+		if (!CyberGfx)
 			break;
 		
 		iscgfx = GetCyberMapAttr(w->RPort->BitMap, CYBRMATTR_ISCYBERGFX);
