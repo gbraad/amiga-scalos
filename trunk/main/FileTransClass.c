@@ -1619,7 +1619,7 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 		inst->ftci_WindowWidth = 300;
 
 		ng.ng_LeftEdge = 10;
-		ng.ng_TopEdge = 10 + inst->ftci_TextAttr.ta_YSize;
+		ng.ng_TopEdge = inst->ftci_Screen->BarHeight + inst->ftci_TextAttr.ta_YSize;
 		ng.ng_Width = inst->ftci_WindowWidth - 10 - 10;
 		ng.ng_Height = inst->ftci_TextAttr.ta_YSize + 4;
 
