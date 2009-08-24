@@ -174,7 +174,7 @@ static ULONG GadgetBarText_New(Class *cl, Object *o, Msg msg)
 
 	inst->gbtcl_Text = (STRPTR) GetTagData(GBTDTA_Text, (ULONG) "", ops->ops_AttrList);
 	inst->gbtcl_Font = (struct TextFont *) GetTagData(GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
-//	inst->gbtcl_TTFont = (struct TTFontFamily *) GetTagData(GBTDTA_TTFont, (ULONG) &ScreenTTFont, ops->ops_AttrList);
+	inst->gbtcl_TTFont = (struct TTFontFamily *) GetTagData(GBTDTA_TTFont, (ULONG) &ScreenTTFont, ops->ops_AttrList);
 	inst->gbtcl_TextPen = GetTagData(GBTDTA_TextPen, PalettePrefs.pal_driPens[TEXTPEN], ops->ops_AttrList);
 	inst->gbtcl_BGPen = GetTagData(GBTDTA_BgPen, PalettePrefs.pal_driPens[BACKGROUNDPEN], ops->ops_AttrList);
 	inst->gbtcl_DrawMode = GetTagData(GBTDTA_DrawMode, JAM1, ops->ops_AttrList);
@@ -295,7 +295,7 @@ static ULONG GadgetBarText_Set(Class *cl, Object *o, Msg msg)
 		}
 
 	inst->gbtcl_Font = (struct TextFont *) GetTagData(GBTDTA_TextFont, (ULONG) inst->gbtcl_Font, ops->ops_AttrList);
-//	inst->gbtcl_TTFont = (struct TTFontFamily *) GetTagData(GBTDTA_TTFont, (ULONG) &IconWindowTTFont, ops->ops_AttrList);
+	inst->gbtcl_TTFont = (struct TTFontFamily *) GetTagData(GBTDTA_TTFont, (ULONG) inst->gbtcl_TTFont, ops->ops_AttrList);
 	inst->gbtcl_TextPen = GetTagData(GBTDTA_TextPen, inst->gbtcl_TextPen, ops->ops_AttrList);
 	inst->gbtcl_BGPen = GetTagData(GBTDTA_BgPen, inst->gbtcl_BGPen, ops->ops_AttrList);
 	inst->gbtcl_DrawMode = GetTagData(GBTDTA_DrawMode, inst->gbtcl_DrawMode, ops->ops_AttrList);
@@ -392,6 +392,8 @@ static ULONG GadgetBarText_Render(Class *cl, Object *o, Msg msg)
 		inst->gbtcl_DrawMode);
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+	memset(&txtExtent, 0, sizeof(txtExtent));
 
 	chars = Scalos_TextFit(gpr->gpr_RPort,
 		inst->gbtcl_Text,
