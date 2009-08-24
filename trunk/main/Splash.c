@@ -868,14 +868,14 @@ static void RenderSplashLogo(struct SplashInstance *inst)
 static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWidth, WORD *iHeight)
 {
 ///
-	struct Gadget *gList = NULL;
+	struct Gadget *gList;
 	BOOL Success = FALSE;
 
 	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct TextAttr tAttr;
-		struct Gadget *gad = NULL;
+		struct Gadget *gad;
 		struct NewGadget ng;
 		LONG iTop;
 
