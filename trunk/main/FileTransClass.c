@@ -1633,6 +1633,8 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			GA_Height, ng.ng_Height,
 			(gad ? GA_Previous : TAG_IGNORE), (ULONG) gad,
 			GBTDTA_Text, (ULONG) inst->ftci_Line1Buffer,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);
@@ -1652,6 +1654,8 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			(gad ? GA_Previous : TAG_IGNORE), (ULONG) gad,
 			GBTDTA_Text, (ULONG) inst->ftci_Line2Buffer,
 			GBTDTA_DrawMode, JAM1,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_Justification, GACT_STRINGLEFT,
 			TAG_END);
 		if (NULL == gad)
@@ -1689,6 +1693,8 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			GA_Height, ng.ng_Height,
 			GA_Previous, (ULONG) gad,
 			GBTDTA_Text, (ULONG) inst->ftci_Line3Buffer,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);
@@ -1705,6 +1711,8 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			GA_Height, ng.ng_Height,
 			GA_Previous, (ULONG) gad,
 			GBTDTA_Text, (ULONG) inst->ftci_Line4Buffer,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);
@@ -1721,6 +1729,8 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			GA_Height, ng.ng_Height,
 			GA_Previous, (ULONG) gad,
 			GBTDTA_Text, (ULONG) inst->ftci_Line5Buffer,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);
@@ -1737,6 +1747,8 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			GA_Height, ng.ng_Height,
 			GA_Previous, (ULONG) gad,
 			GBTDTA_Text, (ULONG) inst->ftci_Line6Buffer,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);

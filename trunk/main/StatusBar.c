@@ -74,6 +74,7 @@ BOOL StatusBarAdd(struct internalScaWindowTask *iwt)
 	iwt->iwt_StatusBarMembers[STATUSBARGADGET_StatusText] = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
 		GBTDTA_Text, (ULONG) "Ä???g",
 		GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+		GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 		GBTDTA_TextPen, PalettePrefs.pal_PensList[PENIDX_STATUSBAR_TEXT],
 		GBTDTA_Justification, GACT_STRINGCENTER,
 		GA_ID, SBAR_GadgetID_Text,

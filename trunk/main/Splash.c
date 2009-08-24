@@ -901,6 +901,8 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 			GA_Width, ng.ng_Width,
 			GA_Height, ng.ng_Height,
 			GBTDTA_Text, (ULONG) inst->spli_VersionText,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			GBTDTA_SoftStyle, FSF_BOLD,
@@ -920,6 +922,8 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 			GA_Height, ng.ng_Height,
 			GA_Previous, (ULONG) gad,
 			GBTDTA_Text, (ULONG) COMPILER_STRING,
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);
@@ -936,6 +940,8 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 			GA_Height, ng.ng_Height,
 			GA_Previous, (ULONG) gad,
 			GBTDTA_Text, (ULONG) "",
+			GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font,
+			GBTDTA_TTFont, (ULONG) &ScreenTTFont,
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);

@@ -1093,6 +1093,10 @@ BOOL SuspendDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt)
 		if (!(dh->drgh_flags & DRGHF_LockSuspended))
 			{
 			ClassHideDragBobs(iwt, dh);
+			SetWindowPointer(iwt->iwt_WindowTask.wt_Window,
+				WA_BusyPointer, TRUE,
+				WA_PointerDelay, 0,
+				TAG_END);
 			WasLocked = SCA_UnlockDrag(dh);
 			dh->drgh_flags |= DRGHF_LockSuspended;
 			}
@@ -1108,6 +1112,9 @@ void ResumeDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL w
 		{
 		if (dh->drgh_flags & DRGHF_LockSuspended)
 			{
+			SetWindowPointer(iwt->iwt_WindowTask.wt_Window,
+				WA_Pointer, NULL,
+				TAG_END);
 			ReLockDrag(dh, iwt, wasLocked);
 			dh->drgh_flags &= ~DRGHF_LockSuspended;
 			}

@@ -125,16 +125,29 @@ SAVEDS(ULONG) Scalos_TextFit(struct RastPort *rp, CONST_STRPTR string, WORD Leng
 		TT_GetAttrs(rp, TT_FontName, (ULONG) &FontName,
 			TAG_END);
 
+		d1(kprintf("%s/%s/%ld: FontName=%08lx\n", __FILE__, __FUNC__, __LINE__, FontName));
 		if (FontName)
 			{
+			d1(kprintf("%s/%s/%ld: textExtent: %ld %ld %ld %ld\n", __FILE__, __FUNC__, __LINE__, \
+				textExtent->te_Extent.MinX, textExtent->te_Extent.MinY,\
+				textExtent->te_Extent.MaxX, textExtent->te_Extent.MaxY));
+			d1(kprintf("%s/%s/%ld: constrainingExtent=%08lx\n", __FILE__, __FUNC__, __LINE__, constrainingExtent));
+			d1(kprintf("%s/%s/%ld: constrainingBitWidth=%ld  constrainingBitHeight=%ld\n", __FILE__, __FUNC__, __LINE__, constrainingBitWidth, constrainingBitHeight));
 #ifdef USE_SEMA
 			ScalosObtainSemaphore(&tteSema);
 #endif
-			Result = TT_TextFit(rp, (STRPTR) string, Length, textExtent, constrainingExtent, 
-				strDirection, constrainingBitWidth, constrainingBitHeight);
+			Result = TT_TextFit(rp,
+				(STRPTR) string,
+				Length,
+				textExtent,
+				constrainingExtent,
+				strDirection,
+				constrainingBitHeight,
+				constrainingBitWidth);
 #ifdef USE_SEMA
 			ScalosReleaseSemaphore(&tteSema);
 #endif
+			d1(kprintf("%s/%s/%ld: Result=%lu\n", __FILE__, __FUNC__, __LINE__, Result));
 
 			return Result;
 			}
@@ -142,6 +155,8 @@ SAVEDS(ULONG) Scalos_TextFit(struct RastPort *rp, CONST_STRPTR string, WORD Leng
 
 	Result = TextFit(rp, (STRPTR) string, Length, textExtent, constrainingExtent, 
 		strDirection, constrainingBitWidth, constrainingBitHeight);
+
+	d1(kprintf("%s/%s/%ld: Result=%lu\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }
