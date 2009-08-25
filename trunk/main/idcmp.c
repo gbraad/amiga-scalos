@@ -72,7 +72,6 @@ static ULONG IDCMPIntuiTicks(struct internalScaWindowTask *iwt, struct IntuiMess
 static ULONG IDCMPChangeWindow(struct internalScaWindowTask *iwt, struct IntuiMessage *iMsg);
 static ULONG IDCMPNewSize(struct internalScaWindowTask *iwt, struct IntuiMessage *iMsg);
 static ULONG IDCMPGadgetHelp(struct internalScaWindowTask *iwt, struct IntuiMessage *iMsg);
-static ULONG IDCMPSizeVerify(struct internalScaWindowTask *iwt, struct IntuiMessage *iMsg);
 #if defined(IDCMP_EXTENDEDMOUSE)
 static ULONG IDCMPExtendedMouse(struct internalScaWindowTask *iwt, struct IntuiMessage *iMsg);
 #endif //defined(IDCMP_EXTENDEDMOUSE)
@@ -101,7 +100,7 @@ static void IDCMPBeginDrag(struct internalScaWindowTask *iwt, struct IntuiMessag
 const struct IDCMPTableEntry IDCMPFuncTable[] =
 	{
 	// Attention: entries MUST be kept in ascending order, due to use of bsearch()
-	{ IDCMP_SIZEVERIFY,	IDCMPSizeVerify		},
+//	{ IDCMP_SIZEVERIFY,	NULL 			},
 	{ IDCMP_NEWSIZE,	IDCMPNewSize		},
 	{ IDCMP_REFRESHWINDOW,	IDCMPRefreshWindow	},
 	{ IDCMP_MOUSEBUTTONS,	IDCMPMouseButtons	},
@@ -1176,15 +1175,6 @@ static ULONG IDCMPGadgetHelp(struct internalScaWindowTask *iwt, struct IntuiMess
 
 		iInfos.xii_GlobalGadgetUnderPointer.ggd_GadgetID = SGTT_GADGETID_unknown;
 		}
-
-	return 0;
-}
-
-
-static ULONG IDCMPSizeVerify(struct internalScaWindowTask *iwt, struct IntuiMessage *iMsg)
-{
-	d1(KPrintF("%s/%s/%ld: Class=%08lx  Code=%04lx  Qual=%04lx IAddress=%08lx\n", \
-		__FILE__, __FUNC__, __LINE__, iMsg->Class, iMsg->Code, iMsg->Qualifier, iMsg->IAddress));
 
 	return 0;
 }
