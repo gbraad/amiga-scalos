@@ -142,7 +142,7 @@ SAVEDS(ULONG) Scalos_TextFit(struct RastPort *rp, CONST_STRPTR string, WORD Leng
 				textExtent,
 				constrainingExtent,
 				strDirection,
-				constrainingBitHeight,
+				constrainingBitWidth,
 				constrainingBitWidth);
 #ifdef USE_SEMA
 			ScalosReleaseSemaphore(&tteSema);

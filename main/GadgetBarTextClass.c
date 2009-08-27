@@ -68,6 +68,9 @@ struct GadgetBarTextClassInst
 	SHORT gbtcl_DrawMode;
 	SHORT gbtcl_Justification;	// GACT_STRINGLEFT, GACT_STRINGRIGHT, GACT_STRINGCENTER
 	ULONG gbtcl_SoftStyle;		// FSF_BOLD, FSF_ITALIC, FSF_UNDERLINED, ...
+	struct TextExtent gbtcl_Extent;
+	ULONG gbtcl_Chars;		// number of chars that fit within the gadget
+	BOOL gbtcl_NeedLayout;
 	};
 
 //----------------------------------------------------------------------------
@@ -171,6 +174,8 @@ static ULONG GadgetBarText_New(Class *cl, Object *o, Msg msg)
 
 	gg->BoundsWidth = gg->Width;
 	gg->BoundsHeight = gg->Height;
+
+	inst->gbtcl_NeedLayout = TRUE;
 
 	inst->gbtcl_Text = (STRPTR) GetTagData(GBTDTA_Text, (ULONG) "", ops->ops_AttrList);
 	inst->gbtcl_Font = (struct TextFont *) GetTagData(GBTDTA_TextFont, (ULONG) iInfos.xii_iinfos.ii_Screen->RastPort.Font, ops->ops_AttrList);
@@ -292,6 +297,7 @@ static ULONG GadgetBarText_Set(Class *cl, Object *o, Msg msg)
 			FreeCopyString(inst->gbtcl_Text);
 
 		inst->gbtcl_Text = AllocCopyString(NewText);
+		inst->gbtcl_NeedLayout = TRUE;
 		}
 
 	inst->gbtcl_Font = (struct TextFont *) GetTagData(GBTDTA_TextFont, (ULONG) inst->gbtcl_Font, ops->ops_AttrList);
@@ -301,6 +307,16 @@ static ULONG GadgetBarText_Set(Class *cl, Object *o, Msg msg)
 	inst->gbtcl_DrawMode = GetTagData(GBTDTA_DrawMode, inst->gbtcl_DrawMode, ops->ops_AttrList);
 	inst->gbtcl_Justification = GetTagData(GBTDTA_Justification, inst->gbtcl_Justification, ops->ops_AttrList);
 	inst->gbtcl_SoftStyle = GetTagData(GBTDTA_SoftStyle, inst->gbtcl_SoftStyle, ops->ops_AttrList);
+
+	if ( FindTagItem(GBTDTA_TextFont, ops->ops_AttrList)
+		|| FindTagItem(GBTDTA_TTFont, ops->ops_AttrList)
+		|| FindTagItem(GBTDTA_DrawMode, ops->ops_AttrList)
+		|| FindTagItem(GBTDTA_SoftStyle, ops->ops_AttrList)
+		|| FindTagItem(GA_Width, ops->ops_AttrList)
+		|| FindTagItem(GA_Height, ops->ops_AttrList) )
+		{
+		inst->gbtcl_NeedLayout = TRUE;
+		}
 
 	gg->BoundsLeftEdge = GetTagData(GA_Left, gg->BoundsLeftEdge, ops->ops_AttrList);
 	gg->BoundsTopEdge = GetTagData(GA_Top, gg->BoundsTopEdge, ops->ops_AttrList);
@@ -328,7 +344,6 @@ static ULONG GadgetBarText_Layout(Class *cl, Object *o, Msg msg)
 	if (gpl->gpl_Initial)
 		{
 		struct RastPort rp;
-		struct TextExtent txtExtent;
 		WORD /* NewWidth, */ NewHeight;
 
 		Scalos_InitRastPort(&rp);
@@ -342,13 +357,30 @@ static ULONG GadgetBarText_Layout(Class *cl, Object *o, Msg msg)
 			inst->gbtcl_BGPen,
 			inst->gbtcl_DrawMode);
 
-		Scalos_TextExtent(&rp, inst->gbtcl_Text, strlen(inst->gbtcl_Text), &txtExtent);
+		inst->gbtcl_Chars = strlen(inst->gbtcl_Text);
+
+		Scalos_TextExtent(&rp,
+			inst->gbtcl_Text,
+			inst->gbtcl_Chars,
+			&inst->gbtcl_Extent);
+
+		if (inst->gbtcl_Extent.te_Width > gg->Width)
+			{
+			inst->gbtcl_Chars = Scalos_TextFit(&rp,
+				inst->gbtcl_Text,
+				inst->gbtcl_Chars,
+				&inst->gbtcl_Extent,
+				NULL,
+				1,
+				gg->Width,
+				gg->Height + 2);
+			}
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		NewHeight = txtExtent.te_Height + 1 + 1;
+		NewHeight = inst->gbtcl_Extent.te_Height + 1 + 1;
 #if 0
-		NewWidth = txtExtent.te_Width + 1 + 1;
+		NewWidth = inst->gbtcl_Extent.te_Width + 1 + 1;
 
 		if (gg->Width < NewWidth)
 			gg->Width = gg->BoundsWidth = NewWidth;
@@ -359,6 +391,8 @@ static ULONG GadgetBarText_Layout(Class *cl, Object *o, Msg msg)
 		d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
 
 		Scalos_DoneRastPort(&rp);
+
+		inst->gbtcl_NeedLayout = FALSE;
 		}
 
 	d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
@@ -373,12 +407,17 @@ static ULONG GadgetBarText_Render(Class *cl, Object *o, Msg msg)
 	struct gpRender *gpr = (struct gpRender *) msg;
 	struct GadgetBarTextClassInst *inst = INST_DATA(cl, o);
 	struct ExtGadget *gg = (struct ExtGadget *) o;
-	struct TextExtent txtExtent;
-	ULONG chars;
 	SHORT x, y;
 
 	d1(KPrintF("%s/%s/%ld: o=%08lx  Left=%ld  Top=%ld\n", __FILE__, __FUNC__, __LINE__, o, gg->LeftEdge, gg->TopEdge));
 	d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));
+
+	if (inst->gbtcl_NeedLayout)
+		{
+		DoMethod(o, GM_LAYOUT,
+			(ULONG) gpr->gpr_GInfo,
+			TRUE);
+		}
 
 	Scalos_DoneRastPort(gpr->gpr_RPort);
 	Scalos_SetFont(gpr->gpr_RPort, inst->gbtcl_Font, inst->gbtcl_TTFont);
@@ -393,16 +432,6 @@ static ULONG GadgetBarText_Render(Class *cl, Object *o, Msg msg)
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	memset(&txtExtent, 0, sizeof(txtExtent));
-
-	chars = Scalos_TextFit(gpr->gpr_RPort,
-		inst->gbtcl_Text,
-		strlen(inst->gbtcl_Text),
-		&txtExtent,
-		NULL,
-		1,
-		gg->Width, gg->Height + 2);
-
 	x = gg->LeftEdge;
 	y = gg->TopEdge;
 
@@ -411,16 +440,16 @@ static ULONG GadgetBarText_Render(Class *cl, Object *o, Msg msg)
 	case GACT_STRINGLEFT:
 		break;
 	case GACT_STRINGRIGHT:
-		x += gg->Width - txtExtent.te_Extent.MaxX;
+		x += gg->Width - inst->gbtcl_Extent.te_Extent.MaxX;
 		break;
 	case GACT_STRINGCENTER:
-		x += (gg->Width - txtExtent.te_Width) / 2;
+		x += (gg->Width - inst->gbtcl_Extent.te_Width) / 2;
 		break;
 		}
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	y += (gg->Height - txtExtent.te_Height) / 2 + Scalos_GetFontBaseline(gpr->gpr_RPort);
+	y += (gg->Height - inst->gbtcl_Extent.te_Height) / 2 + Scalos_GetFontBaseline(gpr->gpr_RPort);
 
 #if 0
 	// DEBUG: draw border around text gadget
@@ -432,7 +461,7 @@ static ULONG GadgetBarText_Render(Class *cl, Object *o, Msg msg)
 #endif
 
 	Move(gpr->gpr_RPort, x, y);
-	Scalos_Text(gpr->gpr_RPort, inst->gbtcl_Text, chars);
+	Scalos_Text(gpr->gpr_RPort, inst->gbtcl_Text, inst->gbtcl_Chars);
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
