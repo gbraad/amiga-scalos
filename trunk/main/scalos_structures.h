@@ -333,7 +333,6 @@ struct internalScaWindowTask
 
 	UBYTE	iwt_WinLockCount;			//WindowLock Counter
 
-	UBYTE	iwt_FillFlag;				//=1 if clear in refreshwin needed
 	UBYTE	iwt_BackDrop;				//Flag: Backdrop Window ?
 	UBYTE	iwt_LassoFlag;				//Flag: Lasso on?
 	UBYTE	iwt_CheckOverlappingIcons;		//Flag: always check for overlapping icons, and reposition conflicting icons.

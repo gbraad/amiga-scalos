@@ -2071,8 +2071,6 @@ static ULONG IconWindowClass_DeltaMove(Class *cl, Object *o, Msg msg)
 			// .movesoft
 			struct Region *clipRegion;
 
-			iwt->iwt_FillFlag = TRUE;
-
 			ScrollWindowRaster(iwt->iwt_WindowTask.wt_Window,
 				mdm->mdm_DeltaX, mdm->mdm_DeltaY,
 				MinX, MinY, MaxX, MaxY);
