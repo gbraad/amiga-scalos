@@ -71,7 +71,7 @@ VOID ProcessPixelArray(struct RastPort *rp,ULONG destX,ULONG destY,
 	ULONG sizeX,ULONG sizeY,ULONG operation,LONG value,
 	struct TagItem *taglist) (a1,d0,d1,d2,d3,d4,d5,a2)
 ==varargs
-VOID ProcessPixelArray(struct RastPort *rp,ULONG destX,ULONG destY,
+VOID ProcessPixelArrayTags(struct RastPort *rp,ULONG destX,ULONG destY,
 	ULONG sizeX,ULONG sizeY,ULONG operation,LONG value,
 	Tag taglist, ...)(a1,d0,d1,d2,d3,d4,d5,a2)
 * --- function in v50 or higher
