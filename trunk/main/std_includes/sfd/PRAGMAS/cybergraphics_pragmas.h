@@ -2,7 +2,7 @@
 #define PRAGMAS_CYBERGRAPHICS_PRAGMAS_H
 
 /*
-**	$Id: cybergraphics_pragmas.h 1.3 2006/04/26 19:03:48 juergen Exp $
+**	$Id: cybergraphics_pragmas.h 5.0 2009-02-17 20:22:13Z jlachmann $
 **
 **	Direct ROM interface (pragma) definitions.
 **
@@ -156,5 +156,36 @@
 #ifdef __CLIB_PRAGMA_LIBCALL
  #pragma libcall CyberGfxBase WriteLUTPixelArray c6 76543A921080B
 #endif /* __CLIB_PRAGMA_LIBCALL */
+/*--- (2 function slots reserved here) ---*/
+/* --- function in v43 or higher */
+#ifdef __CLIB_PRAGMA_LIBCALL
+ #pragma libcall CyberGfxBase WritePixelArrayAlpha d8 76543921080A
+#endif /* __CLIB_PRAGMA_LIBCALL */
+#ifdef __CLIB_PRAGMA_LIBCALL
+ #pragma libcall CyberGfxBase BltTemplateAlpha de 5432910808
+#endif /* __CLIB_PRAGMA_LIBCALL */
+#ifdef __CLIB_PRAGMA_LIBCALL
+ #pragma libcall CyberGfxBase ProcessPixelArray e4 A543210908
+#endif /* __CLIB_PRAGMA_LIBCALL */
+#ifdef __CLIB_PRAGMA_TAGCALL
+ #ifdef __CLIB_PRAGMA_LIBCALL
+  #pragma tagcall CyberGfxBase ProcessPixelArray e4 A543210908
+ #endif /* __CLIB_PRAGMA_LIBCALL */
+ #ifdef __CLIB_PRAGMA_AMICALL
+  #pragma tagcall(CyberGfxBase, 0xe4, ProcessPixelArray(a1,d0,d1,d2,d3,d4,d5,a2))
+ #endif /* __CLIB_PRAGMA_AMICALL */
+#endif /* __CLIB_PRAGMA_TAGCALL */
+/* --- function in v50 or higher */
+#ifdef __CLIB_PRAGMA_LIBCALL
+ #pragma libcall CyberGfxBase BltBitMapAlpha ea A5432910809
+#endif /* __CLIB_PRAGMA_LIBCALL */
+#ifdef __CLIB_PRAGMA_LIBCALL
+ #pragma libcall CyberGfxBase BltBitMapRastPortAlpha f0 A5432910809
+#endif /* __CLIB_PRAGMA_LIBCALL */
+/*--- (2 function slots reserved here) ---*/
+#ifdef __CLIB_PRAGMA_LIBCALL
+ #pragma libcall CyberGfxBase ScalePixelArrayAlpha 102 76543921080A
+#endif /* __CLIB_PRAGMA_LIBCALL */
+/*--- (31 function slots reserved here) ---*/
 
 #endif /* PRAGMAS_CYBERGRAPHICS_PRAGMAS_H */

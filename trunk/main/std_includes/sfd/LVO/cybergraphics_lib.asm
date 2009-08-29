@@ -46,4 +46,16 @@ _LVOUnLockBitMapTagList EQU	-180
 _LVOExtractColor EQU	-186
 	XDEF	_LVOWriteLUTPixelArray
 _LVOWriteLUTPixelArray EQU	-198
+	XDEF	_LVOWritePixelArrayAlpha
+_LVOWritePixelArrayAlpha EQU	-216
+	XDEF	_LVOBltTemplateAlpha
+_LVOBltTemplateAlpha EQU	-222
+	XDEF	_LVOProcessPixelArray
+_LVOProcessPixelArray EQU	-228
+	XDEF	_LVOBltBitMapAlpha
+_LVOBltBitMapAlpha EQU	-234
+	XDEF	_LVOBltBitMapRastPortAlpha
+_LVOBltBitMapRastPortAlpha EQU	-240
+	XDEF	_LVOScalePixelArrayAlpha
+_LVOScalePixelArrayAlpha EQU	-258
 	; END

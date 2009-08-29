@@ -140,4 +140,33 @@
 	LP11(0xc6, ULONG, WriteLUTPixelArray, APTR, srcRect, a0, ULONG, srcX, d0, ULONG, srcY, d1, ULONG, srcMod, d2, struct RastPort *, rp, a1, APTR, colorTab, a2, ULONG, destX, d3, ULONG, destY, d4, ULONG, sizeX, d5, ULONG, sizeY, d6, ULONG, cTFormat, d7, \
 	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
 
+#define WritePixelArrayAlpha(srcRect, srcX, srcY, srcMod, rp, destX, destY, sizeX, sizeY, globalAlpha) \
+	LP10(0xd8, ULONG, WritePixelArrayAlpha, APTR, srcRect, a0, ULONG, srcX, d0, ULONG, srcY, d1, ULONG, srcMod, d2, struct RastPort *, rp, a1, ULONG, destX, d3, ULONG, destY, d4, ULONG, sizeX, d5, ULONG, sizeY, d6, ULONG, globalAlpha, d7, \
+	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
+
+#define BltTemplateAlpha(source, xSrc, srcMod, destRP, xDest, yDest, xSize, ySize) \
+	LP8NR(0xde, BltTemplateAlpha, UBYTE *, source, a0, LONG, xSrc, d0, LONG, srcMod, d1, struct RastPort *, destRP, a1, ULONG, xDest, d2, ULONG, yDest, d3, ULONG, xSize, d4, ULONG, ySize, d5, \
+	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
+
+#define ProcessPixelArray(rp, destX, destY, sizeX, sizeY, operation, value, taglist) \
+	LP8NR(0xe4, ProcessPixelArray, struct RastPort *, rp, a1, ULONG, destX, d0, ULONG, destY, d1, ULONG, sizeX, d2, ULONG, sizeY, d3, ULONG, operation, d4, LONG, value, d5, struct TagItem *, taglist, a2, \
+	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
+
+#ifndef NO_PPCINLINE_STDARG
+#define ProcessPixelArray(rp, destX, destY, sizeX, sizeY, operation, value, tags...) \
+	({ULONG _tags[] = {tags}; ProcessPixelArray((rp), (destX), (destY), (sizeX), (sizeY), (operation), (value), (struct TagItem *) _tags);})
+#endif
+
+#define BltBitMapAlpha(srcBitMap, srcX, srcY, destBitMap, destX, destY, sizeX, sizeY, taglist) \
+	LP9(0xea, ULONG, BltBitMapAlpha, struct BitMap *, srcBitMap, a0, LONG, srcX, d0, LONG, srcY, d1, struct BitMap *, destBitMap, a1, LONG, destX, d2, LONG, destY, d3, LONG, sizeX, d4, LONG, sizeY, d5, struct TagItem *, taglist, a2, \
+	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
+
+#define BltBitMapRastPortAlpha(srcBitMap, srcX, srcY, destRP, destX, destY, sizeX, sizeY, taglist) \
+	LP9(0xf0, ULONG, BltBitMapRastPortAlpha, struct BitMap *, srcBitMap, a0, LONG, srcX, d0, LONG, srcY, d1, struct RastPort *, destRP, a1, LONG, destX, d2, LONG, destY, d3, LONG, sizeX, d4, LONG, sizeY, d5, struct TagItem *, taglist, a2, \
+	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
+
+#define ScalePixelArrayAlpha(srcRect, srcW, srcH, srcMod, rp, destX, destY, destW, destH, globalAlpha) \
+	LP10(0x102, LONG, ScalePixelArrayAlpha, APTR, srcRect, a0, ULONG, srcW, d0, ULONG, srcH, d1, ULONG, srcMod, d2, struct RastPort *, rp, a1, ULONG, destX, d3, ULONG, destY, d4, ULONG, destW, d5, ULONG, destH, d6, ULONG, globalAlpha, d7, \
+	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
+
 #endif /*  _PPCINLINE_CYBERGRAPHICS_H  */
