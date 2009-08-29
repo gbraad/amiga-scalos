@@ -1,5 +1,5 @@
 /*
-**	$VER: cybergraphics.h 41.18 (21.02.1998)
+**	$VER: cybergraphics.h 50.12 (13.08.2008)
 **
 **	include file for cybergraphics.library
 **
@@ -18,6 +18,8 @@
 #ifndef GRAPHICS_DISPLAYINFO_H
 #include <graphics/displayinfo.h>
 #endif
+
+#pragma pack(2)
 
 
 #define CYBERGFXNAME	"cybergraphics.library"
@@ -107,6 +109,7 @@ struct CyberModeNode
 
 #define PIXFMT_LUT8	(0UL)
 #define PIXFMT_RGB15	(1UL)
+#define PIXFMT_RGB15X   (2UL)  /* CGX4 used it as RRRRRGGG GGBBBBBX, CGX3 did not support it at all */
 #define PIXFMT_BGR15	(2UL)
 #define PIXFMT_RGB15PC	(3UL)
 #define PIXFMT_BGR15PC	(4UL)
@@ -129,6 +132,7 @@ struct CyberModeNode
 #define RECTFMT_ARGB	(2UL)
 #define RECTFMT_LUT8	(3UL)
 #define RECTFMT_GREY8	(4UL)
+#define RECTFMT_RAW     (5UL)
 
 /*                                    *
  * Parameters for CVideoCtrlTagList() *
@@ -198,5 +202,93 @@ struct  CDrawMsg
 #define SHIFT_PIXFMT( fmt ) (((ULONG)(fmt)) << 24UL)
 
 
+#define BMF_REQUESTVMEM  (BMF_MINPLANES|BMF_DISPLAYABLE)
+
+#ifndef BMB_ROOTMAP
+#define BMB_ROOTMAP (5UL)
+#define BMF_ROOTMAP (1UL << BMB_ROOTMAP)
+#endif /* BMB_ROOTMAP */
+
+#ifndef BMB_3DTARGET
+#define BMB_3DTARGET (8UL)
+#define BMF_3DTARGET (1UL << BMB_3DTARGET)
+#endif /* BMB_3DTARGET */
+
+/*
+ * Operations for ProcessPixelArray() (v50)
+ *
+ */
+
+#define POP_BRIGHTEN            0
+#define POP_DARKEN              1
+#define POP_SETALPHA            2
+#define POP_TINT                3
+#define POP_BLUR                4
+#define POP_COLOR2GREY          5
+#define POP_NEGATIVE            6
+#define POP_NEGFADE             7
+#define POP_TINTFADE            8
+#define POP_GRADIENT            9
+#define POP_SHIFTRGB            10
+
+/*
+ * Values for POP_SHIFTRGB
+ *
+ */
+
+#define RGBSHIFT_BGR             (1UL)
+#define RGBSHIFT_BRG             (2UL)
+#define RGBSHIFT_GBR             (3UL)
+#define RGBSHIFT_GRB             (4UL)
+#define RGBSHIFT_RBG             (5UL)
+
+
+/*
+ * Tags for ProcessPixelArray() ops
+ *
+ */
+
+#define PPAOPTAG_FADEFULLSCALE  0x85231020
+#define PPAOPTAG_FADEOFFSET     0x85231021
+
+
+#define PPAOPTAG_GRADIENTTYPE                   0x85231022
+
+#define GRADTYPE_HORIZONTAL                     0
+#define GRADTYPE_VERTICAL                       1
+
+/* yet unsupported gradient types follow */
+#define GRADTYPE_RECTANGLE                      2
+#define GRADTYPE_LINEAR_ANGLE                   3
+#define GRADTYPE_RADIAL                         4 /* "circle" center-based */
+
+#define GRADIENT_NUMTYPES                       2
+
+#define PPAOPTAG_GRADCOLOR1                     0x85231023
+#define PPAOPTAG_GRADCOLOR2                     0x85231024
+
+#define PPAOPTAG_GRADFULLSCALE                  PPAOPTAG_FADEFULLSCALE
+#define PPAOPTAG_GRADOFFSET                     PPAOPTAG_FADEOFFSET
+
+#define PPAOPTAG_RGBMASK                        0x85231025
+
+#define PPAOPTAG_GRADSYMCENTER                  0x85231026
+
+/*
+ * Tags for BltBitMap(RastPort)Alpha() (v50)
+ *
+ */
+
+#define BLTBMA_MIXLEVEL         0x88802000      /* from 0(0%) to 0xFFFFFFFF (100%) */
+#define BLTBMA_USESOURCEALPHA   0x88802001
+#define BLTBMA_GLOBALALPHA      BLTBMA_MIXLEVEL
+#define BLTBMA_DESTALPHAVALUE   0x88802002
+
+#define DESTALPHAVALUE_UNDEFINED    0 /* default */
+#define DESTALPHAVALUE_ONE          1
+#define DESTALPHAVALUE_USESOURCE    2
+#define DESTALPHAVALUE_USEDEST      3
+
+#pragma pack()
 
 #endif  /* !CYBERGRAPHX_CYBERGRAPHICS_H */

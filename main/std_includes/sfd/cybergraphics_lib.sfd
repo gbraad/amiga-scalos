@@ -59,4 +59,33 @@ ULONG ExtractColor(struct RastPort * rp, struct BitMap * bitMap, ULONG colour,
 ULONG WriteLUTPixelArray(APTR srcRect, UWORD srcX, UWORD srcY, UWORD srcMod,
 	struct RastPort * rp, APTR colorTab, UWORD destX, UWORD destY,
 	UWORD sizeX, UWORD sizeY, UBYTE cTFormat) (a0,d0,d1,d2,a1,a2,d3,d4,d5,d6,d7)
+==reserve 2
+* --- function in v43 or higher
+ULONG WritePixelArrayAlpha(APTR srcRect,UWORD srcX,UWORD srcY,UWORD srcMod,
+	struct RastPort *rp,UWORD destX,UWORD destY,
+	UWORD sizeX,UWORD sizeY,ULONG globalAlpha) (a0,d0,d1,d2,a1,d3,d4,d5,d6,d7)
+VOID BltTemplateAlpha(UBYTE *source,LONG xSrc,LONG srcMod,
+	struct RastPort *destRP,ULONG xDest,ULONG yDest,
+	ULONG xSize,ULONG ySize) (a0,d0,d1,a1,d2,d3,d4,d5)
+VOID ProcessPixelArray(struct RastPort *rp,ULONG destX,ULONG destY,
+	ULONG sizeX,ULONG sizeY,ULONG operation,LONG value,
+	struct TagItem *taglist) (a1,d0,d1,d2,d3,d4,d5,a2)
+==varargs
+VOID ProcessPixelArray(struct RastPort *rp,ULONG destX,ULONG destY,
+	ULONG sizeX,ULONG sizeY,ULONG operation,LONG value,
+	Tag taglist, ...)(a1,d0,d1,d2,d3,d4,d5,a2)
+* --- function in v50 or higher
+ULONG BltBitMapAlpha(struct BitMap *srcBitMap,WORD srcX,WORD srcY,
+	struct BitMap *destBitMap,WORD destX,WORD destY,
+	WORD sizeX,WORD sizeY,struct TagItem *taglist) (a0,d0,d1,a1,d2,d3,d4,d5,a2)
+ULONG BltBitMapRastPortAlpha(struct BitMap *srcBitMap,WORD srcX,WORD srcY,
+	struct RastPort *destRP,WORD destX,WORD destY,
+	WORD sizeX,WORD sizeY,struct TagItem *taglist) (a0,d0,d1,a1,d2,d3,d4,d5,a2)
+==reserve 2
+LONG ScalePixelArrayAlpha(APTR srcRect,UWORD srcW,UWORD srcH,
+	UWORD srcMod,struct RastPort *rp,
+	UWORD destX,UWORD destY,UWORD destW,UWORD destH,
+	ULONG globalAlpha) (a0,d0,d1,d2,a1,d3,d4,d5,d6,d7)
+==reserve 31
 ==end
+

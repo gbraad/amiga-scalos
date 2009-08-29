@@ -2,7 +2,7 @@
 #define  CLIB_CYBERGRAPHICS_PROTOS_H
 
 /*
-**	$Id: cybergraphics_protos.h 1.3 2006/04/26 19:03:48 juergen Exp $
+**	$Id: cybergraphics_protos.h 5.0 2009-02-17 20:22:13Z jlachmann $
 **
 **	C prototypes. For use with 32 bit integers only.
 **
@@ -46,6 +46,15 @@ VOID UnLockBitMapTagList( APTR handle, struct TagItem *tagList );
 VOID UnLockBitMapTags( APTR handle, Tag tagList, ... );
 ULONG ExtractColor( struct RastPort *rp, struct BitMap *bitMap, ULONG colour, ULONG srcX, ULONG srcY, ULONG width, ULONG height );
 ULONG WriteLUTPixelArray( APTR srcRect, ULONG srcX, ULONG srcY, ULONG srcMod, struct RastPort *rp, APTR colorTab, ULONG destX, ULONG destY, ULONG sizeX, ULONG sizeY, ULONG cTFormat );
+/* --- function in v43 or higher */
+ULONG WritePixelArrayAlpha( APTR srcRect, ULONG srcX, ULONG srcY, ULONG srcMod, struct RastPort *rp, ULONG destX, ULONG destY, ULONG sizeX, ULONG sizeY, ULONG globalAlpha );
+VOID BltTemplateAlpha( UBYTE *source, LONG xSrc, LONG srcMod, struct RastPort *destRP, ULONG xDest, ULONG yDest, ULONG xSize, ULONG ySize );
+VOID ProcessPixelArray( struct RastPort *rp, ULONG destX, ULONG destY, ULONG sizeX, ULONG sizeY, ULONG operation, LONG value, struct TagItem *taglist );
+VOID ProcessPixelArray( struct RastPort *rp, ULONG destX, ULONG destY, ULONG sizeX, ULONG sizeY, ULONG operation, LONG value, Tag taglist, ... );
+/* --- function in v50 or higher */
+ULONG BltBitMapAlpha( struct BitMap *srcBitMap, LONG srcX, LONG srcY, struct BitMap *destBitMap, LONG destX, LONG destY, LONG sizeX, LONG sizeY, struct TagItem *taglist );
+ULONG BltBitMapRastPortAlpha( struct BitMap *srcBitMap, LONG srcX, LONG srcY, struct RastPort *destRP, LONG destX, LONG destY, LONG sizeX, LONG sizeY, struct TagItem *taglist );
+LONG ScalePixelArrayAlpha( APTR srcRect, ULONG srcW, ULONG srcH, ULONG srcMod, struct RastPort *rp, ULONG destX, ULONG destY, ULONG destW, ULONG destH, ULONG globalAlpha );
 
 #ifdef __cplusplus
 }
