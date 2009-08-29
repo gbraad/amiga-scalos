@@ -213,7 +213,7 @@
 			<arg name="value" type="LONG"/>
 			<arg name="taglist" type="struct TagItem *"/>
 		</method>
-		<method name="ProcessPixelArray" result="VOID">
+		<method name="ProcessPixelArrayTags" result="VOID">
 			<arg name="rp" type="struct RastPort *"/>
 			<arg name="destX" type="ULONG"/>
 			<arg name="destY" type="ULONG"/>

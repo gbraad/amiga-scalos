@@ -153,7 +153,7 @@
 	, CYBERGRAPHICS_BASE_NAME, IF_CACHEFLUSHALL, NULL, 0, IF_CACHEFLUSHALL, NULL, 0)
 
 #ifndef NO_PPCINLINE_STDARG
-#define ProcessPixelArray(rp, destX, destY, sizeX, sizeY, operation, value, tags...) \
+#define ProcessPixelArrayTags(rp, destX, destY, sizeX, sizeY, operation, value, tags...) \
 	({ULONG _tags[] = {tags}; ProcessPixelArray((rp), (destX), (destY), (sizeX), (sizeY), (operation), (value), (struct TagItem *) _tags);})
 #endif
 

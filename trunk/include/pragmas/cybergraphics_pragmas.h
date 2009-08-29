@@ -41,7 +41,7 @@
 #pragma  tagcall CyberGfxBase CVideoCtrlTags         0a2 9802
 #pragma  tagcall CyberGfxBase LockBitMapTags         0a8 9802
 #pragma  tagcall CyberGfxBase UnLockBitMapTags       0b4 9802
-#pragma  tagcall CyberGfxBase ProcessPixelArray      0e4 a543210908
+#pragma  tagcall CyberGfxBase ProcessPixelArrayTags  0e4 a543210908
 #endif
 
 #endif	/*  PRAGMAS_CYBERGRAPHICS_PRAGMA_H  */

@@ -87,9 +87,9 @@
 #define BltTemplateAlpha(source, xSrc, srcMod, destRP, xDest, yDest, xSize, ySize) ICyberGfx->BltTemplateAlpha((source), (xSrc), (srcMod), (destRP), (xDest), (yDest), (xSize), (ySize)) 
 #define ProcessPixelArray(rp, destX, destY, sizeX, sizeY, operation, value, taglist) ICyberGfx->ProcessPixelArray((rp), (destX), (destY), (sizeX), (sizeY), (operation), (value), (taglist)) 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || (__GNUC__ >= 3)
-#define ProcessPixelArray(rp, destX, destY, sizeX, sizeY, operation, ...) ICyberGfx->ProcessPixelArray((rp), (destX), (destY), (sizeX), (sizeY), (operation), __VA_ARGS__) 
+#define ProcessPixelArrayTags(rp, destX, destY, sizeX, sizeY, operation, ...) ICyberGfx->ProcessPixelArrayTags((rp), (destX), (destY), (sizeX), (sizeY), (operation), __VA_ARGS__) 
 #elif (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
-#define ProcessPixelArray(rp, destX, destY, sizeX, sizeY, operation, vargs...) ICyberGfx->ProcessPixelArray(rp, destX, destY, sizeX, sizeY, operation, ## vargs) 
+#define ProcessPixelArrayTags(rp, destX, destY, sizeX, sizeY, operation, vargs...) ICyberGfx->ProcessPixelArrayTags(rp, destX, destY, sizeX, sizeY, operation, ## vargs) 
 #endif
 #define BltBitMapAlpha(srcBitMap, srcX, srcY, destBitMap, destX, destY, sizeX, sizeY, taglist) ICyberGfx->BltBitMapAlpha((srcBitMap), (srcX), (srcY), (destBitMap), (destX), (destY), (sizeX), (sizeY), (taglist)) 
 #define BltBitMapRastPortAlpha(srcBitMap, srcX, srcY, destRP, destX, destY, sizeX, sizeY, taglist) ICyberGfx->BltBitMapRastPortAlpha((srcBitMap), (srcX), (srcY), (destRP), (destX), (destY), (sizeX), (sizeY), (taglist)) 

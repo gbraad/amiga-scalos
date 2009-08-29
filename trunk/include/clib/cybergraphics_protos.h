@@ -3,7 +3,7 @@
 
 
 /*
-**	$VER: cybergraphics_protos.h 5.0 (29.08.2009)
+**	$VER: cybergraphics_protos.h 210.0 (29.08.2009)
 **
 **	C prototypes. For use with 32 bit integers only.
 **
@@ -63,8 +63,8 @@ VOID BltTemplateAlpha(UBYTE * source, LONG xSrc, LONG srcMod, struct RastPort * 
 	ULONG xDest, ULONG yDest, ULONG xSize, ULONG ySize);
 VOID ProcessPixelArray(struct RastPort * rp, ULONG destX, ULONG destY, ULONG sizeX,
 	ULONG sizeY, ULONG operation, LONG value, struct TagItem * taglist);
-VOID ProcessPixelArray(struct RastPort * rp, ULONG destX, ULONG destY, ULONG sizeX,
-	ULONG sizeY, ULONG operation, LONG value, struct TagItem * taglist);
+VOID ProcessPixelArrayTags(struct RastPort * rp, ULONG destX, ULONG destY, ULONG sizeX,
+	ULONG sizeY, ULONG operation, LONG value, Tag taglist, ...);
 ULONG BltBitMapAlpha(struct BitMap * srcBitMap, LONG srcX, LONG srcY,
 	struct BitMap * destBitMap, LONG destX, LONG destY, LONG sizeX,
 	LONG sizeY, struct TagItem * taglist);
