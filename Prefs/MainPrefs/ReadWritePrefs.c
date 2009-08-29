@@ -884,11 +884,13 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	set(app->Obj[GROUP_ICONSPAGE_ICONFONT], MUIA_Disabled, currentPrefs.TrueTypeFonts.ttg_UseIconTTFont);
 	set(app->Obj[GROUP_ICONSPAGE_TTICONFONT], MUIA_Disabled, !currentPrefs.TrueTypeFonts.ttg_UseIconTTFont);
 	setcheckmark(app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE], currentPrefs.TrueTypeFonts.ttg_UseTextWindowTTFont);
+	setcheckmark(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE], currentPrefs.TrueTypeFonts.ttg_UseTextWindowTTFont);
 	set(app->Obj[GROUP_TEXTWINDOW_FONT_SELECT], MUIA_Disabled, currentPrefs.TrueTypeFonts.ttg_UseTextWindowTTFont);
 	setstring(app->Obj[POPSTRING_TTSCREENFONT], (ULONG) currentPrefs.TrueTypeFonts.ttg_ScreenTTFontDesc);
 	setstring(app->Obj[POPSTRING_TTICONFONT], (ULONG) currentPrefs.TrueTypeFonts.ttg_IconTTFontDesc);
 	setstring(app->Obj[POPSTRING_ICONSPAGE_TTICONFONT], (ULONG) currentPrefs.TrueTypeFonts.ttg_IconTTFontDesc);
 	setstring(app->Obj[POPSTRING_TTTEXTWINDOWFONT], (ULONG) currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc);
+	setstring(app->Obj[POPSTRING_TEXTWINDOW_TTTEXTWINDOWFONT], (ULONG) currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc);
 
 	SetAttrs(app->Obj[MCC_TTSCREENFONT_SAMPLE], 
 		MUIA_FontSample_Antialias, currentPrefs.TrueTypeFonts.ttg_Antialias,
@@ -906,6 +908,11 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 		MUIA_FontSample_TTFontDesc, (ULONG) currentPrefs.TrueTypeFonts.ttg_IconTTFontDesc,
 		TAG_END);
 	SetAttrs(app->Obj[MCC_TTTEXTWINDOWFONT_SAMPLE], 
+		MUIA_FontSample_Antialias, currentPrefs.TrueTypeFonts.ttg_Antialias,
+		MUIA_FontSample_Gamma, currentPrefs.TrueTypeFonts.ttg_Gamma,
+		MUIA_FontSample_TTFontDesc, (ULONG) currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc,
+		TAG_END);
+	SetAttrs(app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE],
 		MUIA_FontSample_Antialias, currentPrefs.TrueTypeFonts.ttg_Antialias,
 		MUIA_FontSample_Gamma, currentPrefs.TrueTypeFonts.ttg_Gamma,
 		MUIA_FontSample_TTFontDesc, (ULONG) currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc,
