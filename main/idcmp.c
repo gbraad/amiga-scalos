@@ -177,15 +177,6 @@ ULONG IDCMPRefreshWindow(struct internalScaWindowTask *iwt, struct IntuiMessage 
 
 			d1(KPrintF("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 
-			if (iwt->iwt_FillFlag)
-				{
-				EraseRect(iwt->iwt_WindowTask.wt_Window->RPort,
-					winRect.MinX, winRect.MinY,
-					winRect.MaxY, winRect.MaxY);
-				}
-
-			d1(KPrintF("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
-
 			if (ScalosAttemptLockIconListShared(iwt))
 				{
 				iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags &= ~WSV_FlagF_RefreshPending;
