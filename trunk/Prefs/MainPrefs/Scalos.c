@@ -1570,6 +1570,8 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	// disable text window font selection if text window TT font enabled
 	DoMethod(app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
 		app->Obj[GROUP_TEXTWINDOW_FONT_SELECT], 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
+	DoMethod(app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		app->Obj[GROUP_TEXTWINDOW_FONT_SELECT], 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 	{ STRPTR xxx = strdup("TestTestTest"); if (xxx) free(xxx); }
@@ -1714,6 +1716,9 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		SetAttrs(app->Obj[GROUP_TTTEXTWINDOWFONT], 
 			MUIA_Disabled, FALSE,
 			TAG_END);
+		SetAttrs(app->Obj[GROUP_TEXTWINDOW_TTTEXTWINDOWFONT],
+			MUIA_Disabled, FALSE,
+			TAG_END);
 		}
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
@@ -1752,6 +1757,24 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 
 	DoMethod(app->Obj[POPSTRING_TTTEXTWINDOWFONT], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, 
 		app->Obj[MCC_TTTEXTWINDOWFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_TTFontDesc, MUIV_TriggerValue);
+	DoMethod(app->Obj[POPSTRING_TTTEXTWINDOWFONT], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
+		app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_TTFontDesc, MUIV_TriggerValue);
+
+	DoMethod(app->Obj[POPSTRING_TEXTWINDOW_TTTEXTWINDOWFONT], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
+		app->Obj[POPSTRING_TTTEXTWINDOWFONT], 3, MUIM_Set, MUIA_String_Contents, MUIV_TriggerValue);
+	DoMethod(app->Obj[POPSTRING_TTTEXTWINDOWFONT], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
+		app->Obj[POPSTRING_TEXTWINDOW_TTTEXTWINDOWFONT], 3, MUIM_Set, MUIA_String_Contents, MUIV_TriggerValue);
+
+	// update TT icon font enable buttons
+	DoMethod(app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE], 3, MUIM_Set, MUIA_Selected, MUIV_TriggerValue);
+	DoMethod(app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE], 3, MUIM_Set, MUIA_Selected, MUIV_TriggerValue);
+	DoMethod(app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		app->Obj[GROUP_TEXTWINDOW_TTTEXTWINDOWFONT], 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+	// disable text window font selection if text window TT font enabled
+	DoMethod(app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		app->Obj[GROUP_TEXTWINDOW_FONT_SELECT], 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	// Update font samples if antialias is changed
 	DoMethod(app->Obj[CYCLE_TTANTIALIAS], MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, 
@@ -1762,6 +1785,8 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		app->Obj[MCC_ICONSPAGE_TTICONFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_Antialias, MUIV_TriggerValue);
 	DoMethod(app->Obj[CYCLE_TTANTIALIAS], MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, 
 		app->Obj[MCC_TTTEXTWINDOWFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_Antialias, MUIV_TriggerValue);
+	DoMethod(app->Obj[CYCLE_TTANTIALIAS], MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime,
+		app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_Antialias, MUIV_TriggerValue);
 
 	// Update font samples if gamma is changed
 	DoMethod(app->Obj[SLIDER_TTGAMMA], MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime, 
@@ -1772,6 +1797,8 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		app->Obj[MCC_ICONSPAGE_TTICONFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_Gamma, MUIV_TriggerValue);
 	DoMethod(app->Obj[SLIDER_TTGAMMA], MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime, 
 		app->Obj[MCC_TTTEXTWINDOWFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_Gamma, MUIV_TriggerValue);
+	DoMethod(app->Obj[SLIDER_TTGAMMA], MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime,
+		app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_Gamma, MUIV_TriggerValue);
 
 	// Disable POPUP_SELECTED_HOTKEY if CHECK_MISCPAGE_POPUP_SELECTED_ALWAYS is enabled
 	DoMethod(app->Obj[CHECK_MISCPAGE_POPUP_SELECTED_ALWAYS], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
@@ -6639,26 +6666,65 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 
 					Child, HVSpace,
 
-					Child, app->Obj[GROUP_TEXTWINDOW_FONT_SELECT] = HGroup,
-						Child, Label2((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT)),
-						Child, app->Obj[POP_TEXTMODEFONT] = PopaslObject,
-							MUIA_Popstring_Button, PopButton(MUII_PopUp),
-							MUIA_Popstring_String, BetterStringObject,
-								StringFrame,
-								MUIA_String_Contents, "Xen/8",
-							End, //BetterString
-							ASLFR_TitleText, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT_ASLTITLE),
-							MUIA_Popasl_Type , ASL_FontRequest,
-							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT_SHORTHELP),
-						End, //Pop
+					Child, HGroup,
+						Child, HVSpace,
+						Child, Label1((ULONG) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE)),
+						Child, app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE] = CheckMark(FALSE),
+						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
 					End, //HGroup
 
-					Child, app->Obj[STRING_TEXTMODEFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
-						TextFrame,
-						MUIA_Background, MUII_TextBack,
-						MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT_SAMPLETEXT),
-						End, //FontSampleMCCObject
+					Child, app->Obj[GROUP_TEXTWINDOW_FONT_SELECT] = VGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ICONSPAGE_GROUP_ICONFONT),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
+						Child, HGroup,
+//							  Child, Label2((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT)),
+							Child, app->Obj[POP_TEXTMODEFONT] = PopaslObject,
+								MUIA_Popstring_Button, PopButton(MUII_PopUp),
+								MUIA_Popstring_String, BetterStringObject,
+									StringFrame,
+									MUIA_String_Contents, "Xen/8",
+								End, //BetterString
+								ASLFR_TitleText, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT_ASLTITLE),
+								MUIA_Popasl_Type , ASL_FontRequest,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT_SHORTHELP),
+							End, //Pop
+						End, //HGroup
+
+						Child, app->Obj[STRING_TEXTMODEFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+							TextFrame,
+							MUIA_Background, MUII_TextBack,
+							MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT_SAMPLETEXT),
+							End, //FontSampleMCCObject
+					End, //VGroup
+
+					Child, app->Obj[GROUP_TEXTWINDOW_TTTEXTWINDOWFONT] = HGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TEXTWINDOWFONT),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
+						MUIA_Disabled, TRUE,
+
+						Child, VGroup,
+							Child, app->Obj[POPSTRING_TEXTWINDOW_TTTEXTWINDOWFONT] = PopstringObject,
+								MUIA_Popstring_Button, PopButton(MUII_PopUp),
+								MUIA_Popstring_String, BetterStringObject,
+									StringFrame,
+									MUIA_String_Contents, " ",
+									End, //BetterString
+								MUIA_Popstring_OpenHook, &TextWindowTtfPopOpenHook,
+								MUIA_Popstring_CloseHook, &TextWindowTtfPopCloseHook,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TEXTWINDOWFONT_SHORTHELP),
+							End, //PopstringObject
+
+							Child, app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+								TextFrame,
+								MUIA_Background, MUII_TextBack,
+								MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TEXTWINDOWFONT_SAMPLETEXT_SHORTHELP),
+								End, //FontSampleMCCObject
+						End, //VGroup
+					End, //HGroup
 
 					Child, HGroup,
 						Child, HVSpace,

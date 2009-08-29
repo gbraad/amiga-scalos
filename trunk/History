@@ -1885,6 +1885,7 @@ Additions/changes:
 
 --------------------Scalos main Preferences---------------------------------
 
+ 40.25	20090829	jl	- Improvement: allow TrueType font selection for text windows on windows/text windows page.
  40.24  20090413	jl	- Bugfix: resolved NULL pointer hit when adding normal image to user-defined control bar button.
 
  40.23  20090109	jl	- Improvement: added support for transparent Scalos windows - MorphOS 2.x only.

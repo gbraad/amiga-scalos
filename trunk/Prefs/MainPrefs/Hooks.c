@@ -750,8 +750,11 @@ SAVEDS(void) INTERRUPT TextWindowTtfPopOpenHookFunc(struct Hook *hook, Object *o
 
 			d1(kprintf("%s/%s/%ld: FontDesc=<%s>\n", __FILE__, __FUNC__, __LINE__, buffer));
 
-			set(o, MUIA_String_Contents, buffer);
+			set(app->Obj[POPSTRING_TTTEXTWINDOWFONT],  MUIA_String_Contents, buffer);
+			set(app->Obj[POPSTRING_TEXTWINDOW_TTTEXTWINDOWFONT],  MUIA_String_Contents, buffer);
+
 			set(app->Obj[MCC_TTTEXTWINDOWFONT_SAMPLE], MUIA_FontSample_TTFontDesc, buffer);
+			set(app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE], MUIA_FontSample_TTFontDesc, buffer);
 
 			Success = 1;
 			}
