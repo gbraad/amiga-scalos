@@ -111,23 +111,51 @@ void ARGBRectMult(struct RastPort *rp,
 	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax,
 	struct ScalosGfxBase *ScalosGfxBase)
 {
-	ULONG Width = xMax - xMin + 1;
-	struct ARGBMultData amd;
-	struct Rectangle ARGBRectMultRect;
-	struct Hook ARGBRectMultHook;
+	if (CyberGfxBase->lib_Version >= 43)
+		{
+		if (Numerator.Red > Denominator.Red)
+			{
+			ProcessPixelArray(rp,
+				xMin,
+				yMin,
+				1 + xMax - xMin,
+				1 + yMax - yMin,
+				POP_BRIGHTEN,
+				(256 * Numerator.Red) / Denominator.Red,
+				NULL);
+			}
+		else
+			{
+			ProcessPixelArray(rp,
+				xMin,
+				yMin,
+				1 + xMax - xMin,
+				1 + yMax - yMin,
+				POP_DARKEN,
+				(256 * Denominator.Red) / Numerator.Red,
+				NULL);
+			}
+		}
+	else
+		{
+		ULONG Width = xMax - xMin + 1;
+		struct ARGBMultData amd;
+		struct Rectangle ARGBRectMultRect;
+		struct Hook ARGBRectMultHook;
 
-	amd.amd_Numerator = Numerator;
-	amd.amd_Denominator = Denominator;
+		amd.amd_Numerator = Numerator;
+		amd.amd_Denominator = Denominator;
 
-	ARGBRectMultRect.MinX = xMin;
-	ARGBRectMultRect.MinY = yMin;
-	ARGBRectMultRect.MaxX = Width - 1;
-	ARGBRectMultRect.MaxY = yMax;
+		ARGBRectMultRect.MinX = xMin;
+		ARGBRectMultRect.MinY = yMin;
+		ARGBRectMultRect.MaxX = Width - 1;
+		ARGBRectMultRect.MaxY = yMax;
 
-	SETHOOKFUNC(ARGBRectMultHook, ARGBRectMultHookFunc);
-	ARGBRectMultHook.h_Data = &amd;
+		SETHOOKFUNC(ARGBRectMultHook, ARGBRectMultHookFunc);
+		ARGBRectMultHook.h_Data = &amd;
 
-	DoHookClipRects(&ARGBRectMultHook, rp, &ARGBRectMultRect);
+		DoHookClipRects(&ARGBRectMultHook, rp, &ARGBRectMultRect);
+		}
 }
 
 //-----------------------------------------------------------------------
