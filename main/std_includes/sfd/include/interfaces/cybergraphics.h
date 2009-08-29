@@ -69,7 +69,7 @@ struct CyberGfxIFace
 	ULONG APICALL (*WritePixelArrayAlpha)(struct CyberGfxIFace *Self, APTR srcRect, UWORD srcX, UWORD srcY, UWORD srcMod, struct RastPort * rp, UWORD destX, UWORD destY, UWORD sizeX, UWORD sizeY, ULONG globalAlpha);
 	VOID APICALL (*BltTemplateAlpha)(struct CyberGfxIFace *Self, UBYTE * source, LONG xSrc, LONG srcMod, struct RastPort * destRP, ULONG xDest, ULONG yDest, ULONG xSize, ULONG ySize);
 	VOID APICALL (*ProcessPixelArray)(struct CyberGfxIFace *Self, struct RastPort * rp, ULONG destX, ULONG destY, ULONG sizeX, ULONG sizeY, ULONG operation, LONG value, struct TagItem * taglist);
-	VOID APICALL (*ProcessPixelArray)(struct CyberGfxIFace *Self, struct RastPort * rp, ULONG destX, ULONG destY, ULONG sizeX, ULONG sizeY, ULONG operation, LONG value, ...);
+	VOID APICALL (*ProcessPixelArrayTags)(struct CyberGfxIFace *Self, struct RastPort * rp, ULONG destX, ULONG destY, ULONG sizeX, ULONG sizeY, ULONG operation, LONG value, ...);
 	ULONG APICALL (*BltBitMapAlpha)(struct CyberGfxIFace *Self, struct BitMap * srcBitMap, WORD srcX, WORD srcY, struct BitMap * destBitMap, WORD destX, WORD destY, WORD sizeX, WORD sizeY, struct TagItem * taglist);
 	ULONG APICALL (*BltBitMapRastPortAlpha)(struct CyberGfxIFace *Self, struct BitMap * srcBitMap, WORD srcX, WORD srcY, struct RastPort * destRP, WORD destX, WORD destY, WORD sizeX, WORD sizeY, struct TagItem * taglist);
 	void APICALL (*Reserved10)(struct CyberGfxIFace *Self);
