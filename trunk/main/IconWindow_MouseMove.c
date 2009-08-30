@@ -902,7 +902,7 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 	struct MsgPort *myPort;
 	APTR eventHandle = NULL;
 
-	d2(KPrintF("%s/%s/%ld:  START\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld:  START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		ULONG Success;
@@ -910,20 +910,20 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 		struct SM_RootEvent *smre;
 
 		myPort = CreateMsgPort();
-		d2(KPrintF("%s/%s/%ld:  myPort=%08lx\n", __FILE__, __FUNC__, __LINE__, myPort));
+		d1(KPrintF("%s/%s/%ld:  myPort=%08lx\n", __FILE__, __FUNC__, __LINE__, myPort));
 		if (NULL == myPort)
 			break;
 
 		WasLocked = SuspendDrag(pod->pod_DragHandle, pod->pod_ParentWindowTask);
 
-		d2(KPrintF("%s/%s/%ld: before SCCM_AddListener\n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld: before SCCM_AddListener\n", __FILE__, __FUNC__, __LINE__));
 
 		eventHandle = (APTR) DoMethod(pod->pod_DragHandle->drgh_PopOpenDestWindow->iwt_WindowTask.mt_MainObject,
 			SCCM_AddListener,
 			SCCM_WindowStartComplete,
 			myPort,
 			1);
-		d2(KPrintF("%s/%s/%ld:  eventHandle=%08lx\n", __FILE__, __FUNC__, __LINE__, eventHandle));
+		d1(KPrintF("%s/%s/%ld:  eventHandle=%08lx\n", __FILE__, __FUNC__, __LINE__, eventHandle));
 		if (NULL == eventHandle)
 			break;
 
@@ -933,17 +933,17 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 			ICONWINOPENF_DoNotActivateWindow | ICONWINOPENF_NewWindow
 				| ICONWINOPENF_IgnoreFileTypes | ICONWINOPENF_DdPopupWindow);
 
-		d2(KPrintF("%s/%s/%ld:  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+		d1(KPrintF("%s/%s/%ld:  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 		if (!Success)
 			break;
 
-		d2(KPrintF("%s/%s/%ld: wait for SCCM_WindowStartComplete event\n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld: wait for SCCM_WindowStartComplete event\n", __FILE__, __FUNC__, __LINE__));
 
 		// wait for SCCM_WindowStartComplete event
 		WaitPort(myPort);
 		smre = (struct SM_RootEvent *) GetMsg(myPort);
 
-		d2(KPrintF("%s/%s/%ld:  smre=%08lx\n", __FILE__, __FUNC__, __LINE__, smre));
+		d1(KPrintF("%s/%s/%ld:  smre=%08lx\n", __FILE__, __FUNC__, __LINE__, smre));
 
 		if (smre)
 			{
@@ -954,7 +954,7 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 		if (iInfos.xii_GlobalDragHandle != pod->pod_DragHandle)
 			break;
 
-		d2(KPrintF("%s/%s/%ld:  before ReLockDrag\n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld:  before ReLockDrag\n", __FILE__, __FUNC__, __LINE__));
 
 		ResumeDrag(pod->pod_DragHandle, pod->pod_ParentWindowTask, WasLocked);
 		} while (0);
@@ -968,7 +968,7 @@ static SAVEDS(ULONG) PopOpenProcess(struct PopOpenData *pod, struct SM_RunProces
 	if (myPort)
 		DeleteMsgPort(myPort);
 
-	d2(KPrintF("%s/%s/%ld:  END\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld:  END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }

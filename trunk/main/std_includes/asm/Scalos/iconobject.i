@@ -430,7 +430,6 @@ TIDTA_Owner_GID			EQU	DTA_Dummy+1162	;(..G) UWORD
 TIDTA_Protection		EQU	DTA_Dummy+1163	;(..G)
 TIDTA_IsLink			equ	DTA_Dummy+1164	;(ISG) BOOL
 TIDTA_Font			equ	DTA_Dummy+1165	;(ISG) (struct TextFont *) - font to render icon text in +jl+ 20010903
-TIDTA_Ordinal			equ	DTA_Dummy+1166	;(ISG) ULONG - ordinal number of entry +jl+ 20010906
 TIDTA_IconType			equ	DTA_Dummy+1167	;(ISG) ULONG - Workbench icon type +jl+ 20010906
 TIDTA_TTFont			equ	DTA_Dummy+1168	;(ISG) APTR - ttEngine font to render icon text in +jl+ 20030110
 TIDTA_WindowTask		equ	DTA_Dummy+1169	;(I..) struct ScaWindowTask * - parent WindowTask
