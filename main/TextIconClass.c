@@ -80,7 +80,6 @@ struct TextIClassInst
 	UWORD	txicl_OwnerUID;
 	UWORD	txicl_OwnerGID;
 
-	ULONG	txicl_OrdNr;		// ordinal number of entry (for shading every other line)
 	ULONG	txicl_WbIconType;	// Workbench icon type (e.g. WBDISK)
 	struct TypeNode	*txicl_TypeNode;	// DefIcons TypeNode or Workbench icon type (e.g. WBDISK)
 
@@ -382,10 +381,6 @@ static ULONG TextIcon_Get(Class *cl, Object *o, Msg msg)
 		*(opg->opg_Storage) = (ULONG) inst->txicl_TTFont;
 		break;
 
-	case TIDTA_Ordinal:
-		*(opg->opg_Storage) = (ULONG) inst->txicl_OrdNr;
-		break;
-
 	case TIDTA_IconObject:
 		*(opg->opg_Storage) = (ULONG) inst->txicl_IconObject;
 		break;
@@ -570,6 +565,8 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 	static const struct ARGB DenomFile =  { (UBYTE) ~0, 80, 80, 80 };
 	static const struct ARGB NumDrawer = { (UBYTE) ~0, 65, 70, 65 };
 	static const struct ARGB DenomDrawer =  { (UBYTE) ~0, 80, 80, 80 };
+	static const struct ARGB NumHilight = { (UBYTE) ~0, 100, 100, 100 };
+	static const struct ARGB DenomHilight =  { (UBYTE) ~0, 80, 80, 80 };
 	struct ExtGadget *gg = (struct ExtGadget *) o;
 	struct iopDraw *iop = (struct iopDraw *) msg;
 	struct TextIClassInst *inst = INST_DATA(cl, o);
@@ -667,29 +664,6 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 				BmRight,
 				yBottom);
 			}
-
-		if (CurrentPrefs.pref_TextWindowStriped &&
-			!(iop->iopd_DrawFlags & IODRAWF_AbsolutePos) && (inst->txicl_OrdNr & 0x0001))
-			{
-			if (x < FillXLeft)
-				{
-				// Dim area left of name column
-				DimRect(iop->iopd_RastPort,
-					Num, Denom,
-					x, y,
-					FillXLeft - 1, yBottom);
-				}
-			if (FillXRight < BmRight)
-				{
-				// Dim area right of name column
-				DimRect(iop->iopd_RastPort,
-					Num, Denom,
-					1 + FillXRight,
-                                        y,
-					BmRight,
-                                        yBottom);
-				}
-			}
 		}
 	else
 		{
@@ -698,23 +672,21 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
                         y,
 			BmRight,
                         yBottom);
-
-		if (CurrentPrefs.pref_TextWindowStriped &&
-			!(iop->iopd_DrawFlags & IODRAWF_AbsolutePos) && (inst->txicl_OrdNr & 0x0001))
-			{
-			DimRect(iop->iopd_RastPort,
-				Num, Denom,
-				x, y,
-                                xRight, yBottom);
-			}
 		}
 
 	if (inst->txicl_UserFlags & ICONOBJ_USERFLAGF_DrawHighlite)
 		{
 		// Highlight select area
+#if 0
 		HilightRect(iop->iopd_RastPort,
 			FillXLeft, y, FillXRight,
                         yBottom, &CurrentPrefs.pref_IconHighlightK);
+#else
+		DimRect(iop->iopd_RastPort,
+			NumHilight, DenomHilight,
+			FillXLeft, y,
+			FillXRight, yBottom);
+#endif
 		}
 
 	if (inst->txicl_type < 0)
@@ -865,7 +837,6 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_TextStyle, 	       TextIClassInst, txicl_TextStyle, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_Font, 		       TextIClassInst, txicl_Font, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_TTFont, 	       TextIClassInst, txicl_TTFont, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
-		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_Ordinal, 	       TextIClassInst, txicl_OrdNr, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_IconType, 	       TextIClassInst, txicl_WbIconType, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_TypeNode, 	       TextIClassInst, txicl_TypeNode, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_IconObject, 	       TextIClassInst, txicl_IconObject, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
@@ -1124,8 +1095,13 @@ static void DimRect(struct RastPort *rp,
 		return;
 		}
 
+#if 0
 	ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
 		xMin, yMin, Width - 1, yMax);
+#else
+	ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
+		xMin, yMin, xMax, yMax);
+#endif
 }
 
 
@@ -1430,6 +1406,8 @@ static void TextIcon_DrawText(struct TextIClassInst *inst, struct RastPort *rp,
 
 		d1(KPrintF("%s/%s/%ld: String=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->txicl_positions[PosIndex].tic_String));
 		}
+
+	d1(KPrintF("%s/%s/%ld: String=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->txicl_positions[PosIndex].tic_String));
 
 	Scalos_Text(rp, inst->txicl_positions[PosIndex].tic_String,
 		inst->txicl_positions[PosIndex].tic_Chars);

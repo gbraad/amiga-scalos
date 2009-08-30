@@ -871,7 +871,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 	struct Gadget *gList;
 	BOOL Success = FALSE;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct TextAttr tAttr;
@@ -888,7 +888,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 			iTop += inst->spli_SplashLogo->dti_BitMapHeader->bmh_Height + 2*5;
 			}
 
-		d2(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		ng.ng_Height = tAttr.ta_YSize + 4;
 		ng.ng_LeftEdge = 10;
@@ -907,7 +907,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			GBTDTA_SoftStyle, FSF_BOLD,
 			TAG_END);
-		d2(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+		d1(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
 		if (NULL == gad)
 			break;
 
@@ -927,7 +927,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);
-		d2(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+		d1(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
 		if (NULL == gad)
 			break;
 
@@ -945,7 +945,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 			GBTDTA_DrawMode, JAM1,
 			GBTDTA_Justification, GACT_STRINGCENTER,
 			TAG_END);
-		d2(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
+		d1(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
 		if (NULL == gad)
 			break;
 
@@ -954,7 +954,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 		Success = TRUE;
 		} while (0);
 
-	d2(kprintf("%s/%s/%ld: END  gList=%08lx  Success=%ld\n", __FILE__, __FUNC__, __LINE__, gList, Success));
+	d1(kprintf("%s/%s/%ld: END  gList=%08lx  Success=%ld\n", __FILE__, __FUNC__, __LINE__, gList, Success));
 
 	return Success ? gList : NULL;
 ///

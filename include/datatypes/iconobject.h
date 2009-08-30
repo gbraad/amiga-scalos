@@ -506,7 +506,6 @@ struct iopCloneIconObject
 #define TIDTA_Protection		DTA_Dummy+1163		/* (..G) */
 #define TIDTA_TextStyle			DTA_Dummy+1164		/* (ISG) ULONG text style for text icons, see SetSoftStyle() +jl+ 20011231 */
 #define TIDTA_Font			DTA_Dummy+1165		/* (ISG) (struct TextFont *) - font to render icon text in +jl+ 20010903 */
-#define TIDTA_Ordinal			DTA_Dummy+1166		/* (ISG) ULONG - ordinal number of entry +jl+ 20010906 */
 #define TIDTA_IconType			DTA_Dummy+1167		/* (ISG) ULONG - Workbench icon type +jl+ 20010906 */
 #define TIDTA_TTFont			DTA_Dummy+1168		/* (ISG) APTR - ttEngine font to render icon text in +jl+ 20030110 */
 #define TIDTA_WindowTask		DTA_Dummy+1169		/* (I..) struct ScaWindowTask * - parent WindowTask */

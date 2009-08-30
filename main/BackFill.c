@@ -12,6 +12,7 @@
 #include <proto/exec.h>
 #include <proto/graphics.h>
 #include "debug.h"
+#include <proto/scalosgfx.h>
 #include <proto/scalos.h>
 
 #include <defs.h>
@@ -29,6 +30,10 @@
 //----------------------------------------------------------------------------
 
 // local functions
+
+static void TextWindowStripeFill(struct RastPort *rp,
+	struct BackFillMsg *msg, struct internalScaWindowTask *iwt,
+	LONG XOffset, LONG YOffset);
 
 //----------------------------------------------------------------------------
 
@@ -111,6 +116,13 @@ SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct 
 		iwt->iwt_WinDrawInfo->dri_Pens[BACKGROUNDPEN],
 		iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset,
 		NULL);
+
+	if (!IsIwtViewByIcon(iwt) && CurrentPrefs.pref_TextWindowStriped)
+		{
+		TextWindowStripeFill(&rpCopy, &msgCopy, iwt,
+			iwt->iwt_WindowTask.wt_XOffset,
+			iwt->iwt_WindowTask.wt_YOffset);
+		}
 
 	d1(KPrintF("\n " "%s/%s/%ld: finished\n", __FILE__, __FUNC__, __LINE__));
 
@@ -229,4 +241,75 @@ void WindowBackFill(struct RastPort *rp,
 		}
 }
 
+
+static void TextWindowStripeFill(struct RastPort *rp,
+	struct BackFillMsg *msg, struct internalScaWindowTask *iwt,
+	LONG XOffset, LONG YOffset)
+{
+	struct ScaIconNode *in = iwt->iwt_WindowTask.wt_IconList;
+	ULONG Height;
+
+	if (in)
+		{
+		struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
+
+		Height = gg->Height;
+		}
+	else
+		{
+		Height = 15;
+		}
+
+	d1(kprintf("%s/%s/%ld: Height=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxY));
+
+	if (Height > 0)
+		{
+		LONG y;
+
+		for (y = msg->bfm_Rect.MinY; y <= msg->bfm_Rect.MaxY; y += Height)
+			{
+			ULONG Ordinal = (y + YOffset) / Height;
+
+			d1(kprintf("%s/%s/%ld: y=%ld  Ordinal=%ld\n", __FILE__, __FUNC__, __LINE__, y, Ordinal));
+
+			if (Ordinal & 1)
+				{
+				LONG yMin, yMax;
+				ULONG Depth;
+
+				yMin = Ordinal * Height - YOffset;
+				if (yMin < msg->bfm_Rect.MinY)
+					yMin = msg->bfm_Rect.MinY;
+				yMax = yMin + Height - 1;
+				if (yMax > msg->bfm_Rect.MaxY)
+					yMax = msg->bfm_Rect.MaxY;
+
+				Depth = GetBitMapAttr(rp->BitMap, BMA_DEPTH);
+
+				d1(kprintf("%s/%s/%ld: yMin=%ld  yMax=%ld  Depth=%ld\n", __FILE__, __FUNC__, __LINE__, yMin, yMax, Depth));
+
+				if (NULL == CyberGfxBase || Depth <= 8)
+					{
+					EraseRect(rp,
+						msg->bfm_Rect.MinX,
+						yMin,
+						msg->bfm_Rect.MaxX,
+						yMax);
+					}
+				else
+					{
+					static const struct ARGB Numerator = { (UBYTE) ~0, 70, 70, 70 };
+					static const struct ARGB Denominator =  { (UBYTE) ~0, 80, 80, 80 };
+
+					ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
+						msg->bfm_Rect.MinX,
+						yMin,
+						msg->bfm_Rect.MaxX,
+						yMax);
+					}
+				}
+			}
+		}
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+}
 

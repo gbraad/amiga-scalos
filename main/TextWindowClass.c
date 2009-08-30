@@ -1354,7 +1354,6 @@ void ReposTextIcons2(struct internalScaWindowTask *iwt)
 	WORD y;
 	WORD Width, BoundsWidth;
 	WORD Left;
-	ULONG Ord;
 	struct ScaIconNode *in;
 	BOOL NameFound = FALSE;
 
@@ -1372,7 +1371,7 @@ void ReposTextIcons2(struct internalScaWindowTask *iwt)
 			Left += WidthArray[Ndx];
 		}
 
-	for (Ord=0, y=0, in=iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ, Ord++)
+	for (y=0, in=iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 		{
 		struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 
@@ -1392,10 +1391,6 @@ void ReposTextIcons2(struct internalScaWindowTask *iwt)
 			}
 
 		y += gg->Height;
-
-		SetAttrs(in->in_Icon,
-			TIDTA_Ordinal, Ord,
-			TAG_END);
 		}
 
 	d1(KPrintF("%s/%s/%ld: Left=%ld  Width=%ld  BoundsWidth=%ld\n", __FILE__, __FUNC__, __LINE__, Left, Width, BoundsWidth));
