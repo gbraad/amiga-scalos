@@ -137,8 +137,6 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *msg);
 static void DimRect(struct RastPort *rp,
 	struct ARGB Numerator, struct ARGB Denominator,
 	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax);
-static void HilightRect(struct RastPort *rp, SHORT xMin, SHORT yMin,
-	SHORT xMax, SHORT yMax, const struct ARGB *K);
 static Object *CreateIconObject(struct TextIClassInst *inst, struct TagItem *tagList);
 static BOOL GetTextColumnX(Class *cl, Object *o, struct Rectangle *TextColumnRect);
 static void DrawMiniIcon(struct TextIClassInst *inst,
@@ -677,16 +675,10 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 	if (inst->txicl_UserFlags & ICONOBJ_USERFLAGF_DrawHighlite)
 		{
 		// Highlight select area
-#if 0
-		HilightRect(iop->iopd_RastPort,
-			FillXLeft, y, FillXRight,
-                        yBottom, &CurrentPrefs.pref_IconHighlightK);
-#else
 		DimRect(iop->iopd_RastPort,
 			NumHilight, DenomHilight,
 			FillXLeft, y,
 			FillXRight, yBottom);
-#endif
 		}
 
 	if (inst->txicl_type < 0)
@@ -1084,78 +1076,13 @@ static void DimRect(struct RastPort *rp,
 	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax)
 {
 	ULONG Depth;
-	ULONG Width;
-
-	Depth = GetBitMapAttr(rp->BitMap, BMA_DEPTH);
-	Width = GetBitMapAttr(rp->BitMap, BMA_WIDTH);
-
-	if (NULL == CyberGfxBase || Depth <= 8)
-		{
-		EraseRect(rp, xMin, yMin, xMax, yMax);
-		return;
-		}
-
-#if 0
-	ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
-		xMin, yMin, Width - 1, yMax);
-#else
-	ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
-		xMin, yMin, xMax, yMax);
-#endif
-}
-
-
-static void HilightRect(struct RastPort *rp, SHORT xMin, SHORT yMin,
-	SHORT xMax, SHORT yMax, const struct ARGB *K)
-{
-	struct ARGB *PixelArray;
-	ULONG Depth;
-	ULONG Width;
-	ULONG Height = yMax - yMin + 1;
-	size_t Size;
 
 	Depth = GetBitMapAttr(rp->BitMap, BMA_DEPTH);
 
-	if (NULL == CyberGfxBase || Depth <= 8)
+	if (NULL != CyberGfxBase && Depth > 8)
 		{
-		EraseRect(rp, xMin, yMin, xMax, yMax);
-		return;
-		}
-
-	Width = xMax - xMin + 1;
-//	Width = GetBitMapAttr(rp->BitMap, BMA_WIDTH);
-
-	Size = Width * Height;
-
-	EraseRect(rp, xMin, yMin, xMin + Width - 1, yMax);
-
-	PixelArray = ScalosAllocVecPooled(Size * sizeof(struct ARGB));
-	if (PixelArray)
-		{
-		ULONG paMod = Width * sizeof(struct ARGB);
-		struct ARGB *pI;
-		ULONG n;
-
-		ReadPixelArray(PixelArray, 0, 0, paMod,
-			rp,
-			xMin, yMin,
-			Width, Height,
-			RECTFMT_ARGB);
-
-		for (pI=PixelArray, n=0; n<Size; n++, pI++)
-			{
-			pI->Red   = min(0xff, pI->Red + K->Red);
-			pI->Green = min(0xff, pI->Green + K->Green);
-			pI->Blue  = min(0xff, pI->Blue + K->Blue);
-			}
-
-		WritePixelArray(PixelArray, 0, 0, paMod,
-			rp,
-			xMin, yMin,
-			Width, Height,
-			RECTFMT_ARGB);
-
-		ScalosFreeVecPooled(PixelArray);
+		ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
+			xMin, yMin, xMax, yMax);
 		}
 }
 

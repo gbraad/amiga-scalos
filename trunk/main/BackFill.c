@@ -257,10 +257,11 @@ static void TextWindowStripeFill(struct RastPort *rp,
 		}
 	else
 		{
-		Height = 15;
+		Height = iwt->iwt_TextWindowLineHeight;
 		}
 
-	d1(kprintf("%s/%s/%ld: Height=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxY));
+	d2(kprintf("%s/%s/%ld: Height=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxY));
+	d2(kprintf("%s/%s/%ld: bfm_OffsetX=%ld  bfm_OffsetY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_OffsetX, msg->bfm_OffsetY));
 
 	if (Height > 0)
 		{
@@ -268,7 +269,7 @@ static void TextWindowStripeFill(struct RastPort *rp,
 
 		for (y = msg->bfm_Rect.MinY; y <= msg->bfm_Rect.MaxY; y += Height)
 			{
-			ULONG Ordinal = (y + YOffset) / Height;
+			ULONG Ordinal = (y + YOffset - iwt->iwt_InnerTop) / Height;
 
 			d1(kprintf("%s/%s/%ld: y=%ld  Ordinal=%ld\n", __FILE__, __FUNC__, __LINE__, y, Ordinal));
 
@@ -277,7 +278,7 @@ static void TextWindowStripeFill(struct RastPort *rp,
 				LONG yMin, yMax;
 				ULONG Depth;
 
-				yMin = Ordinal * Height - YOffset;
+				yMin = Ordinal * Height - YOffset + iwt->iwt_InnerTop;
 				if (yMin < msg->bfm_Rect.MinY)
 					yMin = msg->bfm_Rect.MinY;
 				yMax = yMin + Height - 1;
