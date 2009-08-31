@@ -419,6 +419,8 @@ struct internalScaWindowTask
 	LONG	iwt_BottomScrollerScale;		// shift factor for bottom scroller Top/Visible/Total values
 	LONG	iwt_SideScrollerScale;			// shift factor for bottom scroller Top/Visible/Total values
 
+	UWORD   iwt_TextWindowLineHeight;		// Height of text window line
+
 	struct TTFontFamily iwt_IconTTFont;		//Current icon TTengine Font
 
 	struct	Hook iwt_ColumnWidthChangeHook;		//This hook gets called when a text icon layout causes iwt_WidthArray to change

@@ -705,6 +705,9 @@ static ULONG TextWindowClass_New(Class *cl, Object *o, Msg msg)
 
 		iwt->iwt_TextWindowGadgetHeight = Height + 2;
 
+		Scalos_SetFont(&rp, iwt->iwt_IconFont, &iwt->iwt_IconTTFont);
+		iwt->iwt_TextWindowLineHeight = Scalos_GetFontHeight(&rp) + 1;
+
 		Scalos_DoneRastPort(&rp);
 
 		iwt->iwt_IconFont = TextWindowFont;
