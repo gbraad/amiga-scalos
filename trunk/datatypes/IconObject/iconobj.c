@@ -2250,7 +2250,7 @@ static void CalculateTextDimensions(struct InstanceData *inst, struct ExtGadget 
                                 iotl->iotl_TextExtent.te_Extent.MaxX));
 
 			if (inst->iobj_SelectedTextRectangle)
-				gg->BoundsWidth = max(gg->BoundsWidth, (2 * inst->iobj_TextRectBorderX + inst->iobj_TextExtent.te_Width));
+				gg->BoundsWidth = max(gg->BoundsWidth, (2 * inst->iobj_TextRectBorderX + inst->iobj_TextExtent.te_Width + 1));
 			else
 				gg->BoundsWidth = max(gg->BoundsWidth, inst->iobj_TextExtent.te_Width);
 
