@@ -260,8 +260,8 @@ static void TextWindowStripeFill(struct RastPort *rp,
 		Height = iwt->iwt_TextWindowLineHeight;
 		}
 
-	d2(kprintf("%s/%s/%ld: Height=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxY));
-	d2(kprintf("%s/%s/%ld: bfm_OffsetX=%ld  bfm_OffsetY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_OffsetX, msg->bfm_OffsetY));
+	d1(kprintf("%s/%s/%ld: Height=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxY));
+	d1(kprintf("%s/%s/%ld: bfm_OffsetX=%ld  bfm_OffsetY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_OffsetX, msg->bfm_OffsetY));
 
 	if (Height > 0)
 		{
