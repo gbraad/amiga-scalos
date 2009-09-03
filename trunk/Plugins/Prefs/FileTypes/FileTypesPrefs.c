@@ -7394,7 +7394,7 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 
 		if (FINDDIR_Next == dir)
 			{
-			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound));
+			d1(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound));
 
 			if (inst->fpb_CurrentFound != (struct FoundNode *) &inst->fpb_FoundList.lh_Tail)
 				inst->fpb_CurrentFound = (struct FoundNode *) inst->fpb_CurrentFound->fdn_Node.ln_Succ;
@@ -7404,11 +7404,11 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 			else
 				tn = NULL;
 
-			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
+			d1(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
 			}
 		else if (FINDDIR_Prev == dir)
 			{
-			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound));
+			d1(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound));
 
 			if (inst->fpb_CurrentFound != (struct FoundNode *) &inst->fpb_FoundList.lh_Head)
 				inst->fpb_CurrentFound = (struct FoundNode *) inst->fpb_CurrentFound->fdn_Node.ln_Pred;
@@ -7418,13 +7418,13 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 			else
 				tn = NULL;
 
-			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
+			d1(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
 			}
 		else
 			{
 			ULONG dosearch = TRUE;
 
-			d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+			d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
 
 			CleanupFoundNodes(inst);
 
@@ -7437,17 +7437,17 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 
 			if (IsListEmpty(&inst->fpb_FoundList))
 				{
-				d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+				d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
 				tn = NULL;
 				inst->fpb_CurrentFound = (struct FoundNode *) &inst->fpb_FoundList.lh_Tail;
 				}
 			else
 				{
-				d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+				d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
 				inst->fpb_CurrentFound = (struct FoundNode *) inst->fpb_FoundList.lh_Head;
 				tn = inst->fpb_CurrentFound->fdn_TreeNode;
 				}
-			d2(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
+			d1(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
 			}
 
 		if (NULL == tn)
@@ -7549,7 +7549,7 @@ static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, struct MU
 {
 	struct FoundNode *fdn;
 
-	d2(kprintf(__FILE__ "/%s/%ld: <%s>\n", __FUNC__, __LINE__, tn->tn_Name));
+	d1(kprintf(__FILE__ "/%s/%ld: <%s>\n", __FUNC__, __LINE__, tn->tn_Name));
 
 	fdn = malloc(sizeof(struct FoundNode));
 	if (fdn)
@@ -7569,7 +7569,7 @@ static void CleanupFoundNodes(struct FileTypesPrefsInst *inst)
 {
 	struct FoundNode *fdn;
 
-	d2(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+	d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
 
 	while ( (fdn = (struct FoundNode *) RemHead(&inst->fpb_FoundList)) )
 		{
