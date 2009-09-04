@@ -1429,7 +1429,7 @@ void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable)
 
 	GetAttr(IDTA_Type, in->in_Icon, &IconType);
 
-	d2(kprintf("%s/%s/%ld: Name=<%s>  IconType=%ld  in_SupportFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, GetIconName(in), IconType, in->in_SupportFlags));
+	d1(kprintf("%s/%s/%ld: Name=<%s>  IconType=%ld  in_SupportFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, GetIconName(in), IconType, in->in_SupportFlags));
 
 	if (WBGARBAGE == IconType)
 		{
@@ -1456,7 +1456,7 @@ void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable)
 		in->in_SupportFlags &= ~(INF_SupportsLeaveOut | INF_SupportsPutAway);
 		}
 
-	d2(kprintf("%s/%s/%ld: in=%08lx  <%s>  isDiskWritable=%ld  SupportFlags=%08lx\n", \
+	d1(kprintf("%s/%s/%ld: in=%08lx  <%s>  isDiskWritable=%ld  SupportFlags=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, in, in->in_Name, isDiskWritable, in->in_SupportFlags));
 }
 
