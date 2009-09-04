@@ -228,7 +228,7 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 		stccpy(rild.rild_Comment, fib->fib_Comment, sizeof(rild.rild_Comment));
 		rild.rild_Protection = fib->fib_Protection;
 		rild.rild_DateStamp = fib->fib_Date;
-		rild.rild_DiskWriteProtected = !VolumeIsWritable;
+		rild.rild_DiskWriteProtected = iwt->iwt_ReadOnly;
 		rild.rild_CheckOverlap = TRUE;
 
 		if (rild.rild_SoloIcon)
@@ -1429,6 +1429,8 @@ void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable)
 
 	GetAttr(IDTA_Type, in->in_Icon, &IconType);
 
+	d2(kprintf("%s/%s/%ld: Name=<%s>  IconType=%ld  in_SupportFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, GetIconName(in), IconType, in->in_SupportFlags));
+
 	if (WBGARBAGE == IconType)
 		{
 		in->in_SupportFlags |= INF_SupportsEmptyTrash;
@@ -1438,7 +1440,8 @@ void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable)
 		{
 		in->in_SupportFlags &= ~(INF_SupportsDelete | INF_SupportsRename | 
 			INF_SupportsSnapshot | INF_SupportsUnSnapshot | 
-			INF_SupportsPutAway | INF_SupportsLeaveOut );
+			INF_SupportsPutAway | INF_SupportsLeaveOut |
+			INF_SupportsEmptyTrash );
 		}
 	if (in->in_Flags & INF_DefaultIcon)
 		{
@@ -1453,7 +1456,7 @@ void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable)
 		in->in_SupportFlags &= ~(INF_SupportsLeaveOut | INF_SupportsPutAway);
 		}
 
-	d1(kprintf("%s/%s/%ld: in=%08lx  <%s>  isDiskWritable=%ld  SupportFlags=%08lx\n", \
+	d2(kprintf("%s/%s/%ld: in=%08lx  <%s>  isDiskWritable=%ld  SupportFlags=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, in, in->in_Name, isDiskWritable, in->in_SupportFlags));
 }
 

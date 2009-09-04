@@ -2701,6 +2701,9 @@ static ULONG IconWindowClass_GetIconFileType(Class *cl, Object *o, Msg msg)
 
 		case WBGARBAGE:
 			mft->mft_IconNode->in_FileType = (struct TypeNode *) WBGARBAGE;
+			SetAttrs(mft->mft_IconNode->in_Icon,
+				IDTA_Type, WBGARBAGE,
+				TAG_END);
 			break;
 
 		case WBDISK:
@@ -2732,6 +2735,10 @@ static ULONG IconWindowClass_GetIconFileType(Class *cl, Object *o, Msg msg)
 		if (newLock)
 			UnLock(newLock);
 		}
+
+	d2(kprintf("%s/%s/%ld: mft->mft_IconNode=<%s>  IconType=%ld  iwt_ReadOnly=%ld\n", __FILE__, __FUNC__, __LINE__, GetIconName(mft->mft_IconNode), (ULONG) mft->mft_IconNode->in_FileType, iwt->iwt_ReadOnly));
+
+	SetIconSupportsFlags(mft->mft_IconNode, !iwt->iwt_ReadOnly);
 
 	return 0;
 }
