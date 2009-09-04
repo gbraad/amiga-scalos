@@ -2137,16 +2137,24 @@ static APTR AddPenFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PalettePrefsInst *inst = (struct PalettePrefsInst *) hook->h_Data;
 	ULONG *rgb;
+	struct PensListEntry sple;
+
+	sple.sple_Index = 0;
 
 	get(inst->ppb_Objects[OBJNDX_ColorAdjust], MUIA_Coloradjust_RGB, (APTR) &rgb);
+	get(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIA_NList_Entries, &sple.sple_Index );
 
 	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: rgb=%08lx  %08lx  %08lx\n", __LINE__, rgb[0], rgb[1], rgb[2]));
+
+	sple.sple_Red   = rgb[0];
+	sple.sple_Green = rgb[1];
+	sple.sple_Blue  = rgb[2];
 
 	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: \n", __LINE__));
 	SetChangedFlag(inst, TRUE);
 
 	DoMethod(inst->ppb_Objects[OBJNDX_AllocatedPensList],
-		MUIM_NList_InsertSingle, rgb, MUIV_NList_Insert_Sorted);
+		MUIM_NList_InsertSingle, &sple, MUIV_NList_Insert_Bottom);
 	set(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIA_NList_Active, MUIV_NList_Active_Bottom);
 
 	UpdatePalettePenCount(inst);
