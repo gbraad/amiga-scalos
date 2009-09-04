@@ -2130,6 +2130,8 @@ Additions/changes:
 
  40.11	20071003	jl	- Improvement: Automatically use Zune instead of MUI if present. 
 				  Fixes crashes with prefs pugins with AFA OS installed.
+				- Bugfix: new allocated pens are now correctly added
+				  at bottom of list.
 	20070918	jl	- Improvement: thumbnail menu image is now optionally
 				  loaded from "THEME:prefs/plugins/palette".
  40.10  20060815	jl	- Improvement: Added two new pens for filling of
