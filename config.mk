@@ -11,6 +11,18 @@ ifndef MACHINE
 	MACHINE := $(shell gcc $(CFLAGS) -dumpmachine)
 endif
 
+ifeq ($(MAKECMDGOALS),install)
+	SVNVERSION := "0000"
+endif
+ifeq ($(MAKECMDGOALS),clean)
+	SVNVERSION := "0000"
+endif
+ifndef SVNVERSION
+	SVNVERSION := $(shell svnversion -n)
+endif
+
+##############################################################################
+
 ifeq ($(MACHINE), ppc-morphos)
 
 ##############################################################################
@@ -30,16 +42,12 @@ RANLIB		=	ppc-morphos-ranlib
 STRIP		=	ppc-morphos-strip
 DUMP		=	ppc-morphos-objdump
 
-#ifndef SVNVERSION
-	SVNVERSION := $(shell svnversion -n)
-#endif
-
 CODETYPE	=	PPC
 
 WARNINGS	=	-Wall -Wno-parentheses -Wunused -Wuninitialized -Winline 
 
 ifeq ($(GCCVERSION), 4.0.4)
-WARNINGS	+=	-Wno-pointer-sign
+	WARNINGS	+=	-Wno-pointer-sign
 endif
 
 CPU		=	-mcpu=604e
@@ -86,8 +94,6 @@ AR		=	ppc-amigaos-ar
 RANLIB		=	ppc-amigaos-ranlib
 STRIP		=	ppc-amigaos-strip
 DUMP		=	ppc-amigaos-objdump
-
-SVNVERSION	=	$(shell svnversion -n .)
 
 CODETYPE	=	PPC
 
