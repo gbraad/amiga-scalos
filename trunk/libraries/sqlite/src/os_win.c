@@ -11,8 +11,6 @@
 ******************************************************************************
 **
 ** This file contains code that is specific to windows.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 #if SQLITE_OS_WIN               /* This file is used for windows only */
@@ -309,8 +307,8 @@ struct tm *__cdecl localtime(const time_t *t)
   sqlite3_int64 t64;
   t64 = *t;
   t64 = (t64 + 11644473600)*10000000;
-  uTm.dwLowDateTime = t64 & 0xFFFFFFFF;
-  uTm.dwHighDateTime= t64 >> 32;
+  uTm.dwLowDateTime = (DWORD)(t64 & 0xFFFFFFFF);
+  uTm.dwHighDateTime= (DWORD)(t64 >> 32);
   FileTimeToLocalFileTime(&uTm,&lTm);
   FileTimeToSystemTime(&lTm,&pTm);
   y.tm_year = pTm.wYear - 1900;
@@ -330,7 +328,7 @@ struct tm *__cdecl localtime(const time_t *t)
 #define UnlockFile(a,b,c,d,e)     winceUnlockFile(&a, b, c, d, e)
 #define LockFileEx(a,b,c,d,e,f)   winceLockFileEx(&a, b, c, d, e, f)
 
-#define HANDLE_TO_WINFILE(a) (winFile*)&((char*)a)[-offsetof(winFile,h)]
+#define HANDLE_TO_WINFILE(a) (winFile*)&((char*)a)[-(int)offsetof(winFile,h)]
 
 /*
 ** Acquire a lock on the handle h
@@ -469,12 +467,15 @@ static BOOL winceLockFile(
   winFile *pFile = HANDLE_TO_WINFILE(phFile);
   BOOL bReturn = FALSE;
 
+  UNUSED_PARAMETER(dwFileOffsetHigh);
+  UNUSED_PARAMETER(nNumberOfBytesToLockHigh);
+
   if (!pFile->hMutex) return TRUE;
   winceMutexAcquire(pFile->hMutex);
 
   /* Wanting an exclusive lock? */
-  if (dwFileOffsetLow == SHARED_FIRST
-       && nNumberOfBytesToLockLow == SHARED_SIZE){
+  if (dwFileOffsetLow == (DWORD)SHARED_FIRST
+       && nNumberOfBytesToLockLow == (DWORD)SHARED_SIZE){
     if (pFile->shared->nReaders == 0 && pFile->shared->bExclusive == 0){
        pFile->shared->bExclusive = TRUE;
        pFile->local.bExclusive = TRUE;
@@ -483,7 +484,7 @@ static BOOL winceLockFile(
   }
 
   /* Want a read-only lock? */
-  else if (dwFileOffsetLow == SHARED_FIRST &&
+  else if (dwFileOffsetLow == (DWORD)SHARED_FIRST &&
            nNumberOfBytesToLockLow == 1){
     if (pFile->shared->bExclusive == 0){
       pFile->local.nReaders ++;
@@ -495,7 +496,7 @@ static BOOL winceLockFile(
   }
 
   /* Want a pending lock? */
-  else if (dwFileOffsetLow == PENDING_BYTE && nNumberOfBytesToLockLow == 1){
+  else if (dwFileOffsetLow == (DWORD)PENDING_BYTE && nNumberOfBytesToLockLow == 1){
     /* If no pending lock has been acquired, then acquire it */
     if (pFile->shared->bPending == 0) {
       pFile->shared->bPending = TRUE;
@@ -505,7 +506,7 @@ static BOOL winceLockFile(
   }
 
   /* Want a reserved lock? */
-  else if (dwFileOffsetLow == RESERVED_BYTE && nNumberOfBytesToLockLow == 1){
+  else if (dwFileOffsetLow == (DWORD)RESERVED_BYTE && nNumberOfBytesToLockLow == 1){
     if (pFile->shared->bReserved == 0) {
       pFile->shared->bReserved = TRUE;
       pFile->local.bReserved = TRUE;
@@ -530,14 +531,17 @@ static BOOL winceUnlockFile(
   winFile *pFile = HANDLE_TO_WINFILE(phFile);
   BOOL bReturn = FALSE;
 
+  UNUSED_PARAMETER(dwFileOffsetHigh);
+  UNUSED_PARAMETER(nNumberOfBytesToUnlockHigh);
+
   if (!pFile->hMutex) return TRUE;
   winceMutexAcquire(pFile->hMutex);
 
   /* Releasing a reader lock or an exclusive lock */
-  if (dwFileOffsetLow >= SHARED_FIRST &&
-       dwFileOffsetLow < SHARED_FIRST + SHARED_SIZE){
+  if (dwFileOffsetLow == (DWORD)SHARED_FIRST){
     /* Did we have an exclusive lock? */
     if (pFile->local.bExclusive){
+      assert(nNumberOfBytesToUnlockLow == (DWORD)SHARED_SIZE);
       pFile->local.bExclusive = FALSE;
       pFile->shared->bExclusive = FALSE;
       bReturn = TRUE;
@@ -545,6 +549,7 @@ static BOOL winceUnlockFile(
 
     /* Did we just have a reader lock? */
     else if (pFile->local.nReaders){
+      assert(nNumberOfBytesToUnlockLow == (DWORD)SHARED_SIZE || nNumberOfBytesToUnlockLow == 1);
       pFile->local.nReaders --;
       if (pFile->local.nReaders == 0)
       {
@@ -555,7 +560,7 @@ static BOOL winceUnlockFile(
   }
 
   /* Releasing a pending lock */
-  else if (dwFileOffsetLow == PENDING_BYTE && nNumberOfBytesToUnlockLow == 1){
+  else if (dwFileOffsetLow == (DWORD)PENDING_BYTE && nNumberOfBytesToUnlockLow == 1){
     if (pFile->local.bPending){
       pFile->local.bPending = FALSE;
       pFile->shared->bPending = FALSE;
@@ -563,7 +568,7 @@ static BOOL winceUnlockFile(
     }
   }
   /* Releasing a reserved lock */
-  else if (dwFileOffsetLow == RESERVED_BYTE && nNumberOfBytesToUnlockLow == 1){
+  else if (dwFileOffsetLow == (DWORD)RESERVED_BYTE && nNumberOfBytesToUnlockLow == 1){
     if (pFile->local.bReserved) {
       pFile->local.bReserved = FALSE;
       pFile->shared->bReserved = FALSE;
@@ -586,11 +591,14 @@ static BOOL winceLockFileEx(
   DWORD nNumberOfBytesToLockHigh,
   LPOVERLAPPED lpOverlapped
 ){
+  UNUSED_PARAMETER(dwReserved);
+  UNUSED_PARAMETER(nNumberOfBytesToLockHigh);
+
   /* If the caller wants a shared read lock, forward this call
   ** to winceLockFile */
-  if (lpOverlapped->Offset == SHARED_FIRST &&
+  if (lpOverlapped->Offset == (DWORD)SHARED_FIRST &&
       dwFlags == 1 &&
-      nNumberOfBytesToLockLow == SHARED_SIZE){
+      nNumberOfBytesToLockLow == (DWORD)SHARED_SIZE){
     return winceLockFile(phFile, SHARED_FIRST, 0, 1, 0);
   }
   return FALSE;
@@ -1592,9 +1600,15 @@ static int getSectorSize(
     const char *zRelative     /* UTF-8 file name */
 ){
   DWORD bytesPerSector = SQLITE_DEFAULT_SECTOR_SIZE;
+  /* GetDiskFreeSpace is not supported under WINCE */
+#if SQLITE_OS_WINCE
+  UNUSED_PARAMETER(pVfs);
+  UNUSED_PARAMETER(zRelative);
+#else
   char zFullpath[MAX_PATH+1];
   int rc;
-  DWORD dwRet = 0, dwDummy;
+  DWORD dwRet = 0;
+  DWORD dwDummy;
 
   /*
   ** We need to get the full path name of the file
@@ -1620,7 +1634,6 @@ static int getSectorSize(
                                   &bytesPerSector,
                                   &dwDummy,
                                   &dwDummy);
-#if SQLITE_OS_WINCE==0
       }else{
         /* trim path to just drive reference */
         CHAR *p = (CHAR *)zConverted;
@@ -1635,7 +1648,6 @@ static int getSectorSize(
                                   &bytesPerSector,
                                   &dwDummy,
                                   &dwDummy);
-#endif
       }
       free(zConverted);
     }
@@ -1643,6 +1655,7 @@ static int getSectorSize(
       bytesPerSector = SQLITE_DEFAULT_SECTOR_SIZE;
     }
   }
+#endif
   return (int) bytesPerSector; 
 }
 
@@ -1869,6 +1882,7 @@ int sqlite3_os_init(void){
     winCurrentTime,    /* xCurrentTime */
     winGetLastError    /* xGetLastError */
   };
+
   sqlite3_vfs_register(&winVfs, 1);
   return SQLITE_OK; 
 }
