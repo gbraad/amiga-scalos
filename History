@@ -10,6 +10,7 @@ Additions/changes:
 
 41.7    20090911	jl	- Bugfix: popupmenu.library: zoom effect didn't work correctly on
 				  MorphOS if "Enhanced Display" was enabled.
+			jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.18.
 	20090823	jl	- Improvement: added new FileTrans subdirectory to default theme.
 	20090812	jmc	- Upgraded libpng 1.2.37 to 1.2.39 (SAS/C and MOS).
 	20090811        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.17.

@@ -1409,13 +1409,14 @@ static int btreeInitPage(MemPage *pPage){
     while( pc>0 ){
       u16 next, size;
       if( pc<iCellFirst || pc>iCellLast ){
-        /* Free block is off the page */
+        /* Start of free block is off the page */
         return SQLITE_CORRUPT_BKPT; 
       }
       next = get2byte(&data[pc]);
       size = get2byte(&data[pc+2]);
-      if( next>0 && next<=pc+size+3 ){
-        /* Free blocks must be in ascending order */
+      if( (next>0 && next<=pc+size+3) || pc+size>usableSize ){
+        /* Free blocks must be in ascending order. And the last byte of
+	** the free-block must lie on the database page.  */
         return SQLITE_CORRUPT_BKPT; 
       }
       nFree = nFree + size;
@@ -1693,7 +1694,7 @@ int sqlite3BtreeOpen(
   ** existing BtShared object that we can share with
   */
   if( isMemdb==0 && zFilename && zFilename[0] ){
-    if( sqlite3GlobalConfig.sharedCacheEnabled ){
+    if( vfsFlags & SQLITE_OPEN_SHAREDCACHE ){
       int nFullPathname = pVfs->mxPathname+1;
       char *zFullPathname = sqlite3Malloc(nFullPathname);
       sqlite3_mutex *mutexShared;
@@ -4345,9 +4346,12 @@ int sqlite3BtreeMovetoUnpacked(
             goto moveto_finish;
           }
           rc = accessPayload(pCur, 0, nCell, (unsigned char*)pCellKey, 0);
+          if( rc ){
+            sqlite3_free(pCellKey);
+            goto moveto_finish;
+          }
           c = sqlite3VdbeRecordCompare(nCell, pCellKey, pIdxKey);
           sqlite3_free(pCellKey);
-          if( rc ) goto moveto_finish;
         }
       }
       if( c==0 ){
@@ -6416,8 +6420,10 @@ static int balance(BtCursor *pCur){
 ** a positive value if pCur points at an etry that is larger than 
 ** (pKey, nKey)). 
 **
-** If the seekResult parameter is 0, then cursor pCur may point to any 
-** entry or to no entry at all. In this case this function has to seek
+** If the seekResult parameter is non-zero, then the caller guarantees that
+** cursor pCur is pointing at the existing copy of a row that is to be
+** overwritten.  If the seekResult parameter is 0, then cursor pCur may
+** point to any entry or to no entry at all and so this function has to seek
 ** the cursor before the new key can be inserted.
 */
 int sqlite3BtreeInsert(
@@ -6429,7 +6435,7 @@ int sqlite3BtreeInsert(
   int seekResult                 /* Result of prior MovetoUnpacked() call */
 ){
   int rc;
-  int loc = seekResult;
+  int loc = seekResult;          /* -1: before desired location  +1: after */
   int szNew;
   int idx;
   MemPage *pPage;

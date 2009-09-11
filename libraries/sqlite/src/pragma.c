@@ -190,6 +190,7 @@ static int flagPragma(Parse *pParse, const char *zLeft, const char *zRight){
     /* TODO: Maybe it shouldn't be possible to change the ReadUncommitted
     ** flag if there are any active statements. */
     { "read_uncommitted",         SQLITE_ReadUncommitted },
+    { "recursive_triggers",       SQLITE_RecTriggers },
   };
   int i;
   const struct sPragmaType *p;
