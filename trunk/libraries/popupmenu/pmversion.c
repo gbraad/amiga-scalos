@@ -25,4 +25,4 @@
 #define __CPU__ "000"
 #endif
 
-char _LibID[] = "$VER: popupmenu.library-" __CPU__ " 10.10.181 (22.11.2006) ©1996-2006 Henrik Isaksson";
+char _LibID[] = "$VER: popupmenu.library-" __CPU__ " 10.10.182 (11.09.2009) ©1996-2009 Henrik Isaksson";

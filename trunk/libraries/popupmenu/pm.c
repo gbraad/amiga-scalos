@@ -446,10 +446,12 @@ BOOL PM_OpenPopupWindow(struct PM_Window *a)
         	}
 	}
 
-	if(a->Wnd) {
+	if(a->Wnd)
+		{
 	        PM_RenderMenu(a, a->MenuDisabled, FALSE);
 
-		if(a->te.BMap) {
+		if(a->te.BMap)
+			{
 			// If there is a TE (transition effects) bitmap.
 
 			// Currently, only an "animation" effect is implemented.
@@ -469,29 +471,38 @@ BOOL PM_OpenPopupWindow(struct PM_Window *a)
 			dw = w/10;
 			dh = h/10;
 
-			for(i=1;i<11;i++) {
-				//Forbid();
-				BltBitMap(a->te.BMap, 0, 0, a->Wnd->WScreen->RastPort.BitMap, a->Wnd->LeftEdge, a->Wnd->TopEdge, dw*i, dh*i, 0xc0, 0xff, 0L);
+			for(i=1;i<10;i++)
+				{
+				BltBitMapRastPort(a->te.BMap,
+					0, 0,
+					a->Wnd->RPort,
+					0, 0,
+					dw*i, dh*i,
+					0xc0);
 				WaitBlit();
-				//Permit();
 				WaitTOF();
-			}
+				}
 
-			//Forbid();
-			BltBitMap(a->te.BMap, 0, 0, a->Wnd->WScreen->RastPort.BitMap, a->Wnd->LeftEdge, a->Wnd->TopEdge, w, h, 0xc0, 0xff, 0L);
+			BltBitMapRastPort(a->te.BMap,
+				0, 0,
+				a->Wnd->RPort,
+				0, 0,
+				w, h,
+				0xc0);
 			WaitBlit();
-			//Permit();
-		}
+			}
 
 		// Handle shadows
-		if(shadows) {
-			if(!(a->p->PullDown && a->FirstTime)) {
+		if(shadows)
+			{
+			if(!(a->p->PullDown && a->FirstTime))
+				{
 				PM_HandleShadow(a);
+				}
 			}
-		}
 
         	return TRUE;
-	}
+		}
 	return FALSE;
 }
 
