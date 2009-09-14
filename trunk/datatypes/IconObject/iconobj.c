@@ -3721,7 +3721,7 @@ static void DrawIconTextRect(Class *cl, Object *o, struct RastPort *rp, WORD x, 
 			//  \     /             .
 			//   6---5              TextBottom
 
-			AreaMove(&myRp, TextLeft + inst->iobj_TextRectRadius, TextTop);	// 1
+			AreaMove(&myRp, TextLeft + Radius, TextTop);			// 1
 
 			AreaDraw(&myRp, TextRight - Radius,	TextTop);       	// -> 2
 			AreaDraw(&myRp, TextRight, 		TextTop + Radius);      // -> 3
