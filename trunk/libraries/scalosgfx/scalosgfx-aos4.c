@@ -130,6 +130,12 @@ static APTR functable[] =
 	LIBScalosGfxBlitARGBAlphaTags,
 	LIBScalosGfxBlitIcon,
 	LIBScalosGfxBlitIconTags,
+	LIBScalosGfxDrawGradient,
+	LIBScalosGfxDrawGradientRastPort,
+	LIBScalosGfxDrawLine,
+	LIBScalosGfxDrawLineRastPort,
+	LIBScalosGfxDrawEllipse,
+	LIBScalosGfxDrawEllipseRastPort,
 	(APTR) -1
 	};
 

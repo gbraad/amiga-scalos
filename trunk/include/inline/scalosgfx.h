@@ -149,4 +149,28 @@
 	({ULONG _tags[] = {tags}; ScalosGfxBlitIcon((rpBackground), (rpIcon), (left), (top), (width), (height), (struct TagItem *) _tags);})
 #endif
 
+#define ScalosGfxDrawGradient(dest, left, top, width, height, start, stop, gradType) \
+	LP8(0xa2, BOOL, ScalosGfxDrawGradient, struct ARGBHeader *, dest, a0, LONG, left, d0, LONG, top, d1, LONG, width, d2, LONG, height, d3, struct gfxARGB *, start, a1, struct gfxARGB *, stop, a2, ULONG, gradType, d4, \
+	, SCALOSGFX_BASE_NAME)
+
+#define ScalosGfxDrawGradientRastPort(rp, left, top, width, height, start, stop, gradType) \
+	LP8(0xa8, BOOL, ScalosGfxDrawGradientRastPort, struct RastPort *, rp, a0, LONG, left, d0, LONG, top, d1, LONG, width, d2, LONG, height, d3, struct gfxARGB *, start, a1, struct gfxARGB *, stop, a2, ULONG, gradType, d4, \
+	, SCALOSGFX_BASE_NAME)
+
+#define ScalosGfxDrawLine(dest, fromX, fromY, toX, toY, lineColor) \
+	LP6NR(0xae, ScalosGfxDrawLine, struct ARGBHeader *, dest, a0, LONG, fromX, d0, LONG, fromY, d1, LONG, toX, d2, LONG, toY, d3, const struct gfxARGB *, lineColor, a1, \
+	, SCALOSGFX_BASE_NAME)
+
+#define ScalosGfxDrawLineRastPort(rp, fromX, fromY, toX, toY, lineColor) \
+	LP6NR(0xb4, ScalosGfxDrawLineRastPort, struct RastPort *, rp, a0, LONG, fromX, d0, LONG, fromY, d1, LONG, toX, d2, LONG, toY, d3, const struct gfxARGB *, lineColor, a1, \
+	, SCALOSGFX_BASE_NAME)
+
+#define ScalosGfxDrawEllipse(dest, xCenter, yCenter, radiusX, radiusy, segment, color1, color2) \
+	LP8NR(0xba, ScalosGfxDrawEllipse, struct ARGBHeader *, dest, a0, LONG, xCenter, d0, LONG, yCenter, d1, LONG, radiusX, d2, LONG, radiusy, d3, LONG, segment, d4, const struct gfxARGB *, color1, a1, const struct gfxARGB *, color2, a2, \
+	, SCALOSGFX_BASE_NAME)
+
+#define ScalosGfxDrawEllipseRastPort(rp, xCenter, yCenter, radiusX, radiusy, segment, color1, color2) \
+	LP8NR(0xc0, ScalosGfxDrawEllipseRastPort, struct RastPort *, rp, a0, LONG, xCenter, d0, LONG, yCenter, d1, LONG, radiusX, d2, LONG, radiusy, d3, LONG, segment, d4, const struct gfxARGB *, color1, a1, const struct gfxARGB *, color2, a2, \
+	, SCALOSGFX_BASE_NAME)
+
 #endif /*  _INLINE_SCALOSGFX_H  */

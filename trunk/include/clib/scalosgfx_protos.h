@@ -3,11 +3,11 @@
 
 
 /*
-**	$VER: scalosgfx_protos.h 2324 (30.07.2007)
+**	$VER: scalosgfx_protos.h 5.0 (13.09.2009)
 **
 **	C prototypes. For use with 32 bit integers only.
 **
-**	Copyright © 2007 ©2006 The Scalos Team
+**	Copyright © 2009 ©2006 The Scalos Team
 **	All Rights Reserved
 */
 
@@ -75,5 +75,19 @@ VOID ScalosGfxBlitIcon(struct RastPort * rpBackground, struct RastPort * rpIcon,
 	ULONG top, ULONG width, ULONG height, struct TagItem * tagList);
 VOID ScalosGfxBlitIconTags(struct RastPort * rpBackground, struct RastPort * rpIcon, ULONG left,
 	ULONG top, ULONG width, ULONG height, ULONG tagList, ...);
+BOOL ScalosGfxDrawGradient(struct ARGBHeader * dest, LONG left, LONG top, LONG width, LONG height,
+	struct gfxARGB * start, struct gfxARGB * stop, ULONG gradType);
+BOOL ScalosGfxDrawGradientRastPort(struct RastPort * rp, LONG left, LONG top, LONG width, LONG height,
+	struct gfxARGB * start, struct gfxARGB * stop, ULONG gradType);
+VOID ScalosGfxDrawLine(struct ARGBHeader * dest, LONG fromX, LONG fromY, LONG toX, LONG toY,
+	const struct gfxARGB * lineColor);
+VOID ScalosGfxDrawLineRastPort(struct RastPort * rp, LONG fromX, LONG fromY, LONG toX, LONG toY,
+	const struct gfxARGB * lineColor);
+VOID ScalosGfxDrawEllipse(struct ARGBHeader * dest, LONG xCenter, LONG yCenter, LONG radiusX,
+	LONG radiusy, LONG segment, const struct gfxARGB * color1,
+	const struct gfxARGB * color2);
+VOID ScalosGfxDrawEllipseRastPort(struct RastPort * rp, LONG xCenter, LONG yCenter, LONG radiusX,
+	LONG radiusy, LONG segment, const struct gfxARGB * color1,
+	const struct gfxARGB * color2);
 
 #endif	/*  CLIB_SCALOSGFX_PROTOS_H  */

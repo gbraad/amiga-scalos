@@ -77,7 +77,9 @@ static struct ARGB INLINE ScaleARGBAverage4x4(const struct ARGB *src,
 	ULONG x, ULONG y,
 	ULONG SourceWidth, ULONG SourceHeight,
 	ULONG FractPartX, ULONG FractPartY);
+#if 0
 static void ScaleARGB2X(const struct ARGBHeader *src, struct ARGBHeader *Dest);
+#endif
 
 //-----------------------------------------------------------------------
 
@@ -467,7 +469,7 @@ static struct ARGB INLINE ScaleARGBAverage4x4(const struct ARGB *src,
 
 
 // Scale 2x with directional interpolation
-
+#if 0
 static void ScaleARGB2X(const struct ARGBHeader *src, struct ARGBHeader *Dest)
 {
 	ULONG y;
@@ -504,7 +506,7 @@ static void ScaleARGB2X(const struct ARGBHeader *src, struct ARGBHeader *Dest)
 		}
 	}
 }
-
+#endif
 
 struct ARGB *ScaleARGBArray(const struct ARGBHeader *src,
 	ULONG *DestWidth, ULONG *DestHeight, ULONG Flags,

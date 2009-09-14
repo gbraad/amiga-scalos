@@ -746,6 +746,114 @@ LIBFUNC_END
 
 //-----------------------------------------------------------------------------
 
+LIBFUNC_P9(BOOL, LIBScalosGfxDrawGradient,
+	A0, struct ARGBHeader *, dest,
+	D0, LONG, left,
+	D1, LONG, top,
+	D2, LONG, width,
+	D3, LONG, height,
+	A1, struct gfxARGB *, start,
+	A2, struct gfxARGB *, stop,
+	D4, ULONG, gradType,
+	A6, struct ScalosGfxBase *, ScalosGfxBase)
+{
+	return DrawGradient(dest, left, top, width, height, start, stop,  gradType, ScalosGfxBase);
+}
+LIBFUNC_END
+
+//-----------------------------------------------------------------------------
+
+LIBFUNC_P9(BOOL, LIBScalosGfxDrawGradientRastPort,
+	A0, struct RastPort *, rp,
+	D0, LONG, left,
+	D1, LONG, top,
+	D2, LONG, width,
+	D3, LONG, height,
+	A1, struct gfxARGB *, start,
+	A2, struct gfxARGB *, stop,
+	D4, ULONG, gradType,
+	A6, struct ScalosGfxBase *, ScalosGfxBase)
+{
+	return DrawGradientRastPort(rp, left, top, width, height, start, stop,  gradType, ScalosGfxBase);
+}
+LIBFUNC_END
+
+//-----------------------------------------------------------------------------
+
+LIBFUNC_P7(VOID, LIBScalosGfxDrawLine,
+	A0, struct ARGBHeader *, dest,
+	D0, LONG, fromX,
+	D1, LONG, fromY,
+	D2, LONG, toX,
+	D3, LONG, toY,
+	A1, const struct gfxARGB *, lineColor,
+	A6, struct ScalosGfxBase *, ScalosGfxBase)
+{
+	(void) ScalosGfxBase;
+
+	DrawLine(dest, fromX, fromY, toX, toY, *lineColor);
+}
+LIBFUNC_END
+
+//-----------------------------------------------------------------------------
+
+LIBFUNC_P7(VOID, LIBScalosGfxDrawLineRastPort,
+	A0, struct RastPort *, rp,
+	D0, LONG, fromX,
+	D1, LONG, fromY,
+	D2, LONG, toX,
+	D3, LONG, toY,
+	A1, const struct gfxARGB *, lineColor,
+	A6, struct ScalosGfxBase *, ScalosGfxBase)
+{
+	(void) ScalosGfxBase;
+
+	DrawLineRastPort(rp, fromX, fromY, toX, toY, *lineColor);
+}
+LIBFUNC_END
+
+//-----------------------------------------------------------------------------
+
+LIBFUNC_P9(VOID, LIBScalosGfxDrawEllipse,
+	A0, struct ARGBHeader *, dest,
+	D0, LONG, xCenter,
+	D1, LONG, yCenter,
+	D2, LONG, radiusX,
+	D3, LONG, radiusY,
+	D4, WORD, segment,
+	A1, const struct gfxARGB *, color1,
+	A2, const struct gfxARGB *, color2,
+	A6, struct ScalosGfxBase *, ScalosGfxBase)
+{
+	(void) ScalosGfxBase;
+
+	DrawARGBEllipse(dest, xCenter, yCenter, radiusX, radiusY,
+		segment, *color1, *color2);
+}
+LIBFUNC_END
+
+//-----------------------------------------------------------------------------
+
+LIBFUNC_P9(VOID, LIBScalosGfxDrawEllipseRastPort,
+	A0, struct RastPort *, rp,
+	D0, LONG, xCenter,
+	D1, LONG, yCenter,
+	D2, LONG, radiusX,
+	D3, LONG, radiusY,
+	D4, WORD, segment,
+	A1, const struct gfxARGB *, color1,
+	A2, const struct gfxARGB *, color2,
+	A6, struct ScalosGfxBase *, ScalosGfxBase)
+{
+	(void) ScalosGfxBase;
+
+	DrawARGBEllipseRastPort(rp, xCenter, yCenter, radiusX, radiusY,
+		segment, *color1, *color2);
+}
+LIBFUNC_END
+
+//-----------------------------------------------------------------------------
+
 APTR ScalosGfxAllocVecPooled(struct ScalosGfxBase *ScalosGfxBase, ULONG Size)
 {
 	APTR ptr;

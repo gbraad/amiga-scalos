@@ -19,6 +19,7 @@ OBJS	=	$(OBJDIR)/scalosgfx.o \
 		$(OBJDIR)/blit.o \
 		$(OBJDIR)/BitMapScale.o \
 		$(OBJDIR)/Dither.o \
+		$(OBJDIR)/Render.o \
 
 ifneq ($(MACHINE),ppc-amigaos)
 OBJS	:=	 $(OBJDIR)/scalosgfx-classic.o $(OBJS)

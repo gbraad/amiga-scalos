@@ -1,27 +1,33 @@
 TABLE OF CONTENTS
 
-scalosgfx.library/ScalosGfxCreateEmptySAC
-scalosgfx.library/ScalosGfxCreateSAC
-scalosgfx.library/ScalosGfxFreeSAC
-scalosgfx.library/ScalosGfxCreateARGB
-scalosgfx.library/ScalosGfxFreeARGB
+scalosgfx.library/ScalosGfxARGBRectMult
 scalosgfx.library/ScalosGfxARGBSetAlpha
 scalosgfx.library/ScalosGfxARGBSetAlphaMask
-scalosgfx.library/ScalosGfxCreateARGBFromBitMap
-scalosgfx.library/ScalosGfxFillARGBFromBitMap
-scalosgfx.library/ScalosGfxWriteARGBToBitMap
-scalosgfx.library/ScalosGfxMedianCut
-scalosgfx.library/ScalosGfxScaleARGBArray
-scalosgfx.library/ScalosGfxScaleBitMap
-scalosgfx.library/ScalosGfxCalculateScaleAspect
+scalosgfx.library/ScalosGfxBlitIcon
 scalosgfx.library/ScalosGfxBlitARGB
-scalosgfx.library/ScalosGfxFillRectARGB
-scalosgfx.library/ScalosGfxSetARGB
-scalosgfx.library/ScalosGfxNewColorMap
-scalosgfx.library/ScalosGfxARGBRectMult
 scalosgfx.library/ScalosGfxBlitARGBAlpha
 scalosgfx.library/ScalosGfxBlitARGBAlphaTagList
-scalosgfx.library/ScalosGfxBlitIcon
+scalosgfx.library/ScalosGfxCalculateScaleAspect
+scalosgfx.library/ScalosGfxCreateARGB
+scalosgfx.library/ScalosGfxCreateARGBFromBitMap
+scalosgfx.library/ScalosGfxCreateEmptySAC
+scalosgfx.library/ScalosGfxCreateSAC
+scalosgfx.library/ScalosGfxDrawEllipse
+scalosgfx.library/ScalosGfxDrawEllipseRastPort
+scalosgfx.library/ScalosGfxDrawGradient
+scalosgfx.library/ScalosGfxDrawGradientRastPort
+scalosgfx.library/ScalosGfxDrawLine
+scalosgfx.library/ScalosGfxDrawLineRastPort
+scalosgfx.library/ScalosGfxFillARGBFromBitMap
+scalosgfx.library/ScalosGfxFillRectARGB
+scalosgfx.library/ScalosGfxFreeSAC
+scalosgfx.library/ScalosGfxFreeARGB
+scalosgfx.library/ScalosGfxMedianCut
+scalosgfx.library/ScalosGfxNewColorMap
+scalosgfx.library/ScalosGfxScaleARGBArray
+scalosgfx.library/ScalosGfxScaleBitMap
+scalosgfx.library/ScalosGfxSetARGB
+scalosgfx.library/ScalosGfxWriteARGBToBitMap
 
 scalosgfx.library/ScalosGfxCreateEmptySAC  scalosgfx.library/ScalosGfxCreateEmptySAC
 
@@ -121,6 +127,7 @@ scalosgfx.library/ScalosGfxBlitIcon
    FUNCTION
 	Allocates an array of struct gfxARGB with sufficient size for
 	specified width and height.
+	If either width of height is 0, this function returns NULL.
 
    INPUTS
 	width	- width of gfxARGB array
@@ -702,6 +709,199 @@ scalosgfx.library/ScalosGfxBlitIcon
                                     clipping to 0..255 range.
 	SCALOSGFX_BlitIconAlpha	- const UBYTE *, specify alpha array for icon.
 	SCALOSGFX_BlitIconTransparency - ULONG, specify alpha for icon, 0...255.
+
+   RESULT
+	nothing
+
+   SEE ALSO
+scalosgfx.library/ScalosGfxDrawGradient        scalosgfx.library/ScalosGfxDrawGradient
+
+   NAME
+	ScalosGfxDrawGradient -- Draw a gradient into a gfxARGB array
+
+   SYNOPSIS
+	ScalosGfxDrawGradient(dest, left, top, width, height, start, stop, gradType)
+			       A0    D0    D1   D2     D3      A1     A2      D4
+
+	BOOL ScalosGfxDrawGradient(struct ARGBHeader *, LONG, LONG, LONG, LONG,
+		struct gfxARGB *, struct gfxARGB *, ULONG)
+
+   FUNCTION
+	Fills a rectangular area in a gfxARGB array with a color gradient, as specified.
+
+   INPUTS
+	dest         - Target gfxARGB array.
+	left	     - left start of filled area in gfxARGB array
+	top	     - top start of filled area in gfxARGB array
+	width	     - width of the filled area
+	height	     - height of the filled area
+	start        - ARGB color for the start of the gradient (top or left).
+	stop         - ARGB color for the end of the gradient (bottom or right).
+	gradType     - Type of gradient to be drawn.
+
+   VALUES
+	SCALOS_GRADIENT_VERTICAL - draw gradient from top to bottom.
+	SCALOS_GRADIENT_HORIZONTAL - draw gradient tom left to right.
+
+   RESULT
+	nothing
+
+   SEE ALSO
+        scalosgfx.library/ScalosGfxDrawGradientRastPort
+scalosgfx.library/ScalosGfxDrawGradientRastPort        scalosgfx.library/ScalosGfxDrawGradientRastPort
+
+   NAME
+	ScalosGfxDrawGradientRastPort -- Draw gradient into a RastPort
+
+   SYNOPSIS
+	ScalosGfxDrawGradientRastPort(rp, left, top, width, height, start, stop, gradType)
+				      A0    D0    D1   D2     D3      A1     A2      D4
+
+	BOOL ScalosGfxDrawGradientRastPort(struct RastPort *, LONG, LONG, LONG, LONG,
+		struct gfxARGB *, struct gfxARGB *, ULONG)
+
+   FUNCTION
+	Fills a rectangular area in a RastPort with a color gradient, as specified.
+
+   INPUTS
+	rp           - Target RastPort where the gradient is drawn
+	left	     - left start of filled area in RastPort
+	top	     - top start of filled area in RastPort
+	width	     - width of the filled area
+	height	     - height of the filled area
+	start        - ARGB color for the start of the gradient (top or left).
+	stop         - ARGB color for the end of the gradient (bottom or right).
+	gradType     - Type of gradient to be drawn.
+
+   VALUES
+	SCALOS_GRADIENT_VERTICAL - draw gradient from top to bottom.
+	SCALOS_GRADIENT_HORIZONTAL - draw gradient tom left to right.
+
+   RESULT
+	nothing
+
+   SEE ALSO
+        scalosgfx.library/ScalosGfxDrawGradient
+scalosgfx.library/ScalosGfxDrawLine        scalosgfx.library/ScalosGfxDrawLine
+
+   NAME
+	ScalosGfxDrawLine -- Draw an anti-aliased line in a gfxARGB array
+
+   SYNOPSIS
+	ScalosGfxDrawLine(dest, fromX, fromY, toX, toY, lineColor)
+			   A0    D0     D1    D2   D3      A1
+
+	VOID ScalosGfxDrawLine(struct ARGBHeader *, LONG, LONG, LONG, LONG,
+		const struct gfxARGB *)
+
+   FUNCTION
+	Draws an anti-aliased line in a gfxARGB array, with given ARGB
+	color, including Alpha.
+
+   INPUTS
+	dest         - Target gfxARGB array.
+	fromX	     - X coordinate for starting point of line
+	fromY	     - Y coordinate for starting point of line
+	toX          - X coordinate for end point of line
+	toY          - Y coordinate for end point of line
+	lineColor    - ARGB color of the line to be drawn
+
+   RESULT
+	nothing
+
+   SEE ALSO
+scalosgfx.library/ScalosGfxDrawEllipse        scalosgfx.library/ScalosGfxDrawEllipse
+
+   NAME
+	ScalosGfxDrawEllipse -- Draw an anti-aliased ellipse  in a gfxARGB array
+
+   SYNOPSIS
+	ScalosGfxDrawEllipse(dest, xCenter, yCenter, radiusX, radiusY, segment, color1, color2)
+			      A0     D0       D1       D2       D3       D4       A1      A2
+
+	VOID ScalosGfxDrawEllipse(struct ARGBHeader *, LONG, LONG, LONG,
+		LONG, WORD, const struct gfxARGB *, const struct gfxARGB *)
+
+   FUNCTION
+	Draws an anti-aliased ellipse in a gfxARGB array, with given ARGB
+	color, including Alpha.
+
+   INPUTS
+	dest         - Target gfxARGB array.
+	xCenter      - X coordinate for the center of the ellipse
+	yCenter      - Y coordinate for the center of the ellipse
+	radiusX      - horizontal radius of the ellipse
+	radiusY      - vertical radius of the ellipse
+	segment      - bitmask to define which quadrants of the ellipse will be drawn
+
+   VALUES
+	ELLIPSE_SEGMENT_TOPLEFT     - set this flag to draw top left ellipse quadrant
+	ELLIPSE_SEGMENT_TOPRIGHT    - set this flag to draw top right ellipse quadrant
+	ELLIPSE_SEGMENT_BOTTOMLEFT  - set this flag to draw bottom left ellipse quadrant
+	ELLIPSE_SEGMENT_BOTTOMRIGHT - set this flag to draw bottom right ellipse quadrant
+
+   RESULT
+	nothing
+
+   SEE ALSO
+
+scalosgfx.library/ScalosGfxDrawLineRastPort    scalosgfx.library/ScalosGfxDrawLineRastPort
+
+   NAME
+	ScalosGfxDrawLineRastPort -- Draw an anti-aliased line into a RastPort
+
+   SYNOPSIS
+	ScalosGfxDrawLineRastPort(rp, fromX, fromY, toX, toY, lineColor)
+		       		  A0    D0     D1    D2   D3      A1
+
+	VOID ScalosGfxDrawLineRastPort(struct RastPort *, LONG, LONG, LONG, LONG,
+		const struct gfxARGB *)
+
+   FUNCTION
+	Draws an anti-aliased line in a gfxARGB array, with given ARGB
+	color, including Alpha.
+
+   INPUTS
+	rp           - Target RastPort where the line is drawn
+	fromX	     - X coordinate for starting point of line
+	fromY	     - Y coordinate for starting point of line
+	toX          - X coordinate for end point of line
+	toY          - Y coordinate for end point of line
+	lineColor    - ARGB color of the line to be drawn
+
+   RESULT
+	nothing
+
+   SEE ALSO
+scalosgfx.library/ScalosGfxDrawEllipseRastPort    scalosgfx.library/ScalosGfxDrawEllipseRastPort
+
+   NAME
+	ScalosGfxDrawEllipseRastPort -- Draw an anti-aliased ellipse into a RastPort
+
+   SYNOPSIS
+	ScalosGfxDrawEllipseRastPort(rp, xCenter, yCenter, radiusX, radiusY, segment, color1, color2)
+			             A0     D0       D1       D2       D3       D4       A1      A2
+
+	VOID ScalosGfxDrawEllipseRastPort(struct RastPort *, LONG, LONG, LONG,
+		LONG, WORD, const struct gfxARGB *, const struct gfxARGB *)
+
+   FUNCTION
+	Draws an anti-aliased ellipse in a gfxARGB array, with given ARGB
+	color, including Alpha.
+
+   INPUTS
+	rp           - Target RastPort where the elipse is drawn
+	xCenter      - X coordinate for the center of the ellipse
+	yCenter      - Y coordinate for the center of the ellipse
+	radiusX      - horizontal radius of the ellipse
+	radiusY      - vertical radius of the ellipse
+	segment      - bitmask to define which quadrants of the ellipse will be drawn
+
+   VALUES
+	ELLIPSE_SEGMENT_TOPLEFT     - set this flag to draw top left ellipse quadrant
+	ELLIPSE_SEGMENT_TOPRIGHT    - set this flag to draw top right ellipse quadrant
+	ELLIPSE_SEGMENT_BOTTOMLEFT  - set this flag to draw bottom left ellipse quadrant
+	ELLIPSE_SEGMENT_BOTTOMRIGHT - set this flag to draw bottom right ellipse quadrant
 
    RESULT
 	nothing

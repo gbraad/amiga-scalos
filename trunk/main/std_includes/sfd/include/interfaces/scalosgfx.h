@@ -66,6 +66,12 @@ struct ScalosGfxIFace
 	VOID APICALL (*ScalosGfxBlitARGBAlphaTags)(struct ScalosGfxIFace *Self, struct RastPort * rp, const struct ARGBHeader * srcH, ULONG destLeft, ULONG destTop, const struct IBox * srcSize, ...);
 	VOID APICALL (*ScalosGfxBlitIcon)(struct ScalosGfxIFace *Self, struct RastPort * rpBackground, struct RastPort * rpIcon, ULONG left, ULONG top, ULONG width, ULONG height, struct TagItem * tagList);
 	VOID APICALL (*ScalosGfxBlitIconTags)(struct ScalosGfxIFace *Self, struct RastPort * rpBackground, struct RastPort * rpIcon, ULONG left, ULONG top, ULONG width, ULONG height, ...);
+	BOOL APICALL (*ScalosGfxDrawGradient)(struct ScalosGfxIFace *Self, struct ARGBHeader * dest, LONG left, LONG top, LONG width, LONG height, struct gfxARGB * start, struct gfxARGB * stop, ULONG gradType);
+	BOOL APICALL (*ScalosGfxDrawGradientRastPort)(struct ScalosGfxIFace *Self, struct RastPort * rp, LONG left, LONG top, LONG width, LONG height, struct gfxARGB * start, struct gfxARGB * stop, ULONG gradType);
+	VOID APICALL (*ScalosGfxDrawLine)(struct ScalosGfxIFace *Self, struct ARGBHeader * dest, LONG fromX, LONG fromY, LONG toX, LONG toY, const struct gfxARGB * lineColor);
+	VOID APICALL (*ScalosGfxDrawLineRastPort)(struct ScalosGfxIFace *Self, struct RastPort * rp, LONG fromX, LONG fromY, LONG toX, LONG toY, const struct gfxARGB * lineColor);
+	VOID APICALL (*ScalosGfxDrawEllipse)(struct ScalosGfxIFace *Self, struct ARGBHeader * dest, LONG xCenter, LONG yCenter, LONG radiusX, LONG radiusy, WORD segment, const struct gfxARGB * color1, const struct gfxARGB * color2);
+	VOID APICALL (*ScalosGfxDrawEllipseRastPort)(struct ScalosGfxIFace *Self, struct RastPort * rp, LONG xCenter, LONG yCenter, LONG radiusX, LONG radiusy, WORD segment, const struct gfxARGB * color1, const struct gfxARGB * color2);
 };
 
 #endif /* SCALOSGFX_INTERFACE_DEF_H */

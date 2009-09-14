@@ -9,6 +9,7 @@ CSRCS 	=	scalosgfx-classic.c \
                 argb.c \
                 blit.c \
                 Dither.c \
+		Render.c \
                 BitMapScale.c \
 
 
@@ -65,6 +66,7 @@ $(OBJ_DIR)/scalosgfx.o 		: scalosgfx_base.h scalosgfx.h
 $(OBJ_DIR)/argb.o 		: scalosgfx_base.h scalosgfx.h
 $(OBJ_DIR)/blit.o 		: scalosgfx_base.h scalosgfx.h
 $(OBJ_DIR)/Dither.o 		: scalosgfx_base.h scalosgfx.h
+$(OBJ_DIR)/Render.o 		: scalosgfx_base.h scalosgfx.h
 $(OBJ_DIR)/BitMapScale.o	: scalosgfx_base.h scalosgfx.h
 
 #############################################################
