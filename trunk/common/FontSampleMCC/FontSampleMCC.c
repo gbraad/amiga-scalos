@@ -43,6 +43,8 @@ struct FsMCCInstance
 	BYTE fsm_AntiAlias;
 	WORD fsm_Gamma;
 	BOOL fsm_NeedRelayout;
+	ULONG fsm_HAlign;		// horizontal alignment
+	ULONG fsm_VAlign;		// vertical  alignment
 	struct TextExtent fsm_TextExtent;
 	};
 
@@ -167,11 +169,45 @@ static ULONG mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 	if (msg->flags & MADF_DRAWOBJECT)
 		{
 		APTR ClipHandle;
+		LONG x, y;
 
-		d1(kprintf(__FUNC__ "/%ld: TTEngineBase=%08lx  fsm_TTFontHandle=%08lx\n", \
-			__LINE__, TTEngineBase, inst->fsm_TTFontHandle));
+		d1(kprintf("%s/%s/%ld: TTEngineBase=%08lx  fsm_TTFontHandle=%08lx\n", \
+			__FILE__, __FUNC__, __LINE__, TTEngineBase, inst->fsm_TTFontHandle));
+		d2(kprintf("%s/%s/%ld: width=%ld  height=%ld\n", __FILE__, __FUNC__, __LINE__, _mwidth(obj), _mheight(obj)));
+		d2(kprintf("%s/%s/%ld: subwidth=%ld  subheight=%ld\n", __FILE__, __FUNC__, __LINE__, _subwidth(obj), _subheight(obj)));
 
 		ClipHandle = MUI_AddClipping(muiRenderInfo(obj), _mleft(obj), _mtop(obj), _mwidth(obj), _mheight(obj));
+
+		switch (inst->fsm_HAlign)
+			{
+		default:
+		case FONTSAMPLE_HALIGN_LEFT:
+			x = _mleft(obj) + 10;
+			break;
+		case FONTSAMPLE_HALIGN_CENTER:
+			x = _mleft(obj) + (_mwidth(obj) - inst->fsm_TextExtent.te_Width) / 2;
+			break;
+		case FONTSAMPLE_HALIGN_RIGHT:
+			x = _mright(obj) - 10 - inst->fsm_TextExtent.te_Width;
+			break;
+			}
+
+		switch (inst->fsm_VAlign)
+			{
+		default:
+		case FONTSAMPLE_VALIGN_TOP:
+			y = _mtop(obj)  + 2 + inst->fsm_FontBaseLine;
+			break;
+		case FONTSAMPLE_VALIGN_CENTER:
+			y = _mtop(obj)  + (_mheight(obj) - inst->fsm_TextExtent.te_Height) / 2 + inst->fsm_FontBaseLine;
+			break;
+		case FONTSAMPLE_VALIGN_BOTTOM:
+			y = _mbottom(obj) - 2 - inst->fsm_TextExtent.te_Height + inst->fsm_FontBaseLine;
+			break;
+			}
+
+		Move(_rp(obj), x, y);
+		SetAPen(_rp(obj), _pens(obj)[MPEN_TEXT]);
 
 		if (TTEngineBase && inst->fsm_TTFontHandle)
 			{
@@ -183,9 +219,6 @@ static ULONG mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 				TT_Gamma, inst->fsm_Gamma,
 				TAG_END);
 
-			Move(_rp(obj), _mleft(obj) + 10, _mtop(obj) + 2 + inst->fsm_FontBaseLine);
-			SetAPen(_rp(obj), 1);
-
 			TT_Text(_rp(obj), (STRPTR) inst->fsm_String, strlen(inst->fsm_String));
 
 			TT_DoneRastPort(_rp(obj));
@@ -195,8 +228,6 @@ static ULONG mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 			 if (inst->fsm_StdFont)
 				SetFont(_rp(obj), inst->fsm_StdFont);
 
-			Move(_rp(obj), _mleft(obj) + 10, _mtop(obj) + 2 + inst->fsm_FontBaseLine);
-			SetAPen(_rp(obj), 1);
 			SetSoftStyle(_rp(obj), FS_NORMAL, FSF_BOLD | FSF_ITALIC | FSF_UNDERLINED | FSF_EXTENDED);
 
 			Text(_rp(obj), (STRPTR) inst->fsm_String, strlen(inst->fsm_String));
@@ -276,6 +307,8 @@ static void ClearInstanceData(struct FsMCCInstance *inst)
 
 	inst->fsm_AntiAlias = TT_Antialias_On;
 	inst->fsm_Gamma = 2500;
+	inst->fsm_HAlign = FONTSAMPLE_HALIGN_CENTER;
+	inst->fsm_VAlign = FONTSAMPLE_VALIGN_CENTER;
 }
 
 
@@ -288,6 +321,8 @@ static BOOL SetInstanceData(struct FsMCCInstance *inst, struct TagItem *TagList)
 
 	inst->fsm_AntiAlias = (BYTE) GetTagData(MUIA_FontSample_Antialias, (ULONG) inst->fsm_AntiAlias, TagList);
 	inst->fsm_Gamma = (WORD) GetTagData(MUIA_FontSample_Gamma, (ULONG) inst->fsm_Gamma, TagList);
+	inst->fsm_HAlign = (WORD) GetTagData(MUIA_FontSample_HAlign, (ULONG) inst->fsm_HAlign, TagList);
+	inst->fsm_VAlign = (WORD) GetTagData(MUIA_FontSample_VAlign, (ULONG) inst->fsm_VAlign, TagList);
 
 	tag = FindTagItem(MUIA_FontSample_DemoString, TagList);
 	if (tag)

@@ -29,8 +29,21 @@ Object *FontSampleMCCObject(Tag tags, ...);
 #define	MUIA_FontSample_StdFontDesc		0x82457653	/* CONST_STRPTR */
 #define	MUIA_FontSample_Antialias		0x82457654	/* ULONG */
 #define	MUIA_FontSample_Gamma			0x82457655	/* ULONG */
+#define MUIA_FontSample_HAlign                  0x82457656	/* ULONG */
+#define MUIA_FontSample_VAlign                  0x82457657	/* ULONG */
 
 //--------------------------------------------------------------------
+
+#define	FONTSAMPLE_HALIGN_LEFT			1
+#define	FONTSAMPLE_HALIGN_CENTER		2
+#define	FONTSAMPLE_HALIGN_RIGHT			3
+
+#define	FONTSAMPLE_VALIGN_TOP			1
+#define	FONTSAMPLE_VALIGN_CENTER		2
+#define	FONTSAMPLE_VALIGN_BOTTOM		3
+
+//--------------------------------------------------------------------
+
 
 // from debug.lib
 extern int kprintf(const char *fmt, ...);
