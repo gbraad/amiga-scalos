@@ -18,8 +18,8 @@
 
 //----------------------------------------------------------------------------
 
-#define	LIB_VERSION	41
-#define	LIB_REVISION	6
+#define	LIB_VERSION	42
+#define	LIB_REVISION	1
 
 //----------------------------------------------------------------------------
 
@@ -245,7 +245,62 @@ LIBFUNC_P8_PROTO(VOID, LIBScalosGfxBlitIcon,
 	D3, ULONG, height,
 	A2, struct TagItem *, tagList,
 	A6, struct ScalosGfxBase *, ScalosGfxBase);
-
+LIBFUNC_P9_PROTO(BOOL, LIBScalosGfxDrawGradient,
+	A0, struct ARGBHeader *, dest,
+	D0, LONG, left,
+	D1, LONG, top,
+	D2, LONG, width,
+	D3, LONG, height,
+	A1, struct gfxARGB *, start,
+	A2, struct gfxARGB *, stop,
+	D4, ULONG, gradType,
+	A6, struct ScalosGfxBase *, ScalosGfxBase);
+LIBFUNC_P9_PROTO(BOOL, LIBScalosGfxDrawGradientRastPort,
+	A0, struct RastPort *, rp,
+	D0, LONG, left,
+	D1, LONG, top,
+	D2, LONG, width,
+	D3, LONG, height,
+	A1, struct gfxARGB *, start,
+	A2, struct gfxARGB *, stop,
+	D4, ULONG, gradType,
+	A6, struct ScalosGfxBase *, ScalosGfxBase);
+LIBFUNC_P7_PROTO(VOID, LIBScalosGfxDrawLine,
+	A0, struct ARGBHeader *, dest,
+	D0, LONG, fromX,
+	D1, LONG, fromY,
+	D2, LONG, toX,
+	D3, LONG, toY,
+	A1, const struct gfxARGB *, lineColor,
+	A6, struct ScalosGfxBase *, ScalosGfxBase);
+LIBFUNC_P7_PROTO(VOID, LIBScalosGfxDrawLineRastPort,
+	A0, struct RastPort *, rp,
+	D0, LONG, fromX,
+	D1, LONG, fromY,
+	D2, LONG, toX,
+	D3, LONG, toY,
+	A1, const struct gfxARGB *, lineColor,
+	A6, struct ScalosGfxBase *, ScalosGfxBase);
+LIBFUNC_P9_PROTO(VOID, LIBScalosGfxDrawEllipse,
+	A0, struct ARGBHeader *, dest,
+	D0, LONG, xCenter,
+	D1, LONG, yCenter,
+	D2, LONG, radiusX,
+	D3, LONG, radiusY,
+	D4, WORD, segment,
+	A1, const struct gfxARGB *, color1,
+	A2, const struct gfxARGB *, color2,
+	A6, struct ScalosGfxBase *, ScalosGfxBase);
+LIBFUNC_P9_PROTO(VOID, LIBScalosGfxDrawEllipseRastPort,
+	A0, struct RastPort *, rp,
+	D0, LONG, xCenter,
+	D1, LONG, yCenter,
+	D2, LONG, radiusX,
+	D3, LONG, radiusY,
+	D4, WORD, segment,
+	A1, const struct gfxARGB *, color1,
+	A2, const struct gfxARGB *, color2,
+	A6, struct ScalosGfxBase *, ScalosGfxBase);
 APTR ScalosGfxAllocVecPooled(struct ScalosGfxBase *ScalosGfxBase, ULONG Size);
 void ScalosGfxFreeVecPooled(struct ScalosGfxBase *ScalosGfxBase, APTR mem);
 
@@ -307,6 +362,26 @@ struct ScalosBitMapAndColor *MedianCut(struct ARGBHeader *argbh,
 	ULONG Depth, ULONG newcolors,
         BOOL floyd, struct BitMap *FriendBM,
 	struct ScalosGfxBase *ScalosGfxBase);
+///
+
+//----------------------------------------------------------------------------
+
+// defined in Render.c
+///
+BOOL DrawGradient(struct ARGBHeader *dest, LONG left, LONG top,
+	LONG width, LONG height, struct gfxARGB *start, struct gfxARGB *stop,
+	ULONG gradType, struct ScalosGfxBase *ScalosGfxBase);
+BOOL DrawGradientRastPort(struct RastPort *rp, LONG left, LONG top,
+	LONG width, LONG height, struct gfxARGB *start, struct gfxARGB *stop,
+	ULONG gradType, struct ScalosGfxBase *ScalosGfxBase);
+void DrawLine(struct ARGBHeader *argbh, LONG X0, LONG Y0, LONG X1, LONG Y1, struct ARGB Color32);
+void DrawLineRastPort(struct RastPort *rp, LONG X0, LONG Y0, LONG X1, LONG Y1, struct ARGB Color32);
+void DrawARGBEllipse(struct ARGBHeader *argbh,
+	LONG xc, LONG yc, LONG rx, LONG ry,
+	WORD Segment, struct ARGB rgbColor1, struct ARGB rgbColor2);
+void DrawARGBEllipseRastPort(struct RastPort *rp,
+	LONG xc, LONG yc, LONG rx, LONG ry,
+	WORD Segment, struct ARGB rgbColor1, struct ARGB rgbColor2);
 ///
 
 //----------------------------------------------------------------------------

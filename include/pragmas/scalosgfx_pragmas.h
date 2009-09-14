@@ -27,6 +27,12 @@
 #pragma  libcall ScalosGfxBase ScalosGfxBlitARGBAlpha 090 5432109808
 #pragma  libcall ScalosGfxBase ScalosGfxBlitARGBAlphaTagList 096 ab109806
 #pragma  libcall ScalosGfxBase ScalosGfxBlitIcon      09c a32109807
+#pragma  libcall ScalosGfxBase ScalosGfxDrawGradient  0a2 4a93210808
+#pragma  libcall ScalosGfxBase ScalosGfxDrawGradientRastPort 0a8 4a93210808
+#pragma  libcall ScalosGfxBase ScalosGfxDrawLine      0ae 93210806
+#pragma  libcall ScalosGfxBase ScalosGfxDrawLineRastPort 0b4 93210806
+#pragma  libcall ScalosGfxBase ScalosGfxDrawEllipse   0ba a943210808
+#pragma  libcall ScalosGfxBase ScalosGfxDrawEllipseRastPort 0c0 a943210808
 #ifdef __SASC_60
 #pragma  tagcall ScalosGfxBase ScalosGfxCreateSACTags 024 9821005
 #pragma  tagcall ScalosGfxBase ScalosGfxCreateARGBTags 030 81003

@@ -23,6 +23,12 @@ LIBRARIES_SCALOSGFX_LIB_I	SET	1
 		XDEF	_LVOScalosGfxBlitARGBAlpha
 		XDEF	_LVOScalosGfxBlitARGBAlphaTagList
 		XDEF	_LVOScalosGfxBlitIcon
+		XDEF	_LVOScalosGfxDrawGradient
+		XDEF	_LVOScalosGfxDrawGradientRastPort
+		XDEF	_LVOScalosGfxDrawLine
+		XDEF	_LVOScalosGfxDrawLineRastPort
+		XDEF	_LVOScalosGfxDrawEllipse
+		XDEF	_LVOScalosGfxDrawEllipseRastPort
 
 _LVOScalosGfxCreateEmptySAC 	EQU	-30
 _LVOScalosGfxCreateSAC      	EQU	-36
@@ -46,5 +52,11 @@ _LVOScalosGfxARGBRectMult   	EQU	-138
 _LVOScalosGfxBlitARGBAlpha  	EQU	-144
 _LVOScalosGfxBlitARGBAlphaTagList	EQU	-150
 _LVOScalosGfxBlitIcon       	EQU	-156
+_LVOScalosGfxDrawGradient   	EQU	-162
+_LVOScalosGfxDrawGradientRastPort	EQU	-168
+_LVOScalosGfxDrawLine       	EQU	-174
+_LVOScalosGfxDrawLineRastPort	EQU	-180
+_LVOScalosGfxDrawEllipse    	EQU	-186
+_LVOScalosGfxDrawEllipseRastPort	EQU	-192
 
 		ENDC

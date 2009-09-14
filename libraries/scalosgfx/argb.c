@@ -246,7 +246,7 @@ void WriteARGBToBitMap(struct ARGB *argb, struct BitMap *bm,
 
 		d1(KPrintF("%s/%ld:  DestWidth=%lu  DestHeight=%ld\n", __FUNC__, __LINE__, Width, Height));
 
-		if (Depth <= 8 || !GetCyberMapAttr(bm, CYBRMATTR_ISCYBERGFX))
+		if ((NULL == CyberGfxBase) || (Depth <= 8) || !GetCyberMapAttr(bm, CYBRMATTR_ISCYBERGFX))
 			{
 			struct RastPort TempRp;
 			ULONG y;
@@ -322,6 +322,9 @@ struct ARGB *AllocARGB(ULONG Width, ULONG Height, struct ScalosGfxBase *ScalosGf
 {
 	struct ARGB *argb;
 
+	if (0 == Width || 0 == Height)
+		return NULL;
+
 	argb = ScalosGfxAllocVecPooled(ScalosGfxBase, Width * Height * sizeof(struct ARGB));
 	d1(KPrintF("%s/%ld:  ARGB=%08lx  Width=%lu  Height=%ld\n", __FUNC__, __LINE__, argb, Width, Height));
 
@@ -340,7 +343,7 @@ void FillARGBFromBitMap(struct ARGBHeader *argbh, struct BitMap *srcBM,
 	struct ARGB *dest;
 	APTR handle;
 
-	if (!GetCyberMapAttr(srcBM, CYBRMATTR_ISCYBERGFX))
+	if ((NULL == CyberGfxBase) || !GetCyberMapAttr(srcBM, CYBRMATTR_ISCYBERGFX))
 		return;
 
 	d1(KPrintF("%s/%ld:  Width=%ld  Height=%ld\n", __FUNC__, __LINE__, argbh->argb_Width, argbh->argb_Height));

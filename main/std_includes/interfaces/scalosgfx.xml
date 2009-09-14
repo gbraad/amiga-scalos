@@ -186,5 +186,61 @@
 			<arg name="height" type="ULONG"/>
 			<vararg name="firstTag" type="ULONG"/>
 		</method>
+		<method name="ScalosGfxDrawGradient" result="BOOL">
+			<arg name="dest" type="struct ARGBHeader *"/>
+			<arg name="left" type="LONG"/>
+			<arg name="top" type="LONG"/>
+			<arg name="width" type="LONG"/>
+			<arg name="height" type="LONG"/>
+			<arg name="start" type="struct gfxARGB *"/>
+			<arg name="stop" type="struct gfxARGB *"/>
+			<arg name="gradType" type="ULONG"/>
+		</method>
+		<method name="ScalosGfxDrawGradientRastPort" result="BOOL">
+			<arg name="rp" type="struct RastPort *"/>
+			<arg name="left" type="LONG"/>
+			<arg name="top" type="LONG"/>
+			<arg name="width" type="LONG"/>
+			<arg name="height" type="LONG"/>
+			<arg name="start" type="struct gfxARGB *"/>
+			<arg name="stop" type="struct gfxARGB *"/>
+			<arg name="gradType" type="ULONG"/>
+		</method>
+		<method name="ScalosGfxDrawLine" result="VOID">
+			<arg name="dest" type="struct ARGBHeader *"/>
+			<arg name="fromX" type="LONG"/>
+			<arg name="fromY" type="LONG"/>
+			<arg name="toX" type="LONG"/>
+			<arg name="toY" type="LONG"/>
+			<arg name="lineColor" type="const struct gfxARGB *"/>
+		</method>
+		<method name="ScalosGfxDrawLineRastPort" result="VOID">
+			<arg name="rp" type="struct RastPort *"/>
+			<arg name="fromX" type="LONG"/>
+			<arg name="fromY" type="LONG"/>
+			<arg name="toX" type="LONG"/>
+			<arg name="toY" type="LONG"/>
+			<arg name="lineColor" type="const struct gfxARGB *"/>
+		</method>
+		<method name="ScalosGfxDrawEllipse" result="VOID">
+			<arg name="dest" type="struct ARGBHeader *"/>
+			<arg name="xCenter" type="LONG"/>
+			<arg name="yCenter" type="LONG"/>
+			<arg name="radiusX" type="LONG"/>
+			<arg name="radiusy" type="LONG"/>
+			<arg name="segment" type="WORD"/>
+			<arg name="color1" type="const struct gfxARGB *"/>
+			<arg name="color2" type="const struct gfxARGB *"/>
+		</method>
+		<method name="ScalosGfxDrawEllipseRastPort" result="VOID">
+			<arg name="rp" type="struct RastPort *"/>
+			<arg name="xCenter" type="LONG"/>
+			<arg name="yCenter" type="LONG"/>
+			<arg name="radiusX" type="LONG"/>
+			<arg name="radiusy" type="LONG"/>
+			<arg name="segment" type="WORD"/>
+			<arg name="color1" type="const struct gfxARGB *"/>
+			<arg name="color2" type="const struct gfxARGB *"/>
+		</method>
 	</interface>
 </library>

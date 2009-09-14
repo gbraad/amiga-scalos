@@ -171,4 +171,20 @@ struct ScaleBitMapArg
 
 /*----------------------------------------------------------------------------------*/
 
+// Gradient types for ScalosGfxDrawGradient and ScalosGfxDrawGradientRastPort
+
+#define	SCALOS_GRADIENT_VERTICAL		1
+#define	SCALOS_GRADIENT_HORIZONTAL		2
+
+/*----------------------------------------------------------------------------------*/
+
+// Segment types for ScalosGfxDrawEllipse
+
+#define	ELLIPSE_SEGMENT_TOPLEFT		8
+#define	ELLIPSE_SEGMENT_TOPRIGHT	2
+#define	ELLIPSE_SEGMENT_BOTTOMLEFT      4
+#define	ELLIPSE_SEGMENT_BOTTOMRIGHT  	1
+
+/*----------------------------------------------------------------------------------*/
+
 #endif /* SCALOS_SCALOSGFX_H */

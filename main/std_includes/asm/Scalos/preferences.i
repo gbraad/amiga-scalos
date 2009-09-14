@@ -142,6 +142,8 @@ SCP_ActiveWindowTransparency	EQU	$80000088	; UWORD - percentage of active Scalos
 SCP_InactiveWindowTransparency	EQU	$80000089	; UWORD - percentage of inactive Scalos window opacity (0=transparent, 100=opaque)
 SCP_PopupWindowsEnable		EQU	$8000008a	; BYTE - enable "spring-loaded" popup windows during D&D
 SCP_PopupWindowsDelay		EQU	$8000008b	; UWORD - Time in s before drawer window pops up during D&D
+SCP_SelectMarkerBaseColor	EQU	$8000008c	; struct ARGB - base color for text window selection marker
+SCP_SelectMarkerTransparency	EQU	$8000008d	; UBYTE - transparency for text window selection marker (0=transparent, 0xff=opaque)
 
 
 	ENDC	; PREFERENCES_I

@@ -92,5 +92,11 @@
 #elif (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
 #define ScalosGfxBlitIconTags(rpBackground, rpIcon, left, top, width, vargs...) IScalosGfx->ScalosGfxBlitIconTags(rpBackground, rpIcon, left, top, width, ## vargs) 
 #endif
+#define ScalosGfxDrawGradient(dest, left, top, width, height, start, stop, gradType) IScalosGfx->ScalosGfxDrawGradient((dest), (left), (top), (width), (height), (start), (stop), (gradType)) 
+#define ScalosGfxDrawGradientRastPort(rp, left, top, width, height, start, stop, gradType) IScalosGfx->ScalosGfxDrawGradientRastPort((rp), (left), (top), (width), (height), (start), (stop), (gradType)) 
+#define ScalosGfxDrawLine(dest, fromX, fromY, toX, toY, lineColor) IScalosGfx->ScalosGfxDrawLine((dest), (fromX), (fromY), (toX), (toY), (lineColor)) 
+#define ScalosGfxDrawLineRastPort(rp, fromX, fromY, toX, toY, lineColor) IScalosGfx->ScalosGfxDrawLineRastPort((rp), (fromX), (fromY), (toX), (toY), (lineColor)) 
+#define ScalosGfxDrawEllipse(dest, xCenter, yCenter, radiusX, radiusy, segment, color1, color2) IScalosGfx->ScalosGfxDrawEllipse((dest), (xCenter), (yCenter), (radiusX), (radiusy), (segment), (color1), (color2)) 
+#define ScalosGfxDrawEllipseRastPort(rp, xCenter, yCenter, radiusX, radiusy, segment, color1, color2) IScalosGfx->ScalosGfxDrawEllipseRastPort((rp), (xCenter), (yCenter), (radiusX), (radiusy), (segment), (color1), (color2)) 
 
 #endif /* INLINE4_SCALOSGFX_H */

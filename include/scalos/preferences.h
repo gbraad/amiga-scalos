@@ -157,6 +157,8 @@ struct PrefsStruct
 #define SCP_InactiveWindowTransparency	0x80000089	// UWORD - percentage of inactive Scalos window opacity (0=transparent, 100=opaque)
 #define SCP_PopupWindowsEnable		0x8000008a	// BYTE - enable "spring-loaded" popup windows during D&D
 #define SCP_PopupWindowsDelay		0x8000008b	// UWORD - Time in s before drawer window pops up during D&D
+#define	SCP_SelectMarkerBaseColor	0x8000008c	// struct ARGB - base color for text window selection marker
+#define	SCP_SelectMarkerTransparency	0x8000008d	// UBYTE - transparency for text window selection marker (0=transparent, 0xff=opaque)
 
 //---------------------------------------------------------------
 
