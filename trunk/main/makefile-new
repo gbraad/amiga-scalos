@@ -88,6 +88,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/StringGadgetClass.o       	\
 		$(OBJDIR)/Subroutines.o             	\
 		$(OBJDIR)/TextIconClass.o           	\
+		$(OBJDIR)/TextIconHighlightClass.o      \
 		$(OBJDIR)/TextWindowClass.o         	\
 		$(OBJDIR)/TitleClass.o              	\
 		$(OBJDIR)/ThumbnailCache.o	    	\

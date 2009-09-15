@@ -252,6 +252,9 @@ struct ScalosPrefs
 
 	UWORD pref_ActiveWindowTransparency;			// percentage of active Scalos window transparency
 	UWORD pref_InactiveWindowTransparency;			// percentage of inactive Scalos window transparency
+
+	struct ARGB pref_SelectMarkerBaseColor;			// base color for text window selection marker
+	UBYTE pref_SelectMarkerTransparency;			// transparency for text window selection marker
 	};
 
 #endif /* SCALOSPREFS_H */

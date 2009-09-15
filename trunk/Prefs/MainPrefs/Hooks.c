@@ -44,8 +44,10 @@
 #include "PrefsPlugins.h"
 #include "FontSampleMCC.h"
 #include <ScalosMcpGfx.h>
+#include <scalos/scalosgfx.h>
 #include "McpFrameMCC.h"
 #include "DataTypesMCC.h"
+#include "SelectMarkSampleClass.h"
 #include "Hooks.h"
 
 #define	CATCOMP_NUMBERS
@@ -1282,6 +1284,22 @@ static LONG DiskFontHeightFromDesc(CONST_STRPTR FontDesc)
 		ta.ta_YSize = 8;
 
 	return ta.ta_YSize;
+}
+
+//-----------------------------------------------------------------
+
+SAVEDS(void) INTERRUPT UpdateSelectMarkerSampleHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
+	struct ARGB argb;
+
+	argb.Alpha = getv(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], MUIA_Numeric_Value);
+
+	argb.Red   = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Red) >> 24;
+	argb.Green = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Green) >> 24;
+	argb.Blue  = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Blue) >> 24;
+
+	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_BaseColor, (ULONG) &argb);
 }
 
 //-----------------------------------------------------------------

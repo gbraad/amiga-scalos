@@ -208,6 +208,10 @@ Drag and Drop
 MSGID_PREFGROUPS_TRUETYPEFONTS (//)
 TrueType Fonts
 ;
+;
+MSGID_PREFGROUPS_TEXTWINDOWS (//)
+Text Windows
+;
 ;-----------------------------------------------------------
 ;
 MSGID_DESKTOPPAGES_SCREEN (1350//)
@@ -349,16 +353,29 @@ General
 MSGID_WINDOWPAGES_SIZE (//)
 Size
 ;
-MSGID_WINDOWPAGES_TEXTWINDOWS (//)
-Text windows
-;
-;
-MSGID_WINDOWPAGES_LAYOUT (//)
+MSGID_WINDOWPAGES_LAYOUT (+1//)
 Layout
 ;
 ;
 MSGID_WINDOWPAGES_CONTROLBAR (//)
 Control Bar
+;
+;-----------------------------------------------------------
+;
+MSGID_TEXTWINDOWPAGES_FONTS (1530//)
+Fonts
+;
+;
+MSGID_TEXTWINDOWPAGES_COLUMNS (//)
+Columns
+;
+;
+MSGID_TEXTWINDOWPAGES_SELECTIONMARKS (//)
+Selection marks
+;
+;
+MSGID_TEXTWINDOWPAGES_MISC (//)
+Miscellaneous
 ;
 ;-----------------------------------------------------------
 ;
@@ -1965,11 +1982,35 @@ The desktop will only get transparent if it is not a backdrop window.
 ;
 ;-----------------------------------------------------------
 ;
-MSGID_FILEDISPLAYPAGE_LISTERFONT (5700//)
-Lister Font
+MSGID_TEXTWINDOWSPAGE_SELECTION_BORDER_TRANSPARENCY (15700//)
+Border Transparency
 ;
 ;
-MSGID_FILEDISPLAYPAGE_FONT (//)
+MSGID_TEXTWINDOWSPAGE_SELECTION_FILL_TRANSPARENCY (//)
+Fill Transparency
+;
+;
+MSGID_TEXTWINDOWSPAGE_GROUP_BASECOLOR (//)
+Base Color
+;
+;
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BASECOLOR_SHORTHELP (//)
+Here you can adjust the base color for the\n\
+text window icon selection marker.
+;
+;
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BORDER_TRANSPARENCY_SHORTHELP (//)
+Adjust degree of transparency for the border\n\
+of the text window icon selection marker.
+;
+;
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_FILL_TRANSPARENCY_SHORTHELP (//)
+Adjust degree of transparency for the interior\n\
+fill of the text window icon selection marker.
+;
+;-----------------------------------------------------------
+;
+MSGID_FILEDISPLAYPAGE_FONT (5701//)
 Font:
 ;
 ;
@@ -2009,11 +2050,7 @@ A hidden file is any filename beginning with\n\
 a '\033b.\033n' or icon files '\033b#?.info\033n'
 ;
 ;
-MSGID_FILEDISPLAYPAGE_DISPLAYED_COLUMNS (//)
-Displayed Columns
-;
-;
-MSGID_FILEDISPLAYPAGE_AVAILABLE_COLUMNS (//)
+MSGID_FILEDISPLAYPAGE_AVAILABLE_COLUMNS (+1//)
 Available Columns
 ;
 ;

@@ -856,6 +856,12 @@ Class * initTextIconClass(void);
 ///
 /* ------------------------------------------------- */
 
+// defined in TextIconHighlightClass.c
+///
+Class *initTextIconHighlightClass(void);
+///
+/* ------------------------------------------------- */
+
 // defined in TextWindowClass.c
 ///
 struct ScalosClass *initTextWindowClass(const struct PluginClass *plug);

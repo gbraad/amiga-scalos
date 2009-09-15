@@ -63,6 +63,7 @@
 #include "Hooks.h"
 #include "DataTypesMCC.h"
 #include "McpFrameMCC.h"
+#include "SelectMarkSampleClass.h"
 #include <FontSampleMCC.h>
 #include "Images.h"
 #include "PrefsPlugins.h"
@@ -204,6 +205,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app);
 static Object *GenerateIconsPage(struct SCAModule *app);
 static Object *GenerateDragNDropPage(struct SCAModule *app);
 static Object *GenerateWindowPage(struct SCAModule *app);
+static Object *GenerateTextWindowPage(struct SCAModule *app);
 static Object *GenerateTrueTypeFontsPage(struct SCAModule *app);
 static Object *GenerateMiscPage(struct SCAModule *app);
 static Object *GeneratePluginsPage(struct SCAModule *app);
@@ -231,6 +233,7 @@ struct Library *AslBase = NULL;
 struct Library *WorkbenchBase = NULL;
 struct Library *CyberGfxBase = NULL;
 struct Library *TTEngineBase = NULL;
+struct Library *ScalosGfxBase = NULL;
 struct Library *DiskfontBase = NULL;
 
 #ifdef __amigaos4__
@@ -247,6 +250,7 @@ struct IconIFace *IIcon;
 struct AslIFace *IAsl;
 struct WorkbenchIFace *IWorkbench;
 struct CyberGfxIFace *ICyberGfx;
+struct ScalosGfxIFace *IScalosGfx;
 struct TTEngineIFace *ITTEngine;
 struct DiskfontIFace *IDiskfont;
 #endif
@@ -294,6 +298,7 @@ static struct MUI_CustomClass *ThumbnailLifetimeSliderClass;
 struct MUI_CustomClass *DataTypesImageClass;
 struct MUI_CustomClass *McpFrameClass;
 struct MUI_CustomClass *FontSampleClass;
+struct MUI_CustomClass *SelectMarkSampleClass;
 static struct MUI_CustomClass *TextWindowColumnsListClass;
 static struct MUI_CustomClass *ControlBarGadgetsListClass;
 
@@ -312,6 +317,7 @@ static ULONG cPrefGroups[] =
 	MSGID_PREFGROUPS_ICONS,
 	MSGID_PREFGROUPS_DRAGNDROP,
 	MSGID_PREFGROUPS_WINDOWS,
+	MSGID_PREFGROUPS_TEXTWINDOWS,
 	MSGID_PREFGROUPS_TRUETYPEFONTS,
 	MSGID_PREFGROUPS_MISC,
 	MSGID_PREFGROUPS_PLUGINS,
@@ -458,7 +464,15 @@ static CONST_STRPTR cWindowPages[] =
 	(CONST_STRPTR) MSGID_WINDOWPAGES_SIZE,
 	(CONST_STRPTR) MSGID_WINDOWPAGES_CONTROLBAR,
 	(CONST_STRPTR) MSGID_WINDOWPAGES_LAYOUT,
-	(CONST_STRPTR) MSGID_WINDOWPAGES_TEXTWINDOWS,
+	NULL
+};
+
+static CONST_STRPTR cTextWindowPages[] =
+{
+	(CONST_STRPTR) MSGID_TEXTWINDOWPAGES_FONTS,
+	(CONST_STRPTR) MSGID_TEXTWINDOWPAGES_COLUMNS,
+	(CONST_STRPTR) MSGID_TEXTWINDOWPAGES_SELECTIONMARKS,
+	(CONST_STRPTR) MSGID_TEXTWINDOWPAGES_MISC,
 	NULL
 };
 
@@ -764,6 +778,7 @@ static struct Hook RemovePluginHook = { { NULL, NULL }, HOOKFUNC_DEF(RemovePlugi
 static struct Hook PageChangeHook = { { NULL, NULL }, HOOKFUNC_DEF(PageChangeHookFunc), NULL };
 static struct Hook IconFrame_NewBorder_Hook = { { NULL, NULL }, HOOKFUNC_DEF(IconFrameHookFunc), NULL };
 static struct Hook ThumbnailFrame_NewBorder_Hook = { { NULL, NULL }, HOOKFUNC_DEF(ThumbnailFrameHookFunc), NULL };
+static struct Hook UpdateSelectMarkerSampleHook = { { NULL, NULL }, HOOKFUNC_DEF(UpdateSelectMarkerSampleHookFunc), NULL };
 
 struct Hook AslIntuiMsgHook = { { NULL, NULL }, HOOKFUNC_DEF(AslIntuiMsgHookFunc), NULL };
 struct Hook CalculateMaxRadiusHook = { { NULL, NULL }, HOOKFUNC_DEF(CalculateMaxRadiusHookFunc), NULL };
@@ -856,12 +871,14 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	CmdSelectedHook.h_Data = app;
         ControlBarGadgetChangedHook.h_Data = app;
         AboutMUIHook.h_Data = app;
+        UpdateSelectMarkerSampleHook.h_Data = app;
 
 	TranslateStringArray(cFileDisplayColumns);
 	TranslateStringArray(cDesktopPages);
 	TranslateStringArray(cIconPages);
 	TranslateStringArray(cTitleph);
 	TranslateStringArray(cWindowPages);
+	TranslateStringArray(cTextWindowPages);
 	TranslateStringArray(cScreenTitleModes);
 	TranslateStringArray(cCreateLinkTypes);
 	TranslateStringArray(cWindowRefresh);
@@ -1016,6 +1033,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 						Child, GenerateIconsPage(app),
 						Child, GenerateDragNDropPage(app),
 						Child, GenerateWindowPage(app),
+						Child, GenerateTextWindowPage(app),
 						Child, GenerateTrueTypeFontsPage(app),
 						Child, GenerateMiscPage(app),
 						Child, GeneratePluginsPage(app),
@@ -1698,6 +1716,11 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 			TAG_END);
 		}
 
+	if ((NULL == CyberGfxBase) || (WBScreenDepth <= 8) || (NULL == ScalosGfxBase))
+		{
+		set(app->Obj[GROUP_TEXTWINDOWS_SELECTIONMARK], MUIA_Disabled, TRUE);
+		}
+
 	// Enable TrueType controls if ttengine.library is available
 	if (TTEngineBase)
 		{
@@ -1859,6 +1882,14 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	//Icon border selection window
 	DoMethod(app->Obj[WINDOW_ICONFRAMES], MUIM_Notify, MUIA_Window_CloseRequest, TRUE, 
 		app->Obj[WINDOW_ICONFRAMES], 3, MUIM_Set, MUIA_Window_Open, FALSE);
+
+	// Update select marker sample
+	DoMethod(app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY], MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime,
+		app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], 3, MUIM_Set, TIHA_Transparency, MUIV_TriggerValue);
+	DoMethod(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime,
+		MUIV_Notify_Application, 2, MUIM_CallHook, &UpdateSelectMarkerSampleHook);
+	DoMethod(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIM_Notify, MUIA_Coloradjust_RGB, MUIV_EveryTime,
+		MUIV_Notify_Application, 2, MUIM_CallHook, &UpdateSelectMarkerSampleHook);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
@@ -3151,6 +3182,11 @@ static VOID Cleanup(struct SCAModule *app)
 		MUI_DeleteCustomClass(TextWindowColumnsListClass);
 		TextWindowColumnsListClass = NULL;
 		}
+	if (SelectMarkSampleClass)
+		{
+		CleanupSelectMarkSampleClass(SelectMarkSampleClass);
+		SelectMarkSampleClass = NULL;
+		}
 	if (McpFrameClass)
 		{
 		CleanupMcpFrameClass(McpFrameClass);
@@ -3195,7 +3231,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IPreferences);
 		IPreferences = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (PreferencesBase)
 		{
 		CloseLibrary(PreferencesBase);
@@ -3207,7 +3243,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IWorkbench);
 		IWorkbench = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (WorkbenchBase)
 		{
 		CloseLibrary(WorkbenchBase);
@@ -3219,7 +3255,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)ICyberGfx);
 		ICyberGfx = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (CyberGfxBase)
 		{
 		CloseLibrary(CyberGfxBase);
@@ -3231,11 +3267,23 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)ITTEngine);
 		ITTEngine = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (TTEngineBase)
 		{
 		CloseLibrary(TTEngineBase);
 		TTEngineBase = NULL;
+		}
+#ifdef __amigaos4__
+	if (IScalosGfx)
+		{
+		DropInterface((struct Interface *)IScalosGfx);
+		IScalosGfx = NULL;
+		}
+#endif //__amigaos4__
+	if (ScalosGfxBase)
+		{
+		CloseLibrary(ScalosGfxBase);
+		ScalosGfxBase = NULL;
 		}
 #ifdef __amigaos4__
 	if (IScalos)
@@ -3243,7 +3291,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IScalos);
 		IScalos = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (ScalosBase)
 		{
 		CloseLibrary(&ScalosBase->scb_LibNode);
@@ -3255,7 +3303,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IIFFParse);
 		IIFFParse = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IFFParseBase)
 		{
 		CloseLibrary(IFFParseBase);
@@ -3267,23 +3315,19 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IMUIMaster);
 		IMUIMaster = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (MUIMasterBase)
 		{
 		CloseLibrary(MUIMasterBase);
 		MUIMasterBase = NULL;
 		}
-/*
-	if (DOSBase)
-		CloseLibrary((struct Library *)DOSBase);
-*/
 #ifdef __amigaos4__
 	if (IIcon)
 		{
 		DropInterface((struct Interface *)IIcon);
 		IIcon = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IconBase)
 		{
 		CloseLibrary(IconBase);
@@ -3295,7 +3339,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IAsl);
 		IAsl = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (AslBase)
 		{
 		CloseLibrary(AslBase);
@@ -3307,14 +3351,14 @@ static VOID Cleanup(struct SCAModule *app)
 		CloseLibrary(UtilityBase);
 		UtilityBase = NULL;
 		}
-#endif
+#endif //__amigaos4__
 #ifdef __amigaos4__
 	if (IGraphics)
 		{
 		DropInterface((struct Interface *)IGraphics);
 		IGraphics = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (GfxBase)
 		{
 		CloseLibrary((struct Library *)GfxBase);
@@ -3326,7 +3370,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IIntuition);
 		IIntuition = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IntuitionBase)
 		{
 		CloseLibrary((struct Library *)IntuitionBase);
@@ -3338,7 +3382,7 @@ static VOID Cleanup(struct SCAModule *app)
 		DropInterface((struct Interface *)IDiskfont);
 		IDiskfont = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (DiskfontBase)
 		{
 		CloseLibrary(DiskfontBase);
@@ -3372,7 +3416,7 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'diskfont.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 		if(! (IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library",39) ))
 			{
 			Printf("Error: Unable to open 'Intuition.library' v39\n");
@@ -3385,7 +3429,7 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'intuition.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 		if(! (GfxBase = (struct GfxBase *)OpenLibrary("graphics.library",39) ))
 			{
 			Printf("Error: Unable to open 'graphics.library' v39\n");
@@ -3398,14 +3442,14 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'graphics.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 #ifndef __amigaos4__
 		if(! (UtilityBase = OpenLibrary("utility.library",39) ))
 			{
 			MsgBox("Unable to open 'utility.library v39", "Error", NULL);
 			break;
 			}
-#endif
+#endif //__amigaos4__
 		IconBase = OpenLibrary("icon.library", 39);
 		if (NULL == IconBase)
 			{
@@ -3419,7 +3463,7 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'icon.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 		AslBase = OpenLibrary("asl.library", 39);
 		if (NULL == AslBase)
 			{
@@ -3433,14 +3477,7 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'asl.library' OS4 interface\n");
 			break;
 			}
-#endif
-/*
-		if(! (DOSBase = (struct DosLibrary *)OpenLibrary("dos.library",39) ))
-			{
-			Printf("Error: Unable to open 'dos.library' v39\n");
-			break;
-			}
-*/
+#endif //__amigaos4__
 		IFFParseBase = OpenLibrary("iffparse.library", 39);
 		if (NULL == IFFParseBase)
 			{
@@ -3454,7 +3491,7 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'iffparse.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 		MUIMasterBase = OpenLibrary("zune.library", 0);
 		if (NULL == MUIMasterBase)
 			MUIMasterBase = OpenLibrary(MUIMASTER_NAME, 19);
@@ -3470,7 +3507,7 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'muimaster.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 
 		PreferencesBase = OpenLibrary("preferences.library", 39);
 		if (NULL == PreferencesBase)
@@ -3485,7 +3522,7 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'preferences.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 
 		WorkbenchBase = OpenLibrary("workbench.library", 39);
 		if (NULL == WorkbenchBase)
@@ -3500,35 +3537,42 @@ static BOOL Init(struct SCAModule *app)
 			Printf("Error: Could not get 'diskfont.library' OS4 interface\n");
 			break;
 			}
-#endif
+#endif //__amigaos4__
 
 		// TTEngineBase is optional
 		TTEngineBase = OpenLibrary(TTENGINENAME, 6);
 #ifdef __amigaos4__
 		if (TTEngineBase)
 			ITTEngine = (struct TTEngineIFace *)GetInterface((struct Library *)TTEngineBase, "main", 1, NULL);
-#endif
+#endif //__amigaos4__
 
 		// CyberGfxBase is optional
 		CyberGfxBase = OpenLibrary("cybergraphics.library", 40);
 #ifdef __amigaos4__
 		if (CyberGfxBase)
 			ICyberGfx = (struct CyberGfxIFace *)GetInterface((struct Library *)CyberGfxBase, "main", 1, NULL);
-#endif
+#endif //__amigaos4__
 
 		// ScalosBase is optional
 		ScalosBase = (struct ScalosBase *) OpenLibrary(SCALOSNAME, 39);
 #ifdef __amigaos4__
 		if (ScalosBase)
 			IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
-#endif
+#endif //__amigaos4__
+
+		// ScalosGfxBase is optional
+		ScalosGfxBase = OpenLibrary(SCALOSGFXNAME, 42);
+#ifdef __amigaos4__
+		if (ScalosGfxBase)
+			IScalosGfx = (struct ScalosIFace *)GetInterface(ScalosGfxBase, "main", 1, NULL);
+#endif //__amigaos4__
 
 		// LocaleBase is optional
 		LocaleBase = (T_LOCALEBASE) OpenLibrary("locale.library", 39);
 #ifdef __amigaos4__
 		if (LocaleBase)
 			ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
-#endif
+#endif //__amigaos4__
 		if (LocaleBase)
 			ScalosPrefsCatalog = OpenCatalogA(NULL, "Scalos/Scalos_Prefs.catalog", NULL);
 
@@ -3608,6 +3652,13 @@ static BOOL Init(struct SCAModule *app)
 		if (NULL == McpFrameClass)
 			{
 			MsgBox("Unable to create McpFrameClass", "Error", NULL);
+			break;
+			}
+
+		SelectMarkSampleClass = InitSelectMarkSampleClass();
+		if (NULL == SelectMarkSampleClass)
+			{
+			MsgBox("Unable to create SelectMarkSampleClass", "Error", NULL);
 			break;
 			}
 
@@ -6654,15 +6705,31 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 				Child, HVSpace,
 			End, //VGroup
 
-			// Text windows
+		End, //Register
+	End, //VGroup
+	&NewPrefsPages[6]);
+///
+}
+
+//-----------------------------------------------------------------
+
+static Object *GenerateTextWindowPage(struct SCAModule *app)
+{
+///
+	return CreatePrefsPage(app,
+		VGroup,
+		MUIA_Background, MUII_PageBack,
+
+		Child, RegisterObject,
+			MUIA_Register_Titles, cTextWindowPages,
+
+			// Fonts
 			Child, VGroup,
+				MUIA_Background, MUII_RegisterBack,
 
 				Child, HVSpace,
 
 				Child, VGroup,
-					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_LISTERFONT),
-					GroupFrame,
-					MUIA_Background, MUII_GroupBack,
 
 					Child, HVSpace,
 
@@ -6725,31 +6792,19 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 								End, //FontSampleMCCObject
 						End, //VGroup
 					End, //HGroup
-
-					Child, HGroup,
-						Child, HVSpace,
-						Child, ColGroup(2),
-							Child, Label1((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_SOFTLINKS_UNDERLINED)),
-							Child, app->Obj[SOFTTEXTSLINK] = CheckMarkHelp(FALSE, MSGID_FILEDISPLAYPAGE_SOFTLINKS_UNDERLINED_SHORTHELP),
-
-							Child, Label1((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_STRIPED)),
-							Child, app->Obj[CHECK_STRIPED_WINDOW] = CheckMarkHelp(FALSE, MSGID_FILEDISPLAYPAGE_STRIPED_SHORTHELP),
-
-							Child, Label1((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_SELECTTEXTICONNAME)),
-							Child, app->Obj[CHECK_SELECTTEXTICONNAME] = CheckMarkHelp(FALSE, MSGID_FILEDISPLAYPAGE_SELECTTEXTICONNAME_SHORTHELP),
-						End, //ColGroup
-						Child, HVSpace,
-
-					End, //HGroup
-
-					Child, HVSpace,
-
 				End, //VGroup
 
+				Child, HVSpace,
+
+			End, //VGroup
+
+			// Columns
+			Child, VGroup,
+				MUIA_Background, MUII_RegisterBack,
+
+				Child, HVSpace,
+
 				Child, HGroup,
-					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_DISPLAYED_COLUMNS),
-					GroupFrame,
-					MUIA_Background, MUII_GroupBack,
 					MUIA_Weight, 500,
 
 					Child, VGroup,
@@ -6796,11 +6851,113 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 				End, //HGroup
 
 				Child, HVSpace,
+			End, //VGroup
+
+			// Selection marks
+			Child, VGroup,
+				MUIA_Background, MUII_RegisterBack,
+
+				Child, app->Obj[GROUP_TEXTWINDOWS_SELECTIONMARK] = VGroup,
+
+//				  	Child, HVSpace,
+
+					Child, HGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_GROUP_BASECOLOR),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
+
+						Child, app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK] = ColoradjustObject,
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BASECOLOR_SHORTHELP),
+							End, //ColoradjustObject
+					End, //HGroup
+
+//				  	Child, HVSpace,
+
+					Child, HGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_SELECTION_BORDER_TRANSPARENCY),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
+
+						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
+
+						Child, app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY] = SliderObject,
+							MUIA_Numeric_Min, 0,
+							MUIA_Numeric_Max, 255,
+							MUIA_Slider_Horiz, TRUE,
+							MUIA_Numeric_Value, 255,
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BORDER_TRANSPARENCY_SHORTHELP),
+						End, //Slider
+
+						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_OPAQUE)),
+					End, //HGroup
+
+					Child, HGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_SELECTION_FILL_TRANSPARENCY),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
+
+						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
+
+						Child, app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY] = SliderObject,
+							MUIA_Numeric_Min, 0,
+							MUIA_Numeric_Max, 255,
+							MUIA_Slider_Horiz, TRUE,
+							MUIA_Numeric_Value, 128,
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_FILL_TRANSPARENCY_SHORTHELP),
+						End, //Slider
+
+						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_OPAQUE)),
+					End, //HGroup
+
+					Child, HVSpace,
+
+				End, //VGroup
+
+				Child, HGroup,
+					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
+
+					Child, app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE] = NewObject(SelectMarkSampleClass->mcc_Class, 0,
+						TextFrame,
+						MUIA_Background, MUII_TextBack,
+						TIHA_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
+					End, //
+				End, //HGroup
+
+			End, //VGroup
+
+			// Miscellaneous
+			Child, VGroup,
+				MUIA_Background, MUII_RegisterBack,
+
+				Child, HVSpace,
+
+				Child, HGroup,
+					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
+
+					Child, HVSpace,
+
+					Child, ColGroup(2),
+						Child, Label1((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_SOFTLINKS_UNDERLINED)),
+						Child, app->Obj[SOFTTEXTSLINK] = CheckMarkHelp(FALSE, MSGID_FILEDISPLAYPAGE_SOFTLINKS_UNDERLINED_SHORTHELP),
+
+						Child, Label1((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_STRIPED)),
+						Child, app->Obj[CHECK_STRIPED_WINDOW] = CheckMarkHelp(FALSE, MSGID_FILEDISPLAYPAGE_STRIPED_SHORTHELP),
+
+						Child, Label1((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_SELECTTEXTICONNAME)),
+						Child, app->Obj[CHECK_SELECTTEXTICONNAME] = CheckMarkHelp(FALSE, MSGID_FILEDISPLAYPAGE_SELECTTEXTICONNAME_SHORTHELP),
+					End, //ColGroup
+					Child, HVSpace,
+
+				End, //HGroup
+
+				Child, HVSpace,
 
 			End, //VGroup
 		End, //Register
 	End, //VGroup
-	&NewPrefsPages[6]);
+	&NewPrefsPages[7]);
 ///
 }
 
@@ -6962,7 +7119,7 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 		Child, HVSpace,
 
 	End, //VGroup
-	&NewPrefsPages[7]);
+	&NewPrefsPages[8]);
 ///
 }
 
@@ -7102,7 +7259,7 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 		Child, HVSpace,
 
 	End, //VGroup
-	&NewPrefsPages[8]);
+	&NewPrefsPages[9]);
 ///
 }
 
@@ -7248,7 +7405,7 @@ static Object *GeneratePluginsPage(struct SCAModule *app)
 		Child, VSpace(2),
 
 	End, //VGroup
-	&NewPrefsPages[9]);
+	&NewPrefsPages[10]);
 ///
 }
 
@@ -7296,7 +7453,7 @@ static Object *GenerateModulesPage(struct SCAModule *app)
 		Child, HVSpace,
 
 		End, //VGroup
-		&NewPrefsPages[10]);
+		&NewPrefsPages[11]);
 ///
 }
 

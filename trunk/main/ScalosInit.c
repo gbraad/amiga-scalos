@@ -286,34 +286,34 @@ struct ScalosClassList InternalScalosClasses[] =
 static struct LibListEntry LibList[] =
 	{
 	// !! "dos.library" and "intuition.library" should remain the very first entries !!
-	LLE(DOSNAME,	      (struct Library **)(APTR) &DOSBase,             39, 0L, "main", (struct Interface **)(APTR) &IDOS, 1),
-	LLE("intuition.library", (struct Library **)(APTR) &IntuitionBase,    39, 0L, "main", (struct Interface **)(APTR) &IIntuition, 1),
+	LLE(DOSNAME,	      (struct Library **)(APTR) &DOSBase,             	39, 0L, "main", (struct Interface **)(APTR) &IDOS, 1),
+	LLE("intuition.library", (struct Library **)(APTR) &IntuitionBase,    	39, 0L, "main", (struct Interface **)(APTR) &IIntuition, 1),
 
-	LLE("cybergraphics.library",      	&CyberGfxBase,		40, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ICyberGfx, 1),
-	LLE("datatypes.library",	      	&DataTypesBase,		39, 0L, "main", (struct Interface **)(APTR) &IDataTypes, 1),
-	LLE(GRAPHICSNAME,   (struct Library **)(APTR) &GfxBase,       	      39, 0L, "main", (struct Interface **)(APTR) &IGraphics, 1),
-	LLE("layers.library",	  		&LayersBase,	        39, 0L, "main", (struct Interface **)(APTR) &ILayers, 1),
-	LLE("gadtools.library",	      		&GadToolsBase,		39, 0L, "main", (struct Interface **)(APTR) &IGadTools, 1),
-	LLE(ICONNAME,	      			&IconBase,	        39, 0L, "main", (struct Interface **)(APTR) &IIcon, 1),
-	LLE("diskfont.library",	      		&DiskfontBase,		37, 0L, "main", (struct Interface **)(APTR) &IDiskfont, 1),
-	LLE(UTILITYNAME,    (struct Library **)(APTR) &UtilityBase,   	      37, 0L, "main", (struct Interface **)(APTR) &IUtility, 1),
-	LLE("iffparse.library",	      		&IFFParseBase,		39, 0L, "main", (struct Interface **)(APTR) &IIFFParse, 1),
-	LLE(ICONOBJECTNAME,		  	&IconobjectBase,        39, 0L, "main", (struct Interface **)(APTR) &IIconobject, 1),
-	LLE(WORKBENCH_NAME,		  	&WorkbenchBase,	        39, 0L, "main", (struct Interface **)(APTR) &IWorkbench, 1),
-	LLE("rexxsyslib.library", (struct Library **)(APTR) &RexxSysBase,     36, 0L, "main", (struct Interface **)(APTR) &IRexxSys, 1),
-	LLE("preferences.library",	      	&PreferencesBase,	39, 0L, "main", (struct Interface **)(APTR) &IPreferences, 1),
-	LLE("popupmenu.library", (struct Library **)(APTR) &PopupMenuBase,     3, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &IPopupMenu, 1),
-	LLE("guigfx.library",	  		&GuiGFXBase,	         1, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &IGuiGFX, 1),
-	LLE("locale.library",	  (struct Library **)(APTR) &LocaleBase,      38, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ILocale, 1),
-	LLE("commodities.library",	      	&CxBase,	        39, 0L, "main", (struct Interface **)(APTR) &ICommodities, 1),
-	LLE("asl.library",		  	&AslBase,	        39, 0L, "main", (struct Interface **)(APTR) &IAsl, 1),
-	LLE(TTENGINENAME,		  	&TTEngineBase,	         6, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ITTEngine, 1),
-	LLE(SCALOSGFXNAME,  (struct Library **)(APTR) &ScalosGfxBase,	      41, 0L, "main", (struct Interface **)(APTR)  &IScalosGfx, 1),
-	LLE("sqlite3.library",			&SQLite3Base,		43, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ISQLite3, 1),
-	LLE("titlebar.image",	  		&TitlebarImageBase,     40, LLEFLAGF_Optional, NULL, NULL, 0),
-	LLE("Images/titlebar.image",      	&TitlebarImageBase,     40, LLEFLAGF_Optional, NULL, NULL, 0),
-	LLE("Classes/Images/titlebar.image",  	&TitlebarImageBase,	40, LLEFLAGF_Optional, NULL, NULL, 0),
-	LLE(NULL, 		      		NULL, 		         0, 0L, NULL, NULL, 0),
+	LLE("cybergraphics.library",      	&CyberGfxBase,			40, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ICyberGfx, 1),
+	LLE("datatypes.library",	      	&DataTypesBase,			39, 0L, "main", (struct Interface **)(APTR) &IDataTypes, 1),
+	LLE(GRAPHICSNAME,   (struct Library **)(APTR) &GfxBase,       	      	39, 0L, "main", (struct Interface **)(APTR) &IGraphics, 1),
+	LLE("layers.library",	  		&LayersBase,	        	39, 0L, "main", (struct Interface **)(APTR) &ILayers, 1),
+	LLE("gadtools.library",	      		&GadToolsBase,			39, 0L, "main", (struct Interface **)(APTR) &IGadTools, 1),
+	LLE(ICONNAME,	      			&IconBase,	        	39, 0L, "main", (struct Interface **)(APTR) &IIcon, 1),
+	LLE("diskfont.library",	      		&DiskfontBase,			37, 0L, "main", (struct Interface **)(APTR) &IDiskfont, 1),
+	LLE(UTILITYNAME,    (struct Library **)(APTR) &UtilityBase,   	      	37, 0L, "main", (struct Interface **)(APTR) &IUtility, 1),
+	LLE("iffparse.library",	      		&IFFParseBase,			39, 0L, "main", (struct Interface **)(APTR) &IIFFParse, 1),
+	LLE(ICONOBJECTNAME,		  	&IconobjectBase,        	39, 0L, "main", (struct Interface **)(APTR) &IIconobject, 1),
+	LLE(WORKBENCH_NAME,		  	&WorkbenchBase,	        	39, 0L, "main", (struct Interface **)(APTR) &IWorkbench, 1),
+	LLE("rexxsyslib.library", (struct Library **)(APTR) &RexxSysBase,     	36, 0L, "main", (struct Interface **)(APTR) &IRexxSys, 1),
+	LLE("preferences.library",	      	&PreferencesBase,		39, 0L, "main", (struct Interface **)(APTR) &IPreferences, 1),
+	LLE("popupmenu.library", (struct Library **)(APTR) &PopupMenuBase,     	 3, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &IPopupMenu, 1),
+	LLE("guigfx.library",	  		&GuiGFXBase,	          	 1, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &IGuiGFX, 1),
+	LLE("locale.library",	  (struct Library **)(APTR) &LocaleBase,      	38, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ILocale, 1),
+	LLE("commodities.library",	      	&CxBase,	        	39, 0L, "main", (struct Interface **)(APTR) &ICommodities, 1),
+	LLE("asl.library",		  	&AslBase,	        	39, 0L, "main", (struct Interface **)(APTR) &IAsl, 1),
+	LLE(TTENGINENAME,		  	&TTEngineBase,	        	 6, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ITTEngine, 1),
+	LLE(SCALOSGFXNAME,  (struct Library **)(APTR) &ScalosGfxBase,		42, 0L, "main", (struct Interface **)(APTR)  &IScalosGfx, 1),
+	LLE("sqlite3.library",			&SQLite3Base,			43, LLEFLAGF_Optional, "main", (struct Interface **)(APTR) &ISQLite3, 1),
+	LLE("titlebar.image",	  		&TitlebarImageBase,     	40, LLEFLAGF_Optional, NULL, NULL, 0),
+	LLE("Images/titlebar.image",      	&TitlebarImageBase,     	40, LLEFLAGF_Optional, NULL, NULL, 0),
+	LLE("Classes/Images/titlebar.image",  	&TitlebarImageBase,		40, LLEFLAGF_Optional, NULL, NULL, 0),
+	LLE(NULL, 		      		NULL, 		        	 0, 0L, NULL, NULL, 0),
 	};
 
 static struct NotifyTab ScalosNotifyTable[] =
@@ -1348,6 +1348,7 @@ static void ScalosMain(LONG *ArgArray)
 
 		DtImageClass = initDtImageClass();
 		TextIconClass = initTextIconClass();
+		TextIconHighlightClass = initTextIconHighlightClass();
 		IconifyImageClass = initIconifyClass();
 
 		LINE_TRACE;
@@ -1807,6 +1808,11 @@ static void ScalosMain(LONG *ArgArray)
 
 	LINE_TRACE;
 
+	if (TextIconHighlightClass)
+		{
+		FreeClass(TextIconHighlightClass);
+		TextIconHighlightClass = NULL;
+		}
 	if (TextIconClass)
 		{
 		FreeClass(TextIconClass);

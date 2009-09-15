@@ -17,17 +17,18 @@ include		config.mk
 # Project Object files
 #
 
-OBJS	=	$(OBJDIR)/Hooks.o		\
-		$(OBJDIR)/ReadWritePrefs.o 	\
-                $(OBJDIR)/HiddenDevices.o	\
-		$(OBJDIR)/DataTypesMCC.o 	\
-		$(OBJDIR)/FontSampleMCC.o 	\
-		$(OBJDIR)/Images.o 		\
-		$(OBJDIR)/McpFrameMCC.o		\
-		$(OBJDIR)/PrefsPlugins.o 	\
-		$(OBJDIR)/Scalos.o 		\
-                $(OBJDIR)/PrefsVersion.o	\
-		$(OBJDIR)/ScalosMcpGfx.o	\
+OBJS	=	$(OBJDIR)/Hooks.o			\
+		$(OBJDIR)/ReadWritePrefs.o 		\
+		$(OBJDIR)/HiddenDevices.o		\
+		$(OBJDIR)/DataTypesMCC.o 		\
+		$(OBJDIR)/FontSampleMCC.o 		\
+		$(OBJDIR)/Images.o 			\
+		$(OBJDIR)/McpFrameMCC.o			\
+		$(OBJDIR)/PrefsPlugins.o 		\
+		$(OBJDIR)/Scalos.o 			\
+		$(OBJDIR)/PrefsVersion.o		\
+		$(OBJDIR)/ScalosMcpGfx.o		\
+		$(OBJDIR)/SelectMarkSampleClass.o	\
 
 
 ##############################################################################

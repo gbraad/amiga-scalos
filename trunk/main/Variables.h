@@ -144,7 +144,8 @@ extern struct ScalosClass *ScalosClassList;	// +jl+ 20010929 Scalos Class list
 extern struct DoWait *DoWaitList;		// +jl+ 20011001 List of Msgs for DOWAIT
 
 extern struct IClass *DtImageClass;		// Image Class wrapper for Scalos Datatypes images
-extern struct IClass *TextIconClass;		// Class for View By Text mode
+extern struct IClass *TextIconClass;		// Class for Text mode icons
+extern struct IClass *TextIconHighlightClass;	// Class for highlighting of text mode icons
 extern struct IClass *IconifyImageClass;	// +jl+ 20010831 Imageclass for the iconify gadget
 
 extern UWORD WBLaunchCount;			// number of workbench launched programs

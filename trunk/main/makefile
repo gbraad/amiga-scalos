@@ -161,6 +161,7 @@ SRCS  =	about.c			\
 	StringGadgetClass.c	\
 	Subroutines.c		\
 	TextIconClass.c		\
+	TextIconHighlightClass.c	\
 	TextWindowClass.c	\
 	TitleClass.c		\
         ThumbnailCache.c	\
@@ -308,7 +309,8 @@ $(OBJDIR)/Splash.o			: Splash.c TTLayout.h $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/StatusBar.o			: StatusBar.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/StringGadgetClass.o		: StringGadgetClass.c $(CHEADERS)
 $(OBJDIR)/Subroutines.o			: Subroutines.c $(CHEADERS)
-$(OBJDIR)/TextIconClass.o		: TextIconClass.c ../include/DefIcons.h $(CHEADERS) $(LOCALE_HEADERS)
+$(OBJDIR)/TextIconClass.o		: TextIconClass.c TextIconHighlightClass.h ../include/DefIcons.h $(CHEADERS) $(LOCALE_HEADERS)
+$(OBJDIR)/TextIconHighlightClass.o	: TextIconHighlightClass.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/TextWindowClass.o		: TextWindowClass.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/TitleClass.o			: TitleClass.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/ThumbnailCache.o		: ThumbnailCache.c $(CHEADERS)

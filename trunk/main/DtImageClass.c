@@ -82,7 +82,7 @@ Class *initDtImageClass(void)
 	Class *DtImageClass;
 
 	DtImageClass = MakeClass( NULL,
-			(STRPTR) "imageclass",
+			(STRPTR) IMAGECLASS,
 			NULL,
 			sizeof(struct DtImageClassInst),
 			0 );

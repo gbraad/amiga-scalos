@@ -41,4 +41,5 @@ SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, Msg msg
 SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT CalculateMaxRadiusHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(void) INTERRUPT UpdateSelectMarkerSampleHookFunc(struct Hook *hook, Object *o, Msg msg);
 #endif /* HOOKS_H */

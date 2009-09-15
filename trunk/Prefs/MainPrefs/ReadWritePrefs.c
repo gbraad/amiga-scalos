@@ -51,6 +51,7 @@
 #include <limits.h>
 
 #include <FontSampleMCC.h>
+#include "SelectMarkSampleClass.h"
 #include "ReadWritePrefs.h"
 #include "HiddenDevices.h"
 #include "ScalosPrefs.h"
@@ -253,6 +254,8 @@ struct TextWindowGroup
 	BYTE			fd_lDisplayFields[12];
 	BYTE			fd_bShowStripes;
 	UBYTE			fd_SelectTextIconName;
+	struct ARGB		fd_SelectMarkerBaseColor;
+	UBYTE			fd_SelectMarkerTransparency;
 };
 
 struct TrueTypeFontsGroup
@@ -480,6 +483,8 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		},
 		FALSE,			// fd_bShowStripes;
 		FALSE,			// fd_SelectTextIconName
+		{ ~0, 133, 195, 221 },	// fd_SelectMarkerBaseColor
+		128,			// fd_SelectMarkerTransparency
 	},
 	{
 	// TrueTypeFonts
@@ -874,6 +879,18 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	set(app->Obj[CHECK_STRIPED_WINDOW], MUIA_Selected, currentPrefs.FileDisplay.fd_bShowStripes);
 	set(app->Obj[CHECK_SELECTTEXTICONNAME], MUIA_Selected, currentPrefs.FileDisplay.fd_SelectTextIconName);
 
+	setslider(app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY], currentPrefs.FileDisplay.fd_SelectMarkerTransparency);
+	setslider(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Alpha);
+
+	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_BaseColor, (ULONG) &currentPrefs.FileDisplay.fd_SelectMarkerBaseColor);
+	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_Transparency, currentPrefs.FileDisplay.fd_SelectMarkerTransparency);
+
+	SetAttrs(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK],
+		MUIA_Coloradjust_Red, currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Red << 24,
+		MUIA_Coloradjust_Green, currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Green << 24,
+		MUIA_Coloradjust_Blue, currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Blue << 24,
+		TAG_END);
+
 	// --- TrueType Font Page
 
 	setcycle(app->Obj[CYCLE_TTANTIALIAS], currentPrefs.TrueTypeFonts.ttg_Antialias);
@@ -1226,6 +1243,12 @@ static void FillPrefsStructures(struct SCAModule *app)
 	currentPrefs.FileDisplay.fd_bShowStripes	= getv(app->Obj[CHECK_STRIPED_WINDOW], MUIA_Selected);
 	currentPrefs.FileDisplay.fd_SelectTextIconName	= getv(app->Obj[CHECK_SELECTTEXTICONNAME], MUIA_Selected);
 
+	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Red   = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Red) >> 24;
+	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Green = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Green) >> 24;
+	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Blue  = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Blue) >> 24;
+	currentPrefs.FileDisplay.fd_SelectMarkerTransparency    =  getv(app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY], MUIA_Numeric_Value);
+	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Alpha =  getv(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], MUIA_Numeric_Value);
+
 	UpdateFileDisplayPrefsFromGUI(app);
 
 	// --- TrueType Font Page
@@ -1414,6 +1437,8 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.FileDisplay.fd_bShowStripes, sizeof(currentPrefs.FileDisplay.fd_bShowStripes) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.FileDisplay.fd_SelectTextIconName, sizeof(currentPrefs.FileDisplay.fd_SelectTextIconName) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.FileDisplay.fd_SelectMarkerBaseColor, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerBaseColor) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.FileDisplay.fd_SelectMarkerTransparency, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerTransparency) );
 
 		WritePrefsHandle(p_MyPrefsHandle, PrefsFileName);
 
@@ -1595,6 +1620,8 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.FileDisplay.fd_bShowStripes, sizeof(currentPrefs.FileDisplay.fd_bShowStripes) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.FileDisplay.fd_SelectTextIconName, sizeof(currentPrefs.FileDisplay.fd_SelectTextIconName) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.FileDisplay.fd_SelectMarkerBaseColor, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerBaseColor) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.FileDisplay.fd_SelectMarkerTransparency, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerTransparency) );
 
 		FreePrefsHandle(p_MyPrefsHandle);
 		}
