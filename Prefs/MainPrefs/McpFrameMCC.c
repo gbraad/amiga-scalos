@@ -1,4 +1,4 @@
-// DataTypesMCC.c
+// McpFrameMCC.c
 // $Date$
 
 

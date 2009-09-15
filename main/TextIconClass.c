@@ -47,6 +47,7 @@
 #include <DefIcons.h>
 
 #include "scalos_structures.h"
+#include "TextIconHighlightClass.h"
 #include "functions.h"
 #include "locale.h"
 #include "Variables.h"
@@ -89,6 +90,7 @@ struct TextIClassInst
 	UWORD   txicl_PenDrawersSelected;
 	UWORD	txicl_PenShadow;
 	UWORD	txicl_PenOutline;
+	UWORD	txicl_LeftRightSpace;	// Space left and right of text columns
 
 	ULONG	txicl_UserFlags;	// IDTA_UserFlags
 
@@ -118,6 +120,7 @@ struct TextIClassInst
 
 	struct internalScaWindowTask *txicl_WindowTask;
 	Object	*txicl_IconObject;
+	Object	*txicl_Highlight;
 	UBYTE	txicl_SoloIcon;
 	};
 
@@ -234,6 +237,19 @@ static ULONG TextIcon_New(Class *cl, Object *o, Msg msg)
 
 	memset(inst, 0, sizeof(struct TextIClassInst));
 
+	inst->txicl_Highlight = NewObject(TextIconHighlightClass, NULL,
+		TIHA_BaseColor, &CurrentPrefs.pref_SelectMarkerBaseColor,
+		TIHA_Transparency, (ULONG) CurrentPrefs.pref_SelectMarkerTransparency,
+		TAG_END);
+	d1(KPrintF("%s/%s/%ld: txicl_Highlight=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_Highlight));
+	if (NULL == inst->txicl_Highlight)
+		{
+		DoMethod(o, OM_DISPOSE);
+		return 0;
+		}
+
+	inst->txicl_LeftRightSpace = 3;
+
 	inst->txicl_positions[TXICOL_Name].tic_String = (STRPTR)inst->txicl_name;
 	inst->txicl_positions[TXICOL_Size].tic_String = (STRPTR)inst->txicl_size;
 	inst->txicl_positions[TXICOL_Prot].tic_String = (STRPTR)inst->txicl_prot;
@@ -285,6 +301,11 @@ static ULONG TextIcon_Dispose(Class *cl, Object *o, Msg msg)
 		{
 		DisposeIconObject(inst->txicl_IconObject);
 		inst->txicl_IconObject = NULL;
+		}
+	if (inst->txicl_Highlight)
+		{
+		DisposeObject(inst->txicl_Highlight);
+		inst->txicl_Highlight = NULL;
 		}
 		
 	return DoSuperMethodA(cl, o, msg);
@@ -520,7 +541,7 @@ static ULONG TextIcon_Layout(Class *cl, Object *o, Msg msg)
 				inst->txicl_positions[n].tic_String, inst->txicl_positions[n].tic_Chars,
 				&textExtent);
 
-			Length = inst->txicl_positions[n].tic_Width = textExtent.te_Width;
+			Length = inst->txicl_positions[n].tic_Width = textExtent.te_Width + 2 * inst->txicl_LeftRightSpace;
 			Length += 8;
 
 			if (gg->Height < textExtent.te_Height + 1)
@@ -570,13 +591,13 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 	struct TextIClassInst *inst = INST_DATA(cl, o);
 	struct Rectangle TextColumnRect;
 	const WORD *pWidth;
-	LONG x, y, xRight, yBottom;
-	LONG FillXLeft, FillXRight;
+	LONG x, y, xRight;
 	UBYTE FgColorUnselected, FgColor;
 	UBYTE BgColor;
 	WORD FontBaseline;
 	struct ARGB Num, Denom;
 	ULONG BmRight;
+	struct Rectangle HighlightRect;
 
 	x = iop->iopd_XOffset;
 	y = iop->iopd_YOffset;
@@ -602,7 +623,7 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 		xRight += gg->Width;
 
 	xRight--;
-	yBottom = y + gg->Height - 1;
+	HighlightRect.MaxY = y + gg->Height - 1;
 
 	BgColor = PalettePrefs.pal_PensList[(inst->txicl_type < 0) ? PENIDX_FILEBG : PENIDX_DRAWERBG];
 
@@ -611,74 +632,64 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 
 	d1(KPrintF("%s/%s/%ld: txicl_TTFont=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_TTFont));
 
+	HighlightRect.MinY = y;
+
 	if (!(iop->iopd_DrawFlags & IODRAWF_NoText)
 		&& inst->txicl_HitOnNameOnly
 		&& GetTextColumnX(cl, o, &TextColumnRect))
 		{
-		FillXLeft = TextColumnRect.MinX - inst->txicl_WindowTask->iwt_WindowTask.wt_XOffset;
-		FillXRight = TextColumnRect.MaxX - inst->txicl_WindowTask->iwt_WindowTask.wt_XOffset;
+		HighlightRect.MinX = TextColumnRect.MinX - inst->txicl_WindowTask->iwt_WindowTask.wt_XOffset;
+		HighlightRect.MaxX = TextColumnRect.MaxX - inst->txicl_WindowTask->iwt_WindowTask.wt_XOffset;
 
-		if (FillXLeft < 0)
-			FillXLeft = 0;
-		if (FillXRight < 0)
-			FillXRight = 0;
+		if (HighlightRect.MinX < 0)
+			HighlightRect.MinX = 0;
+		if (HighlightRect.MaxX < 0)
+			HighlightRect.MaxX = 0;
 
 		if (!(iop->iopd_DrawFlags & IODRAWF_AbsolutePos))
 			{
-			FillXLeft += inst->txicl_WindowTask->iwt_InnerLeft;
-			FillXRight += inst->txicl_WindowTask->iwt_InnerLeft;
+			HighlightRect.MinX += inst->txicl_WindowTask->iwt_InnerLeft;
+			HighlightRect.MaxX += inst->txicl_WindowTask->iwt_InnerLeft;
 			}
 		}
 	else
 		{
-		FillXLeft = x;
-		FillXRight = xRight;
+		HighlightRect.MinX = x;
+		HighlightRect.MaxX = xRight;
 		}
 
-	d1(KPrintF("%s/%s/%ld: FillXLeft=%ld  FillXRight=%ld\n", __FILE__, __FUNC__, __LINE__, FillXLeft, FillXRight));
+	d1(KPrintF("%s/%s/%ld: HighlightRect.MinX=%ld  HighlightRect.MaxX=%ld\n", __FILE__, __FUNC__, __LINE__, HighlightRect.MinX, HighlightRect.MaxX));
 
 	Num = (inst->txicl_type < 0) ? NumFile : NumDrawer;
 	Denom = (inst->txicl_type < 0) ? DenomFile : DenomDrawer;
 
 	BmRight = GetBitMapAttr(iop->iopd_RastPort->BitMap, BMA_WIDTH);
 
+	EraseRect(iop->iopd_RastPort,
+		x,
+		HighlightRect.MinY,
+		BmRight,
+                HighlightRect.MaxY);
+
 	if (gg->Flags & GFLG_SELECTED)
 		{
-		if (x < FillXLeft)
-			{
-			// erase part left of highlighted area
-			EraseRect(iop->iopd_RastPort,
-				x, y,
-				FillXLeft - 1, yBottom);
-			}
-		// highlight select area
-		RectFill(iop->iopd_RastPort, FillXLeft, y, FillXRight, yBottom);
-		if (FillXRight < BmRight)
-			{
-			// erase part right of highlighted area
-			EraseRect(iop->iopd_RastPort,
-				1 + FillXRight,
-                                y,
-				BmRight,
-				yBottom);
-			}
-		}
-	else
-		{
-		EraseRect(iop->iopd_RastPort,
-			x,
-                        y,
-			BmRight,
-                        yBottom);
-		}
+		SetAttrs(inst->txicl_Highlight,
+			IA_Left, HighlightRect.MinX,
+			IA_Top, HighlightRect.MinY,
+			IA_Width, 1 + HighlightRect.MaxX - HighlightRect.MinX + 2,
+			IA_Height, 1 + HighlightRect.MaxY - HighlightRect.MinY,
+			IA_FGPen, BgColor,
+			TAG_END);
+		DrawImage(iop->iopd_RastPort, (struct Image *) inst->txicl_Highlight, 0, 0);
+		};
 
 	if (inst->txicl_UserFlags & ICONOBJ_USERFLAGF_DrawHighlite)
 		{
 		// Highlight select area
 		DimRect(iop->iopd_RastPort,
 			NumHilight, DenomHilight,
-			FillXLeft, y,
-			FillXRight, yBottom);
+			HighlightRect.MinX, HighlightRect.MinY,
+			HighlightRect.MaxX, HighlightRect.MaxY);
 		}
 
 	if (inst->txicl_type < 0)
@@ -710,7 +721,7 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 		for (pColumn = CurrentPrefs.pref_ColumnsArray; *pColumn >= 0; pColumn++)
 			{
 			short Ndx = (short)*pColumn;
-			WORD x0 = x;
+			WORD x0 = x + inst->txicl_LeftRightSpace;
 
 			d1(KPrintF("%s/%s/%ld: x=%ld  w=%ld\n", __FILE__, __FUNC__, __LINE__, x, pWidth[Ndx]));
 

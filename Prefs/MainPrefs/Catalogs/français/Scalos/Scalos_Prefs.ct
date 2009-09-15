@@ -209,6 +209,11 @@ MSGID_PREFGROUPS_TRUETYPEFONTS
 Police TrueType
 ;TrueType Fonts
 ;
+;+++translateme+++
+MSGID_PREFGROUPS_TEXTWINDOWS
+Text Windows
+;Text Windows
+;
 ;-----------------------------------------------------------
 ;
 MSGID_DESKTOPPAGES_SCREEN
@@ -353,10 +358,6 @@ MSGID_WINDOWPAGES_SIZE
 Taille
 ; Size
 ;
-MSGID_WINDOWPAGES_TEXTWINDOWS
-Fenêtres en mode texte
-;Text windows
-;
 MSGID_WINDOWPAGES_LAYOUT
 Disposition
 ;Layout
@@ -365,6 +366,28 @@ Disposition
 MSGID_WINDOWPAGES_CONTROLBAR
 Barre de navigation
 ;Control Bar
+;
+;-----------------------------------------------------------
+;
+;+++translateme+++
+MSGID_TEXTWINDOWPAGES_FONTS
+Fonts
+;Fonts
+;
+;+++translateme+++
+MSGID_TEXTWINDOWPAGES_COLUMNS
+Columns
+;Columns
+;
+;+++translateme+++
+MSGID_TEXTWINDOWPAGES_SELECTIONMARKS
+Selection marks
+;Selection marks
+;
+;+++translateme+++
+MSGID_TEXTWINDOWPAGES_MISC
+Miscellaneous
+;Miscellaneous
 ;
 ;-----------------------------------------------------------
 ;
@@ -2155,9 +2178,43 @@ Le bureau obtiendra la transparence si il nest pas en arrière-plan.
 ;
 ;-----------------------------------------------------------
 ;
-MSGID_FILEDISPLAYPAGE_LISTERFONT
-Choix de la police de caractères
-; Lister Font
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_SELECTION_BORDER_TRANSPARENCY
+Border Transparency
+;Border Transparency
+;
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_SELECTION_FILL_TRANSPARENCY
+Fill Transparency
+;Fill Transparency
+;
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_GROUP_BASECOLOR
+Base Color
+;Base Color
+;
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BASECOLOR_SHORTHELP
+Here you can adjust the base color for the\n\
+text window icon selection marker.
+;Here you can adjust the base color for the\n\
+;text window icon selection marker.
+;
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BORDER_TRANSPARENCY_SHORTHELP
+Adjust degree of transparency for the border\n\
+of the text window icon selection marker.
+;Adjust degree of transparency for the border\n\
+;of the text window icon selection marker.
+;
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_FILL_TRANSPARENCY_SHORTHELP
+Adjust degree of transparency for the interior\n\
+fill of the text window icon selection marker.
+;Adjust degree of transparency for the interior\n\
+;fill of the text window icon selection marker.
+;
+;-----------------------------------------------------------
 ;
 MSGID_FILEDISPLAYPAGE_FONT
 Police de caractères :
@@ -2205,10 +2262,6 @@ Un fichier caché est un nom de fichier commençant par\n\
 un '\033b.\033n' ou des fichiers icônes '\033b#?.info\033n'
 ; A hidden file is any filename beginning with\n\
 ; a '\033b.\033n' or icon files '\033b#?.info\033n'
-;
-MSGID_FILEDISPLAYPAGE_DISPLAYED_COLUMNS
-Affichage des colonnes
-; Displayed Columns
 ;
 MSGID_FILEDISPLAYPAGE_AVAILABLE_COLUMNS
 Colonnes disponibles

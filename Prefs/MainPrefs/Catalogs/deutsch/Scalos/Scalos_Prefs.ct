@@ -247,6 +247,11 @@ MSGID_PREFGROUPS_TRUETYPEFONTS
 TrueType Schriften
 ;TrueType Fonts
 ;
+;
+MSGID_PREFGROUPS_TEXTWINDOWS
+Textfenster
+;Text Windows
+;
 ;-----------------------------------------------------------
 ;
 MSGID_DESKTOPPAGES_SCREEN
@@ -423,11 +428,6 @@ Standardgrößen
 ;Size
 ;
 ;
-MSGID_WINDOWPAGES_TEXTWINDOWS
-Textfenster
-;Text windows
-;
-;
 MSGID_WINDOWPAGES_LAYOUT
 Layout
 ;Layout
@@ -436,6 +436,27 @@ Layout
 MSGID_WINDOWPAGES_CONTROLBAR
 Steuerleiste
 ;Control Bar
+;
+;-----------------------------------------------------------
+;
+MSGID_TEXTWINDOWPAGES_FONTS
+Schrift
+;Fonts
+;
+;
+MSGID_TEXTWINDOWPAGES_COLUMNS
+Angezeigte Spalten
+;Columns
+;
+;
+MSGID_TEXTWINDOWPAGES_SELECTIONMARKS
+Auswahlmarkierung
+;Selection marks
+;
+;
+MSGID_TEXTWINDOWPAGES_MISC
+Verschiedenes
+;Miscellaneous
 ;
 ;-----------------------------------------------------------
 ;
@@ -2621,10 +2642,45 @@ wenn "Scalos im Hintergrund" ausgeschaltet ist.
 ;
 ;-----------------------------------------------------------
 ;
-MSGID_FILEDISPLAYPAGE_LISTERFONT
-Schrift für Textfenster
-;Lister Font
 ;
+MSGID_TEXTWINDOWSPAGE_SELECTION_BORDER_TRANSPARENCY
+Durchsichtigkeit Rahmen
+;Border Transparency
+;
+;
+MSGID_TEXTWINDOWSPAGE_SELECTION_FILL_TRANSPARENCY
+Durchsichtigkeit Füllung
+;Fill Transparency
+;
+;
+MSGID_TEXTWINDOWSPAGE_GROUP_BASECOLOR
+Grundfarbe
+;Base Color
+;
+;
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BASECOLOR_SHORTHELP
+Hier wird die Grundfarbe der Auswahlmarkierung\n\
+in Textfenstern eingestellt.
+;Here you can adjust the base color for the\n\
+;text window icon selection marker.
+;
+;
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BORDER_TRANSPARENCY_SHORTHELP
+Hier wird der Grad der Durchsichtigkeit für\n\
+den Rahmen der Auswahlmarkierung in\n\
+Textfenstern eingestellt.
+;Adjust degree of transparency for the border\n\
+;of the text window icon selection marker.
+;
+;
+MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_FILL_TRANSPARENCY_SHORTHELP
+Hier wird der Grad der Durchsichtigkeit für\n\
+die innere Füllung der Auswahlmarkierung in\n\
+Textfenstern eingestellt.
+;Adjust degree of transparency for the interior\n\
+;fill of the text window icon selection marker.
+;
+;-----------------------------------------------------------
 ;
 MSGID_FILEDISPLAYPAGE_FONT
 Schrift:
@@ -2680,11 +2736,6 @@ Versteckt sind Dateien mit einem Namen, der mit \"\033b.\033n\"\n\
 anfängt, oder Piktogramme \"\033b#?.info\033n\"
 ;A hidden file is any filename beginning with\n\
 ;a '\033b.\033n' or icon files '\033b#?.info\033n'
-;
-;
-MSGID_FILEDISPLAYPAGE_DISPLAYED_COLUMNS
-Angezeigte Spalten
-;Displayed Columns
 ;
 ;
 MSGID_FILEDISPLAYPAGE_AVAILABLE_COLUMNS

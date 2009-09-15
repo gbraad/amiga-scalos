@@ -1297,11 +1297,6 @@ static BOOL PatternBackgroundHorizontalGradient(struct internalScaWindowTask *iw
 	struct PatternNode *ptNode, struct PatternInfo *ptInfo, struct RastPort *rp)
 {
 	struct ARGB Left, Right;
-	struct ARGB *Source;
-	LONG DeltaRed, DeltaGreen, DeltaBlue;
-	LONG StepRed, StepGreen, StepBlue;
-	LONG RemRed, RemGreen, RemBlue;
-	BOOL Success = FALSE;
 
 	Left.Red   = ptNode->ptn_BgColor1[0];
 	Left.Green = ptNode->ptn_BgColor1[1];
@@ -1311,105 +1306,12 @@ static BOOL PatternBackgroundHorizontalGradient(struct internalScaWindowTask *iw
 	Right.Red   = ptNode->ptn_BgColor2[0];
 	Right.Green = ptNode->ptn_BgColor2[1];
 	Right.Blue  = ptNode->ptn_BgColor2[2];
+	Right.Alpha = (UBYTE) ~0;
 
-	d1(KPrintF("%s/%s/%ld: Left   Red=%3ld Green=%2ld Blue=%3ld\n", __FILE__, __FUNC__, __LINE__, Left.Red, Left.Green, Left.Blue));
-	d1(KPrintF("%s/%s/%ld: Right  Red=%3ld Green=%2ld Blue=%3ld\n", __FILE__, __FUNC__, __LINE__, Right.Red, Right.Green, Right.Blue));
-
-	DeltaRed   = Right.Red - Left.Red;
-	DeltaGreen = Right.Green - Left.Green;
-	DeltaBlue  = Right.Blue - Left.Blue;
-
-	d1(KPrintF("%s/%s/%ld: DeltaRed=%ld  DeltaGreen=%ld  DeltaBlue=%ld\n", __FILE__, __FUNC__, __LINE__, DeltaRed, DeltaGreen, DeltaBlue));
-
-	StepRed = DeltaRed / ptInfo->ptinf_width;
-	RemRed  = DeltaRed % ptInfo->ptinf_width;
-
-	d1(KPrintF("%s/%s/%ld: StepRed=%ld  RemRed=%ld\n", __FILE__, __FUNC__, __LINE__, StepRed, RemRed));
-
-	StepGreen = DeltaGreen / ptInfo->ptinf_width;
-	RemGreen  = DeltaGreen % ptInfo->ptinf_width;
-
-	d1(KPrintF("%s/%s/%ld: StepGreen=%ld  RemGreen=%ld\n", __FILE__, __FUNC__, __LINE__, StepGreen, RemGreen));
-
-	StepBlue = DeltaBlue / ptInfo->ptinf_width;
-	RemBlue  = DeltaBlue % ptInfo->ptinf_width;
-
-	d1(KPrintF("%s/%s/%ld: StepBlue=%ld  RemBlue=%ld\n", __FILE__, __FUNC__, __LINE__, StepBlue, RemBlue));
-
-	Source = ScalosGfxCreateARGB(ptInfo->ptinf_width, 1, NULL);
-	if (Source)
-		{
-		LONG x, y;
-		struct ARGB *pSrc = Source;
-		LONG AccumulatedDiffRed = 0;
-		LONG AccumulatedDiffGreen = 0;
-		LONG AccumulatedDiffBlue = 0;
-
-		// fill Source with RGB left-to-right gradient
-		for (x = 0; x < ptInfo->ptinf_width; x++)
-			{
-			*pSrc = Left;
-
-			Left.Red += StepRed;
-			AccumulatedDiffRed += RemRed;
-			if (AccumulatedDiffRed >= ptInfo->ptinf_width)
-				{
-				Left.Red++;
-				AccumulatedDiffRed -= ptInfo->ptinf_width;
-				}
-			else if (AccumulatedDiffRed <= -ptInfo->ptinf_width)
-				{
-				Left.Red--;
-				AccumulatedDiffRed += ptInfo->ptinf_width;
-				}
-
-			Left.Green += StepGreen;
-			AccumulatedDiffGreen += RemGreen;
-			if (AccumulatedDiffGreen >= ptInfo->ptinf_width)
-				{
-				Left.Green++;
-				AccumulatedDiffGreen -= ptInfo->ptinf_width;
-				}
-			else if (AccumulatedDiffGreen <= -ptInfo->ptinf_width)
-				{
-				Left.Green--;
-				AccumulatedDiffGreen += ptInfo->ptinf_width;
-				}
-
-			Left.Blue += StepBlue;
-			AccumulatedDiffBlue += RemBlue;
-			if (AccumulatedDiffBlue >= ptInfo->ptinf_width)
-				{
-				Left.Blue++;
-				AccumulatedDiffBlue -= ptInfo->ptinf_width;
-				}
-			else if (AccumulatedDiffBlue <= -ptInfo->ptinf_width)
-				{
-				Left.Blue--;
-				AccumulatedDiffBlue += ptInfo->ptinf_width;
-				}
-
-			pSrc++;
-			}
-		d1(KPrintF("%s/%s/%ld: Left   Red=%3ld Green=%2ld Blue=%3ld\n", __FILE__, __FUNC__, __LINE__, Left.Red, Left.Green, Left.Blue));
-
-		// blit pre-generated gradient line by line into dest bitmap
-		for (y = 0; y < ptInfo->ptinf_height; y++)
-			{
-			WritePixelArray(Source,
-				0, 0,
-				sizeof(struct ARGB) * ptInfo->ptinf_width,
-				rp,
-				0, y,
-				ptInfo->ptinf_width, 1,
-				RECTFMT_ARGB);
-			}
-
-		ScalosGfxFreeARGB(&Source);
-		Success = TRUE;
-		}
-
-	return Success;
+	return ScalosGfxDrawGradientRastPort(rp,
+		0, 0,
+		ptInfo->ptinf_width, ptInfo->ptinf_height,
+		&Left, &Right, SCALOS_GRADIENT_HORIZONTAL);
 }
 
 
@@ -1417,11 +1319,6 @@ static BOOL PatternBackgroundVerticalGradient(struct internalScaWindowTask *iwt,
 	struct PatternNode *ptNode, struct PatternInfo *ptInfo, struct RastPort *rp)
 {
 	struct ARGB Top, Bottom;
-	struct ARGB *Source;
-	LONG DeltaRed, DeltaGreen, DeltaBlue;
-	LONG StepRed, StepGreen, StepBlue;
-	LONG RemRed, RemGreen, RemBlue;
-	BOOL Success = FALSE;
 
 	Top.Red   = ptNode->ptn_BgColor1[0];
 	Top.Green = ptNode->ptn_BgColor1[1];
@@ -1431,106 +1328,12 @@ static BOOL PatternBackgroundVerticalGradient(struct internalScaWindowTask *iwt,
 	Bottom.Red   = ptNode->ptn_BgColor2[0];
 	Bottom.Green = ptNode->ptn_BgColor2[1];
 	Bottom.Blue  = ptNode->ptn_BgColor2[2];
+	Bottom.Alpha = (UBYTE) ~0;
 
-	d1(KPrintF("%s/%s/%ld: Top   Red=%3ld Green=%2ld Blue=%3ld\n", __FILE__, __FUNC__, __LINE__, Top.Red, Top.Green, Top.Blue));
-	d1(KPrintF("%s/%s/%ld: Bottom  Red=%3ld Green=%2ld Blue=%3ld\n", __FILE__, __FUNC__, __LINE__, Bottom.Red, Bottom.Green, Bottom.Blue));
-
-	DeltaRed   = Bottom.Red - Top.Red;
-	DeltaGreen = Bottom.Green - Top.Green;
-	DeltaBlue  = Bottom.Blue - Top.Blue;
-
-	d1(KPrintF("%s/%s/%ld: DeltaRed=%ld  DeltaGreen=%ld  DeltaBlue=%ld\n", __FILE__, __FUNC__, __LINE__, DeltaRed, DeltaGreen, DeltaBlue));
-
-	StepRed = DeltaRed / ptInfo->ptinf_height;
-	RemRed  = DeltaRed % ptInfo->ptinf_height;
-
-	d1(KPrintF("%s/%s/%ld: StepRed=%ld  RemRed=%ld\n", __FILE__, __FUNC__, __LINE__, StepRed, RemRed));
-
-	StepGreen = DeltaGreen / ptInfo->ptinf_height;
-	RemGreen  = DeltaGreen % ptInfo->ptinf_height;
-
-	d1(KPrintF("%s/%s/%ld: StepGreen=%ld  RemGreen=%ld\n", __FILE__, __FUNC__, __LINE__, StepGreen, RemGreen));
-
-	StepBlue = DeltaBlue / ptInfo->ptinf_height;
-	RemBlue  = DeltaBlue % ptInfo->ptinf_height;
-
-	d1(KPrintF("%s/%s/%ld: StepBlue=%ld  RemBlue=%ld\n", __FILE__, __FUNC__, __LINE__, StepBlue, RemBlue));
-
-	Source = ScalosGfxCreateARGB(1, ptInfo->ptinf_height, NULL);
-	if (Source)
-		{
-		LONG x, y;
-		struct ARGB *pSrc = Source;
-		LONG AccumulatedDiffRed = 0;
-		LONG AccumulatedDiffGreen = 0;
-		LONG AccumulatedDiffBlue = 0;
-
-		// fill Source with RGB Top-to-Bottom gradient
-		for (y = 0; y < ptInfo->ptinf_height; y++)
-			{
-			*pSrc = Top;
-
-			Top.Red += StepRed;
-			AccumulatedDiffRed += RemRed;
-			if (AccumulatedDiffRed >= ptInfo->ptinf_height)
-				{
-				Top.Red++;
-				AccumulatedDiffRed -= ptInfo->ptinf_height;
-				}
-			else if (AccumulatedDiffRed <= -ptInfo->ptinf_height)
-				{
-				Top.Red--;
-				AccumulatedDiffRed += ptInfo->ptinf_height;
-				}
-
-			Top.Green += StepGreen;
-			AccumulatedDiffGreen += RemGreen;
-			if (AccumulatedDiffGreen >= ptInfo->ptinf_height)
-				{
-				Top.Green++;
-				AccumulatedDiffGreen -= ptInfo->ptinf_height;
-				}
-			else if (AccumulatedDiffGreen <= -ptInfo->ptinf_height)
-				{
-				Top.Green--;
-				AccumulatedDiffGreen += ptInfo->ptinf_height;
-				}
-
-			Top.Blue += StepBlue;
-			AccumulatedDiffBlue += RemBlue;
-			if (AccumulatedDiffBlue >= ptInfo->ptinf_height)
-				{
-				Top.Blue++;
-				AccumulatedDiffBlue -= ptInfo->ptinf_height;
-				}
-			else if (AccumulatedDiffBlue <= -ptInfo->ptinf_height)
-				{
-				Top.Blue--;
-				AccumulatedDiffBlue += ptInfo->ptinf_height;
-				}
-
-			pSrc++;
-			}
-		d1(KPrintF("%s/%s/%ld: Top   Red=%3ld Green=%2ld Blue=%3ld\n", __FILE__, __FUNC__, __LINE__, Top.Red, Top.Green, Top.Blue));
-
-		// blit pre-generated gradient column by column into dest bitmap
-		for (x = 0; x < ptInfo->ptinf_width; x++)
-			{
-			WritePixelArray(Source,
-				0, 0,
-				sizeof(struct ARGB) * 1,
-				rp,
-				x, 0,
-				1, ptInfo->ptinf_height,
-				RECTFMT_ARGB);
-			}
-
-		ScalosGfxFreeARGB(&Source);
-
-		Success = TRUE;
-		}
-
-	return Success;
+	return ScalosGfxDrawGradientRastPort(rp,
+		0, 0,
+		ptInfo->ptinf_width, ptInfo->ptinf_height,
+		&Top, &Bottom, SCALOS_GRADIENT_VERTICAL);
 }
 
 
@@ -1553,4 +1356,5 @@ static BOOL PatternBackgroundSingleColor(struct PatternNode *ptNode,
 
 	return TRUE;
 }
+
 

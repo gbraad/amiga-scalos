@@ -54,6 +54,7 @@ CSRCS =						\
 	$(FONTSAMPLEMCC_DIR)/FontSampleMCC.c	\
 	Images.c 				\
 	McpFrameMCC.c				\
+	SelectMarkSampleClass.c			\
 	Scalos.c 				\
 	PrefsVersion.c 				\
 	$(MCPGFX_DIR)/ScalosMcpGfx.c		\
@@ -125,6 +126,8 @@ $(OBJ_DIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
 
 $(OBJ_DIR)/McpFrameMCC.o : McpFrameMCC.c McpFrameMCC.h MCPFrame_mcc.h
 
+$(OBJ_DIR)/SelectMarkSampleClass.o : SelectMarkSampleClass.c SelectMarkSampleClass.h
+
 $(OBJ_DIR)/FontSampleMCC.o : $(FONTSAMPLEMCC_DIR)/FontSampleMCC.c \
 	$(FONTSAMPLEMCC_DIR)/FontSampleMCC.h $(SCALOSINCDIR)/scalos.h
 
@@ -149,7 +152,9 @@ $(OBJ_DIR)/Scalos.o: Scalos.c General.h ScalosPrefs.h \
 	ReadWritePrefs.h $(DATATYPESMCC_DIR)/DataTypesMCC.h \
 	McpFrameMCC.h $(FONTSAMPLEMCC_DIR)/FontSampleMCC.h \
          $(SCALOSINCDIR)/scalos.h \
-	HiddenDevices.h Hooks.h ScalosPrefs_locale.h
+	HiddenDevices.h Hooks.h ScalosPrefs_locale.h \
+	SelectMarkSampleClass.h
+
 
 $(OBJ_DIR)/PrefsVersion.o: PrefsVersion.c FORCE
 

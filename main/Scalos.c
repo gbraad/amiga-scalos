@@ -33,6 +33,7 @@
 #include <proto/wb.h>
 #include <proto/ttengine.h>
 #include "debug.h"
+#include <proto/scalosgfx.h>
 #include <proto/scalos.h>
 
 #include <clib/alib_protos.h>
@@ -83,6 +84,7 @@ struct DoWait *DoWaitList = NULL;		// +jl+ 20011001 List of Msgs for DOWAIT
 
 struct IClass *DtImageClass = NULL;		// Image Class wrapper for Scalos Datatypes images
 struct IClass *TextIconClass = NULL;		// Class for View By Text mode
+struct IClass *TextIconHighlightClass = NULL;	// Class for highlighting of text mode icons
 struct IClass *IconifyImageClass = NULL;	// +jl+ 20010831 Imageclass for the iconify gadget
 
 UWORD WBLaunchCount = 0;			// number of workbench launched programs
@@ -1146,4 +1148,5 @@ BPTR DupLockFromFH_Debug(BPTR fh,
 #endif	/* DEBUG_LOCKS */
 
 // ----------------------------------------------------------
+
 

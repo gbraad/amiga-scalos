@@ -1424,17 +1424,23 @@ struct Window *LockedOpenWindowTags(struct NewWindow *nw, ULONG FirstTag, ...)
 	struct TagItem *TagList;
 	va_list args;
 
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
 	va_start(args, FirstTag);
 
 	TagList = ScalosVTagList(FirstTag, args);
 
 	if (TagList)
 		{
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		win = LockedOpenWindowTagList(nw, TagList);
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		FreeTagItems(TagList);
 		}
 
 	va_end(args);
+
+	d1(KPrintF("%s/%s/%ld: END  win=%08lx\n", __FILE__, __FUNC__, __LINE__, win));
 
 	return win;
 }

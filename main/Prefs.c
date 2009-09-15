@@ -381,6 +381,9 @@ static const struct ScalosPrefs DefaultPrefs =
 
 	PREFS_TRANSPARENCY_OPAQUE,		// pref_ActiveWindowTransparency
 	PREFS_TRANSPARENCY_OPAQUE,		// pref_InactiveWindowTransparency
+
+	{ ~0, 133, 195, 221 },			// pref_SelectMarkerBaseColor
+	128,					// pref_SelectMarkerTransparency
 	};
 
 static const struct ScalosPatternPrefs DefaultPatternPrefs =
@@ -1092,9 +1095,10 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DeviceWinIconLayout, &NewPrefs->pref_DeviceWindowLayoutModes, sizeof(NewPrefs->pref_DeviceWindowLayoutModes));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconWinIconLayout, &NewPrefs->pref_IconWindowLayoutModes, sizeof(NewPrefs->pref_IconWindowLayoutModes));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupApplySelectedAlways, &NewPrefs->pref_PopupApplySelectedAlways, sizeof(NewPrefs->pref_PopupApplySelectedAlways));
-
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ActiveWindowTransparency, &NewPrefs->pref_ActiveWindowTransparency, sizeof(NewPrefs->pref_ActiveWindowTransparency));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_InactiveWindowTransparency, &NewPrefs->pref_InactiveWindowTransparency, sizeof(NewPrefs->pref_InactiveWindowTransparency));
+		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectMarkerBaseColor, &NewPrefs->pref_SelectMarkerBaseColor, sizeof(NewPrefs->pref_SelectMarkerBaseColor));
+		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectMarkerTransparency, &NewPrefs->pref_SelectMarkerTransparency, sizeof(NewPrefs->pref_SelectMarkerTransparency));
 
 		// Plausibility check for icon size constraints
 		// make sure that max never smaller than min

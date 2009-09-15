@@ -80,7 +80,6 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 
 	ScalosObtainSemaphoreShared(&QuitSemaphore);
 
-	d1(kprintf("%s/%s/%ld: Offset iwt_LassoIconList=%ld\n", __FILE__, __FUNC__, __LINE__, offsetof(struct internalScaWindowTask, iwt_LassoIconList)));
 	d1(kprintf("%s/%s/%ld: Offset iwt_LastIconUpdateTime=%ld\n", __FILE__, __FUNC__, __LINE__, offsetof(struct internalScaWindowTask, iwt_LastIconUpdateTime)));
 	d1(kprintf("%s/%s/%ld: Offset iwt_UpdateSemaphore=%ld\n", __FILE__, __FUNC__, __LINE__, offsetof(struct internalScaWindowTask, iwt_UpdateSemaphore)));
 
