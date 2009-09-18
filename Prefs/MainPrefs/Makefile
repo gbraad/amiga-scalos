@@ -19,7 +19,7 @@ CFLAGS  	= nostkchk nochkabort dbg=f nover streq \
 		  data=far code=far strmer stringsection=far \
 		  memorysize=huge \
                   define SVN_VERSION=$(SVNVERSION) \
-		  idlen=64 idir=//include \
+		  idlen=68 idir=//include \
                   idir=$(subst ../,/,$(FONTSAMPLEMCC_DIR)) \
                   idir=$(subst ../,/,$(DATATYPESMCC_DIR)) \
 		  idir=$(subst ../,/,$(MCPGFX_DIR))

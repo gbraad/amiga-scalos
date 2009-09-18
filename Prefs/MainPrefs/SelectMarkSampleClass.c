@@ -66,7 +66,12 @@ static ULONG mNew(Class *cl, Object *o, struct opSet *ops)
 	BOOL Success = FALSE;
 
 	do	{
+
+#if defined(__SASC)
+		static const struct ARGB DefaultBaseColor = { 0, 133, 195, 221 };
+#else /* __MORPHOS__ */
 		static const struct ARGB DefaultBaseColor = { ~0, 133, 195, 221 };
+#endif /* __MORPHOS__ */
 
 		o = (Object *) DoSuperMethodA(cl, o, (Msg) ops);
 		if (NULL == o)
