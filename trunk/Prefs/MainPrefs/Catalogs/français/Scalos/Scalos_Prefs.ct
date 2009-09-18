@@ -1,6 +1,7 @@
 ; ScalosPrefs.ct
 ; $Date$
 ; $Revision$
+; $Id$ 
 ;
 ## version $VER: Scalos_Prefs.catalog 40.23 (03 Oct 2008 18:16:49)
 ## codeset 0s
@@ -209,9 +210,8 @@ MSGID_PREFGROUPS_TRUETYPEFONTS
 Police TrueType
 ;TrueType Fonts
 ;
-;+++translateme+++
 MSGID_PREFGROUPS_TEXTWINDOWS
-Text Windows
+Fenêtre en mode texte
 ;Text Windows
 ;
 ;-----------------------------------------------------------
@@ -369,24 +369,20 @@ Barre de navigation
 ;
 ;-----------------------------------------------------------
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWPAGES_FONTS
-Fonts
+Polices de caractères
 ;Fonts
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWPAGES_COLUMNS
-Columns
+Colonnes
 ;Columns
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWPAGES_SELECTIONMARKS
-Selection marks
+Marquage
 ;Selection marks
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWPAGES_MISC
-Miscellaneous
+Divers
 ;Miscellaneous
 ;
 ;-----------------------------------------------------------
@@ -2178,39 +2174,34 @@ Le bureau obtiendra la transparence si il nest pas en arrière-plan.
 ;
 ;-----------------------------------------------------------
 ;
-;+++translateme+++
+;
 MSGID_TEXTWINDOWSPAGE_SELECTION_BORDER_TRANSPARENCY
-Border Transparency
+Transparence du contour
 ;Border Transparency
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWSPAGE_SELECTION_FILL_TRANSPARENCY
-Fill Transparency
+Transparence du fond
 ;Fill Transparency
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWSPAGE_GROUP_BASECOLOR
-Base Color
+Couleur de base
 ;Base Color
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BASECOLOR_SHORTHELP
-Here you can adjust the base color for the\n\
-text window icon selection marker.
+Ici, vous pouvez ajuster la couleur de base pour\n\
+le marquage des icônes en mode texte.
 ;Here you can adjust the base color for the\n\
 ;text window icon selection marker.
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_BORDER_TRANSPARENCY_SHORTHELP
-Adjust degree of transparency for the border\n\
-of the text window icon selection marker.
+Adjustage du degré de transparence pour le contour\n\
+des icônes en mode texte.
 ;Adjust degree of transparency for the border\n\
 ;of the text window icon selection marker.
 ;
-;+++translateme+++
 MSGID_TEXTWINDOWSPAGE_SELECTIONMARK_FILL_TRANSPARENCY_SHORTHELP
-Adjust degree of transparency for the interior\n\
-fill of the text window icon selection marker.
+Adjustage du degré de transparence pour le fond intérieur\n\
+des icônes en mode texte.
 ;Adjust degree of transparency for the interior\n\
 ;fill of the text window icon selection marker.
 ;
