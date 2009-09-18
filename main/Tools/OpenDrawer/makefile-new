@@ -18,15 +18,24 @@ NAME		= opendrawer.mos
 
 SRC  		= opendrawer.e
 
-#############################################################
+MODSRC		= verstag.e
 
-DESTTOOL	= Scalos:Tools/
-
-#############################################################
-
-All: 	$(NAME)
+MOD		= verstag.m
 
 #############################################################
+
+DESTTOOL	= Scalos:Tools/Opendrawer
+
+#############################################################
+
+All: 	$(MOD) $(NAME)
+
+#############################################################
+
+
+$(MOD):
+	@printf '\033[32mCompile: \033[31m\033[1m$@\033[0m\n'
+	@$(CC) $(MODSRC) $(CFLAGS)
 
 $(NAME):
 	@printf '\033[32mCompile: \033[31m\033[1m$@\033[0m\n'
@@ -37,13 +46,13 @@ $(NAME):
 # A little something to clean it all up
 clean:
 	@printf '\033[32mDelete: \033[31m\033[1m'
-	@delete $(NAME)
+	@delete $(NAME) $(MOD)
 	@printf '\033[0m'
 
 #############################################################
 
 # copy all generated file to their final destinations
 install:
-	@printf '\033[32mInstall: \033[31m\033[1m$(DESTTOOL)$(NAME)\033[0m\n'
+	@printf '\033[32mInstall:\033[31m\033[1m $(NAME) to $(DESTTOOL)\033[0m\n'
 	@copy $(NAME) $(DESTTOOL) clone
 
