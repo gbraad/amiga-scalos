@@ -2,6 +2,7 @@
 ; $Date$
 ; $Revision$
 ; $Id$
+;
 ## version $VER: scalos.catalog 41.6 (05 Jan 2009 23:43:19 )
 ## codeset 0
 ## language français
@@ -896,7 +897,7 @@ L'icône ne possède pas d'outil par défaut.
 ;
 ;
 MSGID_TOOLTIP_GADGET_RIGHTSCROLLER
- Utiliser cet ascenseur pour déplacer\n\
+ Utiliser cette glissière pour déplacer\n\
 le contenu de la fenêtre,\n\
 vers le haut ou vers le bas.
 ; Use this scroller to move the\n\
@@ -904,7 +905,7 @@ vers le haut ou vers le bas.
 ;
 ;
 MSGID_TOOLTIP_GADGET_BOTTOMSCROLLER
- Utiliser cet ascenseur pour déplacer\n\
+ Utiliser cette glissière pour déplacer\n\
 le contenu de la fenêtre,\n\
 vers la gauche ou vers la droite.
 ; Use this scroller to move the\n\
