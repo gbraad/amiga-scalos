@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20090915	jl	- Improvement: added new sophisticated text window selection marker.
+41.7	20090918	jmc	- Upgraded libpng 1.2.39 to 1.2.40 (68k and MOS).
+	20090915	jl	- Improvement: added new sophisticated text window selection marker.
 				- Improvement: Moved main preferences text window settings to separate page,
 				  and added configuration for new selection marker.
 	20090911	jl	- Bugfix: popupmenu.library: zoom effect didn't work correctly on
@@ -44,8 +45,8 @@ Additions/changes:
 	20090628	jl	- Bugfix: updating left-out icons left the Scalos main window task
 				  with an invalid current directory handle.
 	20090618        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.15.
-	20090609	jmc	- Upgraded libpng 1.2.36 to 1.2.37 (SAS/C and MOS).
-	20090528	jmc	- Upgraded libpng 1.2.35 to 1.2.36 (SAS/C and MOS).
+	20090609	jmc	- Upgraded libpng 1.2.36 to 1.2.37 (68k and MOS).
+	20090528	jmc	- Upgraded libpng 1.2.35 to 1.2.36 (68k and MOS).
     	20090526	jl	- Improvement: Updated sqlite3.library to SQLite3 3.6.14.2.
 	20090523	jl	- Improvement: Updated sqlite3.library to SQLite3 3.6.14.1.
 				- Improvement: icons can now be selected incrementally via keyboard input.
