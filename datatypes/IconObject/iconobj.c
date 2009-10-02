@@ -3682,7 +3682,7 @@ static void DrawIconTextRect(Class *cl, Object *o, struct RastPort *rp, WORD x, 
 
 	if (inst->iobj_SelectedTextRectangle)
 		{
-		PLANEPTR myPlanePtr = NULL;
+		PLANEPTR myPlanePtr;
 		LONG bmWidth = GetBitMapAttr(rp->BitMap, BMA_WIDTH);
 		LONG bmHeight = GetBitMapAttr(rp->BitMap, BMA_HEIGHT);
 
