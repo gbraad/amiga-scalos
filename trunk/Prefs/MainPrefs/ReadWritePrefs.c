@@ -483,11 +483,7 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		},
 		FALSE,			// fd_bShowStripes;
 		FALSE,			// fd_SelectTextIconName
-#if defined(__SASC)
-		{ 0, 133, 195, 221 },	// fd_SelectMarkerBaseColor
-#else /* __MORPHOS__ */
-		{ ~0, 133, 195, 221 },	// fd_SelectMarkerBaseColor
-#endif /* __MORPHOS__ */
+		{ (UBYTE) ~0, 133, 195, 221 },	// fd_SelectMarkerBaseColor
 		128,			// fd_SelectMarkerTransparency
 	},
 	{
