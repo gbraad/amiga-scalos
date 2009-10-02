@@ -2546,7 +2546,7 @@ static void DrawWuLine(struct RastPort *rp, int X1, int Y1, UWORD LinePen)
 	FgColor.Red   = LinePenRGB[0] >> 24;
 	FgColor.Green = LinePenRGB[1] >> 24;
 	FgColor.Blue  = LinePenRGB[2] >> 24;
-	FgColor.Alpha = ~0;
+	FgColor.Alpha = (UBYTE) ~0;
 
 	ScalosGfxDrawLineRastPort(rp, X0, Y0, X1, Y1, &FgColor);
 }
@@ -2565,14 +2565,14 @@ static void outline_ellipse_antialias(struct RastPort *rp,
 	rgbColor1.Red   = LinePenRGB[0] >> 24;
 	rgbColor1.Green = LinePenRGB[1] >> 24;
 	rgbColor1.Blue  = LinePenRGB[2] >> 24;
-	rgbColor1.Alpha = ~0;
+	rgbColor1.Alpha = (UBYTE) ~0;
 
 	GetRGB32(iInfos.xii_iinfos.ii_Screen->ViewPort.ColorMap, color2, 1, LinePenRGB);
 
 	rgbColor2.Red   = LinePenRGB[0] >> 24;
 	rgbColor2.Green = LinePenRGB[1] >> 24;
 	rgbColor2.Blue  = LinePenRGB[2] >> 24;
-	rgbColor2.Alpha = ~0;
+	rgbColor2.Alpha = (UBYTE) ~0;
 
 	ScalosGfxDrawEllipseRastPort(rp, xc, yc, rx, ry, Segment, &rgbColor1, &rgbColor2);
 }

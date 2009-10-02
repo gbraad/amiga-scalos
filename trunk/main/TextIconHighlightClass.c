@@ -131,7 +131,7 @@ static ULONG TIHighlight_New(Class *cl, Object *o, Msg msg)
 {
 	struct opSet *ops = (struct opSet *) msg;
 	struct TextIconHighlightClassInst *inst;
-	static const struct ARGB DefaultBaseColor = { ~0, 133, 195, 221 };
+	static const struct ARGB DefaultBaseColor = { (UBYTE) ~0, 133, 195, 221 };
 
 	o = (Object *) DoSuperMethodA(cl, o, msg);
 	d1(KPrintF("%s/%s/%ld: o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));

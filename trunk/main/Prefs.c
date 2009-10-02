@@ -382,7 +382,7 @@ static const struct ScalosPrefs DefaultPrefs =
 	PREFS_TRANSPARENCY_OPAQUE,		// pref_ActiveWindowTransparency
 	PREFS_TRANSPARENCY_OPAQUE,		// pref_InactiveWindowTransparency
 
-	{ ~0, 133, 195, 221 },			// pref_SelectMarkerBaseColor
+	{ (UBYTE) ~0, 133, 195, 221 },		// pref_SelectMarkerBaseColor
 	128,					// pref_SelectMarkerTransparency
 	};
 
