@@ -368,7 +368,7 @@ struct ScalosBitMapAndColor *MedianCut(struct ARGBHeader *argbh,
 
 // defined in Render.c
 ///
-BOOL DrawGradient(struct ARGBHeader *dest, LONG left, LONG top,
+BOOL ScaDrawGradient(struct ARGBHeader *dest, LONG left, LONG top,
 	LONG width, LONG height, struct gfxARGB *start, struct gfxARGB *stop,
 	ULONG gradType, struct ScalosGfxBase *ScalosGfxBase);
 BOOL DrawGradientRastPort(struct RastPort *rp, LONG left, LONG top,

@@ -757,7 +757,7 @@ LIBFUNC_P9(BOOL, LIBScalosGfxDrawGradient,
 	D4, ULONG, gradType,
 	A6, struct ScalosGfxBase *, ScalosGfxBase)
 {
-	return DrawGradient(dest, left, top, width, height, start, stop,  gradType, ScalosGfxBase);
+	return ScaDrawGradient(dest, left, top, width, height, start, stop,  gradType, ScalosGfxBase);
 }
 LIBFUNC_END
 
