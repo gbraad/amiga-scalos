@@ -111,7 +111,7 @@ void ARGBRectMult(struct RastPort *rp,
 	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax,
 	struct ScalosGfxBase *ScalosGfxBase)
 {
-	if (CyberGfxBase->lib_Version >= 43)
+	if (CyberGfxBase->lib_Version > 43)
 		{
 		if (Numerator.Red > Denominator.Red)
 			{

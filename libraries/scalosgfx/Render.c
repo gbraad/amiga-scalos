@@ -14,6 +14,7 @@
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/graphics.h>
+#include <proto/intuition.h>
 #include <proto/utility.h>
 #include <proto/cybergraphics.h>
 #include <proto/scalos.h>
@@ -42,10 +43,12 @@ static struct ARGB *CreateGradientVertical(LONG Width, LONG Height, struct ARGB 
 	struct ARGB Bottom, struct ScalosGfxBase *ScalosGfxBase);
 static struct ARGB *CreateGradientHorizontal(LONG Width, LONG Height, struct ARGB Left,
 	struct ARGB Right, struct ScalosGfxBase *ScalosGfxBase);
+#ifndef __amigaos4__
 static BOOL DrawGradientVerticalRastPort(struct RastPort *rp, LONG xStart, LONG yStart,
 	LONG Width, LONG Height, struct ARGB Top, struct ARGB Bottom, struct ScalosGfxBase *ScalosGfxBase);
 static BOOL DrawGradientHorizontalRastPort(struct RastPort *rp, LONG xStart, LONG yStart,
 	LONG Width, LONG Height, struct ARGB Left, struct ARGB Right, struct ScalosGfxBase *ScalosGfxBase);
+#endif //__amigaos4__
 static BOOL DrawGradientVertical(struct ARGBHeader *argbh, LONG xStart, LONG yStart,
 	LONG Width, LONG Height, struct ARGB Top, struct ARGB Bottom, struct ScalosGfxBase *ScalosGfxBase);
 static BOOL DrawGradientHorizontal(struct ARGBHeader *argbh, LONG xStart, LONG yStart,
@@ -57,7 +60,7 @@ static void DrawRGBPixelWeightedRastPort(struct RastPort *rp,
 
 //-----------------------------------------------------------------------
 
-BOOL DrawGradient(struct ARGBHeader *dest, LONG left, LONG top,
+BOOL ScaDrawGradient(struct ARGBHeader *dest, LONG left, LONG top,
 	LONG width, LONG height, struct gfxARGB *start, struct gfxARGB *stop,
 	ULONG gradType, struct ScalosGfxBase *ScalosGfxBase)
 {
@@ -89,6 +92,48 @@ BOOL DrawGradientRastPort(struct RastPort *rp, LONG left, LONG top,
 
 	(void) ScalosGfxBase;
 
+#ifdef __amigaos4__
+	{
+	struct Screen *pubScreen = NULL;
+	struct DrawInfo *dri = NULL;
+
+	do	{
+		struct GradientSpec gradSpec;
+
+		memset(&gradSpec, 0, sizeof(gradSpec));
+
+		if (SCALOS_GRADIENT_VERTICAL == gradType)
+			gradSpec.Direction = DirectionVector(0);
+		else if (SCALOS_GRADIENT_HORIZONTAL == gradType)
+			gradSpec.Direction = DirectionVector(90);
+		else
+			break;
+
+		pubScreen = LockPubScreen(NULL);
+		if (NULL == pubScreen)
+			break;
+
+		dri = GetScreenDrawInfo(pubScreen);
+		if (NULL == dri)
+			break;
+
+		gradSpec.Mode = GRADMODE_COLOR;
+		gradSpec.Specs.Abs.RGBStart[0] = start->Red;
+		gradSpec.Specs.Abs.RGBStart[1] = start->Green;
+		gradSpec.Specs.Abs.RGBStart[2] = start->Blue;
+		gradSpec.Specs.Abs.RGBEnd[0] = stop->Red;
+		gradSpec.Specs.Abs.RGBEnd[1] = stop->Green;
+		gradSpec.Specs.Abs.RGBEnd[2] = stop->Blue;
+
+		Success = DrawGradient(rp, left, top, width, height, NULL, 0, &gradSpec, dri);
+		} while (0);
+
+	if (dri)
+		FreeScreenDrawInfo(pubScreen, dri);
+	if (pubScreen)
+		UnlockPubScreen(NULL, pubScreen);
+	}
+#else //__amigaos4__
 	if (SCALOS_GRADIENT_VERTICAL == gradType)
 		{
 		Success = DrawGradientVerticalRastPort(rp, left, top,
@@ -99,6 +144,8 @@ BOOL DrawGradientRastPort(struct RastPort *rp, LONG left, LONG top,
 		Success = DrawGradientHorizontalRastPort(rp, left, top,
 			width, height, *start, *stop, ScalosGfxBase);
 		}
+#endif //__amigaos4__
+
 	return Success;
 }
 
@@ -336,6 +383,7 @@ static struct ARGB *CreateGradientHorizontal(LONG Width, LONG Height, struct ARG
 
 //-----------------------------------------------------------------------
 
+#ifndef __amigaos4__
 static BOOL DrawGradientVerticalRastPort(struct RastPort *rp, LONG xStart, LONG yStart,
 	LONG Width, LONG Height, struct ARGB Top, struct ARGB Bottom, struct ScalosGfxBase *ScalosGfxBase)
 {
@@ -406,6 +454,7 @@ static BOOL DrawGradientHorizontalRastPort(struct RastPort *rp, LONG xStart, LON
 
 	return Success;
 }
+#endif //__amigaos4__
 
 //-----------------------------------------------------------------------
 
