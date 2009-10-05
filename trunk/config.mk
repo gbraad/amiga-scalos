@@ -17,6 +17,9 @@ endif
 ifeq ($(MAKECMDGOALS),clean)
 	SVNVERSION := "0000"
 endif
+ifeq ($(MAKECMDGOALS),nodebug)
+	SVNVERSION := "0000"
+endif
 ifndef SVNVERSION
 	SVNVERSION := $(shell svnversion -n)
 endif
