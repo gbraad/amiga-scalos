@@ -6,6 +6,11 @@
 #include <graphics/gels.h>
 #include <graphics/rastport.h>
 #include <graphics/scale.h>
+#ifdef __amigaos4__
+#include <graphics/rpattr.h>
+#include <graphics/GfxBase.h>
+#include <graphics/composite.h>
+#endif //__amigaos4__
 #include <cybergraphx/cybergraphics.h>
 #include <scalos/scalosgfx.h>
 
@@ -111,6 +116,143 @@ void ARGBRectMult(struct RastPort *rp,
 	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax,
 	struct ScalosGfxBase *ScalosGfxBase)
 {
+#ifdef __amigaos4__
+	extern struct GfxBase *GfxBase;
+
+	if (GfxBase->LibNode.lib_Version >= 51)
+		{
+		struct BitMap *SrcBM = NULL;
+		struct BitMap *AllocDestBM = NULL;
+
+		d2(KPrintF(__FILE__ "/%s/%ld: xMin=%ld  xMax=%ld  yMin=%ld  yMax=%ld\n", \
+			__FUNC__, __LINE__, xMin, xMax, yMin, yMax));
+		d2(KPrintF(__FILE__ "/%s/%ld: Layer=%08lx\n", __FUNC__, __LINE__, rp->Layer));
+
+		do	{
+			enum enCompositeError rc;
+			LONG Width = 1 + xMax - xMin;
+			LONG Height = 1 + yMax - yMin;
+			float alpha;
+			struct RastPort srcRp;
+			enum enPDOperator op;
+
+			InitRastPort(&srcRp);
+			SrcBM = AllocBitMap(Width, Height,
+				32,
+				BMF_CLEAR | BMF_SPECIALFMT | SHIFT_PIXFMT(PIXFMT_ARGB32),
+				rp->BitMap);
+			d2(KPrintF(__FILE__ "/%s/%ld: SrcBM=%08lx\n", __FUNC__, __LINE__, SrcBM));
+			if (NULL == SrcBM)
+				break;
+
+			srcRp.BitMap = SrcBM;
+
+			if (Numerator.Red > Denominator.Red)
+				{
+				// brighten
+				d2(KPrintF(__FILE__ "/%s/%ld: brighten\n", __FUNC__, __LINE__));
+
+				SetRPAttrs(&srcRp,
+					RPTAG_APenColor, 0xffffffff,
+					TAG_END);
+				RectFill(&srcRp, 0, 0, Width - 1, Height - 1);
+
+				alpha = (float) Numerator.Red / (float) Denominator.Red;
+
+				op = COMPOSITE_Plus;
+				}
+			else
+				{
+				// darken
+				float f;
+
+				d2(KPrintF(__FILE__ "/%s/%ld: darken\n", __FUNC__, __LINE__));
+
+				if (Denominator.Red)
+					f = (float) Numerator.Red / (float) Denominator.Red;
+				else
+					f = 0.0;
+
+				SetRPAttrs(&srcRp,
+					RPTAG_APenColor, 0xff000000,
+					TAG_END);
+				RectFill(&srcRp, 0, 0, Width - 1, Height - 1);
+
+				if (f)
+					alpha = (1.0 - f) / f;
+				else
+					alpha = 0.0;
+
+				op = COMPOSITE_Src_Over_Dest;
+				}
+
+			if (rp->Layer)
+				{
+				struct RastPort destRp;
+				struct BitMap *destBM = AllocDestBM = AllocBitMap(Width, Height,
+					32,
+					BMF_SPECIALFMT | SHIFT_PIXFMT(PIXFMT_ARGB32),
+					rp->BitMap);
+				d2(KPrintF(__FILE__ "/%s/%ld: SrcBM=%08lx\n", __FUNC__, __LINE__, SrcBM));
+				if (NULL == AllocDestBM)
+					break;
+
+				InitRastPort(&destRp);
+				destRp.BitMap = destBM;
+
+				ClipBlit(rp,
+					xMin, yMin,
+					&destRp,
+					0, 0,
+					Width, Height,
+					0xc0);
+
+				// CompositeTagList()
+				rc = CompositeTags(op,
+					SrcBM,
+					destBM,
+					COMPTAG_SrcAlpha, COMP_FLOAT_TO_FIX(alpha),
+					COMPTAG_SrcX, 0,
+					COMPTAG_SrcY, 0,
+					COMPTAG_SrcWidth, Width,
+					COMPTAG_SrcHeight, Height,
+					COMPTAG_Flags, COMPFLAG_SrcAlphaOverride,
+					TAG_END);
+
+				ClipBlit(&destRp,
+					0, 0,
+					rp,
+					xMin, yMin,
+					Width, Height,
+					0xc0);
+				}
+			else
+				{
+				// CompositeTagList()
+				rc = CompositeTags(op,
+					SrcBM,
+					rp->BitMap,
+					COMPTAG_SrcAlpha, COMP_FLOAT_TO_FIX(alpha),
+					COMPTAG_SrcX, 0,
+					COMPTAG_SrcY, 0,
+					COMPTAG_SrcWidth, Width,
+					COMPTAG_SrcHeight, Height,
+					COMPTAG_OffsetX, xMin,
+					COMPTAG_OffsetY, yMin,
+					COMPTAG_Flags, COMPFLAG_SrcAlphaOverride,
+					TAG_END);
+				}
+
+			d2(KPrintF(__FILE__ "/%s/%ld: rc=%ld\n", __FUNC__, __LINE__, rc));
+			} while (0);
+
+		if (SrcBM)
+			FreeBitMap(SrcBM);
+		if (AllocDestBM)
+			FreeBitMap(AllocDestBM);
+		}
+	else
+#endif //__amigaos4__
 	if (CyberGfxBase->lib_Version > 43)
 		{
 		if (Numerator.Red > Denominator.Red)
