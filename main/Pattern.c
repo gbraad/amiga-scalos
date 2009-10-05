@@ -1020,27 +1020,57 @@ static BOOL PatternCreateCenteredBitMap(struct internalScaWindowTask *iwt,
 			break;
 			}
 
-		if (ptNode->ptn_width > iwt->iwt_InnerWidth)
+		d1(KPrintF("%s/%s/%ld: ptinf_width=%ld  ptinf_height=%ld\n", __FILE__, __FUNC__, __LINE__, ptInfo->ptinf_width, ptInfo->ptinf_height));
+		d1(KPrintF("%s/%s/%ld: iwt_InnerWidth=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerWidth, iwt->iwt_InnerHeight));
+
+		if (0 == iwt->iwt_InnerWidth)
 			{
-			Width = iwt->iwt_InnerWidth;
-			DestX = iwt->iwt_InnerLeft;
+			if (ptNode->ptn_width > ptInfo->ptinf_width)
+				{
+				Width = ptInfo->ptinf_width;
+				DestX = 0;
+				}
+			else
+				{
+				Width = ptNode->ptn_width;
+				DestX = (ptInfo->ptinf_width - ptNode->ptn_width) / 2;
+				}
+			if (ptNode->ptn_height > ptInfo->ptinf_height)
+				{
+				Height = ptInfo->ptinf_height;
+				DestY = 0;
+				}
+			else
+				{
+				Height = ptNode->ptn_height;
+				DestY = (ptInfo->ptinf_height - ptNode->ptn_height) / 2;
+				}
 			}
 		else
 			{
-			Width = ptNode->ptn_width;
-			DestX = iwt->iwt_InnerLeft + (iwt->iwt_InnerWidth - ptNode->ptn_width) / 2;
-			}
-		if (ptNode->ptn_height > iwt->iwt_InnerHeight)
-			{
-			Height = iwt->iwt_InnerHeight;
-			DestY = iwt->iwt_InnerTop;
-			}
-		else
-			{
-			Height = ptNode->ptn_height;
-			DestY = iwt->iwt_InnerTop + (iwt->iwt_InnerHeight - ptNode->ptn_height) / 2;
+			if (ptNode->ptn_width > iwt->iwt_InnerWidth)
+				{
+				Width = iwt->iwt_InnerWidth;
+				DestX = iwt->iwt_InnerLeft;
+				}
+			else
+				{
+				Width = ptNode->ptn_width;
+				DestX = iwt->iwt_InnerLeft + (iwt->iwt_InnerWidth - ptNode->ptn_width) / 2;
+				}
+			if (ptNode->ptn_height > iwt->iwt_InnerHeight)
+				{
+				Height = iwt->iwt_InnerHeight;
+				DestY = iwt->iwt_InnerTop;
+				}
+			else
+				{
+				Height = ptNode->ptn_height;
+				DestY = iwt->iwt_InnerTop + (iwt->iwt_InnerHeight - ptNode->ptn_height) / 2;
+				}
 			}
 
+		d1(kprintf("%s/%s/%ld: wt_Window=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_Window));
 		d1(KPrintF("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, Width, Height));
 		d1(KPrintF("%s/%s/%ld: DestX=%ld  DestY=%ld\n", __FILE__, __FUNC__, __LINE__, DestX, DestY));
 
@@ -1051,6 +1081,8 @@ static BOOL PatternCreateCenteredBitMap(struct internalScaWindowTask *iwt,
 			DestX, DestY,
 			Width, Height,
 			ABC | ABNC, ~0, NULL);
+
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		ptInfo->ptinf_flags |= PTINFF_FreeBitMap;
 		}
