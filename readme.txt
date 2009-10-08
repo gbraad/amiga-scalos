@@ -48,7 +48,7 @@ Due to unclear licensing conditions, we can not include the original Amiga
 installer in this archive. Especially MorphOS users may not have Installer
 available on their machines. They can get it from here:
 
-http://main.aminet.net/util/misc/Installer-43_3.lha
+http://aminet.net/util/misc/Installer-43_3.lha
 
 Here you can find some of the non-standard MUI MCCs required for Scalos Prefs:
 
