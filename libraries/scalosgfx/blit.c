@@ -124,9 +124,9 @@ void ARGBRectMult(struct RastPort *rp,
 		struct BitMap *SrcBM = NULL;
 		struct BitMap *AllocDestBM = NULL;
 
-		d2(KPrintF(__FILE__ "/%s/%ld: xMin=%ld  xMax=%ld  yMin=%ld  yMax=%ld\n", \
+		d1(KPrintF(__FILE__ "/%s/%ld: xMin=%ld  xMax=%ld  yMin=%ld  yMax=%ld\n", \
 			__FUNC__, __LINE__, xMin, xMax, yMin, yMax));
-		d2(KPrintF(__FILE__ "/%s/%ld: Layer=%08lx\n", __FUNC__, __LINE__, rp->Layer));
+		d1(KPrintF(__FILE__ "/%s/%ld: Layer=%08lx\n", __FUNC__, __LINE__, rp->Layer));
 
 		do	{
 			enum enCompositeError rc;
@@ -141,7 +141,7 @@ void ARGBRectMult(struct RastPort *rp,
 				32,
 				BMF_CLEAR | BMF_SPECIALFMT | SHIFT_PIXFMT(PIXFMT_ARGB32),
 				rp->BitMap);
-			d2(KPrintF(__FILE__ "/%s/%ld: SrcBM=%08lx\n", __FUNC__, __LINE__, SrcBM));
+			d1(KPrintF(__FILE__ "/%s/%ld: SrcBM=%08lx\n", __FUNC__, __LINE__, SrcBM));
 			if (NULL == SrcBM)
 				break;
 
@@ -150,7 +150,7 @@ void ARGBRectMult(struct RastPort *rp,
 			if (Numerator.Red > Denominator.Red)
 				{
 				// brighten
-				d2(KPrintF(__FILE__ "/%s/%ld: brighten\n", __FUNC__, __LINE__));
+				d1(KPrintF(__FILE__ "/%s/%ld: brighten\n", __FUNC__, __LINE__));
 
 				SetRPAttrs(&srcRp,
 					RPTAG_APenColor, 0xffffffff,
@@ -166,7 +166,7 @@ void ARGBRectMult(struct RastPort *rp,
 				// darken
 				float f;
 
-				d2(KPrintF(__FILE__ "/%s/%ld: darken\n", __FUNC__, __LINE__));
+				d1(KPrintF(__FILE__ "/%s/%ld: darken\n", __FUNC__, __LINE__));
 
 				if (Denominator.Red)
 					f = (float) Numerator.Red / (float) Denominator.Red;
@@ -193,7 +193,7 @@ void ARGBRectMult(struct RastPort *rp,
 					32,
 					BMF_SPECIALFMT | SHIFT_PIXFMT(PIXFMT_ARGB32),
 					rp->BitMap);
-				d2(KPrintF(__FILE__ "/%s/%ld: SrcBM=%08lx\n", __FUNC__, __LINE__, SrcBM));
+				d1(KPrintF(__FILE__ "/%s/%ld: SrcBM=%08lx\n", __FUNC__, __LINE__, SrcBM));
 				if (NULL == AllocDestBM)
 					break;
 
@@ -243,7 +243,7 @@ void ARGBRectMult(struct RastPort *rp,
 					TAG_END);
 				}
 
-			d2(KPrintF(__FILE__ "/%s/%ld: rc=%ld\n", __FUNC__, __LINE__, rc));
+			d1(KPrintF(__FILE__ "/%s/%ld: rc=%ld\n", __FUNC__, __LINE__, rc));
 			} while (0);
 
 		if (SrcBM)
@@ -253,7 +253,7 @@ void ARGBRectMult(struct RastPort *rp,
 		}
 	else
 #endif //__amigaos4__
-	if (CyberGfxBase->lib_Version > 43)
+	if (CyberGfxBase->lib_Version >= 51)
 		{
 		if (Numerator.Red > Denominator.Red)
 			{
