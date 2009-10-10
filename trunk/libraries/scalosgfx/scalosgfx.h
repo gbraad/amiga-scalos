@@ -19,7 +19,14 @@
 //----------------------------------------------------------------------------
 
 #define	LIB_VERSION	42
-#define	LIB_REVISION	1
+#define	LIB_REVISION	2
+
+//----------------------------------------------------------------------------
+
+#if defined(__MORPHOS__) && !defined(ProcessPixelArrayTags)
+#define ProcessPixelArrayTags(rp, destX, destY, sizeX, sizeY, operation, value, tags...) \
+	({ULONG _tags[] = {tags}; ProcessPixelArray((rp), (destX), (destY), (sizeX), (sizeY), (operation), (value), (struct TagItem *) _tags);})
+#endif //defined(__MORPHOS__) && !defined(ProcessPixelArrayTags)
 
 //----------------------------------------------------------------------------
 

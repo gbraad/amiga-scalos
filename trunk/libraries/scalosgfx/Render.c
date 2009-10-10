@@ -134,15 +134,44 @@ BOOL DrawGradientRastPort(struct RastPort *rp, LONG left, LONG top,
 		UnlockPubScreen(NULL, pubScreen);
 	}
 #else //__amigaos4__
-	if (SCALOS_GRADIENT_VERTICAL == gradType)
+	if (CyberGfxBase->lib_Version >= 50)
 		{
-		Success = DrawGradientVerticalRastPort(rp, left, top,
-			width, height, *start, *stop, ScalosGfxBase);
+		ULONG paGradType;
+
+		if (SCALOS_GRADIENT_VERTICAL == gradType)
+			paGradType = GRADTYPE_VERTICAL;
+		else if (SCALOS_GRADIENT_HORIZONTAL == gradType)
+			paGradType = GRADTYPE_HORIZONTAL;
+		else
+			return FALSE;
+
+		d1(KPrintF("%s/%s/%ld: paGradType=%ld\n", __FILE__, __FUNC__, __LINE__, paGradType));
+
+		ProcessPixelArrayTags(rp,
+			left, top,
+			width,
+			height,
+			POP_GRADIENT,
+			0,
+			PPAOPTAG_GRADIENTTYPE, paGradType,
+			PPAOPTAG_GRADCOLOR1, *((ULONG *) start),
+			PPAOPTAG_GRADCOLOR2, *((ULONG *) stop),
+			TAG_END);
+
+		Success = TRUE;
 		}
-	else if (SCALOS_GRADIENT_HORIZONTAL == gradType)
+	else
 		{
-		Success = DrawGradientHorizontalRastPort(rp, left, top,
-			width, height, *start, *stop, ScalosGfxBase);
+		if (SCALOS_GRADIENT_VERTICAL == gradType)
+			{
+			Success = DrawGradientVerticalRastPort(rp, left, top,
+				width, height, *start, *stop, ScalosGfxBase);
+			}
+		else if (SCALOS_GRADIENT_HORIZONTAL == gradType)
+			{
+			Success = DrawGradientHorizontalRastPort(rp, left, top,
+				width, height, *start, *stop, ScalosGfxBase);
+			}
 		}
 #endif //__amigaos4__
 
