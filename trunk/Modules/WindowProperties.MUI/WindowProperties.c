@@ -693,9 +693,9 @@ int main(int argc, char *argv[])
 								End, //ColGroup
 
 							Child, VGroup,
-#if !defined(__MORPHOS__)
+#if !defined(__MORPHOS__) && !defined(__amigaos4__)
 								MUIA_ShowMe, FALSE,
-#endif  //defined(__MORPHOS__)
+#endif //!defined(__MORPHOS__) && !defined(__amigaos4__)
 								Child, VGroup,
 									MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TRANSPARENCY_ACTIVEWINDOW),
 									GroupFrame,
