@@ -99,54 +99,107 @@ SAVEDS(void) INTERRUPT CheckPopTitleBarBox(struct Hook *hook, Object *pPrefsWind
 
 //-----------------------------------------------------------------
 
-SAVEDS(void) INTERRUPT ControlBarGadgetListActiveHookFunc(struct Hook *hook, Object *o, Msg msg)
+SAVEDS(void) INTERRUPT ControlBarGadgetListBrowserActiveHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
 	struct ControlBarGadgetEntry *cgy = NULL;
 
-	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &cgy);
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &cgy);
 
 	if (cgy && SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
 		{
-		set(app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE], MUIA_Disabled, FALSE);
-		set(app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE], MUIA_Disabled, FALSE);
-		set(app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE], MUIA_Disabled, FALSE);
-		set(app->Obj[STRING_CONTROLBARGADGETS_ACTION], MUIA_Disabled, FALSE);
-		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], MUIA_Disabled, FALSE);
-		set(app->Obj[POP_CONTROLBARGADGETS_ACTION], MUIA_Disabled, FALSE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_Disabled, FALSE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_Disabled, FALSE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_Disabled, FALSE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_Disabled, FALSE);
+		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT], MUIA_Disabled, FALSE);
+		set(app->Obj[POP_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_Disabled, FALSE);
 
 		// use nnset() here since notification would cause remaining strings to be set to
 		// empty value when first string is changed here.
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE], MUIA_String_Contents,
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_String_Contents,
 			cgy->cgy_NormalImage ? cgy->cgy_NormalImage : (STRPTR) "");
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE], MUIA_String_Contents,
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_String_Contents,
 			cgy->cgy_SelectedImage ? cgy->cgy_SelectedImage : (STRPTR) "");
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE], MUIA_String_Contents,
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_String_Contents,
 			cgy->cgy_DisabledImage ? cgy->cgy_DisabledImage : (STRPTR) "");
-		nnset(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], MUIA_TextEditor_Contents, cgy->cgy_HelpText);
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_ACTION], MUIA_String_Contents, cgy->cgy_Action);
+		nnset(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT], MUIA_TextEditor_Contents, cgy->cgy_HelpText);
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_String_Contents, cgy->cgy_Action);
 		}
 	else
 		{
-		set(app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE], MUIA_Disabled, TRUE);
-		set(app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE], MUIA_Disabled, TRUE);
-		set(app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE], MUIA_Disabled, TRUE);
-		set(app->Obj[STRING_CONTROLBARGADGETS_ACTION], MUIA_Disabled, TRUE);
-		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], MUIA_Disabled, TRUE);
-		set(app->Obj[POP_CONTROLBARGADGETS_ACTION], MUIA_Disabled, TRUE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_Disabled, TRUE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_Disabled, TRUE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_Disabled, TRUE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_Disabled, TRUE);
+		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT], MUIA_Disabled, TRUE);
+		set(app->Obj[POP_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_Disabled, TRUE);
 
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE], MUIA_String_Contents, "");
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE], MUIA_String_Contents, "");
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE], MUIA_String_Contents, "");
-		nnset(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], MUIA_TextEditor_Contents, "");
-		nnset(app->Obj[STRING_CONTROLBARGADGETS_ACTION], MUIA_String_Contents, "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_String_Contents, "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_String_Contents, "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_String_Contents, "");
+		nnset(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT], MUIA_TextEditor_Contents, "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_String_Contents, "");
 		}
 
-	set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMALIMAGE], MUIA_ScaDtpic_Name,
+	set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_ScaDtpic_Name,
 		cgy->cgy_NormalImage ? cgy->cgy_NormalImage : (STRPTR) "");
-	set(app->Obj[DTIMG_CONTROLBARGADGETS_SELECTEDIMAGE], MUIA_ScaDtpic_Name,
+	set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_ScaDtpic_Name,
 		cgy->cgy_SelectedImage ? cgy->cgy_SelectedImage : (STRPTR) "");
-	set(app->Obj[DTIMG_CONTROLBARGADGETS_DISABLEDIMAGE], MUIA_ScaDtpic_Name,
+	set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_ScaDtpic_Name,
+		cgy->cgy_DisabledImage ? cgy->cgy_DisabledImage : (STRPTR) "");
+}
+
+//-----------------------------------------------------------------
+
+SAVEDS(void) INTERRUPT ControlBarGadgetListNormalActiveHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
+	struct ControlBarGadgetEntry *cgy = NULL;
+
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &cgy);
+
+	if (cgy && SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
+		{
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_Disabled, FALSE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_Disabled, FALSE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_Disabled, FALSE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_Disabled, FALSE);
+		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], MUIA_Disabled, FALSE);
+		set(app->Obj[POP_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_Disabled, FALSE);
+
+		// use nnset() here since notification would cause remaining strings to be set to
+		// empty value when first string is changed here.
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_String_Contents,
+			cgy->cgy_NormalImage ? cgy->cgy_NormalImage : (STRPTR) "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_String_Contents,
+			cgy->cgy_SelectedImage ? cgy->cgy_SelectedImage : (STRPTR) "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_String_Contents,
+			cgy->cgy_DisabledImage ? cgy->cgy_DisabledImage : (STRPTR) "");
+		nnset(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], MUIA_TextEditor_Contents, cgy->cgy_HelpText);
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_String_Contents, cgy->cgy_Action);
+		}
+	else
+		{
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_Disabled, TRUE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_Disabled, TRUE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_Disabled, TRUE);
+		set(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_Disabled, TRUE);
+		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], MUIA_Disabled, TRUE);
+		set(app->Obj[POP_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_Disabled, TRUE);
+
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_String_Contents, "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_String_Contents, "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_String_Contents, "");
+		nnset(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], MUIA_TextEditor_Contents, "");
+		nnset(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_String_Contents, "");
+		}
+
+	set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_ScaDtpic_Name,
+		cgy->cgy_NormalImage ? cgy->cgy_NormalImage : (STRPTR) "");
+	set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_ScaDtpic_Name,
+		cgy->cgy_SelectedImage ? cgy->cgy_SelectedImage : (STRPTR) "");
+	set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_ScaDtpic_Name,
 		cgy->cgy_DisabledImage ? cgy->cgy_DisabledImage : (STRPTR) "");
 }
 
@@ -1077,7 +1130,7 @@ SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, Msg msg
 
 //----------------------------------------------------------------------------
 
-SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg)
+SAVEDS(APTR) INTERRUPT BrowserCmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
 	struct CommandTableEntry *cte = NULL;
@@ -1085,11 +1138,11 @@ SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg
 	DoMethod(o, MUIM_List_GetEntry, MUIV_List_GetEntry_Active, &cte);
 	if (cte)
 		{
-		setstring(app->Obj[STRING_CONTROLBARGADGETS_ACTION], (ULONG) cte->cte_Command);
+		setstring(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], (ULONG) cte->cte_Command);
 
-		DoMethod(app->Obj[POP_CONTROLBARGADGETS_ACTION], MUIM_Popstring_Close, 0);
+		DoMethod(app->Obj[POP_CONTROLBARGADGETS_BROWSER_ACTION], MUIM_Popstring_Close, 0);
 
-		ControlBarGadgetChangedHookFunc(hook, o, msg);
+		ControlBarGadgetBrowserChangedHookFunc(hook, o, msg);
 		}
 
 	return 0;
@@ -1097,12 +1150,32 @@ SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg
 
 //----------------------------------------------------------------------------
 
-SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object *o, Msg msg)
+SAVEDS(APTR) INTERRUPT NormalCmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
+	struct CommandTableEntry *cte = NULL;
+
+	DoMethod(o, MUIM_List_GetEntry, MUIV_List_GetEntry_Active, &cte);
+	if (cte)
+		{
+		setstring(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], (ULONG) cte->cte_Command);
+
+		DoMethod(app->Obj[POP_CONTROLBARGADGETS_NORMAL_ACTION], MUIM_Popstring_Close, 0);
+
+		ControlBarGadgetNormalChangedHookFunc(hook, o, msg);
+		}
+
+	return 0;
+}
+
+//----------------------------------------------------------------------------
+
+SAVEDS(APTR) INTERRUPT ControlBarGadgetBrowserChangedHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
 	struct ControlBarGadgetEntry *cgy = NULL;
 
-	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTIVE], MUIM_NList_GetEntry, MUIV_List_GetEntry_Active, &cgy);
+	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_NList_GetEntry, MUIV_List_GetEntry_Active, &cgy);
 
 	d1(KPrintF("%s/%s/%ld: cgy=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy));
 
@@ -1111,7 +1184,7 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 		STRPTR str;
 		ULONG Changed = 0;
 
-		get(app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE], MUIA_String_Contents, &str);
+		get(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_String_Contents, &str);
 		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
 		if (0 != strcmp(str, cgy->cgy_NormalImage))
 			{
@@ -1121,7 +1194,7 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 				free(cgy->cgy_NormalImage);
 			cgy->cgy_NormalImage = strdup(str);
 
-			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTIVE], MUIM_NList_UseImage,
+			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_NList_UseImage,
 				NULL, cgy->cgy_ImageObjectIndex, 0);
 			MUI_DisposeObject(cgy->cgy_Image);
 
@@ -1138,11 +1211,11 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 				cgy->cgy_Image = NULL;
 				}
 
-			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTIVE], MUIM_NList_UseImage,
+			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_NList_UseImage,
 				cgy->cgy_Image, cgy->cgy_ImageObjectIndex, 0);
 			}
 
-		get(app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE], MUIA_String_Contents, &str);
+		get(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_String_Contents, &str);
 		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
 		if (0 != strcmp(str, cgy->cgy_SelectedImage))
 			{
@@ -1153,7 +1226,7 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 			cgy->cgy_SelectedImage = strdup(str);
 			}
 
-		get(app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE], MUIA_String_Contents, &str);
+		get(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_String_Contents, &str);
 		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
 		if (0 != strcmp(str, cgy->cgy_SelectedImage))
 			{
@@ -1164,7 +1237,7 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 			cgy->cgy_DisabledImage = strdup(str);
 			}
 
-		get(app->Obj[STRING_CONTROLBARGADGETS_ACTION], MUIA_String_Contents, &str);
+		get(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_String_Contents, &str);
 		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
 		if (0 != strcmp(str, cgy->cgy_Action))
 			{
@@ -1173,8 +1246,8 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 			stccpy(cgy->cgy_Action, str, sizeof(cgy->cgy_Action));
 			}
 
-		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT],MUIA_TextEditor_HasChanged, FALSE);
-		str = (STRPTR) DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], MUIM_TextEditor_ExportText);
+		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT],MUIA_TextEditor_HasChanged, FALSE);
+		str = (STRPTR) DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT], MUIM_TextEditor_ExportText);
 		d1(KPrintF("%s/%s/%ld: str=%08lx  cgy_HelpText=%08lx\n", __FILE__, __FUNC__, __LINE__, str, cgy->cgy_HelpText));
 		if ((NULL == cgy->cgy_HelpText) || (0 != strcmp(str, cgy->cgy_HelpText)))
 			{
@@ -1188,7 +1261,108 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object
 
 		d1(KPrintF("%s/%s/%ld: Changed=%ld\n", __FILE__, __FUNC__, __LINE__, Changed));
 		if (Changed)
-			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTIVE], MUIM_NList_RedrawEntry, cgy);
+			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_NList_RedrawEntry, cgy);
+		}
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+
+	return 0;
+}
+
+//----------------------------------------------------------------------------
+
+SAVEDS(APTR) INTERRUPT ControlBarGadgetNormalChangedHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
+	struct ControlBarGadgetEntry *cgy = NULL;
+
+	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_NList_GetEntry, MUIV_List_GetEntry_Active, &cgy);
+
+	d1(KPrintF("%s/%s/%ld: cgy=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy));
+
+	if (cgy && SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
+		{
+		STRPTR str;
+		ULONG Changed = 0;
+
+		get(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_String_Contents, &str);
+		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
+		if (0 != strcmp(str, cgy->cgy_NormalImage))
+			{
+			Changed++;
+
+			if (cgy->cgy_NormalImage)
+				free(cgy->cgy_NormalImage);
+			cgy->cgy_NormalImage = strdup(str);
+
+			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_NList_UseImage,
+				NULL, cgy->cgy_ImageObjectIndex, 0);
+			MUI_DisposeObject(cgy->cgy_Image);
+
+			if (ExistsObject(cgy->cgy_NormalImage))
+				{
+				cgy->cgy_Image = NewObject(DataTypesImageClass->mcc_Class, 0,
+					MUIA_ScaDtpic_Name, (ULONG) cgy->cgy_NormalImage,
+					TAG_END); //DataTypesMCC
+
+				d1(KPrintF("%s/%s/%ld:  <%s>  cgy_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy->cgy_NormalImage, cgy->cgy_Image));
+				}
+			else
+				{
+				cgy->cgy_Image = NULL;
+				}
+
+			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_NList_UseImage,
+				cgy->cgy_Image, cgy->cgy_ImageObjectIndex, 0);
+			}
+
+		get(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_String_Contents, &str);
+		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
+		if (0 != strcmp(str, cgy->cgy_SelectedImage))
+			{
+			Changed++;
+
+			if (cgy->cgy_SelectedImage)
+				free(cgy->cgy_SelectedImage);
+			cgy->cgy_SelectedImage = strdup(str);
+			}
+
+		get(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_String_Contents, &str);
+		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
+		if (0 != strcmp(str, cgy->cgy_SelectedImage))
+			{
+			Changed++;
+
+			if (cgy->cgy_DisabledImage)
+				free(cgy->cgy_DisabledImage);
+			cgy->cgy_DisabledImage = strdup(str);
+			}
+
+		get(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_String_Contents, &str);
+		d1(KPrintF("%s/%s/%ld: str=%08lx\n", __FILE__, __FUNC__, __LINE__, str));
+		if (0 != strcmp(str, cgy->cgy_Action))
+			{
+			Changed++;
+
+			stccpy(cgy->cgy_Action, str, sizeof(cgy->cgy_Action));
+			}
+
+		set(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT],MUIA_TextEditor_HasChanged, FALSE);
+		str = (STRPTR) DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], MUIM_TextEditor_ExportText);
+		d1(KPrintF("%s/%s/%ld: str=%08lx  cgy_HelpText=%08lx\n", __FILE__, __FUNC__, __LINE__, str, cgy->cgy_HelpText));
+		if ((NULL == cgy->cgy_HelpText) || (0 != strcmp(str, cgy->cgy_HelpText)))
+			{
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+			Changed++;
+
+			if (cgy->cgy_HelpText)
+				free(cgy->cgy_HelpText);
+			cgy->cgy_HelpText = strdup(str);
+			}
+
+		d1(KPrintF("%s/%s/%ld: Changed=%ld\n", __FILE__, __FUNC__, __LINE__, Changed));
+		if (Changed)
+			DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_NList_RedrawEntry, cgy);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));

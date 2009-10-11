@@ -145,6 +145,8 @@ static ULONG mAskMinMax(Class *cl, Object *o,struct MUIP_AskMinMax *msg)
 	struct MUI_MinMax *mi;
 	const struct FrameSize *fs;
 
+	d1(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
+
 	DoSuperMethodA(cl, o, (Msg) msg);
 
 	fs = McpGetFrameSize(inst->FrameType);
@@ -185,6 +187,7 @@ static ULONG mAskMinMax(Class *cl, Object *o,struct MUIP_AskMinMax *msg)
 
 	d1(KPrintF(__FUNC__ "/%ld: fd=%08lx  MinW=%ld  MaxW=%ld  MinH=%ld  MaxH=%ld  DefW=%ld  DefH=%ld\n", \
 		__LINE__, fs, mi->MinWidth, mi->MaxWidth, mi->MinHeight, mi->MaxHeight, mi->DefWidth, mi->DefHeight));
+	d1(KPrintF(__FILE__ "/%s/%ld: END\n", __FUNC__, __LINE__));
 
 	return 0;
 }

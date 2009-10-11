@@ -69,7 +69,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	40
-#define	VERSION_MINOR	6
+#define	VERSION_MINOR	7
 
 //----------------------------------------------------------------------------
 
@@ -314,6 +314,13 @@ static STRPTR cHideStatusBar[] =
 	NULL
 	};
 
+static STRPTR cHideControlBar[] =
+	{
+	(STRPTR) MSGID_HIDECONTROLBAR_NOTSET,
+	(STRPTR) MSGID_HIDECONTROLBAR_HIDE,
+	NULL
+	};
+
 static Object *Group_Buttons2;
 static Object *APP_Main;
 static Object *WIN_Main;
@@ -321,6 +328,7 @@ static Object *WIN_AboutMUI;
 static Object *WIN_Progress;
 static Object *OkButton, *CancelButton;
 static Object *CycleMarkNoStatusBar;
+static Object *CycleMarkNoControlBar;
 static Object *NumericButtonThumbnailsLifetime;
 static Object *CycleThumbnails;
 static Object *MenuAbout, *MenuAboutMUI, *MenuQuit, *Path, *IconImage;
@@ -453,6 +461,7 @@ int main(int argc, char *argv[])
 	if (strlen(IconName) > 0)
 		{
 		ULONG NoStatusBar = FALSE;
+		ULONG NoControlBar = FALSE;
 
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: IconObj=%08lx\n", __LINE__, iconObj));
 		if (iconObj)
@@ -477,6 +486,12 @@ int main(int argc, char *argv[])
 			tt = NULL;
 			if (DoMethod(iconObj, IDTM_FindToolType, "SCALOS_NOSTATUSBAR", &tt))
 				NoStatusBar = TRUE;
+
+			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: tt=%08lx\n", __LINE__, tt));
+
+			tt = NULL;
+			if (DoMethod(iconObj, IDTM_FindToolType, "SCALOS_NOCONTROLBAR", &tt))
+				NoControlBar = TRUE;
 
 			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: tt=%08lx\n", __LINE__, tt));
 
@@ -523,6 +538,7 @@ int main(int argc, char *argv[])
 		TranslateStringArray(cShowThumbnails);
 		TranslateStringArray(cCheckOverlap);
 		TranslateStringArray(cHideStatusBar);
+		TranslateStringArray(cHideControlBar);
 
 		APP_Main = ApplicationObject,
 			MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
@@ -636,6 +652,15 @@ int main(int argc, char *argv[])
 										MUIA_Cycle_Entries, cHideStatusBar,
 										MUIA_Disabled, !IsWriteable,
 										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_NOSTATUSBAR_SHORTHELP),
+									End, //CycleObject
+
+									Child, Label1(GetLocString(MSGID_CYCLE_NOCONTROLBAR)),
+									Child, CycleMarkNoControlBar = CycleObject,
+										MUIA_CycleChain, TRUE,
+										MUIA_Cycle_Active, NoControlBar,
+										MUIA_Cycle_Entries, cHideControlBar,
+										MUIA_Disabled, !IsWriteable,
+										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_NOCONTROLBAR_SHORTHELP),
 									End, //CycleObject
 
 									Child, Label1(GetLocString(MSGID_CYCLE_CHECKOVERLAP)),
@@ -1423,6 +1448,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 	if (IconObj)
 		{
 		ULONG HideStatusBar;
+		ULONG HideControlBar;
 		ULONG NewCheckOverlap = 0;
 		ULONG NewThumbnailMode = 0;
 		ULONG ThumbnailLifetime = THUMBNAIL_LIFETIME_NOTSET;
@@ -1435,9 +1461,18 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 		else
 			RemoveToolType(IconObj, "SCALOS_NOSTATUSBAR");
 
+		get(CycleMarkNoControlBar, MUIA_Cycle_Active, &HideControlBar);
+		if (HideControlBar)
+			SetToolType(IconObj, "SCALOS_NOCONTROLBAR", "");
+		else
+			RemoveToolType(IconObj, "SCALOS_NOCONTROLBAR");
+
 		if (ws)
 			{
-			SetAttrs(ws->ws_WindowTask->mt_MainObject, SCCA_IconWin_StatusBar, !HideStatusBar, TAG_END);
+			SetAttrs(ws->ws_WindowTask->mt_MainObject,
+				SCCA_IconWin_StatusBar, !HideStatusBar,
+				SCCA_IconWin_ControlBar, !HideControlBar,
+				TAG_END);
 			}
 
 		get(NumericButtonThumbnailsLifetime, MUIA_Numeric_Value, &ThumbnailLifetime);
@@ -1569,7 +1604,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 			RemoveToolType(IconObj, "SCALOS_INACTIVETRANSPARENCY");
 
 			SetAttrs(ws->ws_WindowTask->mt_MainObject,
-				SCCA_IconWin_ActiveTransparency, prefsInactiveWindowTransparency,
+				SCCA_IconWin_InactiveTransparency, prefsInactiveWindowTransparency,
 				TAG_END);
 			}
 		else

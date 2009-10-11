@@ -360,6 +360,14 @@ Layout
 MSGID_WINDOWPAGES_CONTROLBAR (//)
 Control Bar
 ;
+;
+MSGID_WINDOWPAGES_CONTROLBAR_BROWSER (//)
+Browser Window Control Bar
+;
+;
+MSGID_WINDOWPAGES_CONTROLBAR_NORMAL (//)
+Standard Window Control Bar
+;
 ;-----------------------------------------------------------
 ;
 MSGID_TEXTWINDOWPAGES_FONTS (1530//)
@@ -1854,8 +1862,8 @@ Selects which view mode is to be used for all\n\
 drawers with their view mode set to \"default\".
 ;
 ;
-MSGID_WINDOWPAGE_CONTROLBAR_GADGETS (//)
-Gadgets
+MSGID_WINDOWPAGE_CONTROLBAR_BROWSER_GADGETS (//)
+Browser Window Gadgets
 ;
 ;
 MSGID_WINDOWPAGE_CONTROLBAR_GADGETS_SHORTHELP (//)
@@ -1979,6 +1987,10 @@ MSGID_WINDOWPAGE_TRANSPARENCY_INACTIVEWINDOW_SHORTHELP (//)
 Here you can select the degree of transparency\n\
 for all inactive Scalos desktop, icon, or text windows.\n\
 The desktop will only get transparent if it is not a backdrop window.
+;
+;
+MSGID_WINDOWPAGE_CONTROLBAR_NORMAL_GADGETS (//)
+Standard Window Gadgets
 ;
 ;-----------------------------------------------------------
 ;

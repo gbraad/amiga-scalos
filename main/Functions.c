@@ -61,6 +61,13 @@ static const struct TagItem FlagMapTable[] =
 	{ TAG_END, 0 },
 	};
 
+// remapping of SCA_OpenIconWindow() tags to ws_MoreFlags values
+static const struct TagItem MoreFlagMapTable[] =
+	{
+	{ SCA_NoControlBar, WSV_MoreFlagF_NoControlBar },
+	{ TAG_END, 0 },
+	};
+
 //----------------------------------------------------------------------------
 
 // local functions
@@ -200,6 +207,7 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 		wsNew->ws_ThumbnailsLifetimeDays = CurrentPrefs.pref_ThumbnailMaxAge;
 
 		wsNew->ws_Flags = PackBoolTags(wsNew->ws_Flags, TagList, (struct TagItem *) FlagMapTable);
+		wsNew->ws_MoreFlags = PackBoolTags(wsNew->ws_MoreFlags, TagList, (struct TagItem *) MoreFlagMapTable);
 
 		d1(KPrintF("%s/%s/%ld: ws_Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, wsNew->ws_Flags));
 
@@ -231,6 +239,8 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 
 			if (iwp.iwp_NoStatusBar)
 				wsNew->ws_Flags |= WSV_FlagF_NoStatusBar;
+			if (iwp.iwp_NoControlBar)
+				wsNew->ws_MoreFlags |= WSV_MoreFlagF_NoControlBar;
 			if (iwp.iwp_BrowserMode)
 				wsNew->ws_Flags |= WSV_FlagF_BrowserMode;
 
@@ -1056,6 +1066,13 @@ void FunctionsGetSettingsFromIconObject(struct IconWindowProperties *iwp, Object
 	if (DoMethod(IconObj, IDTM_FindToolType, "SCALOS_NOSTATUSBAR", &tt))
 		{
 		iwp->iwp_NoStatusBar = TRUE;
+		}
+
+	iwp->iwp_NoControlBar = FALSE;
+	tt = NULL;
+	if (DoMethod(IconObj, IDTM_FindToolType, "SCALOS_NOCONTROLBAR", &tt))
+		{
+		iwp->iwp_NoControlBar = TRUE;
 		}
 
 	iwp->iwp_BrowserMode = FALSE;

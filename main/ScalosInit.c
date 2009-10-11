@@ -1159,7 +1159,8 @@ static void ScalosMain(LONG *ArgArray)
 		NewList(&globalCopyClipBoard);
 		NewList(&WBStartList);
 		NewList(&globalCloseWBHookList);
-		NewList(&ControlBarGadgetList);
+		NewList(&ControlBarGadgetListNormal);
+		NewList(&ControlBarGadgetListBrowser);
 
 		TRACE_AMITHLON(__LINE__);
 

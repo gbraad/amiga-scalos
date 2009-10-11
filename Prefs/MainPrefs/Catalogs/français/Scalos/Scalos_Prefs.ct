@@ -367,6 +367,16 @@ MSGID_WINDOWPAGES_CONTROLBAR
 Barre de navigation
 ;Control Bar
 ;
+;+++translateme+++
+MSGID_WINDOWPAGES_CONTROLBAR_BROWSER
+Browser Window Control Bar
+;Browser Window Control Bar
+;
+;+++translateme+++
+MSGID_WINDOWPAGES_CONTROLBAR_NORMAL
+Standard Window Control Bar
+;Standard Window Control Bar
+;
 ;-----------------------------------------------------------
 ;
 MSGID_TEXTWINDOWPAGES_FONTS
@@ -2004,9 +2014,9 @@ répertoires avec le mode de vue "par défaut".
 ;drawers with their view mode set to \"default\".
 ;
 ;
-MSGID_WINDOWPAGE_CONTROLBAR_GADGETS
-Gadgets
-;Gadgets
+MSGID_WINDOWPAGE_CONTROLBAR_BROWSER_GADGETS
+Browser Window Gadgets
+;Browser Window Gadgets
 ;
 ;
 MSGID_WINDOWPAGE_CONTROLBAR_GADGETS_SHORTHELP
@@ -2171,6 +2181,11 @@ Le bureau obtiendra la transparence si il nest pas en arrière-plan.
 ;Here you can select the degree of transparency\n\
 ;for all inactive Scalos desktop, icon, or text windows.\n\
 ;The desktop will only get transparent if it is not a backdrop window.
+;
+;+++translateme+++
+MSGID_WINDOWPAGE_CONTROLBAR_NORMAL_GADGETS
+Standard Window Gadgets
+;Standard Window Gadgets
 ;
 ;-----------------------------------------------------------
 ;

@@ -191,6 +191,29 @@ MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT_SHORTHELP
 Standard verwenden
 ;Use default
 ;
+;
+MSGID_CYCLE_NOCONTROLBAR
+Steuerleiste unterdrücken
+;Hide Control Bar:
+;
+;
+MSGID_CYCLE_NOCONTROLBAR_SHORTHELP
+Mit diesem Schalter kann die Steuerleiste für dieses\n\
+Fenster abgeschaltet werden, unabhängig von der\n\
+globalen Einstellung.
+;This switch can be used to turn off the control bar\n\
+;for this window, independent of the global setting.
+;
+;
+MSGID_HIDECONTROLBAR_NOTSET
+(Standard verwenden)
+;(not set)
+;
+;
+MSGID_HIDECONTROLBAR_HIDE
+unterdrücken
+;Hidden
+;
 ;-----------------------------------------------------------
 ;
 MSGID_MENU_PROJECT

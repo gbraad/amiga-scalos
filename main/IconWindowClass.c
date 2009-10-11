@@ -1044,6 +1044,23 @@ static ULONG IconWindowClass_Set(Class *cl, Object *o, Msg msg)
 			}
 			break;
 
+		case SCCA_IconWin_ControlBar:
+			{
+			struct SM_ShowControlBar *smcb;
+
+			d1(kprintf("%s/%s/%ld: SCCA_IconWin_ControlBar  Data=%08lx\n", __FILE__, __FUNC__, __LINE__, ti->ti_Data));
+			d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+			smcb = (struct SM_ShowControlBar *) SCA_AllocMessage(MTYP_ShowControlBar, 0);
+			d1(kprintf("%s/%s/%ld: smsb=%08lx\n", __FILE__, __FUNC__, __LINE__, smcb));
+			if (smcb)
+				{
+				smcb->smcb_Visible = ti->ti_Data;
+				PutMsg(iwt->iwt_WindowTask.wt_IconPort, &smcb->ScalosMessage.sm_Message);
+				}
+			}
+			break;
+
 		case SCCA_IconWin_ThumbnailsGenerating:
 			SetThumbnailsGenerating(iwt, ti->ti_Data);
 			break;
@@ -1123,6 +1140,10 @@ static ULONG IconWindowClass_Get(Class *cl, Object *o, Msg msg)
 
 	case SCCA_IconWin_ThumbnailsGenerating:
 		*opg->opg_Storage = (ULONG) iwt->iwt_ThumbnailGenerationPending;
+		break;
+
+	case SCCA_IconWin_ControlBar:
+		*opg->opg_Storage = (ULONG) !(iwt->iwt_WindowTask.mt_WindowStruct->ws_MoreFlags & WSV_MoreFlagF_NoControlBar);
 		break;
 
 	default:

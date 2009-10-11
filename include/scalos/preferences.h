@@ -145,8 +145,8 @@ struct PrefsStruct
 #define SCP_SingleWindowLassoQualifier	0x8000007d	// ULONG - Key qualifier to use single-window lasso operation
 #define SCP_EnableDropMenu		0x8000007e	// UBYTE - Flag: use drop menu for copy/move/create link selection
 #define SCP_PathsImagecache		0x8000007f	// string -- path to Scalos datatypes image cache
-#define SCP_ControlBarGadgets		0x80000080	// array of SCP_GadgetEntry
-#define SCP_ControlBarGadgetStrings	0x80000081	// SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length
+#define SCP_ControlBarGadgetsBr		0x80000080	// array of SCP_GadgetEntry for browser mode windows
+#define SCP_ControlBarGadgetStringsBr	0x80000081	// SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for browser mode windows
 #define	SCP_CheckOverlappingIcons	0x80000082	// UBYTE - check for overlapping icons in icon windows
 #define SCP_CopyBuffLen			0x80000083	// ULONG - buffer size for file copying
 #define SCP_SelectedTextRectangle	0x80000084	// UBYTE - Flag: Draw rectangle around selected icon text
@@ -159,6 +159,8 @@ struct PrefsStruct
 #define SCP_PopupWindowsDelay		0x8000008b	// UWORD - Time in s before drawer window pops up during D&D
 #define	SCP_SelectMarkerBaseColor	0x8000008c	// struct ARGB - base color for text window selection marker
 #define	SCP_SelectMarkerTransparency	0x8000008d	// UBYTE - transparency for text window selection marker (0=transparent, 0xff=opaque)
+#define SCP_ControlBarGadgetsStd	0x8000008e	// array of SCP_GadgetEntry for normal windows
+#define SCP_ControlBarGadgetStringsStd	0x8000008f	// SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for normal windows
 
 //---------------------------------------------------------------
 

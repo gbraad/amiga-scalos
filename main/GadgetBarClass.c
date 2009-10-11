@@ -664,6 +664,9 @@ static ULONG GadgetBar_Layout(Class *cl, Object *o, Msg msg)
 		break;
 		}
 
+	d1(kprintf("%s/%s/%ld: gpl_GInfo=%08lx  gi_Window=%08lx\n", __FILE__, __FUNC__, __LINE__, gpl->gpl_GInfo, gpl->gpl_GInfo->gi_Window));
+	d1(kprintf("%s/%s/%ld: gg=%08lx  LeftEdge=%ld  TopEdge=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->LeftEdge, gg->TopEdge));
+
 	for (Member = (struct GadgetBarMember *) inst->gbcl_MemberList.lh_Head;
 		Member != (struct GadgetBarMember *) &inst->gbcl_MemberList.lh_Tail; 
 		Member = (struct GadgetBarMember *) Member->gbm_Node.ln_Succ)

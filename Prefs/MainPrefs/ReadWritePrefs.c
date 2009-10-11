@@ -69,7 +69,8 @@ extern struct ScalosBase *ScalosBase;
 extern struct Library *WorkbenchBase;
 
 extern struct List PluginList;
-extern struct List ControlBarGadgetList;
+extern struct List ControlBarGadgetListNormal;
+extern struct List ControlBarGadgetListBrowser;
 extern CONST_STRPTR cFileDisplayColumns[];
 
 //-----------------------------------------------------------------
@@ -94,9 +95,11 @@ static ULONG TranslateStringToQualifier(CONST_STRPTR line);
 static void AdjustBobMethod(struct SCAModule *app);
 static LONG WriteIconFontPrefs(struct SCAModule *app, struct IFFHandle *iff);
 static size_t GetFontPrefsSize(const struct FontPrefs *FontChunk);
-static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID);
-static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandle, LONG lID);
-static void CleanupControlBarGadgetsList(void);
+static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List *CbGadgetsList,
+	ULONG prefsIDGadgets, ULONG prefsIDStrings);
+static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandle, LONG lID,
+	ULONG ObjID, ULONG prefsIDGadgets, ULONG prefsIDStrings);
+static void CleanupControlBarGadgetsList(struct List *CbGadgetsList);
 static void CreateDefaultControlBarGadgets(void);
 static ULONG GetLog2(ULONG value);
 
@@ -626,7 +629,8 @@ void ReadWritePrefsCleanup(void)
 	HiddenDevicesCleanup();
 
 	CleanupPluginList();
-	CleanupControlBarGadgetsList();
+	CleanupControlBarGadgetsList(&ControlBarGadgetListNormal);
+	CleanupControlBarGadgetsList(&ControlBarGadgetListBrowser);
 }
 
 //-----------------------------------------------------------------
@@ -978,22 +982,43 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	{
 	struct ControlBarGadgetEntry *cgy;
 
-	set(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
+	set(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
 
-	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIM_NList_Clear);
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_NList_Clear);
 
 	// copy control bar gadgets to list
-	for (cgy = (struct ControlBarGadgetEntry *) ControlBarGadgetList.lh_Head;
-		cgy != (struct ControlBarGadgetEntry *) &ControlBarGadgetList.lh_Tail;
+	for (cgy = (struct ControlBarGadgetEntry *) ControlBarGadgetListBrowser.lh_Head;
+		cgy != (struct ControlBarGadgetEntry *) &ControlBarGadgetListBrowser.lh_Tail;
 		cgy = (struct ControlBarGadgetEntry *) cgy->cgy_Node.ln_Succ)
 		{
-		DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE],
+		DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE],
 			MUIM_NList_InsertSingle,
 			cgy, MUIV_NList_Insert_Bottom);
 		}
 
-	set(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIA_NList_Quiet, MUIV_NList_Quiet_None);
-	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIM_NList_Redraw, MUIV_NList_Redraw_All);
+	set(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIA_NList_Quiet, MUIV_NList_Quiet_None);
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_NList_Redraw, MUIV_NList_Redraw_All);
+	}
+
+	{
+	struct ControlBarGadgetEntry *cgy;
+
+	set(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
+
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_NList_Clear);
+
+	// copy control bar gadgets to list
+	for (cgy = (struct ControlBarGadgetEntry *) ControlBarGadgetListNormal.lh_Head;
+		cgy != (struct ControlBarGadgetEntry *) &ControlBarGadgetListNormal.lh_Tail;
+		cgy = (struct ControlBarGadgetEntry *) cgy->cgy_Node.ln_Succ)
+		{
+		DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE],
+			MUIM_NList_InsertSingle,
+			cgy, MUIV_NList_Insert_Bottom);
+		}
+
+	set(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIA_NList_Quiet, MUIV_NList_Quiet_None);
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_NList_Redraw, MUIV_NList_Redraw_All);
 	}
 
 	FillHiddenDevicesList(app);
@@ -1393,7 +1418,11 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		WriteTextModeColumns(p_MyPrefsHandle, lID);
 
 		WritePluginList(p_MyPrefsHandle, lID);
-		WriteControlBarGadgetList(app, p_MyPrefsHandle, lID);
+
+		WriteControlBarGadgetList(app, p_MyPrefsHandle, lID,
+			NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE, SCP_ControlBarGadgetsStd, SCP_ControlBarGadgetStringsStd);
+		WriteControlBarGadgetList(app, p_MyPrefsHandle, lID,
+			NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE, SCP_ControlBarGadgetsBr, SCP_ControlBarGadgetStringsBr);
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MMB_Move, &currentPrefs.Windows.wg_bMMBMove, sizeof(currentPrefs.Windows.wg_bMMBMove) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_WindowPopupTitleOnly, &currentPrefs.Windows.wg_bPopTitleOnly, sizeof(currentPrefs.Windows.wg_bPopTitleOnly) );
@@ -1575,7 +1604,10 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		ReadTextModeColumns(p_MyPrefsHandle, lID);
 
 		ReadPluginList(p_MyPrefsHandle, lID);
-		ReadControlBarGadgetList(p_MyPrefsHandle, lID);
+		ReadControlBarGadgetList(p_MyPrefsHandle, lID,
+			&ControlBarGadgetListNormal, SCP_ControlBarGadgetsStd, SCP_ControlBarGadgetStringsStd);
+		ReadControlBarGadgetList(p_MyPrefsHandle, lID,
+			&ControlBarGadgetListBrowser, SCP_ControlBarGadgetsBr, SCP_ControlBarGadgetStringsBr);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MMB_Move, &currentPrefs.Windows.wg_bMMBMove, sizeof(currentPrefs.Windows.wg_bMMBMove) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_WindowPopupTitleOnly, &currentPrefs.Windows.wg_bPopTitleOnly, sizeof(currentPrefs.Windows.wg_bPopTitleOnly) );
@@ -2477,7 +2509,8 @@ static size_t GetFontPrefsSize(const struct FontPrefs *FontChunk)
 }
 
 
-static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID)
+static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List *CbGadgetsList,
+	ULONG prefsIDGadgets, ULONG prefsIDStrings)
 {
 	struct SCP_GadgetStringEntry *gse = NULL;
 
@@ -2487,19 +2520,19 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID)
 		struct SCP_GadgetEntry sgy;
 		size_t size;
 
-		size = GetEntry(p_MyPrefsHandle, lID, SCP_ControlBarGadgets, &sgy, sizeof(sgy), 0);
+		size = GetEntry(p_MyPrefsHandle, lID, prefsIDGadgets, &sgy, sizeof(sgy), 0);
 		if (size > 0)
 			{
 			struct SCP_GadgetStringEntry gseTemp;
 	                LONG Entry;
 
-			CleanupControlBarGadgetsList();
+			CleanupControlBarGadgetsList(CbGadgetsList);
 
 			memset(&gseTemp, 0, sizeof(gseTemp));
 			Entry = 0;
 
-			// first determine required size of SCP_ControlBarGadgetStrings
-			GetPreferences(p_MyPrefsHandle, lID, SCP_ControlBarGadgetStrings, &gseTemp, sizeof(gseTemp) );
+			// first determine required size of prefsIDStrings
+			GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, &gseTemp, sizeof(gseTemp) );
 			size = sizeof(struct SCP_GadgetStringEntry) + gseTemp.gse_Length;
 			d1(KPrintF("%s/%s/%ld: gse_Length=%lu  size=%lu\n", __FILE__, __FUNC__, __LINE__, gseTemp.gse_Length, size));
 
@@ -2508,11 +2541,11 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID)
 			if (NULL == gse)
 				break;
 
-			// now read complete SCP_ControlBarGadgetStrings
-			GetPreferences(p_MyPrefsHandle, lID, SCP_ControlBarGadgetStrings, gse, size );
+			// now read complete prefsIDStrings
+			GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, gse, size );
 
 			// read array of SCP_ControlBarGadgets
-			while ((size = GetEntry(p_MyPrefsHandle, lID, SCP_ControlBarGadgets, &sgy, sizeof(sgy), Entry)) > 0)
+			while ((size = GetEntry(p_MyPrefsHandle, lID, prefsIDGadgets, &sgy, sizeof(sgy), Entry)) > 0)
 				{
 				struct ControlBarGadgetEntry *cgy;
 
@@ -2535,8 +2568,8 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID)
 				cgy->cgy_DisabledImage = strdup(&gse->gse_Strings[sgy.sgy_DisabledImageIndex]);
 				cgy->cgy_HelpText = strdup(&gse->gse_Strings[sgy.sgy_HelpTextIndex]);
 
-				// add new ControlBarGadgetEntry to ControlBarGadgetList
-				AddTail(&ControlBarGadgetList, &cgy->cgy_Node);
+				// add new ControlBarGadgetEntry to CbGadgetsList
+				AddTail(CbGadgetsList, &cgy->cgy_Node);
 
 				Entry++;
 				}
@@ -2556,7 +2589,8 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID)
 }
 
 
-static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandle, LONG lID)
+static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandle, LONG lID,
+	ULONG ObjID, ULONG prefsIDGadgets, ULONG prefsIDStrings)
 {
 	struct SCP_GadgetStringEntry *gse = NULL;
 
@@ -2568,12 +2602,15 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 		ULONG entries, n;
 		LONG Entry;
 
-		entries = getv(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIA_NList_Entries);
+		if (0 == ObjID)
+			break;
+
+		entries = getv(app->Obj[ObjID], MUIA_NList_Entries);
 
 		// count required length for SCP_ControlBarGadgetStrings
 		for (n=0; n<entries; n++)
 			{
-			DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIM_NList_GetEntry, n, &cgy);
+			DoMethod(app->Obj[ObjID], MUIM_NList_GetEntry, n, &cgy);
 
 			if (SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
 				{
@@ -2601,7 +2638,7 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 			{
 			struct SCP_GadgetEntry sgy;
 
-			DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIM_NList_GetEntry, n, &cgy);
+			DoMethod(app->Obj[ObjID], MUIM_NList_GetEntry, n, &cgy);
 
 			memset(&sgy, 0, sizeof(sgy));
 
@@ -2632,11 +2669,11 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 			d1(KPrintF("%s/%s/%ld: sgy_NormalImageIndex=%lu  sgy_SelectedImageIndex=%lu\n", __FILE__, __FUNC__, __LINE__, sgy.sgy_NormalImageIndex, sgy.sgy_SelectedImageIndex));
 			d1(KPrintF("%s/%s/%ld: sgy_DisabledImageIndex=%lu  sgy_HelpTextIndex=%lu\n", __FILE__, __FUNC__, __LINE__, sgy.sgy_DisabledImageIndex, sgy.sgy_HelpTextIndex));
 
-			SetEntry(p_MyPrefsHandle, lID, SCP_ControlBarGadgets, &sgy, sizeof(sgy), Entry++);
+			SetEntry(p_MyPrefsHandle, lID, prefsIDGadgets, &sgy, sizeof(sgy), Entry++);
 			}
 
 		// now write complete SCP_ControlBarGadgetStrings
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ControlBarGadgetStrings, gse, gseLength);
+		SetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, gse, gseLength);
 		} while (0);
 
 	if (gse)
@@ -2644,11 +2681,11 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 }
 
 
-static void CleanupControlBarGadgetsList(void)
+static void CleanupControlBarGadgetsList(struct List *CbGadgetsList)
 {
 	struct ControlBarGadgetEntry *cgy;
 
-	while ((cgy  = (struct ControlBarGadgetEntry *) RemHead(&ControlBarGadgetList)))
+	while ((cgy  = (struct ControlBarGadgetEntry *) RemHead(CbGadgetsList)))
 		{
 		if (cgy->cgy_NormalImage)
 			{
@@ -2674,7 +2711,7 @@ static void CreateDefaultControlBarGadgets(void)
 {
 	ULONG n;
 
-	CleanupControlBarGadgetsList();
+	CleanupControlBarGadgetsList(&ControlBarGadgetListBrowser);
 
 	for (n = 0; n < Sizeof(DefaultControlBarGadgets); n++)
 		{
@@ -2694,7 +2731,7 @@ static void CreateDefaultControlBarGadgets(void)
 		cgy->cgy_HelpText = strdup(DefaultControlBarGadgets[n].cgy_HelpText);
 
 		// add new ControlBarGadgetEntry to ControlBarGadgetList
-		AddTail(&ControlBarGadgetList, &cgy->cgy_Node);
+		AddTail(&ControlBarGadgetListBrowser, &cgy->cgy_Node);
 		}
 }
 

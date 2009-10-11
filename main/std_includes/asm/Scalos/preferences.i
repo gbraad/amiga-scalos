@@ -130,8 +130,8 @@ SCP_TransparencyThumbnailsBack 	EQU	$8000007c	; UWORD - percentage of thumbnail 
 SCP_SingleWindowLassoQualifier	EQU	$8000007d	; ULONG - Key qualifier to use single-window lasso operation
 SCP_EnableDropMenu		EQU	$8000007e	; UBYTE - Flag: use drop menu for copy/move/create link selection
 SCP_PathsImagecache		EQU	$8000007f	; string -- path to Scalos datatypes image cache
-SCP_ControlBarGadgets		EQU	$80000080	; array of SCP_GadgetEntry
-SCP_ControlBarGadgetStrings	EQU	$80000081	; SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length
+SCP_ControlBarGadgetsBr		EQU	$80000080	; array of SCP_GadgetEntry for browser mode windows
+SCP_ControlBarGadgetStringsBr	EQU	$80000081	; SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for browser mode windows
 SCP_CheckOverlappingIcons	EQU	$80000082	; UBYTE - check for overlapping icons in icon windows
 SCP_CopyBuffLen			EQU	$80000083	; ULONG - buffer size for file copying
 SCP_SelectedTextRectangle	EQU	$80000084	; UBYTE - Flag: Draw rectangle around selected icon text
@@ -144,6 +144,8 @@ SCP_PopupWindowsEnable		EQU	$8000008a	; BYTE - enable "spring-loaded" popup wind
 SCP_PopupWindowsDelay		EQU	$8000008b	; UWORD - Time in s before drawer window pops up during D&D
 SCP_SelectMarkerBaseColor	EQU	$8000008c	; struct ARGB - base color for text window selection marker
 SCP_SelectMarkerTransparency	EQU	$8000008d	; UBYTE - transparency for text window selection marker (0=transparent, 0xff=opaque)
+SCP_ControlBarGadgetsStd	EQU	$8000008e	; array of SCP_GadgetEntry for normal windows
+SCP_ControlBarGadgetStringsStd	EQU	$8000008f	; SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for normal windows
 
 
 	ENDC	; PREFERENCES_I

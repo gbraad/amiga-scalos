@@ -159,6 +159,28 @@ Use default
 MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT_SHORTHELP
 Use default
 ;
+;+++translateme+++
+MSGID_CYCLE_NOCONTROLBAR
+Hide Control Bar:
+;Hide Control Bar:
+;
+;+++translateme+++
+MSGID_CYCLE_NOCONTROLBAR_SHORTHELP
+This switch can be used to turn off the control bar\n\
+for this window, independent of the global setting.
+;This switch can be used to turn off the control bar\n\
+;for this window, independent of the global setting.
+;
+;+++translateme+++
+MSGID_HIDECONTROLBAR_NOTSET
+(not set)
+;(not set)
+;
+;+++translateme+++
+MSGID_HIDECONTROLBAR_HIDE
+Hidden
+;Hidden
+;
 ;-----------------------------------------------------------
 ;
 MSGID_MENU_PROJECT
