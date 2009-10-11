@@ -8,7 +8,10 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20091005	jl	- Bugfix: with AmigaOS4, centered window background images sometimes did not display.
+41.7    20091011	jl	- Improvement: Add support for control bar also for standard (non-browser) windows.
+				- Improvement: Windowproperties.module: control bar can be switched off
+				  for individual windows.
+	20091005	jl	- Bugfix: with AmigaOS4, centered window background images sometimes did not display.
 	20090918	jmc	- Improvement: Upgraded libpng 1.2.39 to 1.2.40 (68k and MOS).
 	20090915	jl	- Improvement: added new sophisticated text window selection marker.
 				- Improvement: Moved main preferences text window settings to separate page,
@@ -1892,6 +1895,9 @@ Additions/changes:
 ****************************************************************************
 
 --------------------Scalos main Preferences---------------------------------
+
+ 40.26  20091011	jl	- Improvement: Add support for control bar also for standard (non-browser) windows,
+				  standard and browser-mode control bars can be configured independently.
 
  40.25	20090829	jl	- Improvement: allow TrueType font selection for text windows on windows/text windows page.
  40.24  20090413	jl	- Bugfix: resolved NULL pointer hit when adding normal image to user-defined control bar button.

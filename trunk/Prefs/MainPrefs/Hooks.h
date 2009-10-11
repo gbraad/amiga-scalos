@@ -9,7 +9,8 @@
 SAVEDS(void) INTERRUPT StartFontPrefs_Func(struct Hook *hook, Object *pPrefsWindow, Msg msg);
 SAVEDS(void) INTERRUPT StartWorkbenchPrefs_Func(struct Hook *hook, Object *pPrefsWindow, Msg msg);
 SAVEDS(void) INTERRUPT CheckPopTitleBarBox(struct Hook *hook, Object *pPrefsWindow, Msg msg);
-SAVEDS(void) INTERRUPT ControlBarGadgetListActiveHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(void) INTERRUPT ControlBarGadgetListBrowserActiveHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(void) INTERRUPT ControlBarGadgetListNormalActiveHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT AddPlugin_Func(struct Hook *hook, Object *pPluginList, Msg msg);
 SAVEDS(void) INTERRUPT PluginActive_Func(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg);
@@ -38,8 +39,10 @@ SAVEDS(void) INTERRUPT IconsMaxSizeHookFunc(struct Hook *hook, Object *o, Msg ms
 SAVEDS(void) INTERRUPT IconFrameHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT ThumbnailFrameHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, Msg msg);
-SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg);
-SAVEDS(APTR) INTERRUPT ControlBarGadgetChangedHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(APTR) INTERRUPT BrowserCmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(APTR) INTERRUPT NormalCmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(APTR) INTERRUPT ControlBarGadgetBrowserChangedHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(APTR) INTERRUPT ControlBarGadgetNormalChangedHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT CalculateMaxRadiusHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT UpdateSelectMarkerSampleHookFunc(struct Hook *hook, Object *o, Msg msg);
 #endif /* HOOKS_H */

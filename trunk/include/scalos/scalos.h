@@ -132,6 +132,7 @@ struct internalScaWindowTask;
 #define SCA_TransparencyActive		(SCA_TagBase+30)	// ULONG - percentage of opacity in active window state, 0=transparent, 100=opaque
 #define SCA_TransparencyInactive	(SCA_TagBase+31)	// ULONG - percentage of opacity in inactive window state, 0=transparent, 100=opaque
 #define SCA_DdPopupWindow		(SCA_TagBase+32)	// ULONG - Flag: this window has popped up during D&D operation
+#define SCA_NoControlBar 		(SCA_TagBase+33)	// don't display control bar for this window
 
 #define SCAB_WBStart_NoIcon		0
 #define SCAB_WBStart_Wait		1
@@ -230,8 +231,9 @@ enum WindowDropMarkTypes
 #define MTYP_PrefsChanged		34
 #define MTYP_StartChildProcess		35
 #define MTYP_RootEvent			36
+#define MTYP_ShowControlBar		37
 
-#define	MTYP_MAX			37	// must always be 1 larger than last MTYP_??5
+#define	MTYP_MAX			38	// must always be 1 larger than last MTYP_??5
 
 // ---------------------------------------------------------------------------
 
@@ -280,6 +282,7 @@ struct ScaWindowStruct
 	UWORD			ws_WindowOpacityActive;		// percentage of active Scalos Window transparency - not used on all platforms!
 								// (0=PREFS_TRANSPARENCY_TRANSPARENT=invisible, 100=PREFS_TRANSPARENCY_OPAQUE=opaque)
 	UWORD			ws_WindowOpacityInactive;	// percentage of inactive Scalos Window transparency - not used on all platforms!
+	ULONG			ws_MoreFlags;		// various flags, see below
 };
 
 // ws_Flags:
@@ -315,6 +318,10 @@ struct ScaWindowStruct
 #define WSV_FlagF_CheckOverlappingIcons	(1 << WSV_FlagB_CheckOverlappingIcons)
 #define WSV_FlagB_DdPopupWindow 	15		// this window has popped up during a D&D operation
 #define WSV_FlagF_DdPopupWindow		(1 << WSV_FlagB_DdPopupWindow)
+
+// ws_MoreFlags
+#define	WSV_MoreFlagB_NoControlBar	0	       // don't display control bar for this window
+#define	WSV_MoreFlagF_NoControlBar	(1L << WSV_MoreFlagB_NoControlBar)
 
 // ws_WindowType:
 #define WSV_Type_IconWindow	0		// Window filled with icons
@@ -586,6 +593,12 @@ struct SM_ShowStatusBar
 	{
 	struct ScalosMessage    ScalosMessage;
 	BOOL smsb_Visible;
+	};
+
+struct SM_ShowControlBar
+	{
+	struct ScalosMessage    ScalosMessage;
+	BOOL smcb_Visible;
 	};
 
 struct SM_RedrawIcon
@@ -1079,6 +1092,7 @@ struct ScalosNodeList
 #define	SCCA_IconWin_InnerBottom		(SCC_Dummy+1014)	// (ULONG) [.G] bottom
 #define	SCCA_IconWin_ActiveTransparency		(SCC_Dummy+1015)	// (ULONG) [SG] degree of transparency for active window state (0=transparent, 100=opaque)
 #define	SCCA_IconWin_InactiveTransparency	(SCC_Dummy+1016)	// (ULONG) [SG] degree of transparency for inactive window state (0=transparent, 100=opaque)
+#define	SCCA_IconWin_ControlBar			(SCC_Dummy+1017)	// (BOOL)  [SG] Flag: Control bar is present
 
 // ---------------------------------------------------------------------------
 // --------------- Methods -------------

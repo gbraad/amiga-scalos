@@ -173,8 +173,8 @@ static ULONG mDraw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
 
 		d1(kprintf("%s/%s/%ld: TTEngineBase=%08lx  fsm_TTFontHandle=%08lx\n", \
 			__FILE__, __FUNC__, __LINE__, TTEngineBase, inst->fsm_TTFontHandle));
-		d2(kprintf("%s/%s/%ld: width=%ld  height=%ld\n", __FILE__, __FUNC__, __LINE__, _mwidth(obj), _mheight(obj)));
-		d2(kprintf("%s/%s/%ld: subwidth=%ld  subheight=%ld\n", __FILE__, __FUNC__, __LINE__, _subwidth(obj), _subheight(obj)));
+		d1(kprintf("%s/%s/%ld: width=%ld  height=%ld\n", __FILE__, __FUNC__, __LINE__, _mwidth(obj), _mheight(obj)));
+		d1(kprintf("%s/%s/%ld: subwidth=%ld  subheight=%ld\n", __FILE__, __FUNC__, __LINE__, _subwidth(obj), _subheight(obj)));
 
 		ClipHandle = MUI_AddClipping(muiRenderInfo(obj), _mleft(obj), _mtop(obj), _mwidth(obj), _mheight(obj));
 

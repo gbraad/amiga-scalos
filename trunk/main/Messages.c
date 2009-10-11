@@ -73,6 +73,7 @@ static ULONG TimerReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *M
 static ULONG ARexxRoutineMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
 static ULONG ShowPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
 static ULONG ShowStatusBarMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
+static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
 static ULONG RedrawIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
 static ULONG RedrawIconObjectMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
 static ULONG DoPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
@@ -122,7 +123,10 @@ struct MsgTableEntry iMsgTable[] =
 	{ SetThumbnailImageRemappedMsg,	NULL		},	// MTYP_SetThumbnailImage_Remapped set color-mapped thumbnail image for icon
 	{ SetThumbnailImageARGBMsg,	NULL		},	// MTYP_SetThumbnailImage_ARGB		set ARGB thumbnail image for icon
 	{ NewWindowPathMsg,		NULL		},	// MTYP_NewWindowPath	switch window to display new drawer
-	{ WindowPrefsChangedMsg,	NULL		},	// MTYP_refsChanged	notifies window about changed preferences
+	{ WindowPrefsChangedMsg,	NULL		},	// MTYP_PrefsChanged	 notifies window about changed preferences
+	{ NULL,				NULL		},	// MTYP_StartChildProcess
+	{ NULL,				NULL		},	// MTYP_RootEvent
+	{ ShowControlBarMsg,		NULL		},	// MTYP_ShowControlBar
 	};
 
 //----------------------------------------------------------------------------
@@ -624,6 +628,25 @@ static ULONG ShowStatusBarMsg(struct internalScaWindowTask *iwt, struct Message 
 	return 0;
 }
 
+
+static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+{
+	struct SM_ShowControlBar *smcb = (struct SM_ShowControlBar *) Msg;
+
+	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  smcb_Visible=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smsb->smcb_Visible));
+
+	if (smcb->smcb_Visible)
+		iwt->iwt_WindowTask.mt_WindowStruct->ws_MoreFlags &= ~WSV_MoreFlagF_NoControlBar;
+	else
+		iwt->iwt_WindowTask.mt_WindowStruct->ws_MoreFlags |= WSV_MoreFlagF_NoControlBar;
+
+	ControlBarRebuild(iwt);
+	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Update);
+
+	return 0;
+}
+
+
 static ULONG RedrawIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
 {
 	struct SM_RedrawIcon *smri = (struct SM_RedrawIcon *) Msg;
@@ -864,11 +887,8 @@ static ULONG WindowPrefsChangedMsg(struct internalScaWindowTask *iwt, struct Mes
 	d1(kprintf("%s/%s/%ld: ReplyTask=%08lx\n", __FILE__, __FUNC__, __LINE__, Msg->mn_ReplyPort->mp_SigTask));
 	d1(KPrintF("%s/%s/%ld: ClassName=<%s>\n", __FILE__, __FUNC__, __LINE__, ws->ms_ClassName));
 
-	if (iwt->iwt_ControlBar)
-		{
-		// Rebuild control bar
-		ControlBarRebuild(iwt);
-		}
+	// Rebuild control bar is necessary
+	ControlBarRebuild(iwt);
 
 	if (WSV_Type_DeviceWindow != iwt->iwt_WindowTask.mt_WindowStruct->ws_WindowType
 			&& !(ws->ws_Flags & WSV_FlagF_TaskSleeps))

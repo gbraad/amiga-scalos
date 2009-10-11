@@ -612,7 +612,7 @@ static ULONG TextWindowClass_Message(Class *cl, Object *o, Msg msg)
 		MouseX -= iwt->iwt_InnerLeft;
 
 		if (MouseX >= 0 && MouseX < iwt->iwt_InnerWidth && MouseY < iwt->iwt_InnerTop
-			&& MouseY >= iwt->iwt_WindowTask.wt_Window->BorderTop)
+			&& MouseY >= (iwt->iwt_WindowTask.wt_Window->BorderTop + iwt->iwt_GadgetBarHeightTop))
 			{
 			// Mouse click on column header
 			short n;

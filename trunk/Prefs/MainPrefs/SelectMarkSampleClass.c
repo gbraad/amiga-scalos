@@ -175,7 +175,7 @@ static ULONG mAskMinMax(Class *cl, Object *o,struct MUIP_AskMinMax *msg)
 	mi = msg->MinMaxInfo;
 
 	tf = _font(o);
-	d2(kprintf("%s/%s/%ld: tf=%08lx\n", __FILE__, __FUNC__, __LINE__, tf));
+	d1(kprintf("%s/%s/%ld: tf=%08lx\n", __FILE__, __FUNC__, __LINE__, tf));
 	if (tf)
 		{
 		struct RastPort rp;
@@ -203,7 +203,7 @@ static ULONG mAskMinMax(Class *cl, Object *o,struct MUIP_AskMinMax *msg)
 	mi->MaxWidth = MUI_MAXMAX;
 	mi->MaxHeight = MUI_MAXMAX;
 
-	d2(KPrintF("%s/%s/%ld: MinW=%ld  MaxW=%ld  MinH=%ld  MaxH=%ld  DefW=%ld  DefH=%ld\n", \
+	d1(KPrintF("%s/%s/%ld: MinW=%ld  MaxW=%ld  MinH=%ld  MaxH=%ld  DefW=%ld  DefH=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, mi->MinWidth, mi->MaxWidth, mi->MinHeight, mi->MaxHeight, mi->DefWidth, mi->DefHeight));
 
 	return 0;
@@ -215,13 +215,13 @@ static ULONG mDraw(Class *cl, Object *o,struct MUIP_Draw *msg)
 {
 	struct SelectMarkSampleInstance *inst = INST_DATA(cl,o);
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	DoSuperMethodA(cl, o, (Msg) msg);
 
-	d2(kprintf("%s/%s/%ld: flags=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->flags));
-	d2(KPrintF("%s/%s/%ld: o=%08lx  Left=%ld  Top=%ld\n", __FILE__, __FUNC__, __LINE__, o, _mleft(o), _mtop(o)));
-	d2(KPrintF("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, _mwidth(o), _mheight(o)));
+	d1(kprintf("%s/%s/%ld: flags=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->flags));
+	d1(KPrintF("%s/%s/%ld: o=%08lx  Left=%ld  Top=%ld\n", __FILE__, __FUNC__, __LINE__, o, _mleft(o), _mtop(o)));
+	d1(KPrintF("%s/%s/%ld: Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, _mwidth(o), _mheight(o)));
 
 	do	{
 		WORD TextLeft = (_mwidth(o) - inst->smsi_TextExtent.te_Width) / 2;
@@ -378,7 +378,7 @@ static ULONG mDraw(Class *cl, Object *o,struct MUIP_Draw *msg)
 		d1(KPrintF("%s/%s/%ld:  iobj_TextPenBgSel=%ld\n", __FILE__, __FUNC__, __LINE__, inst->iobj_TextPenBgSel));
 		} while (0);
 
-	d2(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 	return 0;
 }
 
@@ -391,37 +391,37 @@ DISPATCHER(SelectMarkSampleClass)
 	switch (msg->MethodID)
 		{
 	case OM_NEW:
-		d2(kprintf("%s/%s/%ld: OM_NEW\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: OM_NEW\n", __FILE__, __FUNC__, __LINE__));
 		Result = mNew(cl, obj, (struct opSet *) msg);
 		break;
 
 	case OM_DISPOSE:
-		d2(kprintf("%s/%s/%ld: OM_DISPOSE\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: OM_DISPOSE\n", __FILE__, __FUNC__, __LINE__));
 		Result = mDispose(cl, obj, msg);
 		break;
 
 	case OM_SET:
-		d2(kprintf("%s/%s/%ld: OM_SET\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: OM_SET\n", __FILE__, __FUNC__, __LINE__));
 		Result = mSet(cl, obj, (struct opSet *) msg);
 		break;
 
 	case OM_GET:
-		d2(kprintf("%s/%s/%ld: OM_GET\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: OM_GET\n", __FILE__, __FUNC__, __LINE__));
 		Result = mGet(cl, obj, (struct opGet *) msg);
 		break;
 
 	case MUIM_AskMinMax:
-		d2(kprintf("%s/%s/%ld: MUIM_AskMinMax\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: MUIM_AskMinMax\n", __FILE__, __FUNC__, __LINE__));
 		Result = mAskMinMax(cl, obj, (struct MUIP_AskMinMax *) msg);
 		break;
 
 	case MUIM_Draw:
-		d2(kprintf("%s/%s/%ld: MUIM_Draw\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: MUIM_Draw\n", __FILE__, __FUNC__, __LINE__));
 		Result = mDraw(cl, obj, (struct MUIP_Draw *) msg);
 		break;
 
 	default:
-		d2(KPrintF("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
+		d1(KPrintF("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
 		Result = DoSuperMethodA(cl, obj, msg);
 		break;
 		}

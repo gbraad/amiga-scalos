@@ -1438,6 +1438,7 @@ struct IconWindowProperties
 	ULONG iwp_ThumbnailView;
 	ULONG iwp_ThumbnailsLifetimeDays;
 	BOOL iwp_NoStatusBar;
+	BOOL iwp_NoControlBar;
 	BOOL iwp_BrowserMode;
 	UWORD iwp_OpacityActive;
 	UWORD iwp_OpacityInactive;

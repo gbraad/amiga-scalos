@@ -93,7 +93,7 @@ static void ControlBarParentDisable(struct internalScaWindowTask *iwt, struct Co
 static void ControlBarBackDisable(struct internalScaWindowTask *iwt, struct ControlBarMember *cbm);
 static void ControlBarForwardDisable(struct internalScaWindowTask *iwt, struct ControlBarMember *cbm);
 static void ControlBarHistoryListDisable(struct internalScaWindowTask *iwt, struct ControlBarMember *cbm);
-static void ControlBarAddGadgets(struct internalScaWindowTask *iwt);
+static void ControlBarAddGadgets(struct internalScaWindowTask *iwt, const struct List *CbGadgetsList);
 
 //----------------------------------------------------------------------------
 
@@ -105,10 +105,29 @@ BOOL ControlBarAdd(struct internalScaWindowTask *iwt)
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	do	{
+		const struct List *CbGadgetsList;
+		struct Window *win;
+
 		if (iwt->iwt_ControlBar)
 			break;			// ControlBar already present
 		if (iwt->iwt_BackDrop)
 			break;			// no ControlBar for backdrop windows
+
+		if (iwt->iwt_WindowTask.mt_WindowStruct->ws_MoreFlags & WSV_MoreFlagF_NoControlBar)
+			break;
+
+		if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_BrowserMode)
+			CbGadgetsList = &ControlBarGadgetListBrowser;
+		else
+			CbGadgetsList = &ControlBarGadgetListNormal;
+
+		if (IsListEmpty((struct List *) CbGadgetsList))
+			break;
+
+		if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Window)
+			win = iwt->iwt_WindowTask.mt_WindowStruct->ws_Window;
+		else
+			win = iInfos.xii_iinfos.ii_MainWindowStruct->ws_Window;
 
 		d1(KPrintF("%s/%s/%ld: StatusBar BgPen=%ld\n", __FILE__, __FUNC__, __LINE__, \
 			PalettePrefs.pal_PensList[PENIDX_STATUSBAR_BG]));
@@ -129,7 +148,7 @@ BOOL ControlBarAdd(struct internalScaWindowTask *iwt)
 		if (NULL == iwt->iwt_ControlBar)
 			break;
 
-		ControlBarAddGadgets(iwt);
+		ControlBarAddGadgets(iwt, CbGadgetsList);
 
 		d1(KPrintF("%s/%s/%ld: Height=%ld\n", __FILE__, __FUNC__, __LINE__, Height));
 
@@ -138,7 +157,7 @@ BOOL ControlBarAdd(struct internalScaWindowTask *iwt)
 
 		// Layout Control bar so we can query the required height
 		DoGadgetMethod(iwt->iwt_ControlBar,
-			iInfos.xii_iinfos.ii_MainWindowStruct->ws_Window, NULL,
+			win, NULL,
 			GM_LAYOUT,
 			NULL,		// GadgetInfo is filled in by DoGadgetMethod
 			TRUE);
@@ -152,6 +171,10 @@ BOOL ControlBarAdd(struct internalScaWindowTask *iwt)
 		iwt->iwt_ExtraHeight += Height;
 		iwt->iwt_InnerTop += iwt->iwt_GadgetBarHeightTop;
 		iwt->iwt_InnerHeight -= iwt->iwt_InnerTop;
+
+		d1(KPrintF("%s/%s/%ld: iwt_GadgetBarHeightTop=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_GadgetBarHeightTop));
+		d1(KPrintF("%s/%s/%ld: iwt_ExtraHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_ExtraHeight));
+		d1(KPrintF("%s/%s/%ld: iwt_InnerTop=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerTop));
 
 		d1(KPrintF("%s/%s/%ld: iwt_ExtraHeight=%ld  iwt_GadgetBarHeightTop=%ld\n", \
 			__FILE__, __FUNC__, __LINE__, iwt->iwt_ExtraHeight, iwt->iwt_GadgetBarHeightTop));
@@ -183,9 +206,16 @@ void ControlBarRemove(struct internalScaWindowTask *iwt)
 		d1(kprintf("%s/%s/%ld: iwt_InnerBottom=%ld  iwt_SkipBottom=%ld\n", \
 			__FILE__, __FUNC__, __LINE__, iwt->iwt_InnerBottom, iwt->iwt_SkipBottom));
 
+		d1(KPrintF("%s/%s/%ld: iwt_GadgetBarHeightTop=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_GadgetBarHeightTop));
+		d1(KPrintF("%s/%s/%ld: iwt_ExtraHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_ExtraHeight));
+		d1(KPrintF("%s/%s/%ld: iwt_InnerTop=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerTop));
+
 		iwt->iwt_ExtraHeight -= iwt->iwt_GadgetBarHeightTop;
 		iwt->iwt_InnerTop -= iwt->iwt_GadgetBarHeightTop;
 		iwt->iwt_InnerHeight += iwt->iwt_GadgetBarHeightTop;
+
+		d1(KPrintF("%s/%s/%ld: iwt_ExtraHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_ExtraHeight));
+		d1(KPrintF("%s/%s/%ld: iwt_InnerTop=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerTop));
 
 		DisposeObject(iwt->iwt_ControlBar);
 		iwt->iwt_ControlBar = NULL;
@@ -204,56 +234,79 @@ void ControlBarRemove(struct internalScaWindowTask *iwt)
 
 void ControlBarRebuild(struct internalScaWindowTask *iwt)
 {
+	const struct List *CbGadgetsList;
+
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
-	if (iwt->iwt_ControlBar)
+	if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_BrowserMode)
+		CbGadgetsList = &ControlBarGadgetListBrowser;
+	else
+		CbGadgetsList = &ControlBarGadgetListNormal;
+
+	if (IsListEmpty((struct List *) CbGadgetsList) || (iwt->iwt_WindowTask.mt_WindowStruct->ws_MoreFlags & WSV_MoreFlagF_NoControlBar))
 		{
-		struct ControlBarMember *Member;
-		ULONG OldHeight = 0, NewHeight = 0;
-		ULONG OldHeightTop = iwt->iwt_GadgetBarHeightTop;
-		ULONG OldInnerTop = iwt->iwt_InnerTop;
-
-		iwt->iwt_HighlightedControlBarGadget = NULL;
-
-		GetAttr(GA_Height, iwt->iwt_ControlBar, &OldHeight);
-
-		d1(KPrintF("%s/%s/%ld: OldHeight=%ld\n", __FILE__, __FUNC__, __LINE__, OldHeight));
-
-		while ((Member = (struct ControlBarMember *) RemHead(&iwt->iwt_ControlBarMemberList)))
+		// No control bar desired for window - remove it if present
+		ControlBarRemove(iwt);
+		}
+	else
+		{
+		if (iwt->iwt_ControlBar)
 			{
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject,
-				SCCM_IconWin_RemFromControlBar,
-				Member->cbm_Gadget,
-				TAG_END);
-			FreeControlBarMember(Member);
+			// control bar is already present - apply modifications
+			struct ControlBarMember *Member;
+			ULONG OldHeight = 0, NewHeight = 0;
+			ULONG OldHeightTop = iwt->iwt_GadgetBarHeightTop;
+			ULONG OldInnerTop = iwt->iwt_InnerTop;
+
+			iwt->iwt_HighlightedControlBarGadget = NULL;
+
+			GetAttr(GA_Height, iwt->iwt_ControlBar, &OldHeight);
+
+			d1(KPrintF("%s/%s/%ld: OldHeight=%ld\n", __FILE__, __FUNC__, __LINE__, OldHeight));
+
+			while ((Member = (struct ControlBarMember *) RemHead(&iwt->iwt_ControlBarMemberList)))
+				{
+				DoMethod(iwt->iwt_WindowTask.mt_MainObject,
+					SCCM_IconWin_RemFromControlBar,
+					Member->cbm_Gadget,
+					TAG_END);
+				FreeControlBarMember(Member);
+				}
+
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+			ControlBarAddGadgets(iwt, CbGadgetsList);
+
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+			// Layout Control bar so we can query the required height
+			DoGadgetMethod(iwt->iwt_ControlBar,
+				iwt->iwt_WindowTask.wt_Window, NULL,
+				GM_LAYOUT,
+				NULL,		// GadgetInfo is filled in by DoGadgetMethod
+				FALSE);
+
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+			GetAttr(GA_Height, iwt->iwt_ControlBar, &NewHeight);
+
+			d1(KPrintF("%s/%s/%ld: NewHeight=%ld\n", __FILE__, __FUNC__, __LINE__, NewHeight));
+
+			if (NewHeight != OldHeight)
+				{
+				iwt->iwt_ExtraHeight += NewHeight - OldHeight;
+				iwt->iwt_InnerTop    += iwt->iwt_GadgetBarHeightTop - OldHeightTop;
+				iwt->iwt_InnerHeight -= iwt->iwt_InnerTop - OldInnerTop;
+				}
 			}
-
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-		ControlBarAddGadgets(iwt);
-
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-		// Layout Control bar so we can query the required height
-		DoGadgetMethod(iwt->iwt_ControlBar,
-			iwt->iwt_WindowTask.wt_Window, NULL,
-			GM_LAYOUT,
-			NULL,		// GadgetInfo is filled in by DoGadgetMethod
-			FALSE);
-
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-		GetAttr(GA_Height, iwt->iwt_ControlBar, &NewHeight);
-
-		d1(KPrintF("%s/%s/%ld: NewHeight=%ld\n", __FILE__, __FUNC__, __LINE__, NewHeight));
-
-		if (NewHeight != OldHeight)
+		else
 			{
-			iwt->iwt_ExtraHeight += NewHeight - OldHeight;
-			iwt->iwt_InnerTop    += iwt->iwt_GadgetBarHeightTop - OldHeightTop;
-			iwt->iwt_InnerHeight -= iwt->iwt_InnerTop - OldInnerTop;
+			// control bar was not present - add it now
+			ControlBarAdd(iwt);
 			}
 		}
+
+	DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_SetInnerSize);
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
@@ -1106,14 +1159,14 @@ void ControlBarActionButton(struct internalScaWindowTask *iwt, struct ExtGadget 
 
 //----------------------------------------------------------------------------
 
-static void ControlBarAddGadgets(struct internalScaWindowTask *iwt)
+static void ControlBarAddGadgets(struct internalScaWindowTask *iwt, const struct List *CbGadgetsList)
 {
 	ULONG GadgetID = CBAR_GadgetID;
 	struct ControlBarMember *Member;
 	struct ControlBarGadgetEntry *cgy;
 
-	for (cgy = (struct ControlBarGadgetEntry *) ControlBarGadgetList.lh_Head;
-		cgy != (struct ControlBarGadgetEntry *) &ControlBarGadgetList.lh_Tail;
+	for (cgy = (struct ControlBarGadgetEntry *) CbGadgetsList->lh_Head;
+		cgy != (struct ControlBarGadgetEntry *) &CbGadgetsList->lh_Tail;
 		cgy = (struct ControlBarGadgetEntry *) cgy->cgy_Node.ln_Succ)
 		{
 		struct ControlBarMember *cbm;

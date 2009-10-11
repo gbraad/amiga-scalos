@@ -25,6 +25,7 @@ scalosAPI/SM_RunMenuCmd
 scalosAPI/SM_RunProcess
 scalosAPI/SM_SetThumbnailImage_ARGB
 scalosAPI/SM_SetThumbnailImage_Remapped
+scalosAPI/SM_ShowControlBar
 scalosAPI/SM_ShowPopupMenu
 scalosAPI/SM_ShowStatusBar
 scalosAPI/SM_ShowTitle
@@ -487,6 +488,25 @@ scalosAPI/SM_Wakeup
 	smtir_IconObject -- the icon to attach the new image to.
 	smtir_NewImage -- the new image. ScalosBitMapAndColor
 		contents is supposed to be freed by message receiver.
+
+    RESULT
+	nothing
+
+    SEE ALSO
+
+scalosAPI/SM_ShowControlBar
+
+    NAME
+	SM_ShowControlBar
+
+    SYNOPSIS
+	BOOL Visible
+
+    FUNCTION
+	Show or hide the control bar on a Scalos window.
+
+    INPUTS
+	Visible - TRUE to display the control bar, FALSE to hide it.
 
     RESULT
 	nothing

@@ -107,7 +107,8 @@ extern struct Hook *globalCopyHook;
 extern struct Hook *globalDeleteHook;
 extern struct Hook *globalTextInputHook;
 extern struct List globalCloseWBHookList;	// Hooks in this list will be called on AppSleep/AppWakeup
-extern struct List ControlBarGadgetList;	// List of control bar gadgets
+extern struct List ControlBarGadgetListNormal;	// List of control bar gadgets for standard windows
+extern struct List ControlBarGadgetListBrowser;	// List of control bar gadgets for browser-mode windows
 extern SCALOSSEMAPHORE CopyHookSemaphore;
 extern SCALOSSEMAPHORE DeleteHookSemaphore;
 extern SCALOSSEMAPHORE TextInputHookSemaphore;

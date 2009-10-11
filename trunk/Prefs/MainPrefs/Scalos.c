@@ -256,7 +256,8 @@ struct DiskfontIFace *IDiskfont;
 #endif
 
 struct List PluginList;
-struct List ControlBarGadgetList;
+struct List ControlBarGadgetListNormal;
+struct List ControlBarGadgetListBrowser;
 
 static struct Catalog *ScalosPrefsCatalog;
 
@@ -467,6 +468,12 @@ static CONST_STRPTR cWindowPages[] =
 	NULL
 };
 
+static CONST_STRPTR cWindowControlBar[] =
+{
+	(CONST_STRPTR) MSGID_WINDOWPAGES_CONTROLBAR_BROWSER,
+	(CONST_STRPTR) MSGID_WINDOWPAGES_CONTROLBAR_NORMAL,
+	NULL
+};
 static CONST_STRPTR cTextWindowPages[] =
 {
 	(CONST_STRPTR) MSGID_TEXTWINDOWPAGES_FONTS,
@@ -748,8 +755,10 @@ static struct Hook CmdListDestructHook =  { { NULL, NULL }, HOOKFUNC_DEF(CmdList
 static struct Hook CmdListDisplayHook =	 { { NULL, NULL }, HOOKFUNC_DEF(CmdListDisplayHookFunc),  };
 static struct Hook CmdListCompareHook =	{ { NULL, NULL }, HOOKFUNC_DEF(CmdListCompareHookFunc), NULL };
 
-static struct Hook CmdSelectedHook = { { NULL, NULL }, HOOKFUNC_DEF(CmdSelectedHookFunc), NULL };
-static struct Hook ControlBarGadgetChangedHook = { { NULL, NULL }, HOOKFUNC_DEF(ControlBarGadgetChangedHookFunc), NULL };
+static struct Hook NormalCmdSelectedHook = { { NULL, NULL }, HOOKFUNC_DEF(NormalCmdSelectedHookFunc), NULL };
+static struct Hook BrowserCmdSelectedHook = { { NULL, NULL }, HOOKFUNC_DEF(BrowserCmdSelectedHookFunc), NULL };
+static struct Hook ControlBarGadgetBrowserChangedHook = { { NULL, NULL }, HOOKFUNC_DEF(ControlBarGadgetBrowserChangedHookFunc), NULL };
+static struct Hook ControlBarGadgetNormalChangedHook = { { NULL, NULL }, HOOKFUNC_DEF(ControlBarGadgetNormalChangedHookFunc), NULL };
 
 static struct Hook ScreenTtfPopOpenHook = { { NULL, NULL }, HOOKFUNC_DEF(ScreenTtfPopOpenHookFunc), NULL };
 static struct Hook ScreenTtfPopCloseHook = { { NULL, NULL }, HOOKFUNC_DEF(ScreenTtfPopCloseHookFunc), NULL };
@@ -768,7 +777,8 @@ static struct Hook Pop_FontPrefs_Hook = {{NULL, NULL}, HOOKFUNC_DEF(StartFontPre
 static struct Hook Pop_WorkbenchPrefs_Hook = {{NULL, NULL}, HOOKFUNC_DEF(StartWorkbenchPrefs_Func), NULL};
 static struct Hook Add_Plugin_Hook = {{NULL, NULL}, HOOKFUNC_DEF(AddPlugin_Func), NULL};
 static struct Hook PluginListActiveHook = {{NULL, NULL}, HOOKFUNC_DEF(PluginActive_Func), NULL};
-static struct Hook ControlBarGadgetListActiveHook = {{NULL, NULL}, HOOKFUNC_DEF(ControlBarGadgetListActiveHookFunc), NULL};
+static struct Hook ControlBarGadgetListNormalActiveHook = {{NULL, NULL}, HOOKFUNC_DEF(ControlBarGadgetListNormalActiveHookFunc), NULL};
+static struct Hook ControlBarGadgetListBrowserActiveHook = {{NULL, NULL}, HOOKFUNC_DEF(ControlBarGadgetListBrowserActiveHookFunc), NULL};
 static struct Hook ResetToDefaultsHook = { { NULL, NULL }, HOOKFUNC_DEF(ResetToDefaultsFunc), NULL };
 static struct Hook RestoreHook = { { NULL, NULL }, HOOKFUNC_DEF(RestoreFunc), NULL };
 static struct Hook AboutHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutFunc), NULL };
@@ -831,7 +841,8 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	Add_Plugin_Hook.h_Data = app;
 	PluginListAppMsgHook.h_Data = app;
 	PluginListActiveHook.h_Data = app;
-	ControlBarGadgetListActiveHook.h_Data = app;
+	ControlBarGadgetListBrowserActiveHook.h_Data = app;
+	ControlBarGadgetListNormalActiveHook.h_Data = app;
 	OpenHook.h_Data = app;
 	SaveAsHook.h_Data = app;
 	LastSavedHook.h_Data = app;
@@ -868,8 +879,10 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
         CmdListDestructHook.h_Data = app;
         CmdListDisplayHook.h_Data = app;
         CmdListCompareHook.h_Data = app;
-	CmdSelectedHook.h_Data = app;
-        ControlBarGadgetChangedHook.h_Data = app;
+	NormalCmdSelectedHook.h_Data = app;
+	BrowserCmdSelectedHook.h_Data = app;
+	ControlBarGadgetBrowserChangedHook.h_Data = app;
+	ControlBarGadgetNormalChangedHook.h_Data = app;
         AboutMUIHook.h_Data = app;
         UpdateSelectMarkerSampleHook.h_Data = app;
 
@@ -878,6 +891,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	TranslateStringArray(cIconPages);
 	TranslateStringArray(cTitleph);
 	TranslateStringArray(cWindowPages);
+	TranslateStringArray(cWindowControlBar);
 	TranslateStringArray(cTextWindowPages);
 	TranslateStringArray(cScreenTitleModes);
 	TranslateStringArray(cCreateLinkTypes);
@@ -1672,14 +1686,22 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	SetAttrs(app->Obj[NLIST_USE_FILEDISPLAY], MUIA_UserData, (ULONG) app->Obj[NLIST_STORAGE_FILEDISPLAY], TAG_DONE);
 
 	// set allowed drag/drop partners for control bar gadgets
-	SetAttrs(app->Obj[NLIST_CONTROLBARGADGETS_AVAILABLE], MUIA_UserData, (ULONG) app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], TAG_DONE);
-	SetAttrs(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIA_UserData, (ULONG) app->Obj[NLIST_CONTROLBARGADGETS_AVAILABLE], TAG_DONE);
+	SetAttrs(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_AVAILABLE], MUIA_UserData, (ULONG) app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], TAG_DONE);
+	SetAttrs(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIA_UserData, (ULONG) app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_AVAILABLE], TAG_DONE);
+
+	// set allowed drag/drop partners for control bar gadgets
+	SetAttrs(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_AVAILABLE], MUIA_UserData, (ULONG) app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], TAG_DONE);
+	SetAttrs(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIA_UserData, (ULONG) app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_AVAILABLE], TAG_DONE);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
 	// call hook if an active Control bar gadget is selected
-	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime,
-		app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE], 2, MUIM_CallHook, &ControlBarGadgetListActiveHook);
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime,
+		app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE], 2, MUIM_CallHook, &ControlBarGadgetListBrowserActiveHook);
+
+	// call hook if an active Control bar gadget is selected
+	DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime,
+		app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE], 2, MUIM_CallHook, &ControlBarGadgetListNormalActiveHook);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
@@ -1830,24 +1852,41 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
 	// sort Action Button command list
-	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTION], MUIM_NList_Sort);
+	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTION], MUIM_NList_Sort);
 
 	// use selected action command on double click into listview
-	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTION], MUIM_Notify, MUIA_Listview_DoubleClick, TRUE,
-		app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTION], 2, MUIM_CallHook, &CmdSelectedHook);
+	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTION], MUIM_Notify, MUIA_Listview_DoubleClick, TRUE,
+		app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTION], 2, MUIM_CallHook, &BrowserCmdSelectedHook);
 
-	// call ControlBarGadgetChangedHook to update the attributes of the selected control bar Gadget
+	// use selected action command on double click into listview
+	DoMethod(app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTION], MUIM_Notify, MUIA_Listview_DoubleClick, TRUE,
+		app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTION], 2, MUIM_CallHook, &NormalCmdSelectedHook);
+
+	// call ControlBarGadgetBrowserChangedHook to update the attributes of the selected control bar Gadget
 	//  everytime any of the strings below is modified
-	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
-		app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE], 2, MUIM_CallHook, &ControlBarGadgetChangedHook);
-	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
-		app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE], 2, MUIM_CallHook, &ControlBarGadgetChangedHook);
-	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
-		app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE], 2, MUIM_CallHook, &ControlBarGadgetChangedHook);
-	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_ACTION], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
-		app->Obj[STRING_CONTROLBARGADGETS_ACTION], 2, MUIM_CallHook, &ControlBarGadgetChangedHook);
-	DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], MUIM_Notify, MUIA_TextEditor_HasChanged, TRUE,
-		app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT], 2, MUIM_CallHook, &ControlBarGadgetChangedHook);
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], 2, MUIM_CallHook, &ControlBarGadgetBrowserChangedHook);
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], 2, MUIM_CallHook, &ControlBarGadgetBrowserChangedHook);
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], 2, MUIM_CallHook, &ControlBarGadgetBrowserChangedHook);
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], 2, MUIM_CallHook, &ControlBarGadgetBrowserChangedHook);
+	DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT], MUIM_Notify, MUIA_TextEditor_HasChanged, TRUE,
+		app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT], 2, MUIM_CallHook, &ControlBarGadgetBrowserChangedHook);
+
+	// call ControlBarGadgetNormalChangedHook to update the attributes of the selected control bar Gadget
+	//  everytime any of the strings below is modified
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], 2, MUIM_CallHook, &ControlBarGadgetNormalChangedHook);
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], 2, MUIM_CallHook, &ControlBarGadgetNormalChangedHook);
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], 2, MUIM_CallHook, &ControlBarGadgetNormalChangedHook);
+	DoMethod(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], 2, MUIM_CallHook, &ControlBarGadgetNormalChangedHook);
+	DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], MUIM_Notify, MUIA_TextEditor_HasChanged, TRUE,
+		app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], 2, MUIM_CallHook, &ControlBarGadgetNormalChangedHook);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
@@ -3051,6 +3090,8 @@ static ULONG ControlBarGadgetsListDragQuery(struct IClass *cl,Object *obj,struct
 
 static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
+	d2(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
+
 	if (msg->obj == obj)
 		{
 		return DoSuperMethodA(cl, obj, (Msg) msg);
@@ -3064,12 +3105,10 @@ static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct 
 		*/
 
 		LONG dropmark;
-		LONG sortable;
 		LONG id = MUIV_NList_NextSelected_Start;
 		ULONG SourceIsDragSortable = FALSE;
 		ULONG DestIsDragSortable = FALSE;
 
-		get(obj, MUIA_NList_DragSortable, &sortable);
 		get(obj, MUIA_NList_DragSortable, &DestIsDragSortable);
 		get(msg->obj, MUIA_NList_DragSortable, &SourceIsDragSortable);
 		get(obj, MUIA_NList_DropMark, &dropmark);
@@ -3080,6 +3119,8 @@ static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct 
 
 			DoMethod(msg->obj, MUIM_NList_NextSelected, &id);
 
+			d2(KPrintF(__FILE__ "/%s/%ld: id=%ld\n", __FUNC__, __LINE__, id));
+
 			if (MUIV_NList_NextSelected_End == id)
 				break;
 
@@ -3089,25 +3130,15 @@ static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct 
 			// add to destination -- only to active list
 			if (DestIsDragSortable)
 				{
-				if (sortable)
-					{
-					DoMethod(obj, MUIM_NList_InsertSingle, entry, dropmark);
-					dropmark++;
-					}
-				else
-					{
-					/*
-					** we are about to return something to the available fields
-					** listview which is always sorted.
-					*/
-
-					DoMethod(obj, MUIM_NList_InsertSingle, entry, MUIV_NList_Insert_Sorted);
-					}
+				DoMethod(obj, MUIM_NList_InsertSingle, entry, dropmark);
+				dropmark++;
 				}
+			}
 
-			/* remove source entry -- only from active list */
-			if (SourceIsDragSortable)
-				DoMethod(msg->obj, MUIM_NList_Remove, id);
+		/* remove source entries -- only from active list */
+		if (SourceIsDragSortable)
+			{
+			DoMethod(msg->obj, MUIM_NList_Remove, MUIV_NList_Remove_Selected);
 			}
 
 		/*
@@ -3121,6 +3152,8 @@ static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct 
 		// deselect everything on source object
 		set(msg->obj, MUIA_NList_Active, MUIV_NList_Active_Off);
 		DoMethod(msg->obj,MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_Off, NULL);
+
+		d2(KPrintF(__FILE__ "/%s/%ld: END\n", __FUNC__, __LINE__));
 
 		return(0);
 	}
@@ -3398,7 +3431,8 @@ static BOOL Init(struct SCAModule *app)
 	memset(app, 0, sizeof(struct SCAModule));
 
 	NewList(&PluginList);
-	NewList(&ControlBarGadgetList);
+	NewList(&ControlBarGadgetListNormal);
+	NewList(&ControlBarGadgetListBrowser);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
 
@@ -4434,6 +4468,7 @@ static void InitControlBarGadgets(struct SCAModule *app)
 
 	d1(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
 
+	// Initialize list of available control bar gadgets
 	for (n = 0; n < Sizeof(DefaultControlBarGadgets); n++)
 		{
 		struct ControlBarGadgetEntry cgy;
@@ -4447,7 +4482,8 @@ static void InitControlBarGadgets(struct SCAModule *app)
 
 		d1(KPrintF(__FILE__ "/%s/%ld:  add image  cgy_NormalImage=<%s>\n", __FUNC__, __LINE__, cgy.cgy_NormalImage));
 
-		DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_AVAILABLE], MUIM_NList_InsertSingle, &cgy, MUIV_NList_Insert_Bottom);
+		DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_AVAILABLE], MUIM_NList_InsertSingle, &cgy, MUIV_NList_Insert_Bottom);
+		DoMethod(app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_AVAILABLE], MUIM_NList_InsertSingle, &cgy, MUIV_NList_Insert_Bottom);
 		}
 
 	d1(KPrintF(__FILE__ "/%s/%ld: END\n", __FUNC__, __LINE__));
@@ -6452,167 +6488,335 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 
 			End, //VGroup
 
-			// --- Window-Control Bar
-			Child, VGroup,
+			// --- Window-Control Bar Browser
+			Child, RegisterObject,
+				MUIA_Register_Titles, cWindowControlBar,
 
-				Child, VSpace(1),
-
+				// --- Browser Window Control Bar
 				Child, VGroup,
-					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_GADGETS),
-					GroupFrame,
-					MUIA_Background, MUII_GroupBack,
-					MUIA_Weight, 500,
-
-					Child, HGroup,
-						Child, VGroup,
-							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_AVAILABLE_GADGETS_SHORTHELP),
-							Child, CLabel2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_AVAILABLE_GADGETS)),
-							Child, app->Obj[NLISTVIEW_CONTROLBARGADGETS_AVAILABLE] = NListviewObject,
-								MUIA_Weight, 500,
-								MUIA_Listview_Input, TRUE,
-								MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
-								MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-								MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_AVAILABLE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
-									InputListFrame,
-									MUIA_Background, MUII_ListBack,
-									MUIA_NList_Format, "W=-1, W=-1 MICW=3, W=-1",
-									MUIA_NList_ShowDropMarks, FALSE,
-									MUIA_NList_AutoVisible, TRUE,
-									MUIA_NList_DisplayHook2, &ControlBarGadgetListDisplayHook,
-									MUIA_NList_ConstructHook2, &ControlBarGadgetListConstructHook,
-									MUIA_NList_DestructHook2, &ControlBarGadgetListDestructHook,
-								End,
-							End, //Listview
-						End, //VGroup
-
-						Child, VGroup,
-							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTIVE_GADGETS_SHORTHELP),
-							Child, CLabel2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTIVE_GADGETS)),
-							Child, app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTIVE] = NListviewObject,
-								MUIA_Weight, 500,
-								MUIA_Listview_Input, TRUE,
-								MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
-								MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-								MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_ACTIVE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
-									InputListFrame,
-									MUIA_Background, MUII_ListBack,
-									MUIA_NList_Format, "W=-1, W=25 MICW=3, W=-1",
-									MUIA_NList_DragSortable, TRUE,
-									MUIA_NList_ShowDropMarks, TRUE,
-									MUIA_NList_AutoVisible, TRUE,
-									MUIA_NList_DisplayHook2, &ControlBarGadgetListDisplayHook,
-									MUIA_NList_ConstructHook2, &ControlBarGadgetListConstructHook,
-									MUIA_NList_DestructHook2, &ControlBarGadgetListDestructHook,
-								End,
-							End, //Listview
-						End, //VGroup
-					End, //HGroup
 
 					Child, VSpace(1),
 
-					Child, ColGroup(2),
+					Child, VGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_BROWSER_GADGETS),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
+						MUIA_Weight, 500,
 
-						Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE)),
 						Child, HGroup,
-							Child, app->Obj[STRING_CONTROLBARGADGETS_NORMALIMAGE] = PopaslObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Disabled, TRUE,
-								MUIA_Popstring_Button, PopButton(MUII_PopFile),
-								MUIA_Popstring_String, StringObject,
-									StringFrame,
-								End, //String
-								ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_ASLTITLE),
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_SHORTHELP),
-							End, //PopAsl
-							Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMALIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
-								MUIA_ScaDtpic_Name, (ULONG) "",
-								MUIA_ScaDtpic_FailIfUnavailable, FALSE,
-							End, //DataTypesMCC
-						End, //HGroup
-
-						Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE)),
-						Child, HGroup,
-							Child, app->Obj[STRING_CONTROLBARGADGETS_SELECTEDIMAGE] = PopaslObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Disabled, TRUE,
-								MUIA_Popstring_Button, PopButton(MUII_PopFile),
-								MUIA_Popstring_String, StringObject,
-									StringFrame,
-								End, //String
-								ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_ASLTITLE),
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_SHORTHELP),
-							End, //PopAsl
-							Child, app->Obj[DTIMG_CONTROLBARGADGETS_SELECTEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
-								MUIA_ScaDtpic_Name, (ULONG) "",
-								MUIA_ScaDtpic_FailIfUnavailable, FALSE,
-							End, //DataTypesMCC
-						End, //HGroup
-
-						Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE)),
-						Child, HGroup,
-							Child, app->Obj[STRING_CONTROLBARGADGETS_DISABLEDIMAGE] = PopaslObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Disabled, TRUE,
-								MUIA_Popstring_Button, PopButton(MUII_PopFile),
-								MUIA_Popstring_String, StringObject,
-									StringFrame,
-								End, //String
-								ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_ASLTITLE),
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_SHORTHELP),
-							End, //PopAsl
-							Child, app->Obj[DTIMG_CONTROLBARGADGETS_DISABLEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
-								MUIA_ScaDtpic_Name, (ULONG) "",
-								MUIA_ScaDtpic_FailIfUnavailable, FALSE,
-							End, //DataTypesMCC
-						End, //HGroup
-
-						Child, VGroup,
-							Child, Label1((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_GADGETHELPTEXT)),
-							Child, HVSpace,
-							End, //VGroup
-						Child, app->Obj[TEXTEDITOR_CONTROLBARGADGETS_HELPTEXT] = TextEditorObject,
-							MUIA_CycleChain, TRUE,
-							MUIA_Disabled, TRUE,
-							MUIA_TextEditor_Contents, "",
-							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_GADGETHELPTEXT_SHORTHELP),
-							End, //TextEditor
-
-						Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTION)),
-						Child, HGroup,
-							Child, app->Obj[STRING_CONTROLBARGADGETS_ACTION] = StringObject,
-								MUIA_Disabled, TRUE,
-								StringFrame,
-								MUIA_String_Contents, "",
-							End, //String
-							Child, app->Obj[POP_CONTROLBARGADGETS_ACTION] = PopobjectObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Disabled, TRUE,
-								MUIA_Popstring_Button, PopButton(MUII_PopUp),
-								MUIA_Popobject_Object, app->Obj[NLISTVIEW_CONTROLBARGADGETS_ACTION] = NListviewObject,
-									MUIA_NListview_NList, NListObject,
+							Child, VGroup,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_AVAILABLE_GADGETS_SHORTHELP),
+								Child, CLabel2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_AVAILABLE_GADGETS)),
+								Child, app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_AVAILABLE] = NListviewObject,
+									MUIA_Weight, 500,
+									MUIA_Listview_Input, TRUE,
+									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
+									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_AVAILABLE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
 										InputListFrame,
 										MUIA_Background, MUII_ListBack,
-										MUIA_NList_Format, ",",
-										MUIA_NList_ConstructHook2, &CmdListConstructHook,
-										MUIA_NList_DestructHook2, &CmdListDestructHook,
-										MUIA_NList_DisplayHook2, &CmdListDisplayHook,
-										MUIA_NList_CompareHook2, &CmdListCompareHook,
-										MUIA_NList_AdjustWidth, TRUE,
-										MUIA_NList_SortType, 1,
-										MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 1,
-										MUIA_NList_SourceArray, CommandsArray,
-									End, //NListObject
-								End, //NListviewObject
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTION_SHORTHELP),
-							End, //PopobjectObject
-							Child, HVSpace,
+										MUIA_NList_Format, "W=-1, W=-1 MICW=3, W=-1",
+										MUIA_NList_ShowDropMarks, FALSE,
+										MUIA_NList_AutoVisible, TRUE,
+										MUIA_NList_DisplayHook2, &ControlBarGadgetListDisplayHook,
+										MUIA_NList_ConstructHook2, &ControlBarGadgetListConstructHook,
+										MUIA_NList_DestructHook2, &ControlBarGadgetListDestructHook,
+									End,
+								End, //Listview
+							End, //VGroup
+
+							Child, VGroup,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTIVE_GADGETS_SHORTHELP),
+								Child, CLabel2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTIVE_GADGETS)),
+								Child, app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTIVE] = NListviewObject,
+									MUIA_Weight, 500,
+									MUIA_Listview_Input, TRUE,
+									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
+									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
+										InputListFrame,
+										MUIA_Background, MUII_ListBack,
+										MUIA_NList_Format, "W=-1, W=25 MICW=3, W=-1",
+										MUIA_NList_DragSortable, TRUE,
+										MUIA_NList_ShowDropMarks, TRUE,
+										MUIA_NList_AutoVisible, TRUE,
+										MUIA_NList_DisplayHook2, &ControlBarGadgetListDisplayHook,
+										MUIA_NList_ConstructHook2, &ControlBarGadgetListConstructHook,
+										MUIA_NList_DestructHook2, &ControlBarGadgetListDestructHook,
+									End,
+								End, //Listview
+							End, //VGroup
 						End, //HGroup
-					End, //ColGroup
+
+						Child, VSpace(1),
+
+						Child, ColGroup(2),
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE] = PopaslObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopFile),
+									MUIA_Popstring_String, StringObject,
+										StringFrame,
+									End, //String
+									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_ASLTITLE),
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_SHORTHELP),
+								End, //PopAsl
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_NORMALIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+									MUIA_ScaDtpic_Name, (ULONG) "",
+									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
+								End, //DataTypesMCC
+							End, //HGroup
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE] = PopaslObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopFile),
+									MUIA_Popstring_String, StringObject,
+										StringFrame,
+									End, //String
+									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_ASLTITLE),
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_SHORTHELP),
+								End, //PopAsl
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+									MUIA_ScaDtpic_Name, (ULONG) "",
+									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
+								End, //DataTypesMCC
+							End, //HGroup
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE] = PopaslObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopFile),
+									MUIA_Popstring_String, StringObject,
+										StringFrame,
+									End, //String
+									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_ASLTITLE),
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_SHORTHELP),
+								End, //PopAsl
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+									MUIA_ScaDtpic_Name, (ULONG) "",
+									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
+								End, //DataTypesMCC
+							End, //HGroup
+
+							Child, VGroup,
+								Child, Label1((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_GADGETHELPTEXT)),
+								Child, HVSpace,
+								End, //VGroup
+							Child, app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT] = TextEditorObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Disabled, TRUE,
+								MUIA_TextEditor_Contents, "",
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_GADGETHELPTEXT_SHORTHELP),
+								End, //TextEditor
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTION)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION] = StringObject,
+									MUIA_Disabled, TRUE,
+									StringFrame,
+									MUIA_String_Contents, "",
+								End, //String
+								Child, app->Obj[POP_CONTROLBARGADGETS_BROWSER_ACTION] = PopobjectObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopUp),
+									MUIA_Popobject_Object, app->Obj[NLISTVIEW_CONTROLBARGADGETS_BROWSER_ACTION] = NListviewObject,
+										MUIA_NListview_NList, NListObject,
+											InputListFrame,
+											MUIA_Background, MUII_ListBack,
+											MUIA_NList_Format, ",",
+											MUIA_NList_ConstructHook2, &CmdListConstructHook,
+											MUIA_NList_DestructHook2, &CmdListDestructHook,
+											MUIA_NList_DisplayHook2, &CmdListDisplayHook,
+											MUIA_NList_CompareHook2, &CmdListCompareHook,
+											MUIA_NList_AdjustWidth, TRUE,
+											MUIA_NList_SortType, 1,
+											MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 1,
+											MUIA_NList_SourceArray, CommandsArray,
+										End, //NListObject
+									End, //NListviewObject
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTION_SHORTHELP),
+								End, //PopobjectObject
+								Child, HVSpace,
+							End, //HGroup
+						End, //ColGroup
+					End, //VGroup
+
+					Child, VSpace(1),
+
 				End, //VGroup
 
-				Child, VSpace(1),
+				// --- Standard Window Control Bar
+				Child, VGroup,
 
-			End, //VGroup
+					Child, VSpace(1),
+
+					Child, VGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMAL_GADGETS),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
+						MUIA_Weight, 500,
+
+						Child, HGroup,
+							Child, VGroup,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_AVAILABLE_GADGETS_SHORTHELP),
+								Child, CLabel2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_AVAILABLE_GADGETS)),
+								Child, app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_AVAILABLE] = NListviewObject,
+									MUIA_Weight, 500,
+									MUIA_Listview_Input, TRUE,
+									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
+									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_AVAILABLE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
+										InputListFrame,
+										MUIA_Background, MUII_ListBack,
+										MUIA_NList_Format, "W=-1, W=-1 MICW=3, W=-1",
+										MUIA_NList_ShowDropMarks, FALSE,
+										MUIA_NList_AutoVisible, TRUE,
+										MUIA_NList_DisplayHook2, &ControlBarGadgetListDisplayHook,
+										MUIA_NList_ConstructHook2, &ControlBarGadgetListConstructHook,
+										MUIA_NList_DestructHook2, &ControlBarGadgetListDestructHook,
+									End,
+								End, //Listview
+							End, //VGroup
+
+							Child, VGroup,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTIVE_GADGETS_SHORTHELP),
+								Child, CLabel2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTIVE_GADGETS)),
+								Child, app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTIVE] = NListviewObject,
+									MUIA_Weight, 500,
+									MUIA_Listview_Input, TRUE,
+									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
+									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
+										InputListFrame,
+										MUIA_Background, MUII_ListBack,
+										MUIA_NList_Format, "W=-1, W=25 MICW=3, W=-1",
+										MUIA_NList_DragSortable, TRUE,
+										MUIA_NList_ShowDropMarks, TRUE,
+										MUIA_NList_AutoVisible, TRUE,
+										MUIA_NList_DisplayHook2, &ControlBarGadgetListDisplayHook,
+										MUIA_NList_ConstructHook2, &ControlBarGadgetListConstructHook,
+										MUIA_NList_DestructHook2, &ControlBarGadgetListDestructHook,
+									End,
+								End, //Listview
+							End, //VGroup
+						End, //HGroup
+
+						Child, VSpace(1),
+
+						Child, ColGroup(2),
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE] = PopaslObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopFile),
+									MUIA_Popstring_String, StringObject,
+										StringFrame,
+									End, //String
+									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_ASLTITLE),
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_SHORTHELP),
+								End, //PopAsl
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_NORMALIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+									MUIA_ScaDtpic_Name, (ULONG) "",
+									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
+								End, //DataTypesMCC
+							End, //HGroup
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE] = PopaslObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopFile),
+									MUIA_Popstring_String, StringObject,
+										StringFrame,
+									End, //String
+									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_ASLTITLE),
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_SHORTHELP),
+								End, //PopAsl
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+									MUIA_ScaDtpic_Name, (ULONG) "",
+									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
+								End, //DataTypesMCC
+							End, //HGroup
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE] = PopaslObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopFile),
+									MUIA_Popstring_String, StringObject,
+										StringFrame,
+									End, //String
+									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_ASLTITLE),
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_SHORTHELP),
+								End, //PopAsl
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+									MUIA_ScaDtpic_Name, (ULONG) "",
+									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
+								End, //DataTypesMCC
+							End, //HGroup
+
+							Child, VGroup,
+								Child, Label1((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_GADGETHELPTEXT)),
+								Child, HVSpace,
+								End, //VGroup
+							Child, app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT] = TextEditorObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Disabled, TRUE,
+								MUIA_TextEditor_Contents, "",
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_GADGETHELPTEXT_SHORTHELP),
+								End, //TextEditor
+
+							Child, Label2((ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTION)),
+							Child, HGroup,
+								Child, app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION] = StringObject,
+									MUIA_Disabled, TRUE,
+									StringFrame,
+									MUIA_String_Contents, "",
+								End, //String
+								Child, app->Obj[POP_CONTROLBARGADGETS_NORMAL_ACTION] = PopobjectObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopUp),
+									MUIA_Popobject_Object, app->Obj[NLISTVIEW_CONTROLBARGADGETS_NORMAL_ACTION] = NListviewObject,
+										MUIA_NListview_NList, NListObject,
+											InputListFrame,
+											MUIA_Background, MUII_ListBack,
+											MUIA_NList_Format, ",",
+											MUIA_NList_ConstructHook2, &CmdListConstructHook,
+											MUIA_NList_DestructHook2, &CmdListDestructHook,
+											MUIA_NList_DisplayHook2, &CmdListDisplayHook,
+											MUIA_NList_CompareHook2, &CmdListCompareHook,
+											MUIA_NList_AdjustWidth, TRUE,
+											MUIA_NList_SortType, 1,
+											MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 1,
+											MUIA_NList_SourceArray, CommandsArray,
+										End, //NListObject
+									End, //NListviewObject
+									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_ACTION_SHORTHELP),
+								End, //PopobjectObject
+								Child, HVSpace,
+							End, //HGroup
+						End, //ColGroup
+					End, //VGroup
+
+					Child, VSpace(1),
+
+				End, //VGroup
+
+			End, //Register
 
 			// Windows -- Layout
 			Child, VGroup,

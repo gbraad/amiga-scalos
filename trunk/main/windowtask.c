@@ -240,7 +240,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 				break;
 			}
 
-		if (!(ws->ws_Flags & WSV_FlagF_Backdrop) && (ws->ws_Flags & WSV_FlagF_BrowserMode))
+		if (!(ws->ws_Flags & WSV_FlagF_Backdrop) && !(ws->ws_MoreFlags & WSV_MoreFlagF_NoControlBar))
 			{
 			if (!ControlBarAdd(iwt))
 				{

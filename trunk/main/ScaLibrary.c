@@ -1990,6 +1990,7 @@ LIBFUNC_P3(struct ScalosMessage *, sca_AllocMessage,
 		sizeof(struct SM_PrefsChanged),			//34    MTYP_PrefsChanged
 		sizeof(struct SM_StartChildProcess),		//35    MTYP_StartChildProcess
 		sizeof(struct SM_RootEvent),			//36    MTYP_RootEvent
+		sizeof(struct SM_ShowControlBar),		//37	MTYP_ShowStatusBar
 		};
 	struct ScalosMessage *newMsg;
 	size_t Length;

@@ -437,6 +437,16 @@ MSGID_WINDOWPAGES_CONTROLBAR
 Steuerleiste
 ;Control Bar
 ;
+;
+MSGID_WINDOWPAGES_CONTROLBAR_BROWSER
+Steuerleiste für Browserfenser
+;Browser Window Control Bar
+;
+;
+MSGID_WINDOWPAGES_CONTROLBAR_NORMAL
+Steuerleiste für normale Fenster
+;Standard Window Control Bar
+;
 ;-----------------------------------------------------------
 ;
 MSGID_TEXTWINDOWPAGES_FONTS
@@ -2462,9 +2472,9 @@ werden bei denen der Wert \"Standard\" für\n\
 ;drawers with their view mode set to \"default\".
 ;
 ;
-MSGID_WINDOWPAGE_CONTROLBAR_GADGETS
-Schaltfelder
-;Gadgets
+MSGID_WINDOWPAGE_CONTROLBAR_BROWSER_GADGETS
+Schaltfelder im Browserfenster
+;Browser Window Gadgets
 ;
 ;
 MSGID_WINDOWPAGE_CONTROLBAR_GADGETS_SHORTHELP
@@ -2639,6 +2649,11 @@ wenn "Scalos im Hintergrund" ausgeschaltet ist.
 ;Here you can select the degree of transparency\n\
 ;for all inactive Scalos desktop, icon, or text windows.\n\
 ;The desktop will only get transparent if it is not a backdrop window.
+;
+;
+MSGID_WINDOWPAGE_CONTROLBAR_NORMAL_GADGETS
+Schaltfelder im normalen Fenster
+;Standard Window Gadgets
 ;
 ;-----------------------------------------------------------
 ;

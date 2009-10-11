@@ -35,21 +35,23 @@ SCA_MessagePort			EQU     (SCA_TagBase+13)
 SCA_Iconify			EQU     (SCA_TagBase+14)
 SCA_ClassName			EQU     (SCA_TagBase+15)
 SCA_Class			EQU     (SCA_TagBase+16)
-SCA_WaitTimeout			equ	(SCA_TagBase+17)       ; +jl+ 20010324
-SCA_SemaphoreExclusive		EQU	(SCA_TagBase+18)       ; +jl+ 20010408
-SCA_SemaphoreShared		EQU	(SCA_TagBase+19)       ; +jl+ 20010408
-SCA_NoStatusBar			EQU	(SCA_TagBase+20)       ; +jl+ 20011111
-SCA_NoActivateWindow		EQU	(SCA_TagBase+21)       ; +jl+ 20020512
-SCA_Priority			EQU	(SCA_TagBase+22)       ; +jl+ 20020823
-SCA_WindowStruct		EQU	(SCA_TagBase+23)       ; +jl+ 20021204
-SCA_SemaphoreExclusiveNoNest	EQU	(SCA_TagBase+24)       ; +jl+ 20040904
-SCA_ShowAllMode			EQU	(SCA_TagBase+25)       ; +jl+ 20050511
-SCA_IconList			EQU	(SCA_TagBase+26)       ; struct ScaIconNode *
-SCA_BrowserMode			EQU	(SCA_TagBase+27)       ; ULONG
-SCA_HideStatusBar		EQU	(SCA_TagBase+28)       ; ULONG
-SCA_CheckOverlappingIcons	EQU	(SCA_TagBase+29)       ; ULONG
+SCA_WaitTimeout			equ	(SCA_TagBase+17)       	; +jl+ 20010324
+SCA_SemaphoreExclusive		EQU	(SCA_TagBase+18)       	; +jl+ 20010408
+SCA_SemaphoreShared		EQU	(SCA_TagBase+19)       	; +jl+ 20010408
+SCA_NoStatusBar			EQU	(SCA_TagBase+20)       	; +jl+ 20011111
+SCA_NoActivateWindow		EQU	(SCA_TagBase+21)       	; +jl+ 20020512
+SCA_Priority			EQU	(SCA_TagBase+22)       	; +jl+ 20020823
+SCA_WindowStruct		EQU	(SCA_TagBase+23)       	; +jl+ 20021204
+SCA_SemaphoreExclusiveNoNest	EQU	(SCA_TagBase+24)       	; +jl+ 20040904
+SCA_ShowAllMode			EQU	(SCA_TagBase+25)       	; +jl+ 20050511
+SCA_IconList			EQU	(SCA_TagBase+26)       	; struct ScaIconNode *
+SCA_BrowserMode			EQU	(SCA_TagBase+27)       	; ULONG
+SCA_HideStatusBar		EQU	(SCA_TagBase+28)       	; ULONG
+SCA_CheckOverlappingIcons	EQU	(SCA_TagBase+29)       	; ULONG
 SCA_TransparencyActive		EQU	(SCA_TagBase+30)	; ULONG - percentage of opacity in active window state, 0=transparent, 100=opaque
 SCA_TransparencyInactive	EQU	(SCA_TagBase+31)	; ULONG - percentage of opacity in inactive window state, 0=transparent, 100=opaque
+SCA_DdPopupWindow		EQU	(SCA_TagBase+32)	; ULONG - Flag: this window has popped up during D&D operation
+SCA_NoControlBar 		EQU	(SCA_TagBase+33)	; don't display control bar for this window
 
 	BITDEF	SCA,WBStart_NoIcon,0
 	BITDEF	SCA,WBStart_Wait,1
@@ -145,8 +147,10 @@ MTYP_SetThumbnailImage_ARGB     equ	32
 MTYP_NewWindowPath		equ	33
 MTYP_PrefsChanged		equ	34
 MTYP_StartChildProcess		equ	35
+MTYP_RootEvent			equ	36
+MTYP_ShowControlBar		equ	37
 
-mtyp_max = 36
+mtyp_max = 38
 
     STRUCTURE ScalosMessage,MN_SIZE
 	ULONG	Signature	;("IMSG")
@@ -270,6 +274,10 @@ mtyp_max = 36
 	ULONG	smsb_Visible;
 	LABEL	smsb_SIZEOF
 
+   STRUCTURE SM_ShowControlBar,sm_SIZEOF
+	ULONG	smcb_Visible;
+	LABEL	smcb_SIZEOF
+
     STRUCTURE SM_RedrawIcon,sm_SIZEOF
 	APTR	smrdi_Icon;	       ; struct ScaIconNode *
 	LABEL	smrdi_SIZEOF
@@ -374,6 +382,12 @@ mtyp_max = 36
 	APTR	ws_WindowTaskName	;name of window task +jl+ 20011211
 	UWORD	ws_ViewAll		; DDFLAGS_SHOWDEFAULT, DDFLAGS_SHOWICONS, or DDFLAGS_SHOWALL
 	ULONG	ws_ThumbnailView	; THUMBNAILS_Never, THUMBNAILS_Always, THUMBNAILS_AsDefault
+	ULONG	ws_ThumbnailsLifetimeDays	; Maximum lifetime for generated thumbnails
+	ULONG 	ws_SortOrder		; current sorting or ascending or descending
+	UWORD	ws_WindowOpacityActive	; percentage of active Scalos Window transparency - not used on all platforms!
+					; 0=PREFS_TRANSPARENCY_TRANSPARENT=invisible, 100=PREFS_TRANSPARENCY_OPAQUE=opaque)
+	UWORD	ws_WindowOpacityInactive	; percentage of inactive Scalos Window transparency - not used on all platforms!
+	ULONG	ws_MoreFlags		; various flags, see below
 	LABEL	ws_SIZEOF
 
 ;ws_Flags:
@@ -391,6 +405,10 @@ mtyp_max = 36
 	BITDEF	WSV,RefreshPending,12	; IDCMP_REFRESHWINDOW could not be processed, refresh is pending *PRIVATE*
 	BITDEF	WSV,BrowserMode,13      ; enable single-window browser mode
 	BITDEF	WSV,CheckOverlappingIcons,14	; prevent icons from overlapping each other
+	BITDEF	WSV,DdPopupWindow,15	; this window has popped up during a D&D operation
+
+; ws_MoreFlags
+	BITDEF	WSV,NoControlBar,0	; don't display control bar for this window
 
 ;ws_WindowType:
 WSV_Type_IconWindow		EQU	0	;Window filled with icons
@@ -633,6 +651,7 @@ SCCA_IconWin_InnerRight		EQU	SCC_Dummy+1013	; (ULONG) [.G] right edge of window 
 SCCA_IconWin_InnerBottom	EQU	SCC_Dummy+1014	; (ULONG) [.G] bottom
 SCCA_IconWin_ActiveTransparency	EQU	SCC_Dummy+1015	; (ULONG) [SG] degree of transparency for active window state (0=transparent, 100=opaque)
 SCCA_IconWin_InactiveTransparency EQU	SCC_Dummy+1016	; (ULONG) [SG] degree of transparency for inactive window state (0=transparent, 100=opaque)
+SCCA_IconWin_ControlBar		EQU	SCC_Dummy+1017	; (BOOL)  [SG] Flag: Control bar is present
 
 ;--------------- Methods -------------
 SCCM_IconWin_ReadIconList	EQU	SCC_Dummy+100
