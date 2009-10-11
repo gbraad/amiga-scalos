@@ -2011,9 +2011,8 @@ répertoires avec le mode de vue "par défaut".
 ;Selects which view mode is to be used for all\n\
 ;drawers with their view mode set to \"default\".
 ;
-;
 MSGID_WINDOWPAGE_CONTROLBAR_BROWSER_GADGETS
-Browser Window Gadgets
+Gadgets du navigateur
 ;Browser Window Gadgets
 ;
 ;
