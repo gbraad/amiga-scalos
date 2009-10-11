@@ -367,14 +367,12 @@ MSGID_WINDOWPAGES_CONTROLBAR
 Barre de navigation
 ;Control Bar
 ;
-;+++translateme+++
 MSGID_WINDOWPAGES_CONTROLBAR_BROWSER
-Browser Window Control Bar
+Barre de contrôle du navigateur
 ;Browser Window Control Bar
 ;
-;+++translateme+++
 MSGID_WINDOWPAGES_CONTROLBAR_NORMAL
-Standard Window Control Bar
+Barre de contrôle des fenêtres standards
 ;Standard Window Control Bar
 ;
 ;-----------------------------------------------------------
@@ -2182,9 +2180,8 @@ Le bureau obtiendra la transparence si il nest pas en arrière-plan.
 ;for all inactive Scalos desktop, icon, or text windows.\n\
 ;The desktop will only get transparent if it is not a backdrop window.
 ;
-;+++translateme+++
 MSGID_WINDOWPAGE_CONTROLBAR_NORMAL_GADGETS
-Standard Window Gadgets
+Gadgets dess fenêtres standards
 ;Standard Window Gadgets
 ;
 ;-----------------------------------------------------------
