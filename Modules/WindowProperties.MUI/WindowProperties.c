@@ -22,6 +22,7 @@
 #include <workbench/workbench.h>
 #include <workbench/icon.h>
 #include <intuition/intuition.h>
+#include <intuition/IntuitionBase.h>
 #include <intuition/classusr.h>
 #include <prefs/prefhdr.h>
 #include <prefs/wbpattern.h>
@@ -693,7 +694,9 @@ int main(int argc, char *argv[])
 								End, //ColGroup
 
 							Child, VGroup,
-#if !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__MORPHOS__)
+								MUIA_ShowMe, IntuitionBase->LibNode.lib_Version >= 51,
+#elif !defined(__amigaos4__)
 								MUIA_ShowMe, FALSE,
 #endif //!defined(__MORPHOS__) && !defined(__amigaos4__)
 								Child, VGroup,
