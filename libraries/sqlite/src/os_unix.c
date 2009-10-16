@@ -1028,7 +1028,7 @@ static int findLockInfo(
         rc = SQLITE_NOMEM;
         goto exit_findlockinfo;
       }
-      pLock->lockKey = lockKey;
+      memcpy(&pLock->lockKey,&lockKey,sizeof(lockKey));
       pLock->nRef = 1;
       pLock->cnt = 0;
       pLock->locktype = 0;
@@ -1193,11 +1193,11 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
 */
 static int rangeLock(unixFile *pFile, int op, int *pErrcode){
   struct flock lock;
-  int rc = 0;
-#if 0
+  int rc;
   lock.l_type = op;
   lock.l_start = SHARED_FIRST;
   lock.l_whence = SEEK_SET;
+#if 0
   if( (pFile->fileFlags & SQLITE_WHOLE_FILE_LOCKING)==0 ){
     lock.l_len = SHARED_SIZE;
     rc = fcntl(pFile->h, F_SETLK, &lock);
@@ -1219,6 +1219,8 @@ static int rangeLock(unixFile *pFile, int op, int *pErrcode){
       }
     }
   }
+#else
+	rc = 0;
 #endif
   return rc;
 }
@@ -1470,9 +1472,8 @@ static int unixLock(sqlite3_file *id, int locktype){
     pFile->locktype = PENDING_LOCK;
     pLock->locktype = PENDING_LOCK;
   }
-
-end_lock:
 #endif
+end_lock:
   unixLeaveMutex();
   OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype), 
       rc==SQLITE_OK ? "ok" : "failed");
@@ -1641,9 +1642,8 @@ static int unixUnlock(sqlite3_file *id, int locktype){
       }
     }
   }
-	
-end_unlock:
 #endif
+end_unlock:
   unixLeaveMutex();
   if( rc==SQLITE_OK ) pFile->locktype = locktype;
   return rc;

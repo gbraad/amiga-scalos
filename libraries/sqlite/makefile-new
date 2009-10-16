@@ -37,6 +37,7 @@ OBJS	+=	$(OBJDIR)/alter.o \
                 $(OBJDIR)/delete.o \
          	$(OBJDIR)/expr.o \
                 $(OBJDIR)/fault.o \
+		$(OBJDIR)/fkey.o \
                 $(OBJDIR)/func.o \
                 $(OBJDIR)/global.o \
                 $(OBJDIR)/hash.o \
