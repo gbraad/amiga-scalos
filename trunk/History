@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20091011	jl	- Improvement: Add support for control bar also for standard (non-browser) windows.
+41.7	20091016        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.19.
+	20091011	jl	- Improvement: Add support for control bar also for standard (non-browser) windows.
 				- Improvement: Windowproperties.module: control bar can be switched off
 				  for individual windows.
 	20091005	jl	- Bugfix: with AmigaOS4, centered window background images sometimes did not display.
