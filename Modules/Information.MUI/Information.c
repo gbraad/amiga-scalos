@@ -319,8 +319,10 @@ static void HandleDropOnToolTypes(struct WBArg *arg, Object *o, struct DefIconIn
 static BOOL CheckIsWBStartup(BPTR DirLock);
 static Object *GetIconObjectFromScalos(BPTR DirLock, CONST_STRPTR IconName,
 	STRPTR FileTypeName, size_t FileTypeNameSize);
+#if 0
 static Object *GetDeviceIconObjectFromScalos(BPTR dLock,
 	STRPTR FileTypeName, size_t FileTypeNameSize);
+#endif
 static void GetIconFileType(struct ScaWindowTask *wt, struct ScaIconNode *in,
 	STRPTR FileTypeName, size_t FileTypeNameSize);
 static struct InfoData *AllocInfoData(void);
@@ -3582,12 +3584,21 @@ static void GetDeviceName(BPTR dLock, CONST_STRPTR VolumeName, STRPTR DeviceName
 						char DevName[128];
 						struct DosEnvec *env;
 
+						d1(KPrintF(__FILE__ "/%s/%ld: fssm_Device=%08lx\n", __FUNC__, __LINE__, fsm->fssm_Device));
+
 						BtoCstring(fsm->fssm_Device, DevName, sizeof(DevName));
 						sprintf(TextDeviceName, GetLocString(MSGID_DEVICE_DEVICE_UNIT), DevName, fsm->fssm_Unit);
 
+						d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
+
 						env = BADDR(fsm->fssm_Environ);
 
-						if (env && env->de_TableSize >= DE_DOSTYPE)
+						d1(KPrintF(__FILE__ "/%s/%ld: env=%08lx\n", __FUNC__, __LINE__, env));
+
+						if ( 0 == (((ULONG) fsm->fssm_Environ) & 0xc0000000)
+							&& env
+							&& 0 != TypeOfMem((APTR) env)
+							&& env->de_TableSize >= DE_DOSTYPE)
 							{
 							sprintf(DosTypeString, GetLocString(MSGID_DEVICE_DOSTYPESTRING),
 								MakePrintable((env->de_DosType >> 24) & 0xff),
@@ -3596,6 +3607,7 @@ static void GetDeviceName(BPTR dLock, CONST_STRPTR VolumeName, STRPTR DeviceName
 								MakePrintable(env->de_DosType & 0xff));
 							}
 						}
+					d1(KPrintF(__FILE__ "/%s/%ld: fsm=%08lx\n", __FUNC__, __LINE__, fsm));
 					}
 
 				UnLockDosList(LDF_DEVICES | LDF_READ);
@@ -3813,17 +3825,20 @@ M68KFUNC_END
 
 static void BtoCstring(BSTR bstr, STRPTR Buffer, size_t BuffLen)
 {
-	size_t Len;
 	const char *bString = BADDR(bstr);
 
 	*Buffer = '\0';
 
-	Len = *bString;
-	if (Len >= BuffLen)
-		Len = BuffLen  - 2;
+	if ( 0 == (((ULONG) bstr) & 0xc0000000) && bString && 0 != TypeOfMem((APTR) bString) )
+		{
+		size_t Len = *bString;
 
-	strncpy(Buffer, bString + 1, Len);
-	Buffer[Len] = '\0';
+		if (Len >= BuffLen)
+			Len = BuffLen  - 2;
+
+		strncpy(Buffer, bString + 1, Len);
+		Buffer[Len] = '\0';
+		}
 }
 
 //----------------------------------------------------------------------------
@@ -5123,7 +5138,7 @@ static Object *GetIconObjectFromScalos(BPTR DirLock, CONST_STRPTR IconName,
 }
 
 //----------------------------------------------------------
-
+#if 0
 static Object *GetDeviceIconObjectFromScalos(BPTR dLock,
 	STRPTR FileTypeName, size_t FileTypeNameSize)
 {
@@ -5200,7 +5215,7 @@ static Object *GetDeviceIconObjectFromScalos(BPTR dLock,
 
 	return IconObj;
 }
-
+#endif
 //----------------------------------------------------------
 
 static void GetIconFileType(struct ScaWindowTask *wt, struct ScaIconNode *in,
