@@ -1,7 +1,7 @@
 ; sorted_cleanup.s
 ; Scalos Sorted Cleanup PlugIn
-; $Date: 2006-05-04 20:11:43 +0200HHHHHHHHHHHHHHHHHHH $
-; $Revision: 1702 $
+; $Date$
+; $Revision$
 
 ;---------------------------------------------------------------
 	machine	68020
@@ -21,6 +21,8 @@
 	include	"scalos_macros.i"
 	include "lvo/scalos_lib.i"
 	include	"asmsupp.i"
+
+	LIST
 
 ;---------------------------------------------------------------
 
@@ -172,7 +174,7 @@ menufunction:
 	movem.l	d1-a6,-(a7)
 	move.l	a0,a5
 
-	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTag_WindowTask,a5,#UNDOTag_CleanupMode,#CLEANUP_Default,UNDOTAG_RedoHook,(RedoHook,pc),#TAG_END
+	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTag_WindowTask,a5,#UNDOTag_CleanupMode,#CLEANUP_Default,#UNDOTAG_RedoHook,(RedoHook,pc),#TAG_END
 
 	move.l	4.w,a6
 	move.l	(wt_IconSemaphore,a5),a0
