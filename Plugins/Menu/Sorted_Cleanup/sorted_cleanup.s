@@ -176,6 +176,7 @@ menufunction:
 
 	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTag_WindowTask,a5,#UNDOTag_CleanupMode,#CLEANUP_Default,#UNDOTAG_RedoHook,(RedoHook,pc),#TAG_END
 
+menufunction2:
 	move.l	4.w,a6
 	move.l	(wt_IconSemaphore,a5),a0
 	JSRLIB	ObtainSemaphore
@@ -216,6 +217,14 @@ menufunction:
 	rts
 
 ;---------------------------------------------------------------
+
+; special entry for menufunction, without executing SCCM_IconWin_AddUndoEvent
+InternalRedoFunc:
+	movem.l	d1-a6,-(a7)
+	move.l	a0,a5
+	bra     menufunction2
+
+;---------------------------------------------------------------
 	
 CompareNameHook:
 	dc.l	0,0
@@ -231,11 +240,25 @@ RedoHook:
 
 ;---------------------------------------------------------------
 
+; a0 : hook	(unused)
+; a2 : object	(unused)
+; a1 : message	(UndoEvent)
 RedoFunc:
+	movem.l	d1-a6,-(a7)
+
+	move.l	a1,a3		; UndoEvent
+	move.l  uev_Data+ucd_WindowTask(a3),a0	;WindowTask
+	clr.l	a1
+	bsr     InternalRedoFunc
+
+	movem.l	(a7)+,d1-a6
 	rts
 
 ;---------------------------------------------------------------
 
+; a0 : hook
+; a2 : object
+; a1 : message
 comparenamefunc:
 	move.l	a6,-(a7)
 	tst.l	intbase

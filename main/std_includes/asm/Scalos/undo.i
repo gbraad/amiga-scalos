@@ -55,6 +55,47 @@ CLEANUP_ByDate		equ	2
 CLEANUP_BySize		equ	3
 CLEANUP_ByType		equ	4
 
+  STRUCTURE	UndoCleanupIconEntry,0
+	APTR	ucin_IconNode		;const struct ScaIconNode *ucin_IconNode;
+	LONG 	ucin_Left		;original x position of icon
+	LONG 	ucin_Top		;original y position of icon
+	LABEL	ucin_SIZEOF
+
+  STRUCTURE	UndoAddCopyMoveEventData,0
+	APTR 	ucmed_srcDirName	;STRPTR
+	APTR 	ucmed_destDirName	;STRPTR
+	APTR 	ucmed_srcName		;STRPTR
+	APTR 	ucmed_destName		;STRPTR
+	LABEL	ucmed_SIZEOF
+
+  STRUCTURE	UndoAddIconEventData,0
+	APTR 	uid_DirName		;STRPTR
+	APTR 	uid_IconName		;STRPTR
+	LABEL	uid_SIZEOF
+
+  STRUCTURE	UndoAddCleanupData,0
+	ULONG	ucd_CleanupMode		;enum ScalosUndoCleanupMode
+	APTR	ucd_Icons		;struct UndoCleanupIconEntry *
+	ULONG 	ucd_IconCount		;number of entries in ucd_Icons
+	APTR	ucd_WindowTask		;struct internalScaWindowTask *
+	LABEL	ucd_SIZEOF
+
+  STRUCTURE	UndoEvent
+	STRUCT	uev_Node,LN_SIZE
+	ULONG	uev_Type		;enum ScalosUndoType
+	APTR	uev_UndoHook		;struct Hook *
+	APTR	uev_RedoHook		;struct Hook *
+	APTR	uev_DisposeHook		;struct Hook *
+
+	LONG uev_OldPosX
+	LONG uev_OldPosY
+	LONG uev_NewPosX
+	LONG uev_NewPosY
+
+	STRUCT  uev_Data,ucmed_SIZEOF
+
+	LABEL	uev_SIZEOF
+
 ;---------------------------------------------------------------------------
 
 	ENDC	; SCA_UNDO_I
