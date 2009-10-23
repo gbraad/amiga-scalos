@@ -48,7 +48,7 @@ UNDOTAG_UndoHook	equ	UNDOTAG_TagBase+14	; struct Hook *
 UNDOTAG_RedoHook	equ	UNDOTAG_TagBase+15	; struct Hook *
 UNDOTAG_DisposeHook	equ	UNDOTAG_TagBase+16	; struct Hook *
 
-:enum ScalosUndoCleanupMode
+;enum ScalosUndoCleanupMode
 CLEANUP_Default		equ	0
 CLEANUP_ByName		equ	1
 CLEANUP_ByDate		equ	2

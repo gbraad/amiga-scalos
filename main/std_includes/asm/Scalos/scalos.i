@@ -1038,7 +1038,7 @@ fto_ExNext                      equ	15
 fto_DupLock                     equ	16
 fto_SetProtection              	equ	17
 
-// ---------------------------------------------------------------------------
+; ---------------------------------------------------------------------------
 
 SCCM_FileTrans_LinksNotSupportedRequest	equ	SCC_Dummy+211
 ;        BPTR  mlns_SrcDirLock;
@@ -1381,18 +1381,18 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
     STRUCTURE msg_StartPopOpenTimer,0
 	ULONG 	spot_MethodID
 	APTR	spot_DestWindow
-	APPT	spot_DragHandle
+	APTR	spot_DragHandle
 	APTR	spot_IconNode
 	LABEL	spot_SIZEOF
 
 ; SCCM_IconWin_StopPopOpenTimer
-    STRUCTURE msg_StopPopOpenTimer
+    STRUCTURE msg_StopPopOpenTimer,0
 	ULONG 	stop_MethodID
 	APTR	stop_DragHandle
 	LABEL	stop_SIZEOF
 
 ; SCCM_IconWin_AddUndoEvent
-    STRUCTURE msg_AddUndoEvent
+    STRUCTURE msg_AddUndoEvent,0
 	ULONG 	aueb_MethodID
 	ULONG	aue_Type;
 	ULONG	aue_TagList		; may contain more tags added
