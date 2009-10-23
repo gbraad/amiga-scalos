@@ -1,4 +1,5 @@
-; Sorted Cleanup PlugIn
+; sorted_cleanup.s
+; Scalos Sorted Cleanup PlugIn
 ; $Date: 2006-05-04 20:11:43 +0200HHHHHHHHHHHHHHHHHHH $
 ; $Revision: 1702 $
 
@@ -16,6 +17,7 @@
 	include	"workbench/workbench.i"
 	include	"scalos/iconobject.i"
 	include	"scalos/scalos.i"
+	include	"scalos/undo.i"
 	include	"scalos_macros.i"
 	include "lvo/scalos_lib.i"
 	include	"asmsupp.i"
@@ -48,8 +50,8 @@ libname:
 	dc.b	'sorted_cleanup.plugin',0
 	even
 idstring:
-	dc.b	'$VER: sorted_cleanup.plugin 39.4 (19 Mar 2005 22:16:50)',10
-	dc.b	'(c) 2002 The Scalos Team',0
+	dc.b	'$VER: sorted_cleanup.plugin 41.1 (23 Oct 2009 21:16:50)',10
+	dc.b	'(c) 2002-2009 The Scalos Team',0
 
 	cnop	0,4
 
@@ -170,6 +172,8 @@ menufunction:
 	movem.l	d1-a6,-(a7)
 	move.l	a0,a5
 
+	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTag_WindowTask,a5,#UNDOTag_CleanupMode,#CLEANUP_Default,UNDOTAG_RedoHook,(RedoHook,pc),#TAG_END
+
 	move.l	4.w,a6
 	move.l	(wt_IconSemaphore,a5),a0
 	JSRLIB	ObtainSemaphore
@@ -215,6 +219,18 @@ CompareNameHook:
 	dc.l	0,0
 	dc.l	comparenamefunc
 	dc.l	0,0
+
+;---------------------------------------------------------------
+
+RedoHook:
+	dc.l	0,0
+	dc.l    RedoFunc
+	dc.l	0,0
+
+;---------------------------------------------------------------
+
+RedoFunc:
+	rts
 
 ;---------------------------------------------------------------
 
