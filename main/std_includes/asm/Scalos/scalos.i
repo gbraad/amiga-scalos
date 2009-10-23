@@ -835,6 +835,10 @@ SCCM_IconWin_StartPopOpenTimer	equ	SCC_Dummy+213
 SCCM_IconWin_StopPopOpenTimer	equ	SCC_Dummy+214
 ; ./.
 
+SCCM_IconWin_AddUndoEvent   	equ	SCC_Dummy+218
+; enum ScalosUndoType aue_Type;
+; ULONG Tag, Tag, ... TAG_END
+
 ;---------------- DeviceWindow Class ----------------------------
 ;Name: "DeviceWindow.sca"
 
@@ -1386,6 +1390,13 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
 	ULONG 	stop_MethodID
 	APTR	stop_DragHandle
 	LABEL	stop_SIZEOF
+
+; SCCM_IconWin_AddUndoEvent
+    STRUCTURE msg_AddUndoEvent
+	ULONG 	aueb_MethodID
+	ULONG	aue_Type;
+	ULONG	aue_TagList		; may contain more tags added
+	LABEL	aue_SIZEOF
 
 ; --- TextWindowClass methods ------------------------------------------
 
