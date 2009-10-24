@@ -7,6 +7,7 @@
 	machine	68020
 
 	incdir	"SC:Assembler_Headers"
+	incdir	"Scalos:Src/scalos/main/std_includes/asm"
 
 	NOLIST		; skip includes in listing
 
@@ -23,6 +24,8 @@
 	include	"asmsupp.i"
 
 	LIST
+
+INFO_LEVEL	equ	0
 
 ;---------------------------------------------------------------
 
@@ -174,7 +177,8 @@ menufunction:
 	movem.l	d1-a6,-(a7)
 	move.l	a0,a5
 
-	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTag_WindowTask,a5,#UNDOTag_CleanupMode,#CLEANUP_Default,#UNDOTAG_RedoHook,(RedoHook,pc),#TAG_END
+	lea		(RedoHook,pc),a0
+	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTag_WindowTask,a5,#UNDOTag_CleanupMode,#CLEANUP_Default,#UNDOTAG_RedoHook,a0,#TAG_END
 
 menufunction2:
 	move.l	4.w,a6
@@ -246,9 +250,26 @@ RedoHook:
 RedoFunc:
 	movem.l	d1-a6,-(a7)
 
+
+	IFGE	INFO_LEVEL-15
+		move.l	a1,-(SP)
+		move.l	a2,-(SP)
+		move.l	a0,-(SP)
+		PUTMSG	15,<'%s/RedoFunc  hook=%08lx  obj=%08lx  msg=%08lx'>
+		add.l	#3*4,sp
+	ENDC
+
 	move.l	a1,a3		; UndoEvent
 	move.l  uev_Data+ucd_WindowTask(a3),a0	;WindowTask
-	clr.l	a1
+	CLEARA	a1
+
+	IFGE	INFO_LEVEL-15
+		move.l	a0,-(SP)
+		move.l	a3,-(SP)
+		PUTMSG	15,<'%s/RedoFunc  WindowTask=%08lx  UndoEvent=%08lx'>
+		add.l	#3*4,sp
+	ENDC
+
 	bsr     InternalRedoFunc
 
 	movem.l	(a7)+,d1-a6
@@ -336,6 +357,12 @@ intbase:	dc.l	0
 scaname:	dc.b	'scalos.library',0
 utilname:	dc.b	'utility.library',0
 intname:	dc.b	'intuition.library',0
+
+;	this is the name that the device will have
+subSysName:
+		IFGE	INFO_LEVEL-1
+		dc.b	'.',0		; Dummy, für PUTMSG
+		ENDC
 
 endep:
 
