@@ -80,8 +80,9 @@ CLEANUP_ByType		equ	4
 	APTR	ucd_WindowTask		;struct internalScaWindowTask *
 	LABEL	ucd_SIZEOF
 
-  STRUCTURE	UndoEvent
+  STRUCTURE	UndoEvent,0
 	STRUCT	uev_Node,LN_SIZE
+	ALIGNLONG	
 	ULONG	uev_Type		;enum ScalosUndoType
 	APTR	uev_UndoHook		;struct Hook *
 	APTR	uev_RedoHook		;struct Hook *
