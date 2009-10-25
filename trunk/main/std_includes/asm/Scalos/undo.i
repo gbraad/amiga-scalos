@@ -49,7 +49,7 @@ UNDOTag_CleanupMode	equ	UNDOTAG_TagBase+13	; ULONG
 UNDOTAG_UndoHook	equ	UNDOTAG_TagBase+14	; struct Hook *
 UNDOTAG_RedoHook	equ	UNDOTAG_TagBase+15	; struct Hook *
 UNDOTAG_DisposeHook	equ	UNDOTAG_TagBase+16	; struct Hook *
-UNDOTAG_SaveIcon,	equ	UNDOTAG_TagBase+17	; ULONG
+UNDOTAG_SaveIcon	equ	UNDOTAG_TagBase+17	; ULONG
 UNDOTAG_CustomAddHook	equ	UNDOTAG_TagBase+18	; struct Hook *
 
 ;enum ScalosUndoCleanupMode

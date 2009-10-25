@@ -445,7 +445,7 @@ BOOL Redo(void)
 static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 {
 	BOOL Success = FALSE;
-	STRPTR name = NULL;
+	STRPTR name;
 
 	do	{
 		BPTR dirLock;
@@ -612,7 +612,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList)
 {
 	BOOL Success = FALSE;
-	STRPTR name = NULL;
+	STRPTR name;
 
 	do	{
 		BPTR dirLock;
@@ -691,7 +691,7 @@ static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList
 static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 {
 	BOOL Success = FALSE;
-	STRPTR name = NULL;
+	STRPTR name;
 
 	do	{
 		BPTR oldDir;
@@ -883,7 +883,7 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
-	BPTR destDirLock = BNULL;
+	BPTR destDirLock;
 	STRPTR iconName = NULL;
 
 	(void) hook;
@@ -947,7 +947,7 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
-	BPTR srcDirLock = BNULL;
+	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
 	Object *fileTransObj = NULL;
 
@@ -1004,7 +1004,7 @@ static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
-	BPTR srcDirLock = BNULL;
+	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
 	Object *fileTransObj = NULL;
 
@@ -1075,7 +1075,7 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 static SAVEDS(LONG) RedoMoveEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
-	BPTR srcDirLock = BNULL;
+	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
 	Object *fileTransObj = NULL;
 
@@ -1128,7 +1128,7 @@ static SAVEDS(LONG) RedoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
-	BPTR srcDirLock = BNULL;
+	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
 	Object *fileTransObj = NULL;
 
@@ -1479,7 +1479,7 @@ static SAVEDS(LONG) UndoDisposeSnapshotData(struct Hook *hook, APTR object, stru
 
 static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
-	struct internalScaWindowTask *iwt = NULL;
+	struct internalScaWindowTask *iwt;
 	BOOL Success = FALSE;
 
 	(void) hook;
@@ -1556,7 +1556,7 @@ static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct Undo
 static BOOL RedoCleanupEvent(struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
-	struct internalScaWindowTask *iwt = NULL;
+	struct internalScaWindowTask *iwt;
 
 	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
