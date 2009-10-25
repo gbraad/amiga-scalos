@@ -88,7 +88,8 @@ FileTrans.sca/SCCM_FileTrans_WriteProtectedRequest
 	srcLock - Lock on copy source directory.
 	destLock - Lock on copy destination directory.
 	srcName - Name of object currently being copied from.
-	destName - Name of object currently being copied to.
+	destName - Name of object currently being copied to. May be NULL,
+		in this case the value of srcName is also used as destName.
 	MouseX,MouseY - position for destination icon.
 
     RESULT

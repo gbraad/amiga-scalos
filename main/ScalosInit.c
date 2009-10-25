@@ -1156,6 +1156,8 @@ static void ScalosMain(LONG *ArgArray)
 		struct ScalosSemaphoreList *sspl;
 		struct ScalosBase *NewScalosBase;
 
+		NewList(&globalRedoList);
+		NewList(&globalUndoList);
 		NewList(&globalCopyClipBoard);
 		NewList(&WBStartList);
 		NewList(&globalCloseWBHookList);
@@ -1699,6 +1701,7 @@ static void ScalosMain(LONG *ArgArray)
 		d1(KPrintF("%s/%s/%ld: mt_MainObject=%08lx\n", \
 			__FILE__, __FUNC__, __LINE__, MainWindowTask->mwt.iwt_WindowTask.mt_MainObject));
 		DoMethod(MainWindowTask->mwt.iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUp);
+		DoMethod(MainWindowTask->mwt.iwt_WindowTask.mt_MainObject, SCCM_ClearClipboard);
 		}
 
 	LINE_TRACE;
@@ -1743,6 +1746,10 @@ static void ScalosMain(LONG *ArgArray)
 		DeletePenShareMap(PenShareMap);
 		PenShareMap = NULL;
 		}
+
+	LINE_TRACE;
+
+	UndoCleanup();
 
 	LINE_TRACE;
 

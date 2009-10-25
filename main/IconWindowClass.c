@@ -148,6 +148,9 @@ static ULONG IconWindowClass_StartNotify(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_Browse(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_StartPopOpenTimer(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_StopPopOpenTimer(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_AddUndoEvent(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_BeginUndoStep(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_EndUndoStep(Class *cl, Object *o, Msg msg);
 
 static SAVEDS(ULONG) IconWinBrowseProc(APTR aptr, struct SM_RunProcess *msg);
 static ULONG IconWinNotify(struct internalScaWindowTask *iwt, struct IntuiMessage *im);
@@ -482,6 +485,18 @@ static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 
 	case SCCM_IconWin_StopPopOpenTimer:
 		Result = IconWindowClass_StopPopOpenTimer(cl, o, msg);
+		break;
+
+	case SCCM_IconWin_AddUndoEvent:
+		Result = IconWindowClass_AddUndoEvent(cl, o, msg);
+		break;
+
+	case SCCM_IconWin_BeginUndoStep:
+		Result = IconWindowClass_BeginUndoStep(cl, o, msg);
+		break;
+
+	case SCCM_IconWin_EndUndoStep:
+		Result = IconWindowClass_EndUndoStep(cl, o, msg);
 		break;
 
 	default:
@@ -3384,6 +3399,34 @@ static ULONG IconWindowClass_StopPopOpenTimer(Class *cl, Object *o, Msg msg)
 
 	return 0;
 }
+
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_AddUndoEvent(Class *cl, Object *o, Msg msg)
+{
+	struct msg_AddUndoEvent *aue = (struct msg_AddUndoEvent *) msg;
+
+	return UndoAddEventTagList(aue->aue_Type, (struct TagItem *) aue->aue_TagList);
+}
+
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_BeginUndoStep(Class *cl, Object *o, Msg msg)
+{
+	return (ULONG) UndoBeginStep();
+}
+
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_EndUndoStep(Class *cl, Object *o, Msg msg)
+{
+	struct msg_EndUndoStep *eus = (struct msg_EndUndoStep *) msg;
+
+	UndoEndStep(eus->eus_UndoStep);
+
+	return 0;
+}
+
 //----------------------------------------------------------------------------
 
 static SAVEDS(ULONG) IconWinBrowseProc(APTR aptr, struct SM_RunProcess *msg)

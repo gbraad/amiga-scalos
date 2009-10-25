@@ -11,7 +11,7 @@
 #define PLUGIN_TYPE	PREFS
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	22
+#define	LIB_REVISION	23
 
 #define LIB_NAME        "FileTypes.prefsplugin"
 #define LIB_VERSTRING   "$VER: " LIB_NAME " " \

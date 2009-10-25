@@ -42,8 +42,8 @@
 
 //----------------------------------------------------------------------------
 
-#define	VERSION_MAJOR	40
-#define	VERSION_MINOR	5
+#define	VERSION_MAJOR	41
+#define	VERSION_MINOR	1
 
 //----------------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ static BOOL OpenLibraries(void);
 static void CloseLibraries(void);
 static void UpdateGadgets(struct WBArg *arg);
 static void ReportError(LONG Result, CONST_STRPTR OldObjName, CONST_STRPTR NewObjName);
-static LONG RenameObject(struct WBArg *arg);
+static LONG RenameObject(struct WBArg *arg, APTR UndoStep);
 void StripTrailingColon(STRPTR Line);
 static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT OpenAboutHookFunc(struct Hook *hook, Object *o, Msg msg);
@@ -67,6 +67,7 @@ static BOOL IfLocateName(STRPTR FileName);
 static BOOL FindScalosIcon(struct Rectangle *IconNameRect, struct WBArg *Icon);
 static BOOL FindScalosDeviceIcon(struct Rectangle *IconNameRect,
 	BPTR DeviceLock, struct ScaWindowStruct *ws);
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
 
 //----------------------------------------------------------------------------
 
@@ -118,6 +119,8 @@ const int Max_PathLen = 1000;
 
 int main(int argc, char *argv[])
 {
+	struct ScaWindowStruct *ws = NULL;
+	APTR UndoStep = NULL;
 	LONG win_opened;
 	ULONG n;
 	struct WBStartup *WBenchMsg =
@@ -152,6 +155,7 @@ int main(int argc, char *argv[])
 
 	do	{
 		struct Rectangle IconRect;
+		struct ScaWindowList *wl;
 
 		if (!OpenLibraries())
 			break;
@@ -160,6 +164,15 @@ int main(int argc, char *argv[])
 			break;
 
 		gb_Catalog = OpenCatalogA(NULL, "Scalos/Rename.catalog",NULL);
+
+		wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+		if (wl)
+			{
+			struct ScaWindowStruct *ws = wl->wl_WindowStruct;
+
+			UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_BeginUndoStep);
+			}
 
 		if (!FindScalosIcon(&IconRect, &WBenchMsg->sm_ArgList[1]))
 			break;
@@ -301,7 +314,7 @@ int main(int argc, char *argv[])
 					switch (Action)
 						{
 					case Application_Return_Ok:
-						RenameObject(arg);
+						RenameObject(arg, UndoStep);
 						Run = FALSE;
 						break;
 					case MUIV_Application_ReturnID_Quit:
@@ -328,6 +341,16 @@ int main(int argc, char *argv[])
 		set(WIN_InPlace, MUIA_Window_Open, FALSE);
 		} while (0);
 
+	if (ws)
+		{
+		if (UndoStep)
+			{
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_EndUndoStep,
+				UndoStep);
+			}
+		SCA_UnLockWindowList();
+		}
 	if (APP_Main)
 		MUI_DisposeObject(APP_Main);
 	if(gb_Catalog)
@@ -570,7 +593,7 @@ static void ReportError(LONG Result, CONST_STRPTR OldObjName, CONST_STRPTR NewOb
 
 //----------------------------------------------------------------------------
 
-static LONG RenameObject(struct WBArg *arg)
+static LONG RenameObject(struct WBArg *arg, APTR UndoStep)
 {
 	BPTR dirLock;
 	LONG Result = RETURN_OK;
@@ -578,6 +601,7 @@ static LONG RenameObject(struct WBArg *arg)
 	STRPTR OldObjName;
 	char ObjName[512];
 	BPTR oldDir = (BPTR)NULL;
+	struct ScaWindowStruct *ws;
 	BOOL IsWriteable = isDiskWritable(arg->wa_Lock);
 
 	if (!IsWriteable)
@@ -598,6 +622,8 @@ static LONG RenameObject(struct WBArg *arg)
 		dirLock = ParentDir(arg->wa_Lock);
 		}
 
+	ws = FindScalosWindow(dirLock);
+
 	if (dirLock)
 		oldDir = CurrentDir(dirLock);
 
@@ -613,6 +639,18 @@ static LONG RenameObject(struct WBArg *arg)
 			StripTrailingColon(NewObjName);
 
 			d1(KPrintF("OldName=<%s>  NewName=<%s>\n", ObjName, NewObjName));
+
+			if (ws)
+				{
+				DoMethod(ws->ws_WindowTask->mt_MainObject,
+					SCCM_IconWin_AddUndoEvent,
+					UNDO_Relabel,
+					UNDOTAG_CopySrcDirLock, dirLock,
+					UNDOTAG_CopySrcName, ObjName,
+					UNDOTAG_CopyDestName, NewObjName,
+					TAG_END
+					);
+				}
 
 			if (!Relabel(ObjName, NewObjName))
 				{
@@ -645,6 +683,18 @@ static LONG RenameObject(struct WBArg *arg)
 					d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: IfLocateName(%s) OldObjName = <%s> IfNewName = %ld\n",  __LINE__, xIconOnly, OldObjName, IfNewName));
 					OldObjName = xIconOnly;
 					}
+				}
+
+			if (ws)
+				{
+				DoMethod(ws->ws_WindowTask->mt_MainObject,
+					SCCM_IconWin_AddUndoEvent,
+					UNDO_Rename,
+					UNDOTAG_CopySrcDirLock, dirLock,
+					UNDOTAG_CopySrcName, OldObjName,
+					UNDOTAG_CopyDestName, NewObjName,
+					TAG_END
+					);
 				}
 
 			if (!Rename(OldObjName, NewObjName))
@@ -680,6 +730,8 @@ static LONG RenameObject(struct WBArg *arg)
 			}
 		}
 
+	if (ws)
+		SCA_UnLockWindowList();
 
 	if (dirLock)
 		{
@@ -1070,6 +1122,37 @@ static BOOL FindScalosDeviceIcon(struct Rectangle *IconNameRect,
 		}
 
 	return Found;
+}
+
+//----------------------------------------------------------------------------
+
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START \n", __FUNC__, __LINE__));
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	if (wl)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			if (ws->ws_Lock)
+				{
+				if (LOCK_SAME == SameLock(dirLock, ws->ws_Lock))
+					{
+					return ws;
+					}
+				}
+			}
+		SCA_UnLockWindowList();
+		}
+
+	return NULL;
 }
 
 //----------------------------------------------------------------------------

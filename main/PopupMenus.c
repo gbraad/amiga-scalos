@@ -218,6 +218,8 @@ LONG TestPopup(struct internalScaWindowTask *iwt, WORD MouseX, WORD MouseY, UWOR
 
 					ftd = NULL;	// don't release it here !
 
+					d1(KPrintF("%s/%s/%ld: inUnderPointer=%08lx  iwtUnderPointer=%08lx\n", __FILE__, __FUNC__, __LINE__, inUnderPointer, iwtUnderPointer));
+
 					PutMsg(iwtUnderPointer->iwt_WindowTask.wt_IconPort, &smpm->ScalosMessage.sm_Message);
 
 					// WinList and IconSemaphore will be unlocked by SCCM_IconWin_ShowPopupMenu
@@ -468,6 +470,7 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 	struct ScalosMenuTree *mtr;
 	struct SelectedIcon *sli;
 	ULONG wasSelected;
+	ULONG SelectedIconCount = 0;
 	BOOL ApplyToAllSelectedIcons;
 
 	NewList(&SelectedIconList);
@@ -496,6 +499,7 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 			// Temporarily deselect all icons except the one under the mouse pointer
 			ClassSelectIcon(sli->sli_WindowTask->iwt_WindowTask.mt_WindowStruct, sli->sli_Icon, FALSE);
 			}
+		SelectedIconCount++;
 		}
 
 	// Show Drop Mark on icon under mouse pointer
@@ -592,7 +596,7 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 
 	if (mtr)
 		{
-		if (ApplyToAllSelectedIcons)
+		if (ApplyToAllSelectedIcons && (SelectedIconCount > 1))
 			RunMenuCommandExt(iwt, iwt, mtr, NULL, 0);
 		else
 			RunMenuCommandExt(iwt, iwt, mtr, mpm->mpm_IconNode, 0);

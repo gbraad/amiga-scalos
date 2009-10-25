@@ -547,12 +547,13 @@ void ClearMainMenu(void);
 
 // defined in MenuCommand.c
 ///
-void WBInfoStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+void WBInfoStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoEvent);
 void GetIconsBoundingBox(struct internalScaWindowTask *iwt, struct Rectangle *BBox);
 void DeleteProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 void UpdateAllProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 void ClearSelectionProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 BOOL ViewWindowBy(struct internalScaWindowTask *iwt, UBYTE NewViewByType);
+void SetIconWindowRect(struct ScaIconNode *in);
 ///
 /* ------------------------------------------------- */
 
@@ -936,6 +937,18 @@ LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName);
 void ScaFormatString(char *Buffer, const char *Format, ...);
 void ScaFormatStringMaxLength(char *Buffer, size_t BuffLen, const char *Format, ...);
 void ScaFormatStringArgs(char *Buffer, size_t BuffLength, const char *Format, APTR Args);
+///
+/* ------------------------------------------------- */
+
+// defined in Undo.c
+///
+void UndoCleanup(void);
+BOOL UndoAddEvent(enum ScalosUndoType type, ULONG FirstTag, ...);
+BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList);
+APTR UndoBeginStep(void);
+void UndoEndStep(APTR event);
+BOOL Undo(void);
+BOOL Redo(void);
 ///
 /* ------------------------------------------------- */
 

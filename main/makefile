@@ -169,6 +169,7 @@ SRCS  =	about.c			\
 	ToolTip.c		\
 	ToolTypes.c		\
 	TTLayout.c		\
+	Undo.c			\
 	wbl.c			\
 	WBStartup.c		\
 	Window.c		\
@@ -318,6 +319,7 @@ $(OBJDIR)/Thumbnails.o			: Thumbnails.c $(CHEADERS)
 $(OBJDIR)/ToolTip.o			: ToolTip.c TTLayout.h ../include/DefIcons.h $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/ToolTypes.o			: ToolTypes.c $(CHEADERS)
 $(OBJDIR)/TTLayout.o			: TTLayout.c TTLayout.h ../include/DefIcons.h $(CHEADERS)
+$(OBJDIR)/Undo.o			: Undo.c $(CHEADERS)
 $(OBJDIR)/wbl.o				: wbl.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/WBStartup.o			: WBStartup.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/Window.o			: Window.c $(CHEADERS) IconImageClass.h

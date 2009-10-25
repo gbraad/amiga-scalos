@@ -58,6 +58,9 @@ struct ScalosSemaphoreList GlobalSemaphoreList[] =
 	{ &MenuSemaphore,		"MenuSemaphore"			},
 	{ &AppMenuListSemaphore,	"AppMenuListSemaphore"		},
 	{ &ThumbnailsCleanupSemaphore,	"ThumbnailsCleanupSemaphore"	},
+	{ &ClipboardSemaphore,		"ClipboardSemaphore"		},
+	{ &UndoListListSemaphore,	"UndoListListSemaphore"		},
+	{ &RedoListListSemaphore,	"RedoListListSemaphore"		},
 	{ NULL, NULL }
 	};
 

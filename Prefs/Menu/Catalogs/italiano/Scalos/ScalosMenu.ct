@@ -491,6 +491,16 @@ MSGID_COM_FIND
 Find File(s)
 ;Find File(s)
 ;
+;+++translateme+++
+MSGID_COM_UNDO
+Undo
+;Undo
+;
+;+++translateme+++
+MSGID_COM_REDO
+Redo
+;Redo
+;
 ;---------------------------------------------
 ;
 MSGID_SHORTHELP_NEWMENUBUTTON

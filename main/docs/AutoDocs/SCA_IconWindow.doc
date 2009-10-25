@@ -11,6 +11,8 @@ IconWindow.sca/SCCM_IconWin_AddGadget
 IconWindow.sca/SCCM_IconWin_AddIcon
 IconWindow.sca/SCCM_IconWin_AddToControlBar
 IconWindow.sca/SCCM_IconWin_AddToStatusBar
+IconWindow.sca/SCCM_IconWin_AddUndoEvent
+IconWindow.sca/SCCM_IconWin_BeginUndoStep
 IconWindow.sca/SCCM_IconWin_Browse
 IconWindow.sca/SCCM_IconWin_CleanUp
 IconWindow.sca/SCCM_IconWin_CleanUpByDate
@@ -25,6 +27,7 @@ IconWindow.sca/SCCM_IconWin_DragEnter
 IconWindow.sca/SCCM_IconWin_DragQuery
 IconWindow.sca/SCCM_IconWin_DragLeave
 IconWindow.sca/SCCM_IconWin_DrawIcon
+IconWindow.sca/SCCM_IconWin_EndUndoStep
 IconWindow.sca/SCCM_IconWin_GetDefIcon
 IconWindow.sca/SCCM_IconWin_GetIconFileType
 IconWindow.sca/SCCM_IconWin_History_Back
@@ -329,6 +332,81 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 
     SEE ALSO
 	SCCM_IconWin_RemFromStatusBar
+IconWindow.sca/SCCM_IconWin_AddUndoEvent
+
+    NAME
+	SCCM_IconWin_AddToStatusBar
+
+    SYNOPSIS
+	DoMethod(obj,SCCM_IconWin_AddUndoEvent,enum ScalosUndoType type,
+		ULONG Tag, ...);
+
+    FUNCTION
+	This method is part of the Scalos Undo/Redo API.
+	For every single item to undo, this method should be called, i.e.
+	when moving 10 separate files, call this method for every file.
+
+    INPUTS
+	type - class of action that is performed
+	Tag - Taglist
+
+    TAGS
+	UNDOTAG_UndoMultiStep - (APTR) an Undo step handle returned
+		by SCCM_IconWin_BeginUndoStep
+
+	UNDOTAG_IconNode - struct ScaIconNode *
+	UNDOTAG_IconList - struct ScaIconNode *
+	UNDOTAG_IconDirLock - BPTR
+
+	UNDOTAG_CopySrcDirLock - BPTR
+	UNDOTAG_CopyDestDirLock - BPTR
+	UNDOTAG_CopySrcName - CONST_STRPTR
+	UNDOTAG_CopyDestName - CONST_STRPTR
+
+	UNDOTAG_IconPosX - LONG
+	UNDOTAG_IconPosY - LONG
+	UNDOTAG_OldIconPosX - LONG
+	UNDOTAG_OldIconPosY - LONG
+
+	UNDOTag_WindowTask - struct ScaWindowTask *
+	UNDOTag_CleanupMode - ULONG
+	UNDOTAG_UndoHook - struct Hook *
+	UNDOTAG_RedoHook - struct Hook *
+	UNDOTAG_DisposeHook - struct Hook *
+
+    RESULT
+	Success - TRUE if information was stored successfully,
+		FALSE on error.
+
+    SEE ALSO
+        SCCM_IconWin_BeginUndoStep
+        SCCM_IconWin_EndUndoStep
+IconWindow.sca/SCCM_IconWin_BeginUndoStep
+
+    NAME
+        SCCM_IconWin_Browse
+
+    SYNOPSIS
+	DoMethod(obj,SCCM_IconWin_BeginUndoStep);
+
+    FUNCTION
+	This method is part of the Scalos Undo/Redo API.
+	Call this method to ontain an Undo step handle if the operation
+	in progress consists of multiple objects, e.g. moving 10 icons.
+	This handle is passed to every SCCM_IconWin_AddUndoEvent call
+	for the individual objects.
+	When the operation is finalised with SCCM_IconWin_EndUndoStep,
+	all events can be undone in a single operation.
+
+    INPUTS
+	none
+
+    RESULT
+	opaque handle that identifies the Undo step, or NULL.
+
+    SEE ALSO
+        SCCM_IconWin_AddUndoEvent
+        SCCM_IconWin_EndUndoStep
 IconWindow.sca/SCCM_IconWin_Browse
 
     NAME
@@ -671,6 +749,33 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 	Result - result from IDTM_Draw
 
     SEE ALSO
+IconWindow.sca/SCCM_IconWin_EndUndoStep
+
+    NAME
+        SCCM_IconWin_Browse
+
+    SYNOPSIS
+	DoMethod(obj,SCCM_IconWin_EndUndoStep, APTR undoStep);
+
+    FUNCTION
+	This method is part of the Scalos Undo/Redo API.
+	Call this method to finish an Undo step handle if the operation
+	in progress consists of multiple objects, e.g. moving 10 icons.
+	The undoStep handle has been previously acquired by
+	calling SCCM_IconWin_BeginUndoStep and has been used to mark
+	subsequent SCCM_IconWin_AddUndoEvent calls as being part of
+	one single undo step.
+
+    INPUTS
+	undoStep - the Undo step handle obtained by
+		calling SCCM_IconWin_BeginUndoStep.
+
+    RESULT
+	opaque handle that identifies the Undo step, or NULL.
+
+    SEE ALSO
+        SCCM_IconWin_AddUndoEvent
+        SCCM_IconWin_BeginUndoStep
 IconWindow.sca/SCCM_IconWin_GetDefIcon
 
     NAME
@@ -860,12 +965,14 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 
     INPUTS
 	path - command name
-	tags - tag list. Supported tags are:
-		SCA_ShowAllMode - one of the workbench DDFLAGS_* values.
-		SCA_ViewModes - one of the workbench DDVM_BY* values
-		SCA_XOffset - (LONG) Window X offset
-		SCA_YOffset - (LONG) Window Y offset
-		SCA_IconList - (struct ScaIconNode *) pregenerated icon list
+	tags - tag list.
+	
+    TAGS
+	SCA_ShowAllMode - one of the workbench DDFLAGS_* values.
+	SCA_ViewModes - one of the workbench DDVM_BY* values
+	SCA_XOffset - (LONG) Window X offset
+	SCA_YOffset - (LONG) Window Y offset
+	SCA_IconList - (struct ScaIconNode *) pregenerated icon list
 
     RESULT
 	Success - FALSE on failure, TRUE to indiciate success.

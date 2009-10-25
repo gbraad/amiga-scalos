@@ -443,7 +443,11 @@ static ULONG RootClass_AddToClipboard(Class *cl, Object *o, Msg msg)
 			__FILE__, __FUNC__, __LINE__, fta->ftarg_Arg.wa_Name, fta->ftarg_Arg.wa_Lock));
 
 		if (fta->ftarg_Arg.wa_Name && fta->ftarg_Arg.wa_Lock)
+			{
+			ScalosObtainSemaphore(&ClipboardSemaphore);
 			AddTail(&globalCopyClipBoard, &fta->ftarg_Node);
+			ScalosReleaseSemaphore(&ClipboardSemaphore);
+			}
 		else
 			ScalosFreeVecPooled(fta);
 		}
@@ -461,8 +465,15 @@ static ULONG RootClass_ClearClipboard(Class *cl, Object *o, Msg msg)
 
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-	while ((fta = (struct FileTransArg *) RemHead(&globalCopyClipBoard)))
+	while (1)
 		{
+		ScalosObtainSemaphore(&ClipboardSemaphore);
+		fta = (struct FileTransArg *) RemHead(&globalCopyClipBoard);
+		ScalosReleaseSemaphore(&ClipboardSemaphore);
+
+		if (NULL == fta)
+			break;
+
 		UnShadowIcon(fta->ftarg_iwt, fta->ftarg_in);
 
 		if (fta->ftarg_Arg.wa_Name)

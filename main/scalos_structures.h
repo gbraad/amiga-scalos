@@ -1505,4 +1505,6 @@ struct IconWindowProperties
 #define DDFLAGS_INFOSHOW    0x00000800 /* show .info files */
 #endif //!defined(DDFLAGS_SHOWMASK)
 
+//---------------------------------------------------------------
+
 #endif	// SCALOS_STRUCTURES_H

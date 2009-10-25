@@ -1,5 +1,5 @@
 ; ScalosFileTypes.cd
-; version $VER: ScalosFileTypes.catalog 40.19 (24 Aug 2008 15:25:39)
+; version $VER: ScalosFileTypes.catalog 40.23 (17 Oct 2009 15:25:39)
 ; codeset 0s
 ; language english
 ;
@@ -1143,6 +1143,14 @@ Cleanup thumbnail cache
 ;
 MSGID_COM_FIND (//)
 Find File(s)
+;
+;
+MSGID_COM_UNDO (//)
+Undo
+;
+;
+MSGID_COM_REDO (//)
+Redo
 ;
 ;---------------------------------------------
 ;

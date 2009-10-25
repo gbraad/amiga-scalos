@@ -1135,6 +1135,7 @@ static struct AttrDefaultValue AttrDefPopupMenuInternalCmds[] =
 	{ ATTRDEFTYPE_String2, MSGID_COM41NAME, 		"paste",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM26NAME, 		"putaway",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM6NAME, 			"quit",		       },
+	{ ATTRDEFTYPE_String2, MSGID_COM_REDO,			"redo",		       },
 	{ ATTRDEFTYPE_String2, MSGID_COM31NAME, 		"redraw",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM3NAME, 			"redrawall",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM21NAME, 		"rename",	       },
@@ -1150,6 +1151,7 @@ static struct AttrDefaultValue AttrDefPopupMenuInternalCmds[] =
 	{ ATTRDEFTYPE_String2, MSGID_COM13NAME, 		"snapshotwindow",      },
 	{ ATTRDEFTYPE_String2, MSGID_COM_THUMBNAILCACHECLEANUP,	"thumbnailcachecleanup", },
 	{ ATTRDEFTYPE_String2, MSGID_COM24NAME, 		"unsnapshot",	       },
+	{ ATTRDEFTYPE_String2, MSGID_COM_UNDO,			"undo",		       },
 	{ ATTRDEFTYPE_String2, MSGID_COM10NAME, 		"update",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM4NAME, 			"updateall",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM47NAME, 		"viewbydefault",       },
@@ -3484,13 +3486,15 @@ static SAVEDS(void) INTERRUPT AttrDestructFunc(struct Hook *hook, APTR obj, stru
 {
 	struct AttrListEntry *ale = (struct AttrListEntry *) ltdm->entry;
 
-	d1(kprintf(__FILE__ "/%s/%ld: fta=%08lx\n", __FUNC__, __LINE__, ale));
+	d1(kprintf(__FILE__ "/%s/%ld: START fta=%08lx\n", __FUNC__, __LINE__, ale));
 
 	if (ale)
 		{
 		FreePooled(ltdm->pool, ale, sizeof(struct AttrListEntry) + ale->ale_Attribute.fta_Length);
 		ltdm->entry = NULL;
 		}
+
+	d1(kprintf(__FILE__ "/%s/%ld: END fta=%08lx\n", __FUNC__, __LINE__, ale));
 }
 
 static SAVEDS(ULONG) INTERRUPT AttrDisplayFunc(struct Hook *hook, APTR obj, struct NList_DisplayMessage *ltdm)
@@ -3654,13 +3658,15 @@ static SAVEDS(void) INTERRUPT EditAttrDestructFunc(struct Hook *hook, APTR obj, 
 {
 	struct EditAttrListEntry *eal = (struct EditAttrListEntry *) ltdm->entry;
 
-	d1(kprintf(__FILE__ "/%s/%ld: aal=%08lx\n", __FUNC__, __LINE__, eal));
+	d1(kprintf(__FILE__ "/%s/%ld: START aal=%08lx\n", __FUNC__, __LINE__, eal));
 
 	if (eal)
 		{
-		FreePooled(ltdm->pool, eal, sizeof(struct AddAttrListEntry));
+		FreePooled(ltdm->pool, eal, sizeof(struct EditAttrListEntry) + eal->eal_fta.fta_Length);
 		ltdm->entry = NULL;
 		}
+
+	d1(kprintf(__FILE__ "/%s/%ld: END aal=%08lx\n", __FUNC__, __LINE__, eal));
 }
 
 static SAVEDS(ULONG) INTERRUPT EditAttrDisplayFunc(struct Hook *hook, APTR obj, struct NList_DisplayMessage *ltdm)

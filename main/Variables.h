@@ -85,6 +85,7 @@ extern SCALOSSEMAPHORE ParseMenuListSemaphore;		// Semaphore to protect ParseMen
 
 extern struct ScalosMenuCommand MenuCommandTable[];
 extern struct List globalCopyClipBoard;			// Clipboard for files/directories via copy/cut/paste
+extern SCALOSSEMAPHORE ClipboardSemaphore;		// Semaphore to protect globalCopyClipBoard
 
 /* ------------------------------------------------- */
 
@@ -243,6 +244,15 @@ extern struct ScalosSemaphoreList GlobalSemaphoreList[];
 ///
 extern SCALOSSEMAPHORE ThumbnailsCleanupSemaphore;      // Semaphore to ensure only a single cleanup process is running
 ///
+/* ------------------------------------------------- */
+
+// defined in Undo.c
+
+extern struct List globalUndoList;			// global Undo list for all file-related actions
+extern SCALOSSEMAPHORE UndoListListSemaphore;		// Semaphore to protect globalUndoList
+extern struct List globalRedoList;			// global Redo list for all file-related actions
+extern SCALOSSEMAPHORE RedoListListSemaphore;		// Semaphore to protect globalRedoList
+
 /* ------------------------------------------------- */
 
 #endif /* VARIABLES_H */

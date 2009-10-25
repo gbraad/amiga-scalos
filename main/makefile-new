@@ -96,6 +96,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/ToolTip.o                 	\
 		$(OBJDIR)/ToolTypes.o               	\
 		$(OBJDIR)/TTLayout.o                	\
+		$(OBJDIR)/Undo.o                     	\
 		$(OBJDIR)/wbl.o                     	\
 		$(OBJDIR)/WBStartup.o               	\
 		$(OBJDIR)/Window.o                  	\
