@@ -1456,7 +1456,7 @@ LIBFUNC_P4(ULONG, sca_WBInfo,
 		}
 
 	WBInfoStart((struct internalScaWindowTask *) winlist.wl_WindowStruct->ws_WindowTask,
-		&in);
+		&in, NULL);
 
 	Success = TRUE;
 

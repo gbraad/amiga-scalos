@@ -1,8 +1,7 @@
 ; ScalosFileTypes.ct
 ; $Date$
 ; $Revision$
-; $Id$
-## version $VER: ScalosFileTypes.catalog 40.19 (24 Aug 2008 15:24:19)
+## version $VER: ScalosFileTypes.catalog 40.23 (17 Oct 2009 15:24:19)
 ## codeset 0s
 ## language français
 ;
@@ -1401,6 +1400,16 @@ Nettoyer le cache des vignettes
 MSGID_COM_FIND
 Trouver un ou des fichiers
 ;Find File(s)
+;
+;+++translateme+++
+MSGID_COM_UNDO
+Undo
+;Undo
+;
+;+++translateme+++
+MSGID_COM_REDO
+Redo
+;Redo
 ;
 ;-----------------------------------------------------------
 ;

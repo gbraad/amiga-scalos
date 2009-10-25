@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+218)
+** next Tag to use :	(SCC_Dummy+221)
 */
 
 #ifndef DOS_DOS_H
@@ -62,6 +62,10 @@
 
 #ifndef SCALOS_SCALOSGFX_H
 #include <scalos/scalosgfx.h>
+#endif
+
+#ifndef SCALOS_UNDO_H
+#include <scalos/undo.h>
 #endif
 
 #define SCALOSNAME "scalos.library"
@@ -1495,6 +1499,26 @@ enum sgttGadgetIDs
 // struct DragHandle *stop_DragHandle;
 
 // ---------------------------------------------------------------------------
+
+#define	SCCM_IconWin_AddUndoEvent               (SCC_Dummy+218)
+// enum ScalosUndoType aue_Type;
+// ULONG Tag, Tag, ... TAG_END
+
+// ---------------------------------------------------------------------------
+
+#define SCCM_IconWin_BeginUndoStep		(SCC_Dummy+219)
+// ./.
+
+// ---------------------------------------------------------------------------
+
+#define SCCM_IconWin_EndUndoStep		(SCC_Dummy+220)
+// APTR UndoStep
+
+// ---------------------------------------------------------------------------
+
+
+
+// ---------------------------------------------------------------------------
 // ---------------- DeviceWindow Class ----------------------------
 // Name: "DeviceWindow.sca"
 // ---------------------------------------------------------------------------
@@ -2438,6 +2462,21 @@ struct msg_StopPopOpenTimer
 	{
 	ULONG stop_MethodID;
 	struct DragHandle *stop_DragHandle;
+	};
+
+// SCCM_IconWin_AddUndoEvent
+struct msg_AddUndoEvent
+	{
+	ULONG aue_MethodID;
+	enum ScalosUndoType aue_Type;
+	ULONG aue_TagList[0];
+	};
+
+// SCCM_IconWin_EndUndoStep
+struct msg_EndUndoStep
+	{
+	ULONG eus_MethodID;
+	APTR eus_UndoStep;      // Result from SCCM_IconWin_BeginUndoStep
 	};
 
 // --- TextWindowClass methods ------------------------------------------

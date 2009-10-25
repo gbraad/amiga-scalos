@@ -11,7 +11,7 @@
 #define PLUGIN_TYPE	PREFS
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	18
+#define	LIB_REVISION	19
 
 #define LIB_NAME	"Menu.prefsplugin"
 #define LIB_VERSTRING   "$VER: " LIB_NAME " " \

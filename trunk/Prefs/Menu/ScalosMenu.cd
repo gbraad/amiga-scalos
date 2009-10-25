@@ -474,6 +474,14 @@ Cleanup thumbnail cache
 MSGID_COM_FIND (//)
 Find File(s)
 ;
+;
+MSGID_COM_UNDO  (//)
+Undo
+;
+;
+MSGID_COM_REDO  (//)
+Redo
+;
 ;---------------------------------------------
 ;
 MSGID_ABOUTREQOK (6000//)

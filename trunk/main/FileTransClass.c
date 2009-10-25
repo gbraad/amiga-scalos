@@ -273,6 +273,8 @@ static ULONG FileTransClass_Dispose(Class *cl, Object *o, Msg msg)
 	struct FileTransClassInstance *inst = INST_DATA(cl, o);
 	ULONG n;
 
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
 	if (globalCopyHook && RETURN_OK == inst->ftci_HookResult)
 		{
 		struct CopyEndMsg cem;
@@ -283,15 +285,23 @@ static ULONG FileTransClass_Dispose(Class *cl, Object *o, Msg msg)
 		inst->ftci_HookResult = CallHookPkt(globalCopyHook, NULL, &cem);
 		}
 
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 	ProcessFTOps(cl, o);
 
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 	ScalosReleaseSemaphore(&CopyHookSemaphore);
+
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	if (inst->ftci_Window)
 		{
 		LockedCloseWindow(inst->ftci_Window);
 		inst->ftci_Window = NULL;
 		}
+
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	for (n = 0; n < sizeof(inst->ftci_TextLineGadgets) / sizeof(inst->ftci_TextLineGadgets[0]); n++)
 		{
@@ -346,9 +356,11 @@ static ULONG FileTransClass_Dispose(Class *cl, Object *o, Msg msg)
 		inst->ftci_LastErrorFileName = NULL;
 		}
 
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 	DisposeDatatypesImage(&inst->ftci_Background);
 
-	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return DoSuperMethodA(cl, o, msg);
 }
@@ -892,6 +904,7 @@ static LONG DoFileTransMove(Class *cl, Object *o, struct FileTransOp *fto)
 
 	if (RETURN_OK == Result)
 		{
+		BPTR oldDir;
 		CONST_STRPTR ext = ".info";
 		char Name[MAX_FileName];
 
@@ -899,6 +912,8 @@ static LONG DoFileTransMove(Class *cl, Object *o, struct FileTransOp *fto)
 
 		stccpy(Name, fto->fto_SrcName, sizeof(Name) - strlen(ext) - 1 );
 		strcat(Name, ext);
+
+		oldDir = CurrentDir(fto->fto_SrcDirLock);
 
 		if (IconLock = Lock(Name, SHARED_LOCK))
 			{
@@ -917,7 +932,11 @@ static LONG DoFileTransMove(Class *cl, Object *o, struct FileTransOp *fto)
 					fto->fto_MouseX, fto->fto_MouseY);
 				}
 			}
+
+		CurrentDir(oldDir);
 		}
+
+	d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	// always try to handle icons apprioately if move was successfull
 	// even if no .info icon could be moved since windows might be "show all files"
@@ -926,10 +945,14 @@ static LONG DoFileTransMove(Class *cl, Object *o, struct FileTransOp *fto)
 		// update source window
 		ScalosDropRemoveIcon(fto->fto_SrcDirLock, fto->fto_SrcName);
 
+		d1(kprintf("%s/%s/%ld: after ScalosDropRemoveIcon, Result=%08lx\n", __FILE__, __FUNC__, __LINE__, Result));
+
 		// update destination window
 		ScalosDropAddIcon(fto->fto_DestDirLock, fto->fto_DestName,
 			fto->fto_MouseX, fto->fto_MouseY);
 		}
+
+	d1(kprintf("%s/%s/%ld: END Result=%08lx\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }

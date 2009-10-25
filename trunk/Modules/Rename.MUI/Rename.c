@@ -13,6 +13,8 @@
 #include <libraries/mui.h>
 #include <mui/BetterString_mcc.h>
 #include <workbench/startup.h>
+#include <scalos/scalos.h>
+#include <scalos/undo.h>
 
 #include <clib/alib_protos.h>
 
@@ -23,6 +25,7 @@
 #include <proto/locale.h>
 #include <proto/utility.h>
 #include <proto/muimaster.h>
+#include <proto/scalos.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,8 +43,8 @@
 
 //----------------------------------------------------------------------------
 
-#define	VERSION_MAJOR	40
-#define	VERSION_MINOR	3
+#define	VERSION_MAJOR	41
+#define	VERSION_MINOR	1
 
 //----------------------------------------------------------------------------
 
@@ -70,7 +73,7 @@ static BOOL OpenLibraries(void);
 static void CloseLibraries(void);
 static void UpdateGadgets(struct WBArg *arg);
 static void ReportError(LONG Result, CONST_STRPTR OldObjName, CONST_STRPTR NewObjName);
-static LONG RenameObject(struct WBArg *arg);
+static LONG RenameObject(struct WBArg *arg, APTR UndoStep);
 void StripTrailingColon(STRPTR Line);
 static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT OpenAboutHookFunc(struct Hook *hook, Object *o, Msg msg);
@@ -79,6 +82,7 @@ static BOOL CheckInfoData(const struct InfoData *info);
 static BOOL isDiskWritable(BPTR dLock);
 static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev);
 static BOOL IfLocateName(STRPTR FileName);
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
 
 //----------------------------------------------------------------------------
 
@@ -93,6 +97,7 @@ long _stack = 16384;		// minimum stack size, used by SAS/C startup code
 extern struct ExecBase *SysBase;
 struct IntuitionBase *IntuitionBase = NULL;
 T_LOCALEBASE LocaleBase = NULL;
+struct ScalosBase *ScalosBase = NULL;
 #ifndef __amigaos4__
 T_UTILITYBASE UtilityBase = NULL;
 #endif
@@ -102,6 +107,7 @@ struct Library *MUIMasterBase = NULL;
 struct IntuitionIFace *IIntuition = NULL;
 struct LocaleIFace *ILocale = NULL;
 struct MUIMasterIFace *IMUIMaster = NULL;
+struct ScalosIFace *IScalos = NULL;
 #endif
 
 static struct Catalog       *gb_Catalog;
@@ -132,6 +138,8 @@ const int Max_PathLen = 1000;
 
 int main(int argc, char *argv[])
 {
+	struct ScaWindowStruct *ws = NULL;
+	APTR UndoStep = NULL;
 	LONG win_opened;
 	ULONG n;
 	struct WBStartup *WBenchMsg =
@@ -165,6 +173,8 @@ int main(int argc, char *argv[])
 		}
 
 	do	{
+		struct ScaWindowList *wl;
+
 		if (!OpenLibraries())
 			break;
 
@@ -172,6 +182,15 @@ int main(int argc, char *argv[])
 			break;
 
 		gb_Catalog = OpenCatalogA(NULL, "Scalos/Rename.catalog",NULL);
+
+		wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+		if (wl)
+			{
+			struct ScaWindowStruct *ws = wl->wl_WindowStruct;
+
+			UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_BeginUndoStep);
+			}
 
 		APP_Main = ApplicationObject,
 			MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
@@ -326,7 +345,7 @@ int main(int argc, char *argv[])
 				switch (Action)
 					{
 				case Application_Return_Ok:
-					RenameObject(arg);
+					RenameObject(arg, UndoStep);
 					Run = FALSE;
 					break;
 				case Application_Return_Skip:
@@ -353,6 +372,17 @@ int main(int argc, char *argv[])
 		set(WIN_Main, MUIA_Window_Open, FALSE);
 		} while (0);
 
+	if (ws)
+		{
+		if (UndoStep)
+			{
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_EndUndoStep,
+				UndoStep);
+			}
+		SCA_UnLockWindowList();
+		}
+
 	if (APP_Main)
 		MUI_DisposeObject(APP_Main);
 	if(gb_Catalog)
@@ -377,7 +407,7 @@ static BOOL OpenLibraries(void)
 		if (NULL == IMUIMaster)
 			return FALSE;
 		}
-#endif
+#endif //__amigaos4__
 
 	IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
 	if (NULL == IntuitionBase)
@@ -389,7 +419,7 @@ static BOOL OpenLibraries(void)
 		if (NULL == IIntuition)
 			return FALSE;
 		}
-#endif
+#endif //__amigaos4__
 
 	LocaleBase = (T_LOCALEBASE) OpenLibrary("locale.library", 38);
 	if (NULL == LocaleBase)
@@ -401,13 +431,31 @@ static BOOL OpenLibraries(void)
 		if (NULL == ILocale)
 			return FALSE;
 		}
-#endif
+#endif //__amigaos4__
 
 #ifndef __amigaos4__
 	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library", 39);
 	if (NULL == UtilityBase)
 		return FALSE;
-#endif
+#endif //__amigaos4__
+
+#ifndef __amigaos4__
+	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library", 39);
+	if (NULL == UtilityBase)
+		return FALSE;
+#endif //__amigaos4__
+
+	ScalosBase = (struct ScalosBase *) OpenLibrary(SCALOSNAME, 40);
+	if (NULL == ScalosBase)
+		return FALSE;
+#ifdef __amigaos4__
+	else
+		{
+		IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
+		if (NULL == IScalos)
+			return FALSE;
+		}
+#endif //__amigaos4__
 
 	return TRUE;
 }
@@ -416,20 +464,32 @@ static BOOL OpenLibraries(void)
 
 static void CloseLibraries(void)
 {
+#ifdef __amigaos4__
+	if (IScalos)
+		{
+		DropInterface((struct Interface *)IScalos);
+		IScalos = NULL;
+		}
+#endif
+	if (ScalosBase)
+		{
+		CloseLibrary((struct Library *) ScalosBase);
+		ScalosBase = NULL;
+		}
 #ifndef __amigaos4__
 	if (UtilityBase)
 		{
 		CloseLibrary((struct Library *) UtilityBase);
 		UtilityBase = NULL;
 		}
-#endif
+#endif //__amigaos4__
 #ifdef __amigaos4__
 	if (ILocale)
 		{
 		DropInterface((struct Interface *)ILocale);
 		IIntuition = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (LocaleBase)
 		{
 		CloseLibrary(LocaleBase);
@@ -441,7 +501,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IIntuition);
 		IIntuition = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IntuitionBase)
 		{
 		CloseLibrary((struct Library *)IntuitionBase);
@@ -453,7 +513,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IMUIMaster);
 		IMUIMaster = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (MUIMasterBase)
 		{
 		CloseLibrary(MUIMasterBase);
@@ -582,7 +642,7 @@ static void ReportError(LONG Result, CONST_STRPTR OldObjName, CONST_STRPTR NewOb
 
 //----------------------------------------------------------------------------
 
-static LONG RenameObject(struct WBArg *arg)
+static LONG RenameObject(struct WBArg *arg, APTR UndoStep)
 {
 	BPTR dirLock;
 	LONG Result = RETURN_OK;
@@ -590,6 +650,7 @@ static LONG RenameObject(struct WBArg *arg)
 	STRPTR OldObjName;
 	char ObjName[512];
 	BPTR oldDir = (BPTR)NULL;
+	struct ScaWindowStruct *ws;
 	BOOL IsWriteable = isDiskWritable(arg->wa_Lock);
 
 	if (!IsWriteable)
@@ -610,6 +671,8 @@ static LONG RenameObject(struct WBArg *arg)
 		dirLock = ParentDir(arg->wa_Lock);
 		}
 
+	ws = FindScalosWindow(dirLock);
+
 	if (dirLock)
 		oldDir = CurrentDir(dirLock);
 
@@ -625,6 +688,18 @@ static LONG RenameObject(struct WBArg *arg)
 			StripTrailingColon(NewObjName);
 
 			d1(KPrintF("OldName=<%s>  NewName=<%s>\n", ObjName, NewObjName));
+
+			if (ws)
+				{
+				DoMethod(ws->ws_WindowTask->mt_MainObject,
+					SCCM_IconWin_AddUndoEvent,
+					UNDO_Relabel,
+					UNDOTAG_CopySrcDirLock, dirLock,
+					UNDOTAG_CopySrcName, ObjName,
+					UNDOTAG_CopyDestName, NewObjName,
+					TAG_END
+					);
+				}
 
 			if (!Relabel(ObjName, NewObjName))
 				{
@@ -657,6 +732,18 @@ static LONG RenameObject(struct WBArg *arg)
 					d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: IfLocateName(%s) OldObjName = <%s> IfNewName = %ld\n",  __LINE__, xIconOnly, OldObjName, IfNewName));
 					OldObjName = xIconOnly;
 					}
+				}
+
+			if (ws)
+				{
+				DoMethod(ws->ws_WindowTask->mt_MainObject,
+					SCCM_IconWin_AddUndoEvent,
+					UNDO_Rename,
+					UNDOTAG_CopySrcDirLock, dirLock,
+					UNDOTAG_CopySrcName, OldObjName,
+					UNDOTAG_CopyDestName, NewObjName,
+					TAG_END
+					);
 				}
 
 			if (!Rename(OldObjName, NewObjName))
@@ -692,6 +779,8 @@ static LONG RenameObject(struct WBArg *arg)
 			}
 		}
 
+	if (ws)
+		SCA_UnLockWindowList();
 
 	if (dirLock)
 		{
@@ -923,3 +1012,35 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 }
 
 //----------------------------------------------------------------------------
+
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START \n", __FUNC__, __LINE__));
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	if (wl)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			if (ws->ws_Lock)
+				{
+				if (LOCK_SAME == SameLock(dirLock, ws->ws_Lock))
+					{
+					return ws;
+					}
+				}
+			}
+		SCA_UnLockWindowList();
+		}
+
+	return NULL;
+}
+
+//----------------------------------------------------------------------------
+

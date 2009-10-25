@@ -500,6 +500,16 @@ MSGID_COM_FIND
 Datei(en) suchen
 ;Find File(s)
 ;
+;
+MSGID_COM_UNDO
+Rückgängig
+;Undo
+;
+;
+MSGID_COM_REDO
+Wiederholen
+;Redo
+;
 ;---------------------------------------------
 ;
 MSGID_SHORTHELP_NEWMENUBUTTON

@@ -131,6 +131,8 @@ static void ResetScalosProg(struct internalScaWindowTask *iwt, const struct Menu
 static void AsyncResetScalosProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *dummy);
 static void MenuSnapshotProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void MenuUnsnapshotProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
+static void MenuUndoProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
+static void MenuRedoProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void SnapshotAllProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void SnapshotWindowProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void LeaveOutProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
@@ -147,22 +149,24 @@ static BOOL StartProgTask(struct internalScaWindowTask *iwt,
 	const struct MenuCmdArg *mcArg, PROGFUNC ProgProc, struct MsgPort *ReplyPort);
 static SAVEDS(ULONG) ProgTask(struct SM_StartProg *sMsg, struct SM_RunProcess *msg);
 static void AsyncNewDrawerProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
-static void WBIconPropertiesStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+static void WBIconPropertiesStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
 static SAVEDS(ULONG) IconPropertiesStart(APTR aptr, struct SM_RunProcess *msg);
 static void AsyncWindowPropertiesProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 void AsyncRenameProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 void AsyncDeleteProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
-static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
-static void PutAwayIconNode(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
-static void StartActIconsShared(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in),
+static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
+static void PutAwayIconNode(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
+static void DoForAllWindowsShared(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep),
 	void (*WindowProc)(struct internalScaWindowTask *iwt));
-static void WindowInfoStartShared(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in));
-static void StartActIcons(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in));
-static void WindowInfoStart(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in));
+static void DoForAllIconsShared(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep),
+	APTR undoStep);
+static void DoForAllWindows(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep));
+static void DoForAllIconsExclusive(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep),
+	APTR undoStep);
 static SAVEDS(ULONG) InfoStart(APTR aptr, struct SM_RunProcess *msg);
 //static struct ScaIconNode *FindIconGlobal(BPTR dirLock, CONST_STRPTR Name);
 static void ClearSelectionInWindow(struct internalScaWindowTask *iwt);
@@ -174,19 +178,18 @@ static BOOL CloneWBArg(struct internalScaWindowTask *iwt, struct WBArg **wbArg,
 	struct ScaIconNode *in, ULONG *ArgCount);
 static SAVEDS(ULONG) CloneFilesStart(APTR aptr, struct SM_RunProcess *msg);
 static SAVEDS(LONG) IconCompareFunc(struct Hook *hook, struct ScaIconNode *in2, struct ScaIconNode *in1);
-static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
-static void UnsnapshotIconAndSave(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
-static void UnsnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in, BOOL SaveIcon);
+static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
+static void UnsnapshotIconAndSave(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
+static void UnsnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in, BOOL SaveIcon, APTR undoStep);
 static void AfterUnsnapshotIcon(struct internalScaWindowTask *iwt);
-static void SetWindowRect(struct ScaIconNode *in);
 static void SetRect(struct ScaIconNode *in);
 static void SetRect2(struct ScaIconNode *in, BPTR iconLock);
 static void CloseWindowProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static ULONG FindIconType(struct WBArg *Arg);
 static BOOL CallGlobalDeleteHook(struct WBArg *wbArg, ULONG nArgs, ULONG Action);
 static void DeleteModuleKludge(struct WBArg *wbArg, ULONG nArgs);
-static void RememberFilesToCopy(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
-static void RememberFilesToCut(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+static void RememberFilesToCopy(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
+static void RememberFilesToCut(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
 static ULONG CallTextInputHook(ULONG Action, STRPTR Prompt);
 static STRPTR FindUniqueName(STRPTR Name, size_t MaxLength);
 static BOOL CanBeSizedMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
@@ -202,13 +205,15 @@ static BOOL FormatDiskMenuEnable(struct internalScaWindowTask *iwt, struct ScaIc
 static BOOL LeaveOutMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL PutAwayMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL PasteMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+static BOOL UndoMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+static BOOL RedoMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL NotMainWindowAndNotReadingMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL SnapshotMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL NotReadingMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL IsWriteableMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL IconsSelectedNoDiskMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in); // +jmc+ - Diable menu item if in->in_Device.
 static SAVEDS(ULONG) AsyncStartModule(APTR aptr, struct SM_RunProcess *msg, CONST_STRPTR ModuleName);
-static void CreateThumbnailStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+static void CreateThumbnailStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep);
 static void DoForAppIcons(ULONG AppMsgClass);
 
 //--- +jmc+ --- CopyTo/MoveTo ------------------------------------------------
@@ -276,6 +281,7 @@ struct ScalosMenuCommand MenuCommandTable[] =
 	{ "paste",		0,				MITYPE_NOTHING,		MenuPasteProg,			PasteMenuEnable				},
 	{ "putaway",		0,				MITYPE_NOTHING,		PutAwayProg,			PutAwayMenuEnable			},
 	{ "quit",		SMCOMFLAGF_RunFromRootWindow,	MITYPE_NOTHING,		CloseWindowProg,		NULL					},
+	{ "redo",		0,				MITYPE_NOTHING,		MenuRedoProg,			RedoMenuEnable				},
 	{ "redraw",		0,				MITYPE_NOTHING,		RedrawProg,			NULL					},
 	{ "redrawall",		SMCOMFLAGF_RunFromRootWindow,	MITYPE_NOTHING,		RedrawAllProg,			NULL					},
 	{ "rename",		0,				MITYPE_NOTHING,		RenameProg,			IconsSelectedAndWriteableMenuEnable	},
@@ -290,6 +296,7 @@ struct ScalosMenuCommand MenuCommandTable[] =
 	{ "snapshotall",	0,				MITYPE_NOTHING,		SnapshotAllProg,		IsWriteableMenuEnable			},
 	{ "snapshotwindow",	0,				MITYPE_NOTHING,		SnapshotWindowProg,		IsWriteableMenuEnable			},
 	{ "thumbnailcachecleanup",     0,			MITYPE_NOTHING,		ThumbnailCacheCleanupProg,	NULL					},
+	{ "undo",		0,				MITYPE_NOTHING,		MenuUndoProg,			UndoMenuEnable				},
 	{ "unsnapshot",		0,				MITYPE_NOTHING,		MenuUnsnapshotProg,		SnapshotMenuEnable			},
 	{ "update",		0,				MITYPE_NOTHING,		UpdateProg,			NotReadingMenuEnable			},
 	{ "updateall",		SMCOMFLAGF_RunFromRootWindow,	MITYPE_NOTHING,		UpdateAllProg,			NULL					},
@@ -304,6 +311,7 @@ struct ScalosMenuCommand MenuCommandTable[] =
 	};
 
 struct List globalCopyClipBoard;	// Clipboard for files/directories via copy/cut/paste
+SCALOSSEMAPHORE ClipboardSemaphore;	// Semaphore to protect globalCopyClipBoard
 
 //----------------------------------------------------------------------------
 
@@ -315,12 +323,12 @@ static void MenuInfoProg(struct internalScaWindowTask *iwt, const struct MenuCmd
 	if (mcArg->mca_IconNode)
 		{
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		WBInfoStart(iwt, mcArg->mca_IconNode);
+		WBInfoStart(iwt, mcArg->mca_IconNode, NULL);
 		SCA_UnLockWindowList();
 		}
 	else
 		{
-		StartActIconsShared(iwt, WBInfoStart, NULL);
+		DoForAllWindowsShared(iwt, WBInfoStart, NULL);
 		}
 }
 
@@ -334,30 +342,33 @@ static void IconPropertiesProg(struct internalScaWindowTask *iwt, const struct M
 	if (mcArg->mca_IconNode)
 		{
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		WBIconPropertiesStart(iwt, mcArg->mca_IconNode);
+		WBIconPropertiesStart(iwt, mcArg->mca_IconNode, NULL);
 		SCA_UnLockWindowList();
 		}
 	else
 		{
-		StartActIconsShared(iwt, WBIconPropertiesStart, NULL);
+		DoForAllWindowsShared(iwt, WBIconPropertiesStart, NULL);
 		}
 }
 
 //----------------------------------------------------------------------------
 
-static void StartActIconsShared(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in),
+static void DoForAllWindowsShared(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep),
 	void (*WindowProc)(struct internalScaWindowTask *iwt))
 {
 	struct ScaWindowStruct *ws;
+	APTR undoStep;
 
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+	undoStep = UndoBeginStep();
 
 	SCA_LockWindowList(SCA_LockWindowList_Shared);
 
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-	WindowInfoStartShared(iwt, IconProc);
+	DoForAllIconsShared(iwt, IconProc, undoStep);
 	if (WindowProc)
 		(*WindowProc)(iwt);
 
@@ -367,7 +378,7 @@ static void StartActIconsShared(struct internalScaWindowTask *iwt,
 		{
 		if (ws != iwt->iwt_WindowTask.mt_WindowStruct)
 			{
-			WindowInfoStartShared((struct internalScaWindowTask *) ws->ws_WindowTask, IconProc);
+			DoForAllIconsShared((struct internalScaWindowTask *) ws->ws_WindowTask, IconProc, undoStep);
 			if (WindowProc)
 				(*WindowProc)((struct internalScaWindowTask *) ws->ws_WindowTask);
 			}
@@ -377,12 +388,15 @@ static void StartActIconsShared(struct internalScaWindowTask *iwt,
 
 	SCA_UnLockWindowList();
 
+	UndoEndStep( undoStep);
+
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 }
 
 
-static void WindowInfoStartShared(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in))
+static void DoForAllIconsShared(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep),
+	APTR undoStep)
 {
 	struct ScaIconNode *in;
 
@@ -397,7 +411,7 @@ static void WindowInfoStartShared(struct internalScaWindowTask *iwt,
 		if (gg->Flags & GFLG_SELECTED)
 			{
 			d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
-			(*IconProc)(iwt, in);
+			(*IconProc)(iwt, in, undoStep);
 			}
 		}
 
@@ -405,30 +419,36 @@ static void WindowInfoStartShared(struct internalScaWindowTask *iwt,
 }
 
 
-static void StartActIcons(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in))
+static void DoForAllWindows(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep))
 {
 	struct ScaWindowStruct *ws;
+	APTR undoStep;
 
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
+	undoStep = UndoBeginStep();
+
 	SCA_LockWindowList(SCA_LockWindowList_Shared);
 
-	WindowInfoStart(iwt, IconProc);
+	DoForAllIconsExclusive(iwt, IconProc, undoStep);
 
 	for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 		{
 		if (ws != iwt->iwt_WindowTask.mt_WindowStruct)
-			WindowInfoStart((struct internalScaWindowTask *) ws->ws_WindowTask, IconProc);
+			DoForAllIconsExclusive((struct internalScaWindowTask *) ws->ws_WindowTask, IconProc, undoStep);
 		}
 
 	SCA_UnLockWindowList();
+
+	UndoEndStep( undoStep);
 }
 
 
 // IconProc might modify wt_IconList !!
-static void WindowInfoStart(struct internalScaWindowTask *iwt, 
-	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in))
+static void DoForAllIconsExclusive(struct internalScaWindowTask *iwt,
+	void (*IconProc)(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep),
+	APTR undoStep)
 {
 	ULONG IconCount;
 	struct ScaIconNode *in;
@@ -465,7 +485,7 @@ static void WindowInfoStart(struct internalScaWindowTask *iwt,
 						struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 
 						if (gg->Flags & GFLG_SELECTED)
-							(*IconProc)(iwt, in);
+							(*IconProc)(iwt, in, undoStep);
 						break;
 						}
 					}
@@ -480,11 +500,13 @@ static void WindowInfoStart(struct internalScaWindowTask *iwt,
 
 //----------------------------------------------------------------------------
 
-void WBInfoStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+void WBInfoStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
 	ULONG IconType;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, in, GetIconName(in)));
+
+	(void) undoStep;
 
 	GetAttr(IDTA_Type, in->in_Icon, &IconType);
 
@@ -801,7 +823,7 @@ static void AsyncNewDrawerProg(struct internalScaWindowTask *iwt, const struct M
 
 //----------------------------------------------------------------------------
 
-static void WBIconPropertiesStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void WBIconPropertiesStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
 	struct WBArg InfoArgs;
 
@@ -1082,7 +1104,7 @@ void AsyncDeleteProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 
 //----------------------------------------------------------------------------
 
-static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
 	ULONG IconType = 0;
 
@@ -1118,7 +1140,7 @@ static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 }
 
 
-static void PutAwayIconNode(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void PutAwayIconNode(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
 	ULONG IconType = 0;
 
@@ -1815,10 +1837,13 @@ static SAVEDS(ULONG) CloneFilesStart(APTR aptr, struct SM_RunProcess *msg)
 	struct CloneArg *arg = aptr;
 	STRPTR NewName;
 	STRPTR OldIconName = NULL;
+	APTR undoStep = NULL;
 	Object *fileTransObj = NULL;
 	ULONG n;
 
 	do	{
+		undoStep = UndoBeginStep();
+
 		NewName = AllocPathBuffer();
 		if (NULL == NewName)
 			break;
@@ -1846,6 +1871,14 @@ static SAVEDS(ULONG) CloneFilesStart(APTR aptr, struct SM_RunProcess *msg)
 
 			d1(kprintf("%s/%s/%ld: OldName=<%s>  NewName=<%s>\n", __FILE__, __FUNC__, __LINE__, arg->cla_wbArg[n].wa_Name, NewName));
 
+			UndoAddEvent(UNDO_Copy,
+				UNDOTAG_UndoMultiStep, undoStep,
+				UNDOTAG_CopySrcDirLock, arg->cla_wbArg[n].wa_Lock,
+				UNDOTAG_CopyDestDirLock, arg->cla_wbArg[n].wa_Lock,
+				UNDOTAG_CopySrcName, arg->cla_wbArg[n].wa_Name,
+				UNDOTAG_CopyDestName, NewName,
+				TAG_END);
+
 			// clone file/drawer
 			DoMethod(fileTransObj, SCCM_FileTrans_Copy,
 				arg->cla_wbArg[n].wa_Lock, arg->cla_wbArg[n].wa_Lock, 
@@ -1856,6 +1889,8 @@ static SAVEDS(ULONG) CloneFilesStart(APTR aptr, struct SM_RunProcess *msg)
 	SCA_FreeWBArgs(arg->cla_wbArg, arg->cla_NumArgs, SCAF_FreeNames | SCAF_FreeLocks);
 	ScalosFreeVecPooled(arg->cla_wbArg);
 
+	if (undoStep)
+		UndoEndStep(undoStep);
 	if (fileTransObj)
 		SCA_DisposeScalosObject(fileTransObj);
 	if (OldIconName)
@@ -2094,6 +2129,12 @@ static void CleanupProg(struct internalScaWindowTask *iwt, const struct MenuCmdA
 
 	ScalosLockIconListExclusive(iwt);
 
+	UndoAddEvent(UNDO_Cleanup,
+		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
+		UNDOTag_WindowTask, iwt,
+		UNDOTag_CleanupMode, CLEANUP_Default,
+		TAG_END);
+
 	for (in=iwt->iwt_WindowTask.wt_LateIconList; in; in=inNext)
 		{
 		inNext = (struct ScaIconNode *) in->in_Node.mln_Succ;
@@ -2143,6 +2184,12 @@ static void CleanupProg(struct internalScaWindowTask *iwt, const struct MenuCmdA
 
 static void CleanupByNameProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
 {
+	UndoAddEvent(UNDO_Cleanup,
+		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
+		UNDOTag_WindowTask, iwt,
+		UNDOTag_CleanupMode, CLEANUP_ByName,
+		TAG_END);
+
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpByName);
 }
 
@@ -2150,6 +2197,12 @@ static void CleanupByNameProg(struct internalScaWindowTask *iwt, const struct Me
 
 static void CleanupByDateProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
 {
+	UndoAddEvent(UNDO_Cleanup,
+		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
+		UNDOTag_WindowTask, iwt,
+		UNDOTag_CleanupMode, CLEANUP_ByDate,
+		TAG_END);
+
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpByDate);
 }
 
@@ -2157,6 +2210,12 @@ static void CleanupByDateProg(struct internalScaWindowTask *iwt, const struct Me
 
 static void CleanupBySizeProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
 {
+	UndoAddEvent(UNDO_Cleanup,
+		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
+		UNDOTag_WindowTask, iwt,
+		UNDOTag_CleanupMode, CLEANUP_BySize,
+		TAG_END);
+
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpBySize);
 }
 
@@ -2164,6 +2223,12 @@ static void CleanupBySizeProg(struct internalScaWindowTask *iwt, const struct Me
 
 static void CleanupByTypeProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
 {
+	UndoAddEvent(UNDO_Cleanup,
+		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
+		UNDOTag_WindowTask, iwt,
+		UNDOTag_CleanupMode, CLEANUP_ByType,
+		TAG_END);
+
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpByType);
 }
 
@@ -2456,13 +2521,21 @@ static void MenuSnapshotProg(struct internalScaWindowTask *iwt, const struct Men
 
 	if (mcArg->mca_IconNode)
 		{
+		UndoAddEvent(UNDO_Snapshot,
+			UNDOTAG_IconNode, mcArg->mca_IconNode,
+			UNDOTAG_IconDirLock, mcArg->mca_IconNode->in_Lock ?
+				mcArg->mca_IconNode->in_Lock :
+				iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
+			UNDOTAG_SaveIcon, TRUE,
+			TAG_END);
+
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		SnapshotIcon(iwt, mcArg->mca_IconNode);
+		SnapshotIcon(iwt, mcArg->mca_IconNode, NULL);
 		SCA_UnLockWindowList();
 		}
 	else
 		{
-		StartActIconsShared(iwt, SnapshotIcon, NULL);
+		DoForAllWindowsShared(iwt, SnapshotIcon, NULL);
 		}
 }
 
@@ -2475,20 +2548,48 @@ static void MenuUnsnapshotProg(struct internalScaWindowTask *iwt, const struct M
 
 	if (mcArg->mca_IconNode)
 		{
+		UndoAddEvent(UNDO_Unsnapshot,
+			UNDOTAG_IconNode, mcArg->mca_IconNode,
+			UNDOTAG_IconDirLock, mcArg->mca_IconNode->in_Lock ?
+				mcArg->mca_IconNode->in_Lock :
+				iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
+			UNDOTAG_SaveIcon, TRUE,
+			TAG_END);
+
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		UnsnapshotIcon(iwt, mcArg->mca_IconNode, TRUE);
+		UnsnapshotIcon(iwt, mcArg->mca_IconNode, TRUE, NULL);
 		AfterUnsnapshotIcon(iwt);
 		SCA_UnLockWindowList();
 		}
 	else
 		{
-		StartActIconsShared(iwt, UnsnapshotIconAndSave, AfterUnsnapshotIcon);
+		DoForAllWindowsShared(iwt, UnsnapshotIconAndSave, AfterUnsnapshotIcon);
 		}
 }
 
 //---------------------------------------------------------------------------------------
 
-static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void MenuUndoProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
+{
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+	d1(KPrintF("%s/%s/%ld: mca_IconNode=%08lx\n", __FILE__, __FUNC__, __LINE__, mcArg->mca_IconNode));
+
+	Undo();
+}
+
+//---------------------------------------------------------------------------------------
+
+static void MenuRedoProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
+{
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+	d1(KPrintF("%s/%s/%ld: mca_IconNode=%08lx\n", __FILE__, __FUNC__, __LINE__, mcArg->mca_IconNode));
+
+	Redo();
+}
+
+//---------------------------------------------------------------------------------------
+
+static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
 	ULONG IconType = 0;
 
@@ -2508,7 +2609,7 @@ static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 		{
 		BPTR destDirLock;
 
-		SetWindowRect(in);
+		SetIconWindowRect(in);
 
 		if (in->in_DeviceIcon)
 			{
@@ -2516,6 +2617,13 @@ static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 
 			if (destDirLock)
 				{
+				UndoAddEvent(UNDO_Snapshot,
+					UNDOTAG_UndoMultiStep, undoStep,
+					UNDOTAG_IconNode, in,
+					UNDOTAG_IconDirLock, destDirLock,
+					UNDOTAG_SaveIcon, TRUE,
+					TAG_END);
+
 				ScalosPutIcon(in, destDirLock, in->in_Flags & INF_DefaultIcon);
 
 				UnLock(destDirLock);
@@ -2527,6 +2635,13 @@ static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 				destDirLock = in->in_Lock;
 			else
 				destDirLock = iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
+
+			UndoAddEvent(UNDO_Snapshot,
+				UNDOTAG_UndoMultiStep, undoStep,
+				UNDOTAG_IconNode, in,
+				UNDOTAG_IconDirLock, destDirLock,
+				UNDOTAG_SaveIcon, TRUE,
+				TAG_END);
 
 			ScalosPutIcon(in, destDirLock, in->in_Flags & INF_DefaultIcon);
 			}
@@ -2541,15 +2656,15 @@ static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 
 //---------------------------------------------------------------------------------------
 
-static void UnsnapshotIconAndSave(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void UnsnapshotIconAndSave(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
-	UnsnapshotIcon(iwt, in, TRUE);
+	UnsnapshotIcon(iwt, in, TRUE, undoStep);
 }
 
 //---------------------------------------------------------------------------------------
 
 static void UnsnapshotIcon(struct internalScaWindowTask *iwt,
-	struct ScaIconNode *in, BOOL SaveIcon)
+	struct ScaIconNode *in, BOOL SaveIcon, APTR undoStep)
 {
 	ULONG IconType = 0;
 
@@ -2573,7 +2688,7 @@ static void UnsnapshotIcon(struct internalScaWindowTask *iwt,
 
 		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-		SetWindowRect(in);
+		SetIconWindowRect(in);
 
 		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
@@ -2588,6 +2703,13 @@ static void UnsnapshotIcon(struct internalScaWindowTask *iwt,
 
 			if (destDirLock)
 				{
+				UndoAddEvent(UNDO_Unsnapshot,
+					UNDOTAG_UndoMultiStep, undoStep,
+					UNDOTAG_IconNode, in,
+					UNDOTAG_IconDirLock, destDirLock,
+					UNDOTAG_SaveIcon, SaveIcon,
+					TAG_END);
+
 				gg->LeftEdge = gg->TopEdge = NO_ICON_POSITION_SHORT;
 
 				if (SaveIcon)
@@ -2606,6 +2728,13 @@ static void UnsnapshotIcon(struct internalScaWindowTask *iwt,
 				destDirLock = iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
 
 			d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
+			UndoAddEvent(UNDO_Unsnapshot,
+				UNDOTAG_UndoMultiStep, undoStep,
+				UNDOTAG_IconNode, in,
+				UNDOTAG_IconDirLock, destDirLock,
+				UNDOTAG_SaveIcon, SaveIcon,
+				TAG_END);
 
 			gg->LeftEdge = gg->TopEdge = NO_ICON_POSITION_SHORT;
 
@@ -2647,7 +2776,7 @@ static void AfterUnsnapshotIcon(struct internalScaWindowTask *iwt)
 
 //---------------------------------------------------------------------------------------
 
-static void SetWindowRect(struct ScaIconNode *in)
+void SetIconWindowRect(struct ScaIconNode *in)
 {
 	if (in->in_Lock)
 		{
@@ -2742,10 +2871,13 @@ static void SnapshotAllProg(struct internalScaWindowTask *iwt, const struct Menu
 
 	if (IsIwtViewByIcon(iwt))
 		{
+		APTR undoStep = UndoBeginStep();
+
 		for (in=iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 			{
-			SnapshotIcon(iwt, in);
+			SnapshotIcon(iwt, in, undoStep);
 			}
+		UndoEndStep( undoStep);
 		}
 
 	ScalosUnLockIconList(iwt);
@@ -2772,11 +2904,13 @@ static void LeaveOutProg(struct internalScaWindowTask *iwt, const struct MenuCmd
 	if (mcArg->mca_IconNode)
 		{
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		LeaveOutIcon(iwt, mcArg->mca_IconNode);
+		LeaveOutIcon(iwt, mcArg->mca_IconNode, NULL);
 		SCA_UnLockWindowList();
 		}
 	else
-		StartActIcons(iwt, LeaveOutIcon);
+		{
+		DoForAllWindows(iwt, LeaveOutIcon);
+		}
 }
 
 //---------------------------------------------------------------------------------------
@@ -2788,11 +2922,13 @@ static void PutAwayProg(struct internalScaWindowTask *iwt, const struct MenuCmdA
 	if (mcArg->mca_IconNode)
 		{
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		PutAwayIconNode(iwt, mcArg->mca_IconNode);
+		PutAwayIconNode(iwt, mcArg->mca_IconNode, NULL);
 		SCA_UnLockWindowList();
 		}
 	else
-		StartActIcons(iwt, PutAwayIconNode);
+		{
+		DoForAllWindows(iwt, PutAwayIconNode);
+		}
 }
 
 //---------------------------------------------------------------------------------------
@@ -3149,12 +3285,12 @@ static void MenuCopyProg(struct internalScaWindowTask *iwt, const struct MenuCmd
 	if (mcArg->mca_IconNode)
 		{
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		RememberFilesToCopy(iwt, mcArg->mca_IconNode);
+		RememberFilesToCopy(iwt, mcArg->mca_IconNode, NULL);
 		SCA_UnLockWindowList();
 		}
 	else
 		{
-		StartActIconsShared(iwt, RememberFilesToCopy, NULL);
+		DoForAllWindowsShared(iwt, RememberFilesToCopy, NULL);
 		}
 }
 
@@ -3169,12 +3305,12 @@ static void MenuCutProg(struct internalScaWindowTask *iwt, const struct MenuCmdA
 	if (mcArg->mca_IconNode)
 		{
 		SCA_LockWindowList(SCA_LockWindowList_Shared);
-		RememberFilesToCut(iwt, mcArg->mca_IconNode);
+		RememberFilesToCut(iwt, mcArg->mca_IconNode, NULL);
 		SCA_UnLockWindowList();
 		}
 	else
 		{
-		StartActIconsShared(iwt, RememberFilesToCut, NULL);
+		DoForAllWindowsShared(iwt, RememberFilesToCut, NULL);
 		}
 }
 
@@ -3199,6 +3335,7 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 {
 	Object *fileTransObj;
 	BPTR DestLock = (BPTR)NULL;
+	APTR undoStep = NULL;
 
 	d1(kprintf("%s/%s/%ld: mca_IconNode=%08lx\n", __FILE__, __FUNC__, __LINE__, mcArg->mca_IconNode));
 
@@ -3207,6 +3344,8 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 		BPTR parentDirLock;
 		BPTR newLock = (BPTR)NULL;
 		ULONG IconType = 0;
+
+		d1(kprintf("%s/%s/%ld: mca_IconNode=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, mcArg->mca_IconNode, GetIconName(mcArg->mca_IconNode)));
 
 		GetAttr(IDTA_Type, mcArg->mca_IconNode->in_Icon, &IconType);
 
@@ -3229,11 +3368,14 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 					parentDirLock = iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
 				}
 
+			debugLock_d1(parentDirLock);
+
 			if (parentDirLock)
 				{
 				BPTR oldDir= CurrentDir(parentDirLock);
 
 				DestLock = Lock((STRPTR) GetIconName(mcArg->mca_IconNode), ACCESS_READ);
+				debugLock_d1(DestLock);
 
 				CurrentDir(oldDir);
 				}
@@ -3260,12 +3402,20 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 		struct FileTransArg *fta;
 		ULONG Result = RETURN_OK;
 
-		while (RETURN_OK == Result &&
-				(fta = (struct FileTransArg *) RemHead(&globalCopyClipBoard)))
+		undoStep = UndoBeginStep();
+
+		while (RETURN_OK == Result)
 			{
 			CONST_STRPTR destName;
 			STRPTR destNameCopy = NULL;
 			size_t len;
+
+			ScalosObtainSemaphore(&ClipboardSemaphore);
+			fta = (struct FileTransArg *) RemHead(&globalCopyClipBoard);
+			ScalosReleaseSemaphore(&ClipboardSemaphore);
+
+			if (NULL == fta)
+				break;
 
 			debugLock_d1(fta->ftarg_Arg.wa_Lock);
 			d1(kprintf("%s/%s/%ld: ftarg_Arg.wa_Name=<%s>  OpCode=%ld\n", \
@@ -3290,6 +3440,14 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 						}
 					}
 
+				UndoAddEvent(UNDO_Copy,
+					UNDOTAG_UndoMultiStep, undoStep,
+					UNDOTAG_CopySrcDirLock, fta->ftarg_Arg.wa_Lock,
+					UNDOTAG_CopyDestDirLock, DestLock,
+					UNDOTAG_CopySrcName, fta->ftarg_Arg.wa_Name,
+					UNDOTAG_CopyDestName, destName,
+					TAG_END);
+
 				Result = DoMethod(fileTransObj, SCCM_FileTrans_Copy, 
 					fta->ftarg_Arg.wa_Lock, DestLock, 
 					fta->ftarg_Arg.wa_Name,		// srcName
@@ -3298,7 +3456,14 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 				break;
 
 			case FTOPCODE_Move:
-				Result = DoMethod(fileTransObj, SCCM_FileTrans_Move, 
+				UndoAddEvent(UNDO_Move,
+					UNDOTAG_UndoMultiStep, undoStep,
+					UNDOTAG_CopySrcDirLock, fta->ftarg_Arg.wa_Lock,
+					UNDOTAG_CopyDestDirLock, DestLock,
+					UNDOTAG_CopySrcName, fta->ftarg_Arg.wa_Name,
+					TAG_END);
+
+				Result = DoMethod(fileTransObj, SCCM_FileTrans_Move,
 					fta->ftarg_Arg.wa_Lock, DestLock, 
 					fta->ftarg_Arg.wa_Name,
 					NO_ICON_POSITION_SHORT, NO_ICON_POSITION_SHORT);
@@ -3326,6 +3491,8 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 		SCA_DisposeScalosObject(fileTransObj);
 		}
 
+	UndoEndStep(undoStep);
+
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_ClearClipboard);
 }
 
@@ -3337,29 +3504,33 @@ static void MenuCreateThumbnailProg(struct internalScaWindowTask *iwt, const str
 
 	if (mcArg->mca_IconNode)
 		{
-		CreateThumbnailStart(iwt, mcArg->mca_IconNode);
+		CreateThumbnailStart(iwt, mcArg->mca_IconNode, NULL);
 		}
 	else
 		{
-		StartActIcons(iwt, CreateThumbnailStart);
+		DoForAllWindows(iwt, CreateThumbnailStart);
 		}
 	d1(KPrintF("%s/%s/%ld: END mca_IconNode=%08lx\n", __FILE__, __FUNC__, __LINE__, mcArg->mca_IconNode));
 }
 
 //---------------------------------------------------------------------------------------
 
-static void RememberFilesToCopy(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void RememberFilesToCopy(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
+	(void) undoStep;
+
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_AddToClipboard, iwt, in, FTOPCODE_Copy);
 }
 
 //---------------------------------------------------------------------------------------
 
-static void RememberFilesToCut(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void RememberFilesToCut(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
 	struct ScaIconNode inCopy;
 	struct ScaIconNode *IconList = &inCopy;
 	ULONG UserFlags = 0L;
+
+	(void) undoStep;
 
 	GetAttr(IDTA_UserFlags, in->in_Icon, &UserFlags);
 	UserFlags |= ICONOBJ_USERFLAGF_DrawShadowed;
@@ -3586,18 +3757,69 @@ static BOOL PutAwayMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconN
 
 static BOOL PasteMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
 {
+	BOOL ClipboardEmpty;
+
+	d1(KPrintF("%s/%s/%ld: in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
+
 	if (iwt->iwt_ReadOnly)
 		return FALSE;
-	if (IsListEmpty(&globalCopyClipBoard))
+
+	d1(KPrintF("%s/%s/%ld: in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
+
+	ScalosObtainSemaphoreShared(&ClipboardSemaphore);
+	ClipboardEmpty = IsListEmpty(&globalCopyClipBoard);
+	ScalosReleaseSemaphore(&ClipboardSemaphore);
+	if (ClipboardEmpty)
 		return FALSE;
+
+	d1(KPrintF("%s/%s/%ld: in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
 	if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock)
 		return TRUE;
 
+	d1(KPrintF("%s/%s/%ld: in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
+
+	// Desktop window, left-out icon
 	if (in && in->in_Lock)
 		return TRUE;
 
+	// Desktop window, device icon
+	if (in && in->in_DeviceIcon)
+		return TRUE;
+
+	d1(KPrintF("%s/%s/%ld: in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
+
 	return FALSE;
+}
+
+//---------------------------------------------------------------------------------------
+
+static BOOL UndoMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+{
+	BOOL UndoListEmpty;
+
+	ScalosObtainSemaphoreShared(&UndoListListSemaphore);
+	UndoListEmpty = IsListEmpty(&globalUndoList);
+	ScalosReleaseSemaphore(&UndoListListSemaphore);
+	if (UndoListEmpty)
+		return FALSE;
+
+	return TRUE;
+}
+
+//---------------------------------------------------------------------------------------
+
+static BOOL RedoMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+{
+	BOOL RedoListEmpty;
+
+	ScalosObtainSemaphoreShared(&RedoListListSemaphore);
+	RedoListEmpty = IsListEmpty(&globalRedoList);
+	ScalosReleaseSemaphore(&RedoListListSemaphore);
+	if (RedoListEmpty)
+		return FALSE;
+
+	return TRUE;
 }
 
 //---------------------------------------------------------------------------------------
@@ -3922,6 +4144,7 @@ static SAVEDS(ULONG) CopyToStart(APTR aptr, struct SM_RunProcess *msg)
 	Object *fileTransObj = NULL;
 	ULONG n;
 	BPTR dirLock = (BPTR)NULL;
+	APTR undoStep = NULL;
 	struct FileRequester *dirReq;
 
 	do	{
@@ -3959,6 +4182,8 @@ static SAVEDS(ULONG) CopyToStart(APTR aptr, struct SM_RunProcess *msg)
 			char LockdirName[256];
 			char TestRootName[256];
 			BOOL ErrorFound;
+
+			undoStep = UndoBeginStep();
 
 			dirLock = Lock(dirReq->fr_Drawer, ACCESS_READ);
 			if ((BPTR)NULL == dirLock)
@@ -4029,6 +4254,14 @@ static SAVEDS(ULONG) CopyToStart(APTR aptr, struct SM_RunProcess *msg)
 							}
 						}
 
+					UndoAddEvent(UNDO_Copy,
+						UNDOTAG_UndoMultiStep, undoStep,
+						UNDOTAG_CopySrcDirLock, arg->cla_wbArg[n].wa_Lock,
+						UNDOTAG_CopyDestDirLock, dirLock,
+						UNDOTAG_CopySrcName, arg->cla_wbArg[n].wa_Name,
+						UNDOTAG_CopyDestName, destName,
+						TAG_END);
+
 					DoMethod(fileTransObj, SCCM_FileTrans_Copy,
 						arg->cla_wbArg[n].wa_Lock, dirLock,
 						arg->cla_wbArg[n].wa_Name,
@@ -4041,6 +4274,8 @@ static SAVEDS(ULONG) CopyToStart(APTR aptr, struct SM_RunProcess *msg)
 					FreeCopyString(destNameCopy);
 			}
 		} while (0);
+
+	UndoEndStep(undoStep);
 
 	SCA_FreeWBArgs(arg->cla_wbArg, arg->cla_NumArgs, SCAF_FreeNames | SCAF_FreeLocks);
 	ScalosFreeVecPooled(arg->cla_wbArg);
@@ -4214,6 +4449,7 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 	Object *fileTransObj = NULL;
 	ULONG n;
 	BPTR dirLock = (BPTR)NULL;
+	APTR undoStep = NULL;
 	struct FileRequester *dirReq;
 
 
@@ -4274,6 +4510,8 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 			CONST_STRPTR SrcName;
 			size_t len;
 			BOOL ErrorFound;
+
+			undoStep = UndoBeginStep();
 
 			dirLock = Lock(dirReq->fr_Drawer, ACCESS_READ);
 			if ((BPTR)NULL == dirLock)
@@ -4339,6 +4577,13 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 					d1(kprintf("%s/%s/%ld: NUMBER=[%ld] ErrorFound=[%ld] [Move <%s> - Full path = <%s>] To =<%s>\n", \
 						 __FILE__, __FUNC__, __LINE__, n, ErrorFound, SrcName, NLockName, LockdirName));
 
+					UndoAddEvent(UNDO_Move,
+						UNDOTAG_UndoMultiStep, undoStep,
+						UNDOTAG_CopySrcDirLock, arg->cla_wbArg[n].wa_Lock,
+						UNDOTAG_CopyDestDirLock, dirLock,
+						UNDOTAG_CopySrcName, SrcName,
+						TAG_END);
+
 					DoMethod(fileTransObj, SCCM_FileTrans_Move,
 						arg->cla_wbArg[n].wa_Lock, dirLock,
 						SrcName,
@@ -4353,6 +4598,13 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 						d1(kprintf("%s/%s/%ld: FOUND ICON HERE!!!: [Move Icon <%s>] To =<%s>\n", \
 							 __FILE__, __FUNC__, __LINE__, ProgramIcon, LockdirName));
 
+						UndoAddEvent(UNDO_Move,
+							UNDOTAG_UndoMultiStep, undoStep,
+							UNDOTAG_CopySrcDirLock, arg->cla_wbArg[n].wa_Lock,
+							UNDOTAG_CopyDestDirLock, dirLock,
+							UNDOTAG_CopySrcName, ProgramIcon,
+							TAG_END);
+
 						DoMethod(fileTransObj, SCCM_FileTrans_Move,
 							arg->cla_wbArg[n].wa_Lock, dirLock,
 							ProgramIcon,
@@ -4363,6 +4615,8 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 				}
 			}
 		} while (0);
+
+	UndoEndStep(undoStep);
 
 	SCA_FreeWBArgs(arg->cla_wbArg, arg->cla_NumArgs, SCAF_FreeNames | SCAF_FreeLocks);
 	ScalosFreeVecPooled(arg->cla_wbArg);
@@ -4381,7 +4635,7 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 
 //----------------------------------------------------------------------------
 
-static void CreateThumbnailStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+static void CreateThumbnailStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, in, GetIconName(in)));
 
@@ -4392,7 +4646,7 @@ static void CreateThumbnailStart(struct internalScaWindowTask *iwt, struct ScaIc
 		{
 		d1(KPrintF("%s/%s/%ld: AddThumbnailIcon succeeded\n", __FILE__, __FUNC__, __LINE__));
 
-		UnsnapshotIcon(iwt, in, FALSE);
+		UnsnapshotIcon(iwt, in, FALSE, undoStep);
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 

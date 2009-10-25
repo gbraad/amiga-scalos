@@ -462,6 +462,8 @@ struct CommandTableEntry CommandsTable[] =
 	{ "cleanupbysize",	MSGID_COM45NAME },
 	{ "cleanupbytype",	MSGID_COM46NAME },
 	{ "createthumbnail",	MSGID_COM51NAME },
+	{ "undo",		MSGID_COM_UNDO },
+	{ "redo",		MSGID_COM_REDO },
 
 	};
 
