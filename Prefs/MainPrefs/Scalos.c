@@ -3598,7 +3598,7 @@ static BOOL Init(struct SCAModule *app)
 		ScalosGfxBase = OpenLibrary(SCALOSGFXNAME, 42);
 #ifdef __amigaos4__
 		if (ScalosGfxBase)
-			IScalosGfx = (struct ScalosIFace *)GetInterface(ScalosGfxBase, "main", 1, NULL);
+			IScalosGfx = (struct ScalosGfxIFace *)GetInterface(ScalosGfxBase, "main", 1, NULL);
 #endif //__amigaos4__
 
 		// LocaleBase is optional
