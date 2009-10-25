@@ -1837,7 +1837,7 @@ static SAVEDS(ULONG) CloneFilesStart(APTR aptr, struct SM_RunProcess *msg)
 	struct CloneArg *arg = aptr;
 	STRPTR NewName;
 	STRPTR OldIconName = NULL;
-	APTR undoStep = NULL;
+	APTR undoStep;
 	Object *fileTransObj = NULL;
 	ULONG n;
 
