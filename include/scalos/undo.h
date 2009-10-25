@@ -39,7 +39,7 @@ enum ScalosUndoType
 
 enum ScalosUndoTags
 	{
-	UNDOTAG_UndoMultiStep = TAG_USER + 1287,
+	UNDOTAG_UndoMultiStep = (int) (TAG_USER + 1287),
 	UNDOTAG_IconNode,		// struct ScaIconNode *
 	UNDOTAG_IconList,		// struct ScaIconNode *
 	UNDOTAG_IconDirLock,		// BPTR
