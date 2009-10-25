@@ -548,7 +548,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destDirName)
 			break;
 
-		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, NULL, TagList);
+		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
 		if (NULL == fName)
 			break;
 
@@ -658,7 +658,7 @@ static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList
 		if (NULL == uev->uev_Data.uev_IconData.uid_DirName)
 			break;
 
-		in  = (struct ScaIconNode *) GetTagData(UNDOTAG_IconNode, NULL, TagList);
+		in  = (struct ScaIconNode *) GetTagData(UNDOTAG_IconNode, (ULONG) NULL, TagList);
 		if (NULL == in)
 			break;
 
@@ -742,7 +742,7 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d2(kprintf("%s/%s/%ld: UNDOTAG_SaveIcon=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_SaveIcon));
 
-		in  = (struct ScaIconNode *) GetTagData(UNDOTAG_IconNode, NULL, TagList);
+		in  = (struct ScaIconNode *) GetTagData(UNDOTAG_IconNode, (ULONG) NULL, TagList);
 		if (NULL == in)
 			break;
 
@@ -1652,8 +1652,8 @@ static SAVEDS(LONG) UndoSnapshotEvent(struct Hook *hook, APTR object, struct Und
 		GetAttr(IDTA_ViewModes, uev->uev_Data.uev_SnapshotData.usid_IconObj, &IconViewMode);
 		GetAttr(IDTA_Flags, uev->uev_Data.uev_SnapshotData.usid_IconObj, &ddFlags);
 		GetAttr(IDTA_WindowRect, uev->uev_Data.uev_SnapshotData.usid_IconObj, (ULONG *) &pWinRect);
-		GetAttr(IDTA_WinCurrentX, uev->uev_Data.uev_SnapshotData.usid_IconObj, &WinCurrentX);
-		GetAttr(IDTA_WinCurrentY, uev->uev_Data.uev_SnapshotData.usid_IconObj, &WinCurrentY);
+		GetAttr(IDTA_WinCurrentX, uev->uev_Data.uev_SnapshotData.usid_IconObj, (ULONG *) &WinCurrentX);
+		GetAttr(IDTA_WinCurrentY, uev->uev_Data.uev_SnapshotData.usid_IconObj, (ULONG *) &WinCurrentY);
 
 		SetAttrs(in->in_Icon,
 			IDTA_ViewModes, IconViewMode,

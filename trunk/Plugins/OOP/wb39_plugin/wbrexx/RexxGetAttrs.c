@@ -416,7 +416,7 @@ Number of the last error caused by the ARexx interface.
 APPLICATION.ICONBORDER
 
 Sizes of the icon borders, returned as four numbers separated by blank
-spaces, e.g. 4 3 4 3". The four numbers represent the left border width, the
+spaces, e.g. "4 3 4 3". The four numbers represent the left border width, the
 top border height, the right border width and the bottom border height (in
 exactly that order).
 
@@ -476,7 +476,7 @@ Names of the windows currently open.
 
 WINDOWS.ACTIVE
 
-Name of the currently active Workbench window; this will be " if none of
+Name of the currently active Workbench window; this will be "" if none of
 Workbench`s windows is currently active.
 
 KEYCOMMANDS.COUNT
@@ -501,7 +501,7 @@ The ARexx command assigned to this key combination.
 
 MENUCOMMANDS.COUNT
 
-Number of menu commands assigned (through the MENU ADD .." command). This can
+Number of menu commands assigned (through the "MENU ADD .." command). This can
 be 0.
 
 MENUCOMMANDS.0 .. MENUCOMMANDS.N
@@ -609,8 +609,8 @@ WINDOW.ICONS.ALL.<n>.STATUS
 Whether the icon is selected and (if the icon is a drawer-likeobject, such as
 a disk, drawer or trashcan icon) whether thecorresponding drawer is currently
 open or closed. This attributeis returned in the form of a string, such as
-SELECTED OPEN" which means that the icon is selected and the corresponding
-draweris currently open. The other options include UNSELECTED" andCLOSED".
+"SELECTED OPEN" which means that the icon is selected and the corresponding
+draweris currently open. The other options include "UNSELECTED" and "CLOSED".
 
 WINDOW.ICONS.SELECTED.COUNT
 
@@ -642,10 +642,10 @@ WINDOW.ICONS.SELECTED.<n>.STATUS
 Whether the icon is selected and (if the icon is a drawer-like object, such
 as a disk, drawer or trashcan icon) whether the corresponding drawer is
 currently open or closed. This attribute is returned in the form of a string,
-such as SELECTED OPEN" which means that the icon is selected and the
-corresponding drawer is currently open. The other options include UNSELECTED"
-and CLOSED". Of course, for the WINDOW.ICONS.SELECTED stem the icon status
-will always be reported as SELECTED".
+such as "SELECTED OPEN" which means that the icon is selected and the
+corresponding drawer is currently open. The other options include "UNSELECTED"
+and "CLOSED". Of course, for the WINDOW.ICONS.SELECTED stem the icon status
+will always be reported as "SELECTED".
 
 WINDOW.ICONS.UNSELECTED.COUNT
 
@@ -677,10 +677,10 @@ WINDOW.ICONS.UNSELECTED.<n>.STATUS
 Whether the icon is selected and (if the icon is a drawer-like object, such
 as a disk, drawer or trashcan icon) whether the corresponding drawer is
 currently open or closed. This attribute is returned in the form of a string,
-such as UNSELECTED OPEN" which means that the icon is selected and the
-corresponding drawer is currently open. The other options include SELECTED"
-and CLOSED". Of course, for the WINDOW.ICONS.UNSELECTED stem the icon status
-will always be reported as UNSELECTED".
+such as "UNSELECTED OPEN" which means that the icon is selected and the
+corresponding drawer is currently open. The other options include "SELECTED"
+and "CLOSED". Of course, for the WINDOW.ICONS.UNSELECTED stem the icon status
+will always be reported as "UNSELECTED".
 
 Errors:
 
@@ -784,7 +784,7 @@ LONG Cmd_GetAttr(APTR UserData, struct RexxMsg *Message,STRPTR *Args)
 			strupr(Args[ARG_VAR]);
 
 			if (lData.lres_ResultString)
-				SetRexxVar(Message, Args[ARG_VAR], lData.lres_ResultString, strlen(lData.lres_ResultString));
+				SetRexxVar(Message, Args[ARG_VAR], (STRPTR) lData.lres_ResultString, strlen(lData.lres_ResultString));
 			else
 				SetRexxVar(Message, Args[ARG_VAR], "", 0);
 
@@ -835,7 +835,7 @@ static void SetRexxStemVar(struct RexxMsg *Message, const char *Stem, const char
 
 	strcat(vName, VarName);
 
-	SetRexxVar(Message, vName, Value, strlen(Value));
+	SetRexxVar(Message, vName, (STRPTR) Value, strlen(Value));
 }
 
 
