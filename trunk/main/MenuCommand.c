@@ -761,12 +761,17 @@ static SAVEDS(ULONG) ProgTask(struct SM_StartProg *sMsg, struct SM_RunProcess *m
 	static CONST_STRPTR ProgTaskName = "Scalos_RunProg";
 	struct internalScaWindowTask *iwt;
 	PROGFUNC ProgFunc;
+	APTR prWindowPtr;
 	struct MenuCmdArg Arg;
-	struct Task *myTask = FindTask(NULL);
+	struct Process *myProc = (struct Process *) FindTask(NULL);
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	myTask->tc_Node.ln_Name = (STRPTR) ProgTaskName;
+	prWindowPtr = myProc->pr_WindowPtr;
+	myProc->pr_WindowPtr = (APTR) ~0;    // suppress error requesters
+
+	myProc->pr_Task.tc_Node.ln_Name = (STRPTR) ProgTaskName;
+	SetProgramName(ProgTaskName);
 
 	iwt = sMsg->spr_WindowTask;
 	ProgFunc = sMsg->spr_ProgFunc;
@@ -781,6 +786,9 @@ static SAVEDS(ULONG) ProgTask(struct SM_StartProg *sMsg, struct SM_RunProcess *m
 	d1(kprintf("%s/%s/%ld: Release WindowSemaphore iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
+
+	// restore pr_WindowPtr
+	myProc->pr_WindowPtr = prWindowPtr;
 
 	return 0;
 }
