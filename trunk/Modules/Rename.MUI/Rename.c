@@ -51,6 +51,8 @@
 #define	Application_Return_Ok	1001
 #define	Application_Return_Skip	1002
 
+#define	BNULL		((BPTR) NULL)
+
 //----------------------------------------------------------------------------
 
 #define KeyButtonHelp(name,key,HelpText)\
@@ -1028,12 +1030,9 @@ static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
 
 		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 			{
-			if (ws->ws_Lock)
+			if ((BNULL == dirLock && BNULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
 				{
-				if (LOCK_SAME == SameLock(dirLock, ws->ws_Lock))
-					{
-					return ws;
-					}
+				return ws;
 				}
 			}
 		SCA_UnLockWindowList();

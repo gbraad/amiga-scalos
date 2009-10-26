@@ -49,6 +49,8 @@
 
 #define	Application_Return_Ok	1001
 
+#define	BNULL		((BPTR) NULL)
+
 //----------------------------------------------------------------------------
 
 static BOOL OpenLibraries(void);
@@ -623,11 +625,12 @@ static LONG RenameObject(struct WBArg *arg, APTR UndoStep)
 		}
 
 	ws = FindScalosWindow(dirLock);
+	d1(KPrintF("%s/%s/%ld:  ws=%08lx\n", __FILE__, __FUNC__, __LINE__, ws));
 
 	if (dirLock)
 		oldDir = CurrentDir(dirLock);
 
-	d1(KPrintF("dirLock=%08lx\n", dirLock));
+	debugLock_d1(dirLock);
 
 	if (NewObjName && strlen(NewObjName) > 0)
 		{
@@ -1032,6 +1035,9 @@ static BOOL FindScalosIcon(struct Rectangle *IconNameRect, struct WBArg *Icon)
 					// Desktop window
 					// Search through backdrop icons
 
+					IconNameRect->MinX = 0;
+					IconNameRect->MinY = 0;
+
 					ObtainSemaphoreShared(wt->wt_IconSemaphore);
 
 					for (in = wt->wt_IconList; in; in = (const struct ScaIconNode *) in->in_Node.mln_Succ)
@@ -1041,6 +1047,8 @@ static BOOL FindScalosIcon(struct Rectangle *IconNameRect, struct WBArg *Icon)
 							&& 0 == Stricmp(in->in_Name, Icon->wa_Name))
 							{
 							const struct ExtGadget *gg = (const struct ExtGadget *) in->in_Icon;
+
+							d1(KPrintF(__FILE__ "/%s/%ld: FOUND, in=%08lx  <%s>\n", __FUNC__, __LINE__, in, GetIconName(in));)
 
 							IconNameRect->MinX += gg->BoundsLeftEdge - wt->wt_XOffset;
 							IconNameRect->MinY += gg->TopEdge + gg->Height - wt->wt_YOffset;
@@ -1095,6 +1103,8 @@ static BOOL FindScalosDeviceIcon(struct Rectangle *IconNameRect,
 						strcpy(DevName, in->in_DeviceIcon->di_Volume);
 						strcat(DevName, ":");
 
+						IconNameRect->MinX = IconNameRect->MinY = 0;
+
 						dLock = Lock(DevName, ACCESS_READ);
 						if (dLock)
 							{
@@ -1141,12 +1151,9 @@ static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
 
 		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 			{
-			if (ws->ws_Lock)
+			if ((BNULL == dirLock && BNULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
 				{
-				if (LOCK_SAME == SameLock(dirLock, ws->ws_Lock))
-					{
-					return ws;
-					}
+				return ws;
 				}
 			}
 		SCA_UnLockWindowList();
