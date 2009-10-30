@@ -1,3 +1,6 @@
+V40.19
+Improvement: when thumbnails are loaded, progress window is only opened if loading takes more than 100ms. Addtionally, for increased performance, gadgets are updates only every 100ms
+
 V40.18
 Bugfix: Enforcer hits on exit after inserting new entries
 Bugfix: dragging images into listview didn't work when started from stand-alone &quot;Pattern Prefs&quot;

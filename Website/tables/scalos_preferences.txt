@@ -1,3 +1,12 @@
+40.26
+Improvement: Add support for control bar also for standard (non-browser) windows, standard and browser-mode control bars can be configured independently
+
+40.25
+Improvement: allow TrueType font selection for text windows on windows/text windows page
+
+40.24
+Bugfix: resolved NULL pointer hit when adding normal image to user-defined control bar button
+
 40.23
 Improvement: Added support for configuration of transparent Scalos windows - MorphOS 2.x only
 Improvement: Added configuration options for highlighting of selected icon text by a surrounding rectangle
