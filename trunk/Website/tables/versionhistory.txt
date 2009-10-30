@@ -1,4 +1,28 @@
 V41.7
+Bugfix: suppress system requester when relabelling a volume
+Bugfix: corrected location of rename gadget for RenameInPlace
+Improvement: Updated sqlite3.library to SQLite3 V3.6.19
+Improvement: Add support for control bar also for standard (non-browser) windows
+Improvement: Windowproperties.module: control bar can be switched off for individual windows
+Bugfix: with AmigaOS4, centered window background images sometimes did not display
+Improvement: Upgraded libpng 1.2.39 to 1.2.40 (68k and MOS)
+Improvement: added new sophisticated text window selection marker
+Improvement: Moved main preferences text window settings to separate page, and added configuration for new selection marker
+Bugfix: popupmenu.library: zoom effect didn't work correctly on MorphOS if &quot;Enhanced Display&quot; was enabled
+Improvement: Updated sqlite3.library to SQLite3 V3.6.18
+Improvement: added new FileTrans subdirectory to default theme
+Improvement: Upgraded libpng 1.2.37 to 1.2.39 (SAS/C and MOS)
+Improvement: Updated sqlite3.library to SQLite3 V3.6.17
+Improvement: enhancements for popup window feature: now works with single-window. Added preferences options to enable/disable popup window feature and to adjust popup delay
+Bugfix: information.module: icon drop zone drop marks were not displayed correctly under MorphOS 2.3
+Improvement: data transfer speed in copy/move progress window is now rounded to two decimals
+Improvement: added support for dynamic window resizing with MorphOS 2.3 Advanced Display Engine
+Improvement: added experimental new feature: drawers and volumes pop up when mouse pointer stays longer than 3 seconds over them during Drag&amp;Drop. All popped up windows automatically close when D&amp;D is finished
+Improvement: added more details to copy/move progress window. Cancel button now had themed image. Copy/move progress window is now sizeable
+Improvement: Copy/move recognizes if destination file system does not support links, and asks the user whether to skip the link(s), copy the link contents, or abort the entire operation
+Bugfix: information.module:crash when trying to replace icon image by dropping another icon on the image
+Bugfix: information.module:drop mark wasn't displayed correctly with MorphOS 2.x and 3D layers enabled
+Bugfix: Under rare circumstances, on startup some left-out icons erroneously appeared inside their directory windows instead of the desktop window
 Improvement: Updated sqlite3.library to SQLite3 3.6.16
 Bugfix: updating left-out icons left the Scalos main window task with an invalid current directory handle
 Improvement: Updated sqlite3.library to SQLite3 V3.6.15
