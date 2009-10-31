@@ -215,9 +215,9 @@ static void MenuFunc_ViewByDefault(struct internalScaWindowTask *iwt, struct Men
 static void MenuFunc_ShowOnlyIcons(struct internalScaWindowTask *iwt, struct MenuInfo *mInfo);
 static void MenuFunc_ShowAllFiles(struct internalScaWindowTask *iwt, struct MenuInfo *mInfo);
 static void MenuFunc_ShowDefault(struct internalScaWindowTask *iwt, struct MenuInfo *mInfo);
-static void MfOffMenu(struct Window *win, struct MenuInfo *mInfo);
-static void MfOnMenu(struct Window *win, struct MenuInfo *mInfo);
-static void SubMenusOnOff(struct internalScaWindowTask *iwt);
+static ULONG MfOffMenu(struct Window *win, struct MenuInfo *mInfo);
+static ULONG MfOnMenu(struct Window *win, struct MenuInfo *mInfo);
+static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed);
 static void AddMenuImage(Object *img);
 static void CleanupMenuImages(void);
 
@@ -426,6 +426,8 @@ ULONG GetWindowMenuFlags(struct internalScaWindowTask *iwt)
 static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 	struct MenuInfo *mInfo, struct IconMenuSupports *MenuTable, ULONG MenuFlags)
 {
+	ULONG Changed = 0;
+
 	d1(KPrintF("\n" "%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	while (mInfo)
@@ -469,14 +471,14 @@ static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 									d1(kprintf("%s/%s/%ld: ONMENU <%s> menunum=%08lx  Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 										mTree->MenuCombo.MenuCommand.mcom_name, mInfo->minf_number, mInfo->minf_item->Flags));
 
-									MfOnMenu(iwt->iwt_WindowTask.wt_Window, mInfo);
+									Changed += MfOnMenu(iwt->iwt_WindowTask.wt_Window, mInfo);
 									}
 								else
 									{
 									d1(kprintf("%s/%s/%ld: OFFMENU <%s> menunum=%08lx  Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 										mTree->MenuCombo.MenuCommand.mcom_name, mInfo->minf_number, mInfo->minf_item->Flags));
 
-									MfOffMenu(iwt->iwt_WindowTask.wt_Window, mInfo);
+									Changed += MfOffMenu(iwt->iwt_WindowTask.wt_Window, mInfo);
 									}
 								}
 							}
@@ -491,7 +493,7 @@ static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 
 	d1(KPrintF("\n" "%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	SubMenusOnOff(iwt);
+	SubMenusOnOff(iwt, Changed);
 
 	d1(KPrintF("\n" "%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
@@ -1464,39 +1466,44 @@ static void MenuFunc_ShowDefault(struct internalScaWindowTask *iwt, struct MenuI
 }
 
 
-static void MfOffMenu(struct Window *win, struct MenuInfo *mInfo)
+static ULONG MfOffMenu(struct Window *win, struct MenuInfo *mInfo)
 {
+	ULONG Changed = 0;
+
 	d1(kprintf("%s/%s/%ld: win=%08lx  mInfo=%08lx  MenuStrip=%08lx\n", __FILE__, __FUNC__, __LINE__, win, mInfo, win->MenuStrip));
 
 	if (win && win->MenuStrip && (win->MenuStrip == MainMenu) &&
-		(mInfo->minf_item->Flags & ITEMENABLED))
+		(mInfo->minf_item->Flags & ITEMENABLED) )
 		{
-			d1(kprintf("%s/%s/%ld: win=%08lx  minf_number=%08lx\n", __FILE__, __FUNC__, __LINE__, win, mInfo->minf_number));
-			OffMenu(win, mInfo->minf_number);
+		d1(kprintf("%s/%s/%ld: win=%08lx  minf_number=%08lx  minf_item=%08lx\n", __FILE__, __FUNC__, __LINE__, win, mInfo->minf_number, mInfo->minf_item));
+		mInfo->minf_item->Flags &= ~ITEMENABLED;
+		Changed++;
 		}
+	return Changed;
 }
 
 
-static void MfOnMenu(struct Window *win, struct MenuInfo *mInfo)
+static ULONG MfOnMenu(struct Window *win, struct MenuInfo *mInfo)
 {
+	ULONG Changed = 0;
+
 	d1(kprintf("%s/%s/%ld: win=%08lx  mInfo=%08lx  MenuStrip=%08lx\n", __FILE__, __FUNC__, __LINE__, win, mInfo, win->MenuStrip));
 
-
 	if (win && win->MenuStrip && (win->MenuStrip == MainMenu) &&
-		!(mInfo->minf_item->Flags & ITEMENABLED))
+		!(mInfo->minf_item->Flags & ITEMENABLED) )
 		{
-			d1(kprintf("%s/%s/%ld: win=%08lx  minf_number=%08lx  Item=%08lx\n", \
-				__FILE__, __FUNC__, __LINE__, win, mInfo->minf_number, ItemAddress(win->MenuStrip, mInfo->minf_number)));
-			OnMenu(win, mInfo->minf_number);
+		d1(kprintf("%s/%s/%ld: win=%08lx  minf_number=%08lx  minf_item=%08lx\n", __FILE__, __FUNC__, __LINE__, win, mInfo->minf_number, mInfo->minf_item));
+		mInfo->minf_item->Flags |= ITEMENABLED;
+		Changed++;
 		}
+	return Changed;
 }
 
 
 
 // Disable MenuItem if it has SubItems and every SubItem is disabled.
-static void SubMenusOnOff(struct internalScaWindowTask *iwt)
+static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed)
 {
-	ULONG Changed = 0;
 	struct Menu *menu = MainMenu;
 
 	while (menu)
@@ -1537,8 +1544,13 @@ static void SubMenusOnOff(struct internalScaWindowTask *iwt)
 		menu = menu->NextMenu;
 		}
 
+	d1(KPrintF("%s/%s/%ld: Changed=%lu\n", __FILE__, __FUNC__, __LINE__, Changed));
+
 	if (Changed && iwt->iwt_WindowTask.wt_Window && (iwt->iwt_WindowTask.wt_Window->MenuStrip == MainMenu))
+		{
+		d1(KPrintF("%s/%s/%ld: calling ResetMenuStrip\n", __FILE__, __FUNC__, __LINE__));
 		ResetMenuStrip(iwt->iwt_WindowTask.wt_Window, MainMenu);
+		}
 }
 
 
