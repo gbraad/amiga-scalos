@@ -2540,6 +2540,7 @@ Additions/changes:
 
 -------------------wbrexx.plugin--------------------------------------------
 
+ 39.21	20091101	jl	- Improvement: Added support for "HELP PROMPT".
  39.20	20081219	jl	- Bugfix: "menu invoke" always required a window, even
 				  for menu commands that do not work on
                                   windows, like "WORKBENCH.ABOUT".
