@@ -522,6 +522,8 @@ static void HighlightControlbarGadgets(BOOL QoSuccess,
 			iwtUnderPointer->iwt_HighlightedControlBarGadget = ggNew;
 			}
 		}
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
 }
 
