@@ -15,6 +15,8 @@
 #include <workbench/workbench.h>
 #include <intuition/intuitionbase.h>
 #include <intuition/gadgetclass.h>
+#include <libraries/amigaguide.h>
+#include <libraries/locale.h>
 
 #include <rexx/rxslib.h>
 #include <rexx/errors.h>
@@ -31,6 +33,8 @@
 #include <proto/layers.h>
 #include <proto/wb.h>
 #include <proto/icon.h>
+#include <proto/amigaguide.h>
+#include <proto/locale.h>
 
 #include <scalos/scalos.h>
 
@@ -44,9 +48,12 @@
 //#include "wb39proto.h"
 
 
-#if !defined(__SASC) &&!defined(__MORPHOS__) && !defined(__amigaos4__)
+static LONG OpenWBHelpFile(void);
+static SAVEDS(void) WBHelpProcess(void);
+
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
-#endif /* !defined(__SASC) &&!defined(__MORPHOS__)  */
+#endif /* !defined(__SASC) && !defined(__MORPHOS__)  */
 
 // aus wb39.c
 extern struct ScaRootList *rList;
@@ -523,20 +530,10 @@ LONG Cmd_Help(APTR UserData,struct RexxMsg *Message,STRPTR *Args)
 	LONG Len;
 	LONG i;
 
-	Printf("HELP");
-
-	if(Args[ARG_PROMPT] != NULL)
-		Printf(" PROMPT");
-
-	Printf("\n");
-
-		/* The "PROMPT" switch should activate a graphical
-		 * help system, which this implementation does not
-		 * support yet.
-		 */
-
 	if (Args[ARG_PROMPT])
-		return(ERROR_ACTION_NOT_KNOWN);
+		{
+		return OpenWBHelpFile();
+		}
 	else
 		{
 		LocalData = (struct LocalData *)UserData;
@@ -2644,6 +2641,124 @@ LONG Cmd_ZoomWindow(APTR UserData, struct RexxMsg *Message, STRPTR *Args)
 		ReturnRexxMsg(Message, ResultString);
 
 	return Result;
+}
+
+
+static LONG OpenWBHelpFile(void)
+{
+	STATIC_PATCHFUNC(WBHelpProcess);
+	struct Process *WBHelpProc;
+
+	WBHelpProc = CreateNewProcTags(NP_Name, (ULONG) "WB39 WBHelp Handler",
+			NP_Priority, 0,
+			NP_Entry, (ULONG) PATCH_NEWFUNC(WBHelpProcess),
+			NP_StackSize, 16384,
+			TAG_END);
+	if (WBHelpProc == NULL)
+		{
+		return IoErr();
+		}
+
+	return RETURN_OK;
+}
+
+
+static SAVEDS(void) WBHelpProcess(void)
+{
+	d1(kprintf("%s/%s/%ld Start WBHelp Process\n", __FILE__, __FUNC__, __LINE__);)
+
+	LONG Result = RETURN_OK;
+	BPTR lock = 0;
+	struct Locale *locale;
+	AMIGAGUIDECONTEXT handle = NULL;
+
+	do	{
+		struct NewAmigaGuide nag;
+		char LanguageName[40];
+		char HelpDir[256];
+		CONST_STRPTR HelpFile = "workbench.guide";
+		size_t len;
+	        STRPTR context[] =
+			{
+			NULL
+			};
+
+		memset(&nag, 0, sizeof(nag));
+
+		locale = OpenLocale(NULL);
+		if (NULL == locale)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		d1(kprintf( "%s/%s/%ld: loc_LocaleName=<%s>  loc_LanguageName=<%s>\n", __FILE__, __FUNC__, __LINE__, locale->loc_LocaleName, locale->loc_LanguageName);)
+
+		// first try to find help file in native language
+		// use name from locale without the trailing ".language"
+		len = strlen(locale->loc_LanguageName);
+		if (len > strlen(".language"))
+			len -= strlen(".language");
+		len++;		// include room for trailing "\0"
+		if (len > sizeof(LanguageName))
+			len = sizeof(LanguageName);
+		stccpy(LanguageName, locale->loc_LanguageName, len);
+		snprintf(HelpDir, sizeof(HelpDir), "HELP:%s/sys/%s", LanguageName, HelpFile);
+
+		lock = Lock(HelpDir, ACCESS_READ);
+		d1(kprintf( "%s/%s/%ld: HelpDir=<%s>  lock=%08lx\n", __FILE__, __FUNC__, __LINE__, HelpDir, lock);)
+
+		if (lock)
+			{
+			snprintf(HelpDir, sizeof(HelpDir), "HELP:%s/sys", locale->loc_LanguageName);
+			UnLock(lock);
+			}
+		else
+			{
+			// if native language not found, try "english"
+			snprintf(HelpDir, sizeof(HelpDir), "HELP:english/sys");
+			}
+
+		nag.nag_Name = (STRPTR) HelpFile;
+		nag.nag_Flags = 0;
+		nag.nag_Context = context;
+		nag.nag_HostPort = "";
+		nag.nag_ClientPort = "WBHelp";
+		nag.nag_Node = "main";
+
+		nag.nag_Lock = lock = Lock(HelpDir, ACCESS_READ);
+
+		d1(kprintf( "%s/%s/%ld: nag_Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, nag.nag_Lock);)
+		if (0 == nag.nag_Lock)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		d1(kprintf("%s/%s/%ld: before OpenAmigaGuide\n", __FILE__, __FUNC__, __LINE__);)
+
+		// OpenAmigaGuideA
+		handle = OpenAmigaGuide(&nag,
+			TAG_END);
+
+		d1(kprintf("%s/%s/%ld: handle=%08lx\n", __FILE__, __FUNC__, __LINE__, handle);)
+		if (NULL == handle)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		} while (0);
+
+	if (locale)
+		CloseLocale(locale);
+	if (handle)
+		CloseAmigaGuide(handle);
+
+	if (lock)
+		UnLock(lock);
+
+	d1(kprintf("%s/%s/%ld END WBHelp Process\n", __FILE__, __FUNC__, __LINE__);)
 }
 
 

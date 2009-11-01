@@ -58,6 +58,8 @@ struct Library *GfxBase;
 struct Library *IconBase;
 struct Library *IFFParseBase;
 struct Library *CxBase;
+struct Library *AmigaGuideBase;
+T_LOCALEBASE *LocaleBase;
 #ifdef __amigaos4__
 struct Library *NewlibBase;
 
@@ -73,6 +75,8 @@ struct IconIFace *IIcon;
 struct IFFParseIFace *IIFFParse;
 struct CommoditiesIFace *ICommodities;
 struct Interface *INewlib;
+struct AmigaGuideIFace *IAmigaGuide;
+struct LocaleIFace *ILocale;
 #endif
 
 #if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
@@ -186,7 +190,7 @@ static BOOL OpenLibraries(void)
 	IDOS = (struct DOSIFace *)GetInterface((struct Library *)DOSBase, "main", 1, NULL);
 	if (NULL == IDOS)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	IconobjectBase = OpenLibrary("iconobject.library", 39);
 	if (NULL == IconobjectBase)
@@ -195,7 +199,7 @@ static BOOL OpenLibraries(void)
 	IIconobject = (struct IconobjectIFace *)GetInterface((struct Library *)IconobjectBase, "main", 1, NULL);
 	if (NULL == IIconobject)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	WorkbenchBase = OpenLibrary(WORKBENCH_NAME, 39);
 	if (NULL == WorkbenchBase)
@@ -204,7 +208,7 @@ static BOOL OpenLibraries(void)
 	IWorkbench = (struct WorkbenchIFace *)GetInterface((struct Library *)WorkbenchBase, "main", 1, NULL);
 	if (NULL == IWorkbench)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library", 39);
 	if (NULL == UtilityBase)
@@ -225,7 +229,7 @@ static BOOL OpenLibraries(void)
 	IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
 	if (NULL == IScalos)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	// keep library open count at 0 otherwise Scalos will refuse to quit
 	CloseLibrary((struct Library *) ScalosBase);
@@ -237,7 +241,7 @@ static BOOL OpenLibraries(void)
 	IIntuition = (struct IntuitionIFace *)GetInterface((struct Library *)IntuitionBase, "main", 1, NULL);
 	if (NULL == IIntuition)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	LayersBase = OpenLibrary("layers.library", 39);
 	if (NULL == LayersBase)
@@ -246,7 +250,7 @@ static BOOL OpenLibraries(void)
 	ILayers = (struct LayersIFace *)GetInterface((struct Library *)LayersBase, "main", 1, NULL);
 	if (NULL == ILayers)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	GfxBase = OpenLibrary("graphics.library", 39);
 	if (NULL == GfxBase)
@@ -255,7 +259,7 @@ static BOOL OpenLibraries(void)
 	IGraphics = (struct GraphicsIFace *)GetInterface((struct Library *)GfxBase, "main", 1, NULL);
 	if (NULL == IGraphics)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	IconBase = OpenLibrary("icon.library", 39);
 	if (NULL == IconBase)
@@ -264,7 +268,7 @@ static BOOL OpenLibraries(void)
 	IIcon = (struct IconIFace *)GetInterface((struct Library *)IconBase, "main", 1, NULL);
 	if (NULL == IIcon)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	IFFParseBase = OpenLibrary("iffparse.library", 39);
 	if (NULL == IFFParseBase)
@@ -273,11 +277,30 @@ static BOOL OpenLibraries(void)
 	IIFFParse = (struct IFFParseIFace *)GetInterface((struct Library *)IFFParseBase, "main", 1, NULL);
 	if (NULL == IIFFParse)
 		return FALSE;
-#endif
+#endif //__amigaos4__
+
+	LocaleBase = (T_LOCALEBASE *) OpenLibrary("locale.library", 39);
+	if (NULL == LocaleBase)
+		return FALSE;
+#ifdef __amigaos4__
+	ILocale  = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
+	if (NULL == ILocale)
+		return FALSE;
+
+#endif //__amigaos4__
+	AmigaGuideBase = OpenLibrary("amigaguide.library", 39);
+	if (NULL == AmigaGuideBase)
+		return FALSE;
+#ifdef __amigaos4__
+	IAmigaGuide = (struct AmigaGuideIFace *)GetInterface((struct Library *)AmigaGuideBase, "main", 1, NULL);
+	if (NULL == IAmigaGuide)
+		return FALSE;
+#endif //__amigaos4__
 
 	CxBase = OpenLibrary("commodities.library", 39);
 	if (NULL == CxBase)
 		return FALSE;
+
 #ifdef __amigaos4__
 	ICommodities = (struct CommoditiesIFace *)GetInterface((struct Library *)CxBase, "main", 1, NULL);
 	if (NULL == ICommodities)
@@ -289,7 +312,7 @@ static BOOL OpenLibraries(void)
 	INewlib = GetInterface(NewlibBase, "main", 1, NULL);
 	if (NULL == INewlib)
 		return FALSE;
-#endif
+#endif //__amigaos4__
 
 	return TRUE;
 }
@@ -313,19 +336,46 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)ICommodities);
 		ICommodities = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (CxBase)
 		{
 		CloseLibrary(CxBase);
 		CxBase = NULL;
 		}
+
+#ifdef __amigaos4__
+	if (ILocale)
+		{
+		DropInterface((struct Interface *) ILocale);
+		ILocale	= NULL;
+		}
+#endif //__amigaos4__
+	if (LocaleBase)
+		{
+		CloseLibrary((struct Library *) LocaleBase);
+		LocaleBase = NULL;
+		}
+
+#ifdef __amigaos4__
+	if (IAmigaGuide)
+		{
+		DropInterface((struct Interface *) IAmigaGuide);
+		IAmigaGuide = NULL;
+		}
+#endif //__amigaos4__
+	if (AmigaGuideBase)
+		{
+		CloseLibrary(AmigaGuideBase);
+		AmigaGuideBase = NULL;
+		}
+
 #ifdef __amigaos4__
 	if (IIFFParse)
 		{
 		DropInterface((struct Interface *)IIFFParse);
 		IIFFParse = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IFFParseBase)
 		{
 		CloseLibrary(IFFParseBase);
@@ -337,7 +387,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IIcon);
 		IIcon = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IconBase)
 		{
 		CloseLibrary(IconBase);
@@ -349,7 +399,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IGraphics);
 		IGraphics = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (GfxBase)
 		{
 		CloseLibrary(GfxBase);
@@ -361,7 +411,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IDOS);
 		IDOS = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (DOSBase)
 		{
 		CloseLibrary((struct Library *) DOSBase);
@@ -373,7 +423,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IIconobject);
 		IIconobject = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IconobjectBase)
 		{
 		CloseLibrary(IconobjectBase);
@@ -385,7 +435,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IWorkbench);
 		IWorkbench = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (WorkbenchBase)
 		{
 		CloseLibrary(WorkbenchBase);
@@ -397,7 +447,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IUtility);
 		IUtility = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (UtilityBase)
 		{
 		CloseLibrary((struct Library *) UtilityBase);
@@ -409,21 +459,21 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)IScalos);
 		IScalos = NULL;
 		}
-#endif
+#endif //__amigaos4__
 #if 0
 	if (ScalosBase)
 		{
 		CloseLibrary((struct Library *) ScalosBase);
 		ScalosBase = NULL;
 		}
-#endif
+#endif //0
 #ifdef __amigaos4__
 	if (IIntuition)
 		{
 		DropInterface((struct Interface *)IIntuition);
 		IIntuition = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (IntuitionBase)
 		{
 		CloseLibrary((struct Library *) IntuitionBase);
@@ -435,7 +485,7 @@ static void CloseLibraries(void)
 		DropInterface((struct Interface *)ILayers);
 		ILayers = NULL;
 		}
-#endif
+#endif //__amigaos4__
 	if (LayersBase)
 		{
 		CloseLibrary(LayersBase);

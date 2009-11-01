@@ -10,6 +10,10 @@
 #define	d1(x)	;
 #define	d2(x)	x;
 
+// from debug.lib
+extern int kprintf(const char *fmt, ...);
+extern int KPrintF(const char *fmt, ...);
+
 #include <libraries/commodities.h>
 #include <scalos/scalos.h>
 

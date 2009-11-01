@@ -11,12 +11,12 @@
 #define PLUGIN_TYPE		OOP
 
 #define	LIB_VERSION		39
-#define	LIB_REVISION		20
+#define	LIB_REVISION		21
 
 #define LIB_NAME 		"wbrexx.plugin"
 #define LIB_VERSTRING 		"$VER: wbrexx.plugin " \
 				STR(LIB_VERSION) "." STR(LIB_REVISION) \
-				" (19.12.2008) " COMPILER_STRING \
+				" (31.10.2009) " COMPILER_STRING \
 				" ©1999" CURRENTYEAR " The Scalos Team"
 
 #define CI_PRIORITY 		-79

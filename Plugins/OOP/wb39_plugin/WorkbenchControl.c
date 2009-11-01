@@ -114,6 +114,8 @@ LIBFUNC_P3(BOOL, myWorkbenchControlA,
 
 	(void)WorkbenchBase;
 
+	d1(kprintf("%s/%s/%ld: START Caller=<%s>\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL)->tc_Node.ln_Name));
+
 	while (ti = NextTagItem(&taglist))
 		{
 		d1(kprintf("%s/%s/%ld: Tag=%08lx : Data=%08lx  name=<%s>\n", __FILE__, __FUNC__, __LINE__, \
@@ -475,6 +477,8 @@ LIBFUNC_P3(BOOL, myWorkbenchControlA,
 			break;
 
 		case WBCTRLAX_GetStrangeString:	// (ULONG *)
+			d1(kprintf("%s/%s/%ld: WBCTRLAX_GetStrangeString f=%08lx\n", __FILE__, __FUNC__, __LINE__, \
+				ti->ti_Data));
 			if (ti->ti_Data)
 				{
 				// Heaven knowns what is it good for...
@@ -657,8 +661,8 @@ LIBFUNC_P3(BOOL, myWorkbenchControlA,
 			break;
 
 		default:
-			d1(kprintf("%s/%s/%ld: Tag=%08lx : Data=%lu\n", __FILE__, __FUNC__, __LINE__, \
-				ti->ti_Tag, ti->ti_Data));
+			d1(kprintf("%s/%s/%ld: Tag=%08lx (WBA_Dummy+%ld): Data=%lu (0x%08lx)\n", __FILE__, __FUNC__, __LINE__, \
+				ti->ti_Tag, ti->ti_Tag-WBA_Dummy, ti->ti_Data, ti->ti_Data));
 			Success = FALSE;
 			break;
 			}
@@ -731,7 +735,7 @@ static BPTR DupWBPathList(void)
 	struct CommandLineInterface *cli;
 	struct AssignList *aList, *StartList = NULL, **nList = NULL;
 
-	d1(KPrintF("%s/%s/%ld: wbProc=%08lx\n", __FILE__, __FUNC__, __LINE__, wbProc));
+	d1(KPrintF("%s/%s/%ld: START wbProc=%08lx\n", __FILE__, __FUNC__, __LINE__, wbProc));
 	if (NULL == wbProc)
 		wbProc = (struct Process *) FindTask("Scalos_Window_Task_Main");
 	d1(KPrintF("%s/%s/%ld: wbProc=%08lx\n", __FILE__, __FUNC__, __LINE__, wbProc));
@@ -767,9 +771,12 @@ static BPTR DupWBPathList(void)
 
 		d1(KPrintF("%s/%s/%ld: aList=%08lx Next=%08lx Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 			aList, aList->al_Next, aList->al_Lock));
+		debugLock_d1(aList->al_Lock);
 
 		aList = BADDR(aList->al_Next);
 		}
+
+	d1(KPrintF("%s/%s/%ld: END  StartList=%08lx\n", __FILE__, __FUNC__, __LINE__, StartList));
 
 	return MKBADDR(StartList);
 }
