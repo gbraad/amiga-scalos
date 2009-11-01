@@ -169,13 +169,13 @@ BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
 			struct UndoStep *ust;
 
 			ust = ustMulti = (struct UndoStep *) GetTagData(UNDOTAG_UndoMultiStep, (ULONG) NULL, TagList);
-			d2(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+			d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
 			if (NULL == ust)
 				{
 				ust = (struct UndoStep *) UndoBeginStep();
 				}
 
-			d2(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+			d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
 
 			if (ust)
 				{
@@ -190,8 +190,8 @@ BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
 				uev->uev_NewPosX = GetTagData(UNDOTAG_IconPosX, NO_ICON_POSITION_SHORT, TagList);
 				uev->uev_NewPosY = GetTagData(UNDOTAG_IconPosY, NO_ICON_POSITION_SHORT, TagList);
 
-				d2(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type));
-				d2(kprintf("%s/%s/%ld: uev_NewPosX=%ld  uev_NewPosY=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_NewPosX, uev->uev_NewPosY));
+				d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type));
+				d1(kprintf("%s/%s/%ld: uev_NewPosX=%ld  uev_NewPosY=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_NewPosX, uev->uev_NewPosY));
 
 				// TODO: fill uev contents
 				switch (uev->uev_Type)
@@ -393,7 +393,7 @@ BOOL Undo(void)
 	UndoCount--;
 	ScalosReleaseSemaphore(&UndoListListSemaphore);
 
-	d2(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
 
 	if (ust)
 		{
@@ -403,7 +403,7 @@ BOOL Undo(void)
 			uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
 			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
 			{
-			d2(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
+			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
 			if (uev->uev_UndoHook)
 				CallHookPkt(uev->uev_UndoHook, NULL, uev);
 			}
@@ -427,7 +427,7 @@ BOOL Redo(void)
 	ust = (struct UndoStep *) RemTail(&globalRedoList);
 	ScalosReleaseSemaphore(&RedoListListSemaphore);
 
-	d2(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
 
 	if (ust)
 		{
@@ -437,7 +437,7 @@ BOOL Redo(void)
 			uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
 			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
 			{
-			d2(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_RedoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_RedoHook));
+			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_RedoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_RedoHook));
 			if (uev->uev_RedoHook)
 				CallHookPkt(uev->uev_RedoHook, NULL, uev);
 			}
@@ -541,7 +541,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
@@ -554,7 +554,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopyDestDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_destDirName = AllocCopyString(name);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destDirName)
@@ -564,7 +564,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == fName)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
@@ -574,7 +574,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == fName)
 			fName = uev->uev_Data.uev_CopyMoveData.ucmed_srcName;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
@@ -664,7 +664,7 @@ static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uev->uev_Data.uev_IconData.uid_DirName = AllocCopyString(name);
 		if (NULL == uev->uev_Data.uev_IconData.uid_DirName)
@@ -674,7 +674,7 @@ static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList
 		if (NULL == in)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconNode=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconNode=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
 		uev->uev_Data.uev_IconData.uid_IconName = AllocCopyString(GetIconName(in));
 		if (NULL == uev->uev_Data.uev_IconData.uid_IconName)
@@ -685,7 +685,7 @@ static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList
 		uev->uev_OldPosX = gg->LeftEdge;
 		uev->uev_OldPosY = gg->TopEdge;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconOldPosX=%ld  UNDOTAG_IconOldPosY=%ld\n", \
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconOldPosX=%ld  UNDOTAG_IconOldPosY=%ld\n", \
 			__FILE__, __FUNC__, __LINE__, uev->uev_OldPosX, \
 			uev->uev_OldPosY));
 
@@ -744,7 +744,7 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uev->uev_Data.uev_SnapshotData.usid_DirName = AllocCopyString(name);
 		if (NULL == uev->uev_Data.uev_SnapshotData.usid_DirName)
@@ -752,13 +752,13 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		uev->uev_Data.uev_SnapshotData.usid_SaveIcon = GetTagData(UNDOTAG_SaveIcon, FALSE, TagList);
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_SaveIcon=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_SaveIcon));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_SaveIcon=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_SaveIcon));
 
 		in  = (struct ScaIconNode *) GetTagData(UNDOTAG_IconNode, (ULONG) NULL, TagList);
 		if (NULL == in)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconNode=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconNode=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
 		uev->uev_Data.uev_SnapshotData.usid_IconName = AllocCopyString(GetIconName(in));
 		if (NULL == uev->uev_Data.uev_SnapshotData.usid_IconName)
@@ -775,7 +775,7 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		CurrentDir(oldDir);
 
-		d2(kprintf("%s/%s/%ld: usid_IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconObj));
+		d1(kprintf("%s/%s/%ld: usid_IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconObj));
 
 		if (NULL == uev->uev_Data.uev_SnapshotData.usid_IconObj)
 			break;
@@ -785,7 +785,7 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_OldPosX = gg->LeftEdge;
 		uev->uev_OldPosY = gg->TopEdge;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconOldPosX=%ld  UNDOTAG_IconOldPosY=%ld\n", \
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconOldPosX=%ld  UNDOTAG_IconOldPosY=%ld\n", \
 			__FILE__, __FUNC__, __LINE__, uev->uev_OldPosX, \
 			uev->uev_OldPosY));
 
@@ -804,7 +804,7 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 {
 	BOOL Success = FALSE;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		const struct ScaIconNode *IconList;
@@ -835,19 +835,19 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		uev->uev_Data.uev_CleanupData.ucd_CleanupMode = GetTagData(UNDOTag_CleanupMode, CLEANUP_Default, TagList);
 
-		d2(kprintf("%s/%s/%ld: UNDOTag_CleanupMode=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_CleanupMode));
+		d1(kprintf("%s/%s/%ld: UNDOTag_CleanupMode=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_CleanupMode));
 
 		uev->uev_Data.uev_CleanupData.ucd_WindowTask = (struct internalScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
 		if (NULL == uev->uev_Data.uev_CleanupData.ucd_WindowTask)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
+		d1(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
 
 		IconList = (struct ScaIconNode *) GetTagData(UNDOTAG_IconList, (ULONG) NULL, TagList);
 		if (NULL == IconList)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconList=%08lx\n", __FILE__, __FUNC__, __LINE__, IconList));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconList=%08lx\n", __FILE__, __FUNC__, __LINE__, IconList));
 
 		ScalosLockIconListShared(uev->uev_Data.uev_CleanupData.ucd_WindowTask);
 
@@ -857,7 +857,7 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			uev->uev_Data.uev_CleanupData.ucd_IconCount++;
 			}
 
-		d2(kprintf("%s/%s/%ld: ucd_IconCount=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_IconCount));
+		d1(kprintf("%s/%s/%ld: ucd_IconCount=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_IconCount));
 
 		// create array to store icon positions
 		uev->uev_Data.uev_CleanupData.ucd_Icons = ScalosAllocVecPooled(uev->uev_Data.uev_CleanupData.ucd_IconCount * sizeof(struct UndoCleanupIconEntry));
@@ -874,19 +874,19 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			ucie->ucin_Left = gg->LeftEdge;
 			ucie->ucin_Top = gg->TopEdge;
 
-			d2(kprintf("%s/%s/%ld: in=%08lx <%s>  Left=%ld  Top=%ld\n", \
+			d1(kprintf("%s/%s/%ld: in=%08lx <%s>  Left=%ld  Top=%ld\n", \
 				__FILE__, __FUNC__, __LINE__, in, GetIconName(in), \
 				ucie->ucin_Left, ucie->ucin_Top));
 			}
 
 		ScalosUnLockIconList(uev->uev_Data.uev_CleanupData.ucd_WindowTask);
 
-		d2(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
+		d1(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
 
 		Success = TRUE;
 		} while (0);
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -898,7 +898,7 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	BOOL Success = FALSE;
 	STRPTR name;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		BPTR dirLock;
@@ -931,17 +931,17 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == name)
 			break;
 
-		d2(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
 		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, BNULL, TagList);
-		d2(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
+		d1(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
 		if (BNULL == dirLock)
 			break;
 
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
@@ -951,7 +951,7 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == fName)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
@@ -960,7 +960,7 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) NULL, TagList);
 		if (NULL == fName)
 			break;
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
@@ -972,7 +972,7 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	if (name)
 		FreePathBuffer(name);
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -984,7 +984,7 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	BOOL Success = FALSE;
 	STRPTR name;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		CONST_STRPTR fName;
@@ -1016,7 +1016,7 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == name)
 			break;
 
-		d2(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
@@ -1027,7 +1027,7 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			break;
 
 		// i.e. "Data1old:"
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
@@ -1038,7 +1038,7 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			break;
 
 		// i.e. "Data1new"
-		d2(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
 		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
 		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
@@ -1050,7 +1050,7 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	if (name)
 		FreePathBuffer(name);
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1066,7 +1066,7 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		STRPTR destName;
@@ -1076,7 +1076,7 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 		struct ScaUpdateIcon_IW upd;
 
 		destDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName, ACCESS_READ);
-		d2(kprintf("%s/%s/%ld: destDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, destDirLock, uev->uev_Data.uev_CopyMoveData.ucmed_destDirName));
+		d1(kprintf("%s/%s/%ld: destDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, destDirLock, uev->uev_Data.uev_CopyMoveData.ucmed_destDirName));
 		if (BNULL == destDirLock)
 			break;
 
@@ -1094,12 +1094,12 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 		oldDir = CurrentDir(destDirLock);
 
 		Result = DeleteFile(destName);
-		d2(kprintf("%s/%s/%ld: ucmed_destName=<%s>  Result=%ld  IoErr=%ld\n", __FILE__, __FUNC__, \
+		d1(kprintf("%s/%s/%ld: ucmed_destName=<%s>  Result=%ld  IoErr=%ld\n", __FILE__, __FUNC__, \
 			__LINE__, destName, Result, IoErr()));
 
 		// try to also to remove associated icon
 		IconResult = DeleteFile(iconName);
-		d2(kprintf("%s/%s/%ld: IconResult=%ld\n", __FILE__, __FUNC__, __LINE__, IconResult));
+		d1(kprintf("%s/%s/%ld: IconResult=%ld\n", __FILE__, __FUNC__, __LINE__, IconResult));
 
 		SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
 
@@ -1131,7 +1131,7 @@ static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		ULONG Result;
@@ -1170,7 +1170,7 @@ static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	if (BNULL != destDirLock)
 		UnLock(destDirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1188,26 +1188,26 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		ULONG Result;
 
-		d2(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
 
 		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
-		debugLock_d2(srcDirLock);
+		debugLock_d1(srcDirLock);
 
-		d2(kprintf("%s/%s/%ld: ucmed_destDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_destDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destDirName));
 
 		destDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName, ACCESS_READ);
 		if (BNULL == destDirLock)
 			break;
 
-		debugLock_d2(destDirLock);
+		debugLock_d1(destDirLock);
 
 		fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
 			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
@@ -1216,8 +1216,8 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 		if (NULL == fileTransObj)
 			break;
 
-		d2(kprintf("%s/%s/%ld: fileTransObj=%08lx\n", __FILE__, __FUNC__, __LINE__, fileTransObj));
-		d2(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
+		d1(kprintf("%s/%s/%ld: fileTransObj=%08lx\n", __FILE__, __FUNC__, __LINE__, fileTransObj));
+		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
 
 		Result = DoMethod(fileTransObj, SCCM_FileTrans_Move,
 			destDirLock, srcDirLock,
@@ -1226,7 +1226,7 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 		if (RETURN_OK != Result)
 			break;
 
-		d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 		Success = TRUE;
 		} while (0);
@@ -1234,14 +1234,14 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 	if (fileTransObj)
 		SCA_DisposeScalosObject(fileTransObj);
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	if (BNULL != srcDirLock)
 		UnLock(srcDirLock);
 	if (BNULL != destDirLock)
 		UnLock(destDirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1259,7 +1259,7 @@ static SAVEDS(LONG) RedoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		ULONG Result;
@@ -1312,7 +1312,7 @@ static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct U
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		ULONG Result;
@@ -1445,7 +1445,7 @@ static struct internalScaWindowTask *UndoFindWindowByDir(CONST_STRPTR DirName)
 			if (ws->ws_Lock && (LOCK_SAME == ScaSameLock(DirLock, ws->ws_Lock)))
 				{
 				iwt = (struct internalScaWindowTask *) ws->ws_WindowTask;
-				d2(KPrintF("%s/%s/%ld: Found  iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+				d1(KPrintF("%s/%s/%ld: Found  iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 				break;
 				}
 			}
@@ -1456,7 +1456,7 @@ static struct internalScaWindowTask *UndoFindWindowByDir(CONST_STRPTR DirName)
 		UnLock(DirLock);
 		}
 
-	d2(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
+	d1(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 
 	return iwt;
 }
@@ -1469,21 +1469,21 @@ static struct internalScaWindowTask *UndoFindWindowByWindowTask(const struct int
 
 	SCA_LockWindowList(SCA_LockWindowList_Shared);
 
-	d2(kprintf("%s/%s/%ld: START  iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
+	d1(kprintf("%s/%s/%ld: START  iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 	debugLock_d1(DirLock);
 
 	for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 		{
 		if (iwt == (struct internalScaWindowTask *) ws->ws_WindowTask)
 			{
-			d2(KPrintF("%s/%s/%ld: Found  iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+			d1(KPrintF("%s/%s/%ld: Found  iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 			return (struct internalScaWindowTask *) ws->ws_WindowTask;
 			}
 		}
 
 	SCA_UnLockWindowList();
 
-	d2(kprintf("%s/%s/%ld: iwt=NULL\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: iwt=NULL\n", __FILE__, __FUNC__, __LINE__));
 
 	return NULL;
 }
@@ -1504,7 +1504,7 @@ static struct ScaIconNode *UndoFindIconByName(struct internalScaWindowTask *iwt,
 		if (0 == Stricmp(GetIconName(in), IconName))
 			{
 			inFound = in;
-			d2(kprintf("%s/%s/%ld: inFound=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, inFound, GetIconName(inFound)));
+			d1(kprintf("%s/%s/%ld: inFound=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, inFound, GetIconName(inFound)));
 			break;
 			}
 		}
@@ -1512,7 +1512,7 @@ static struct ScaIconNode *UndoFindIconByName(struct internalScaWindowTask *iwt,
 	if (NULL == inFound)
 		ScalosUnLockIconList(iwt);
 
-	d2(kprintf("%s/%s/%ld: inFound=%08lx\n", __FILE__, __FUNC__, __LINE__, inFound));
+	d1(kprintf("%s/%s/%ld: inFound=%08lx\n", __FILE__, __FUNC__, __LINE__, inFound));
 
 	return inFound;
 }
@@ -1521,7 +1521,7 @@ static struct ScaIconNode *UndoFindIconByName(struct internalScaWindowTask *iwt,
 
 static BOOL UndoChangeIconPosEvent(struct UndoEvent *uev)
 {
-	d2(kprintf("%s/%s/%ld: uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	return MoveIconTo(uev->uev_Data.uev_IconData.uid_DirName,
 		uev->uev_Data.uev_IconData.uid_IconName,
 		uev->uev_OldPosX,
@@ -1532,7 +1532,7 @@ static BOOL UndoChangeIconPosEvent(struct UndoEvent *uev)
 
 static BOOL RedoChangeIconPosEvent(struct UndoEvent *uev)
 {
-	d2(kprintf("%s/%s/%ld: uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	return MoveIconTo(uev->uev_Data.uev_IconData.uid_DirName,
 		uev->uev_Data.uev_IconData.uid_IconName,
 		uev->uev_NewPosX,
@@ -1546,7 +1546,7 @@ static SAVEDS(LONG) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, stru
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
 		if (uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
@@ -1570,7 +1570,7 @@ static SAVEDS(LONG) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, stru
 			uev->uev_Data.uev_CopyMoveData.ucmed_destName = NULL;
 			}
 		}
-	d2(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	return 0;
 }
@@ -1582,7 +1582,7 @@ static SAVEDS(LONG) UndoDisposeIconData(struct Hook *hook, APTR object, struct U
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
 		if (uev->uev_Data.uev_IconData.uid_DirName)
@@ -1596,7 +1596,7 @@ static SAVEDS(LONG) UndoDisposeIconData(struct Hook *hook, APTR object, struct U
 			uev->uev_Data.uev_IconData.uid_IconName = NULL;
 			}
 		}
-	d2(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	return 0;
 }
@@ -1608,7 +1608,7 @@ static SAVEDS(LONG) UndoDisposeCleanupData(struct Hook *hook, APTR object, struc
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
 		if (uev->uev_Data.uev_CleanupData.ucd_Icons)
@@ -1617,7 +1617,7 @@ static SAVEDS(LONG) UndoDisposeCleanupData(struct Hook *hook, APTR object, struc
 			uev->uev_Data.uev_CleanupData.ucd_Icons = NULL;
 			}
 		}
-	d2(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	return 0;
 }
@@ -1629,7 +1629,7 @@ static SAVEDS(LONG) UndoDisposeSnapshotData(struct Hook *hook, APTR object, stru
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
 		if (uev->uev_Data.uev_SnapshotData.usid_DirName)
@@ -1648,7 +1648,7 @@ static SAVEDS(LONG) UndoDisposeSnapshotData(struct Hook *hook, APTR object, stru
 			uev->uev_Data.uev_SnapshotData.usid_IconObj = NULL;
 			}
 		}
-	d2(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	return 0;
 }
@@ -1662,13 +1662,13 @@ static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct Undo
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	do	{
 		struct ScaIconNode *in;
 
-		d2(kprintf("%s/%s/%ld: ucd_IconCount=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_IconCount));
-		d2(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
+		d1(kprintf("%s/%s/%ld: ucd_IconCount=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_IconCount));
+		d1(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
 
 		iwt = UndoFindWindowByWindowTask(uev->uev_Data.uev_CleanupData.ucd_WindowTask);
 		if (NULL == iwt)
@@ -1693,7 +1693,7 @@ static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct Undo
 				LONG x0, y0;
 				struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 
-				d2(kprintf("%s/%s/%ld: in=%08lx <%s>  Left=%ld  Top=%ld\n", \
+				d1(kprintf("%s/%s/%ld: in=%08lx <%s>  Left=%ld  Top=%ld\n", \
 					__FILE__, __FUNC__, __LINE__, in, GetIconName(in), \
 					ucie->ucin_Left, ucie->ucin_Top));
 
@@ -1723,7 +1723,7 @@ static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct Undo
 	if (iwt)
 		SCA_UnLockWindowList();
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__));
 
 	return Success;
 }
@@ -1735,7 +1735,7 @@ static BOOL RedoCleanupEvent(struct UndoEvent *uev)
 	BOOL Success = FALSE;
 	struct internalScaWindowTask *iwt;
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		iwt = UndoFindWindowByWindowTask(uev->uev_Data.uev_CleanupData.ucd_WindowTask);
@@ -1766,7 +1766,7 @@ static BOOL RedoCleanupEvent(struct UndoEvent *uev)
 	if (iwt)
 		SCA_UnLockWindowList();
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__));
 
 	return Success;
 }
@@ -1796,7 +1796,7 @@ static SAVEDS(LONG) UndoSnapshotEvent(struct Hook *hook, APTR object, struct Und
 	struct ScaIconNode *in = NULL;
 	BOOL Success = FALSE;
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		const struct IBox *pWinRect;
@@ -1808,14 +1808,14 @@ static SAVEDS(LONG) UndoSnapshotEvent(struct Hook *hook, APTR object, struct Und
 		if (NULL == iwt)
 			break;
 
-		d2(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
-		d2(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconName));
+		d1(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
+		d1(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconName));
 
 		in = UndoFindIconByName(iwt, uev->uev_Data.uev_SnapshotData.usid_IconName);
 		if (NULL == in)
 			break;
 
-		d2(kprintf("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
+		d1(kprintf("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
 
 		if (uev->uev_OldPosX != uev->uev_NewPosX || uev->uev_OldPosY != uev->uev_NewPosY)
@@ -1864,7 +1864,7 @@ static SAVEDS(LONG) UndoSnapshotEvent(struct Hook *hook, APTR object, struct Und
 		SCA_UnLockWindowList();
 		}
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1877,15 +1877,15 @@ static SAVEDS(LONG) RedoSnapshotPosEvent(struct Hook *hook, APTR object, struct 
 	struct ScaIconNode *in = NULL;
 	BOOL Success = FALSE;
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		iwt = UndoFindWindowByDir(uev->uev_Data.uev_SnapshotData.usid_DirName);
 		if (NULL == iwt)
 			break;
 
-		d2(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
-		d2(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconName));
+		d1(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
+		d1(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconName));
 
 		in = UndoFindIconByName(iwt, uev->uev_Data.uev_SnapshotData.usid_IconName);
 		if (NULL == in)
@@ -1935,7 +1935,7 @@ static SAVEDS(LONG) RedoSnapshotPosEvent(struct Hook *hook, APTR object, struct 
 		SCA_UnLockWindowList();
 		}
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1947,7 +1947,7 @@ static BOOL UndoSnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNo
 	BOOL Success = FALSE;
 	ULONG IconType = 0;
 
-	d2(KPrintF("%s/%s/%ld:  START iwt=%08lx  in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, in, GetIconName(in)));
+	d1(KPrintF("%s/%s/%ld:  START iwt=%08lx  in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, in, GetIconName(in)));
 
 	GetAttr(IDTA_Type, in->in_Icon, &IconType);
 
@@ -2001,7 +2001,7 @@ static BOOL UndoSnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNo
 		in->in_SupportFlags |= INF_SupportsUnSnapshot;
 		}
 
-	d2(KPrintF("%s/%s/%ld: END in=%08lx  <%s>  inFlags=%08lx  Success=%ld\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in), in->in_Flags, Success));
+	d1(KPrintF("%s/%s/%ld: END in=%08lx  <%s>  inFlags=%08lx  Success=%ld\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in), in->in_Flags, Success));
 
 	return Success;
 }
@@ -2014,7 +2014,7 @@ static BOOL UndoUnsnapshotIcon(struct internalScaWindowTask *iwt,
 	BOOL Success = FALSE;
 	ULONG IconType = 0;
 
-	d2(KPrintF("%s/%s/%ld:  iwt=%08lx  in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, in, GetIconName(in)));
+	d1(KPrintF("%s/%s/%ld:  iwt=%08lx  in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, in, GetIconName(in)));
 
 	GetAttr(IDTA_Type, in->in_Icon, &IconType);
 
@@ -2107,7 +2107,7 @@ static BOOL UndoUnsnapshotIcon(struct internalScaWindowTask *iwt,
 		in->in_SupportFlags &= ~INF_SupportsUnSnapshot;
 		}
 
-	d2(KPrintF("%s/%s/%ld: END in=%08lx  <%s>  inFlags=%08lx  Success=%ld\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in), in->in_Flags, Success));
+	d1(KPrintF("%s/%s/%ld: END in=%08lx  <%s>  inFlags=%08lx  Success=%ld\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in), in->in_Flags, Success));
 
 	return Success;
 }
@@ -2124,18 +2124,18 @@ static SAVEDS(LONG) UndoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		BPTR oldDir;
 
-		d2(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
 
 		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
-		debugLock_d2(srcDirLock);
+		debugLock_d1(srcDirLock);
 
 		destIconName = UndoBuildIconName(uev->uev_Data.uev_CopyMoveData.ucmed_destName);
 		if (NULL == destIconName)
@@ -2145,8 +2145,8 @@ static SAVEDS(LONG) UndoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 		if (NULL == srcIconName)
 			break;
 
-		d2(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
-		d2(kprintf("%s/%s/%ld: .ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destName));
+		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
+		d1(kprintf("%s/%s/%ld: .ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destName));
 
 		oldDir = CurrentDir(srcDirLock);
 
@@ -2157,7 +2157,7 @@ static SAVEDS(LONG) UndoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 		if (!Success)
 			break;
 
-		d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 		// Try to also rename icon
 		oldDir = CurrentDir(srcDirLock);
@@ -2165,7 +2165,7 @@ static SAVEDS(LONG) UndoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 		CurrentDir(oldDir);
 		} while (0);
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	if (BNULL != srcDirLock)
 		UnLock(srcDirLock);
@@ -2174,7 +2174,7 @@ static SAVEDS(LONG) UndoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 	if (destIconName)
 		FreePathBuffer(destIconName);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -2191,18 +2191,18 @@ static SAVEDS(LONG) RedoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		BPTR oldDir;
 
-		d2(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
 
 		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
-		debugLock_d2(srcDirLock);
+		debugLock_d1(srcDirLock);
 
 		destIconName = UndoBuildIconName(uev->uev_Data.uev_CopyMoveData.ucmed_destName);
 		if (NULL == destIconName)
@@ -2212,8 +2212,8 @@ static SAVEDS(LONG) RedoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 		if (NULL == srcIconName)
 			break;
 
-		d2(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
-		d2(kprintf("%s/%s/%ld: .ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destName));
+		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
+		d1(kprintf("%s/%s/%ld: .ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destName));
 
 		oldDir = CurrentDir(srcDirLock);
 
@@ -2224,7 +2224,7 @@ static SAVEDS(LONG) RedoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 		if (!Success)
 			break;
 
-		d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 		// Try to also rename icon
 		oldDir = CurrentDir(srcDirLock);
@@ -2232,7 +2232,7 @@ static SAVEDS(LONG) RedoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 		CurrentDir(oldDir);
 		} while (0);
 
-	d2(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	if (BNULL != srcDirLock)
 		UnLock(srcDirLock);
@@ -2241,7 +2241,7 @@ static SAVEDS(LONG) RedoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 	if (destIconName)
 		FreePathBuffer(destIconName);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -2257,7 +2257,7 @@ static SAVEDS(LONG) UndoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		driveName = AllocPathBuffer();
@@ -2282,7 +2282,7 @@ static SAVEDS(LONG) UndoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 	if (newName)
 		FreePathBuffer(newName);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }

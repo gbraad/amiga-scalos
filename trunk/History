@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20091031	jl	- Bugfix: On MorphOS 2.x, main menu entries were never disabled.
+41.7    20091101	jl	- Bugfix: Highlighting window gadgets when mouse pointer was moved over
+				  them didn't work with AmigaOS4.
+	20091031	jl	- Bugfix: On MorphOS 2.x, main menu entries were never disabled.
 	20091026	jl	- Bugfix: suppress system requester when relabelling a volume.
 				- Bugfix: corrected location of rename gadget for RenameInPlace.
 	20091016        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.19.

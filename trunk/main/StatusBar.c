@@ -167,18 +167,54 @@ void StatusBarRemove(struct internalScaWindowTask *iwt)
 UWORD StatusBarQueryGadgetID(struct internalScaWindowTask *iwt,
 	const struct ExtGadget *gg, WORD x, WORD y)
 {
-	UWORD Code;
+	ULONG Code;
 	ULONG xy;
+
+	d1(KPrintF("%s/%s/%ld: x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, x, y));
 
 	xy = ((x - gg->LeftEdge) << 16) + y - gg->TopEdge;
 
+	d1(KPrintF("%s/%s/%ld: LeftEdge=%ld  TopEdge=%ld\n", __FILE__, __FUNC__, __LINE__, gg->LeftEdge, gg->TopEdge));
+	d1(KPrintF("%s/%s/%ld: MoreFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, gg->MoreFlags));
+
+#ifdef __amigaos4__
+	{
+	// for some unknown reason, DoGadgetMethod(GM_HELPTEST) always
+	// seems to return GMR_NOHELPHIT (0).
+	// So, as a work-around, the GadgetInfo is built here manually,
+	// and DoMethod() is called directly, wich works as expected.
+	struct GadgetInfo GInfo;
+
+	memset(&GInfo, 0, sizeof(GInfo));
+
+	GInfo.gi_Screen = iwt->iwt_WindowTask.wt_Window->WScreen;
+	GInfo.gi_Window = iwt->iwt_WindowTask.wt_Window;
+	GInfo.gi_Requester = NULL;
+	GInfo.gi_RastPort = iwt->iwt_WindowTask.wt_Window->RPort;
+	GInfo.gi_Layer = iwt->iwt_WindowTask.wt_Window->RPort->Layer;
+	GInfo.gi_Domain.Left = 0;
+	GInfo.gi_Domain.Top = 0;
+	GInfo.gi_Domain.Width = iwt->iwt_WindowTask.wt_Window->Width;
+	GInfo.gi_Domain.Height = iwt->iwt_WindowTask.wt_Window->Height;
+	GInfo.gi_DrInfo = iInfos.xii_iinfos.ii_DrawInfo;
+	GInfo.gi_Pens.DetailPen = iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[DETAILPEN];
+	GInfo.gi_Pens.BlockPen = iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BLOCKPEN];
+	GInfo.gi_Gadget = (struct Gadget *) gg;
+
+	Code = DoMethod((Object *) gg,
+		GM_HELPTEST,
+		&GInfo,
+		xy);
+	}
+#else // __amigaos4__
 	Code = DoGadgetMethod((struct Gadget *) gg, iwt->iwt_WindowTask.wt_Window, NULL,
 		GM_HELPTEST,
 		NULL,	// GadgetInfo is inserted here
 		xy);
+#endif // __amigaos4__
 	d1(KPrintF("%s/%s/%ld: Code=%04lx\n", __FILE__, __FUNC__, __LINE__, Code));
 
-	return Code;
+	return (UWORD) Code;
 }
 
 //----------------------------------------------------------------------------
