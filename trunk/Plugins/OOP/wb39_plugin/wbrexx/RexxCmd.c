@@ -540,52 +540,45 @@ LONG Cmd_Help(APTR UserData,struct RexxMsg *Message,STRPTR *Args)
 
 		Table = LocalData->CommandTable;
 
-			/* If no command is specified then we should
-			 * return a list of all the commands this host
-			 * supports.
-			 */
+		/* If no command is specified then we should
+		 * return a list of all the commands this host
+		 * supports.
+		 */
 
 		if(Args[ARG_COMMAND] == NULL)
 		{
-				/* Count the number of bytes to allocate
-				 * for a list of all commands.
-				 */
-
+			/* Count the number of bytes to allocate
+			 * for a list of all commands.
+			 */
 			for(i = 0, Len = 1 ; Table[i].CommandName ; i++)
 				Len += strlen(Table[i].CommandName) + 1;
 
-				/* Make room for the command list. */
-
+			/* Make room for the command list. */
 			String = AllocVec(Len,MEMF_ANY);
 
 			if(String == NULL)
 				return(ERROR_NO_FREE_STORE);
 			else
 			{
-					/* Start with an empty string. */
-
+				/* Start with an empty string. */
 				String[0] = 0;
 
-					/* Add all the commands to the list. */
-
+				/* Add all the commands to the list. */
 				for(i = 0 ; Table[i].CommandName ; i++)
 				{
 					strcat(String,Table[i].CommandName);
 					strcat(String," ");
 				}
 
-					/* Terminate the string. */
-
+				/* Terminate the string. */
 				String[Len - 1] = 0;
 
-					/* Reply the RexxMsg and return the
-					 * command list as the command result.
-					 */
-
+				/* Reply the RexxMsg and return the
+				 * command list as the command result.
+				 */
 				ReturnRexxMsg(Message,String);
 
-					/* Dispose of the temporary storage. */
-
+				/* Dispose of the temporary storage. */
 				FreeVec(String);
 
 				return(0);
@@ -593,50 +586,42 @@ LONG Cmd_Help(APTR UserData,struct RexxMsg *Message,STRPTR *Args)
 		}
 		else
 			{
-				/* So we should return the argument template
-				 * of a specific command.
-				 */
-
+			/* So we should return the argument template
+			 * of a specific command.
+			 */
 			Command = Args[ARG_COMMAND];
 
-				/* Try to find the command in the table. */
-
+			/* Try to find the command in the table. */
 			for(i = 0 ; Table[i].CommandName ; i++)
 				{
-					/* Is this the command we are
-					 * looking for?
-					 */
-
+				/* Is this the command we are
+				 * looking for?
+				 */
 				if(Stricmp(Table[i].CommandName,Command) == 0)
 					{
-						/* Get the argument template. */
-
+					/* Get the argument template. */
 					String = Table[i].Template;
 
-						/* Is the template an empty
-						 * string?
-						 */
-
+					/* Is the template an empty
+					 * string?
+					 */
 					if(String[0] == '\0')
 						{
 						/* Provide an empty template. */
-
 						String = ",";
 						}
 
-						/* Reply the RexxMsg and return
-						 * the template as the command
-						 * result.
-						 */
-
+					/* Reply the RexxMsg and return
+					 * the template as the command
+					 * result.
+					 */
 					ReturnRexxMsg(Message,String);
 
 					return(0);
 					}
 				}
 
-				/* No matching command was found. */
-
+			/* No matching command was found. */
 			return(ERROR_OBJECT_NOT_FOUND);
 			}
 		}
