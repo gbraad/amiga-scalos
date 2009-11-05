@@ -51,6 +51,32 @@ versionWB scalos:modules/Rename.module LIKECVER
 versionWB scalos:modules/WindowProperties.module LIKECVER
 echo " "
 
+; --- plugins
+echo "Plugins..."
+VersionWB Scalos:Plugins/Filetypes/drawercontents.plugin LIKECVER
+VersionWB Scalos:Plugins/Filetypes/exifpicture.plugin LIKECVER
+VersionWB Scalos:Plugins/Filetypes/picturedimensions.plugin LIKECVER
+
+; OOP Plugins
+VersionWB Scalos:Plugins/OOP/devicefilter.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/persist.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/title_clock.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/title_envvar.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/title_freepens.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/volumegauge.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/wb39.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/wbrexx.plugin LIKECVER
+VersionWB Scalos:Plugins/OOP/xtwindows.plugin LIKECVER
+
+; Menu plugins
+VersionWB Scalos:Plugins/Menu/sorted_cleanup.plugin LIKECVER
+
+; Preview plugins
+VersionWB Scalos:Plugins/Preview/defpicture.pvplugin LIKECVER
+VersionWB Scalos:Plugins/Preview/jpegpicture.pvplugin LIKECVER
+VersionWB Scalos:Plugins/Preview/video.pvplugin LIKECVER
+echo " "
+
 ; --- 3rd party stuff
 echo "3rd Party Files..."
 versionWB libs:guigfx.library LIKECVER
