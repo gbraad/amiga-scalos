@@ -1,7 +1,7 @@
 ; Scalos Debug Helper
 ; Budda [mike@scalos.com]
-; $Date: 2006-11-25 15:29:50 +0200 (Sa, 25 Nov 2006) $
-; $Revision: 2034 $
+; $Date$
+; $Revision$
 
 setenv VERSIONWB_PARAM LIKECVER TEXT
 setenv VERSIONWB_MAX 255
