@@ -349,23 +349,26 @@ Mezclar...
 MSGID_MENU_PROJECT_MERGE_SHORT
 M
 ;
-;
+;+++translateme+++
 MSGID_MENU_EDIT_COLLAPSEALL
-Collapse All
+Se derrumban todos
+;Collapse All
 ;
-;
+;+++translateme+++
 MSGID_MENU_EDIT_EXPANDALL
-Expand All
+Amplíe todos
+;Expand All
 ;
 ;+++translateme+++
 MSGID_MENU_SETTINGS_HIDEOBSOLETE
-Hide Obsolete?
+Piel obsoleta?
 ;Hide Obsolete?
 ;
 ;+++translateme+++
 MSGID_MENU_SETTINGS_HIDEOBSOLETE_SHORT
-If checked, obsolete popup menus which are now\n\
-defined via filetypes prefs are not shown.
+Si están comprobados, los menús móviles obsoletos\n\
+que ahora se definen vía prefs de los tipos de\n\
+archivo no se demuestran.
 ;If checked, obsolete popup menus which are now\n\
 ;defined via filetypes prefs are not shown.
 ;
@@ -373,29 +376,34 @@ defined via filetypes prefs are not shown.
 MSGID_COM33NAME
 Format Disk...
 ;
-;
+;+++translateme+++
 MSGID_COM34NAME
-Shutdown...
+Parada...
+;Shutdown...
 ;
-;
+;+++translateme+++
 MSGID_COM35NAME
-Size to fit
+Tamaño a caber
+;Size to fit
 ;
-;
+;+++translateme+++
 MSGID_COM36NAME
-Clear Selection
+Selección clara
+;Clear Selection
 ;
 ;
 MSGID_POPMENUNAME6
 Popup Menu: AppIcons
 ;
-;
+;+++translateme+++
 MSGID_COM37NAME
-View By - Size
+Visión por tamaño
+;View By - Size
 ;
-;
+;+++translateme+++
 MSGID_COM38NAME
-View By - Date
+Visión por la fecha
+;View By - Date
 ;
 ;
 MSGID_MENU_PROJECT_ABOUT
@@ -413,32 +421,40 @@ MSGID_ABOUTREQFORMAT
 ;
 ;
 ;*** +jl+ 20011214
+;+++translateme+++
 MSGID_COM39NAME
-Copy file
+copie el archivo
+;Copy file
 ;
-;
+;+++translateme+++
 MSGID_COM40NAME
-Cut file
+corte el archivo
+;Cut file
 ;
-;
+;+++translateme+++
 MSGID_COM41NAME
-Paste file
+archivo de la goma
+;Paste file
 ;
-;
+;+++translateme+++
 MSGID_COM42NAME
-View By - Type
+visión por el tipo
+;View By - Type
 ;
-;
+;+++translateme+++
 MSGID_COM43NAME
-Cleanup By - Name
+limpieza por nombre
+;Cleanup By - Name
 ;
-;
+;+++translateme+++
 MSGID_COM44NAME
-Cleanup By - Date
+limpieza por la fecha
+;Cleanup By - Date
 ;
 ;
 MSGID_COM45NAME
-Cleanup By - Size
+limpieza por tamaño
+;Cleanup By - Size
 ;
 ;
 MSGID_COM46NAME
@@ -464,12 +480,12 @@ Show - Default
 ;
 ;+++translateme+++
 MSGID_COM49NAME
-Copy to...
+copie a...
 ;Copy to...
 ;
 ;+++translateme+++
 MSGID_COM50NAME
-Move to...
+muévase a...
 ;Move to...
 ;
 ;+++translateme+++
@@ -478,7 +494,7 @@ Create thumbnail
 ;
 ;+++translateme+++
 MSGID_COM_OPENNEWWINDOW
-Open in new window
+Ábrase en nueva ventana
 ;Open in new window
 ;
 ;+++translateme+++
@@ -487,58 +503,82 @@ Cleanup thumbnail cache
 ;
 ;+++translateme+++
 MSGID_COM_FIND
-Find File(s)
+archivo del hallazgo
 ;Find File(s)
 ;
 ;+++translateme+++
 MSGID_COM_UNDO
-Undo
+deshaga
 ;Undo
 ;
 ;+++translateme+++
 MSGID_COM_REDO
-Redo
+haga de nuevo
 ;Redo
 ;
 ;---------------------------------------------
 ;
+;+++translateme+++
 MSGID_SHORTHELP_NEWMENUBUTTON
-Press this button to create a new Menu or\n\
-Submenu entry at the currently selected position.
+Presione este botón para crear un nuevo menú o\n\
+Entrada del submenú en la posición actualmente seleccionada.
+;Press this button to create a new Menu or\n\
+;Submenu entry at the currently selected position.
 ;
 ;
+;+++translateme+++
 MSGID_SHORTHELP_NEWITEMBUTTON
-Press this button to insert a new menu\n\
-item at the currently selected position.
+Presione este botón para insertar un nuevo artículo\n\
+de menú en la posición actualmente seleccionada.
+;Press this button to insert a new menu\n\
+;item at the currently selected position.
 ;
 ;
+;+++translateme+++
 MSGID_SHORTHELP_NEWCOMMANDBUTTON
-Press this button to add a new\n\
-command to the currently menu item.
+Presione este botón para agregar un nuevo\n\
+ordene actualmente al artículo de menú.
+;Press this button to add a new\n\
+;command to the currently menu item.
 ;
 ;
+;+++translateme+++
 MSGID_SHORTHELP_DELBUTTON
-Press this button to delete the currently\n\
-select command, menu item, or menu.
+Presione este botÃ³n para suprimir el comando,\n\
+el artÃ­culo de menÃº, o el menÃº actualmente selecto.
+;Press this button to delete the currently\n\
+;select command, menu item, or menu.
 ;
 ;
+;+++translateme+++
 MSGID_SHORTHELP_SAVEBUTTON
-Press this button to save \n\
-the current settings to\n\
+Presione este botón para ahorrar\n\
+los ajustes actuales a\n\
 \"ENVARC:Scalos/menu13.prefs\".
+;Press this button to save \n\
+;the current settings to\n\
+;\"ENVARC:Scalos/menu13.prefs\".
 ;
 ;
+;+++translateme+++
 MSGID_SHORTHELP_USEBUTTON
-Press this button to save \n\
-the current settings to\n\
+Presione este botón para ahorrar\n\
+los ajustes actuales a\n\
 \"ENV:Scalos/menu13.prefs\".
+;Press this button to save \n\
+;the current settings to\n\
+;\"ENV:Scalos/menu13.prefs\".
 ;
 ;
+;+++translateme+++
 MSGID_SHORTHELP_CANCELBUTTON
-Press this button to abort \n\
-and forget all changes.
+Presione este botón para abortar\n\
+y para olvidar todos los cambios.
+;Press this button to abort\n\
+;and forget all changes.
 ;
 ;
+;+++translateme+++
 MSGID_REQTITLE_SAVEERROR
 Error writing palette preferences\n\
 file \"%s\"\n\
@@ -550,9 +590,10 @@ Error reading palette preferences\n\
 file \"%s\"\n\
 %s
 ;
-;
+;+++translateme+++
 MSGID_IMPORTNAME
-Import
+Importación
+;Import
 ;
 ;
 MSGID_TITLE_IMPORTTD
@@ -562,13 +603,16 @@ Import ToolsDaemon Prefs
 MSGID_TITLE_IMPORTP
 Import ParM Prefs
 ;
-;
+;+++translateme+++
 MSGID_PRIORITY_SLIDER_NAME
-Priority
+Prioridad
+;Priority
 ;
-;
+;+++translateme+++
 MSGID_PRIORITY_SLIDER_BUBBLE
-Use this slider to adjust the priority the command should run with.
+Utilice este resbalador para ajustar la\n\
+prioridad que el comando debe funcionar con
+;Use this slider to adjust the priority the command should run with.
 ;
 ; new in 40.7
 ;
@@ -599,9 +643,10 @@ Select Scalos Menu plugin
 MSGID_MENU_PROJECT_MERGE_ASLTITLE
 Select prefs to merge with
 ;
-;
+;+++translateme+++
 MSGID_MENU_GROUP_COMMAND_PROPERTIES
-Command Properties
+CaracterÃ­sticas del comando
+;Command Properties
 ;
 ; new in 40.10
 ;
@@ -618,30 +663,33 @@ modified since initial loading.
 ;
 ; +++translateme+++
 MSGID_POPASL_UNSELECTEDIMAGE_SHORTHELP
-Here you may select an iconic image that is shown left of\n\
-the menu item name, in unselected menu item state.
+Aquí usted puede seleccionar una imagen icónica que se\n\
+demuestre a la izquierda del nombre del artículo de\n\
+menú, en estado no seleccionado del artículo de menú.
 ;Here you may select an iconic image that is shown left of\n\
 ;the menu item name, in unselected menu item state.
 ;
 ; +++translateme+++
 MSGID_SAMPLE_UNSELECTEDIMAGE_SHORTHELP
-This is a sample of the iconic image that will be shown\n\
-left of the menu item name, in unselected menu item state.
+Esto es una muestra de la imagen icónica que será\n\
+demostrada a la izquierda del nombre del artículo de\n\
+menú, en estado no seleccionado del artículo de menú.
 ;This is a sample of the iconic image that will be shown\n\
 ;left of the menu item name, in unselected menu item state.
 ;
 ; +++translateme+++
 MSGID_POPASL_SELECTEDIMAGE_SHORTHELP
-Here you may select an iconic image that is shown left of\n\
-the menu item name, in selected menu item state.
+Aquí usted puede seleccionar una imagen icónica que se\n\
+demuestre a la izquierda del nombre del artículo de\n\
+menú, en estado seleccionado del artículo de menú.
 ;Here you may select an iconic image that is shown left of\n\
 ;the menu item name, in selected menu item state.
 ;
-;
 ; +++translateme+++
 MSGID_SAMPLE_SELECTEDIMAGE_SHORTHELP
-This is a sample of the iconic image that will be shown\n\
-left of the menu item name, in selected menu item state.
+Esto es una muestra de la imagen icónica que será demostrada\n\
+a la izquierda del nombre del artículo de menú,\n\
+en estado seleccionado del artículo de menú.
 ;This is a sample of the iconic image that will be shown\n\
 ;left of the menu item name, in selected menu item state.
 ;
@@ -690,32 +738,33 @@ is flushed from memory and try again.
 ;-----------------------------------------------------------
 ;+++translateme+++
 MSGID_NEW_MENU
-New Menu
+Nuevo menú
 ;New Menu
 ;
 ;+++translateme+++
 MSGID_NEW_ITEM
-New Item
+Nuevo artículo
 ;New Item
 ;
 ;+++translateme+++
 MSGID_TOOLS_MENU
-Tools
+Herramientas
+;Tools
 ;
 ;-----------------------------------------------------------
 ;+++translateme+++
 MSGID_DEFAULT_MENU_OPEN
-Open
+Abierto
 ;Open
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_OPEN_SHORT
-O
+A
 ;O
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_INFORMATION
-Information...
+Informatión...
 ;Information...
 ;
 ;+++translateme+++
@@ -725,7 +774,7 @@ I
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_BROWSE
-Browse...
+hojee...
 ;Browse...
 ;
 ;+++translateme+++
@@ -734,7 +783,7 @@ MSGID_DEFAULT_MENU_BROWSE_SHORT
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_FIND
-Find...
+Hallazgo...
 ;Find...
 ;
 ;+++translateme+++
@@ -764,7 +813,7 @@ U
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_CLONE
-Clone
+Copia
 ;Clone
 ;
 ;+++translateme+++
@@ -852,17 +901,17 @@ R
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_LEAVEOUT
-Leave Out
+Váyase hacia fuera
 ;Leave Out
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_LEAVEOUT_SHORT
-L
+F
 ;L
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_PUTAWAY
-Put Away
+Puesto de lado
 ;Put Away
 ;
 ;+++translateme+++
@@ -872,7 +921,7 @@ P
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_DELETE
-Delete...
+Cancelación...
 ;Delete...
 ;
 ;+++translateme+++
@@ -899,7 +948,7 @@ K
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_OPENPARENT
-Open Parent
+Abra al padre
 ;Open Parent
 ;
 ;+++translateme+++
@@ -908,7 +957,7 @@ MSGID_DEFAULT_MENU_OPENPARENT_SHORT
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_UPDATE
-Update
+Actualización
 ;Update
 ;
 ;+++translateme+++
@@ -927,7 +976,7 @@ MSGID_DEFAULT_MENU_CLEANUP_SHORT
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_RESIZETOFIT
-Resize To Fit
+Tamaño a caber
 ;Resize To Fit
 ;
 ;+++translateme+++
@@ -936,7 +985,7 @@ MSGID_DEFAULT_MENU_RESIZETOFIT_SHORT
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_SELECTCONTENTS
-Select Contents
+Seleccione el contenido
 ;Select Contents
 ;
 ;+++translateme+++
@@ -946,7 +995,7 @@ A
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_CLEARSELECTION
-Clear Selection
+Selección clara
 ;Clear Selection
 ;
 ;+++translateme+++
@@ -1019,7 +1068,7 @@ B
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_EXECUTECOMMAND
-Execute Command...
+Ejecute el comando...
 ;Execute Command...
 ;
 ;+++translateme+++
@@ -1029,7 +1078,7 @@ E
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_REDRAWALL
-Redraw All
+Rediseñe todos
 ;Redraw All
 ;
 ;+++translateme+++
@@ -1038,7 +1087,7 @@ MSGID_DEFAULT_MENU_REDRAWALL_SHORT
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_UPDATEALL
-Update All
+Ponga al día todos
 ;Update All
 ;
 ;+++translateme+++
@@ -1047,7 +1096,7 @@ MSGID_DEFAULT_MENU_UPDATEALL_SHORT
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_LASTMESSAGE
-Last Message
+Mensaje pasado
 ;Last Message
 ;
 ;+++translateme+++
@@ -1075,7 +1124,7 @@ MSGID_DEFAULT_MENU_QUIT_SHORT
 ;
 ;+++translateme+++
 MSGID_DEFAULT_MENU_CLEANUPBY
-Clean up by
+Limpie cerca
 ;Clean up by
 ;
 ;+++translateme+++
