@@ -166,14 +166,14 @@ Result:
 
 Example:
 
-/* Select the icons of the Workbench" and Work" volumes * displayed in the
-root window. */
+* Select the icons of the Workbench" and Work" volumes * displayed in the
+* root window. 
 ADDRESS workbench
 
 ICON WINDOW root
 NAMES Workbench Work SELECT
 
-/* Open the Workbench" volume icon displayed in the root * window. */
+* Open the Workbench" volume icon displayed in the root * window. 
 ICON WINDOW root
 NAMES Workbench OPEN
 
