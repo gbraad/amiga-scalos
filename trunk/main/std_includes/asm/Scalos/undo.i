@@ -28,6 +28,11 @@ UNDO_CreateLink		equ	5
 UNDO_ChangeIconPos	equ	6
 UNDO_Rename		equ	7
 UNDO_Relabel		equ	8
+UNDO_Delete		equ	9
+UNDO_Leaveout		equ	10
+UNDO_PutAway		equ	11
+UNDO_NewDrawer		equ	12
+UNDO_SizeToFit		equ	13
 
 ;enum ScalosUndoTags
 UNDOTAG_TagBase		equ     TAG_USER+1287
@@ -51,6 +56,19 @@ UNDOTAG_RedoHook	equ	UNDOTAG_TagBase+15	; struct Hook *
 UNDOTAG_DisposeHook	equ	UNDOTAG_TagBase+16	; struct Hook *
 UNDOTAG_SaveIcon	equ	UNDOTAG_TagBase+17	; ULONG
 UNDOTAG_CustomAddHook	equ	UNDOTAG_TagBase+18	; struct Hook *
+UNDOTAG_WbArg		equ	UNDOTAG_TagBase+19	; struct WBArg *
+UNDOTAG_OldWindowLeft	equ	UNDOTAG_TagBase+20	; LONG
+UNDOTAG_OldWindowTop	equ	UNDOTAG_TagBase+21	; LONG
+UNDOTAG_OldWindowWidth	equ	UNDOTAG_TagBase+22	; ULONG
+UNDOTAG_OldWindowHeight	equ	UNDOTAG_TagBase+23	; ULONG
+UNDOTAG_NewWindowLeft	equ	UNDOTAG_TagBase+24	; LONG
+UNDOTAG_NewWindowTop    equ     UNDOTAG_TagBase+25 	; LONG
+UNDOTAG_NewWindowWidth	equ	UNDOTAG_TagBase+26	; ULONG
+UNDOTAG_NewWindowHeight	equ	UNDOTAG_TagBase+27	; ULONG
+UNDOTAG_OldWindowVirtX	equ	UNDOTAG_TagBase+28	; LONG
+UNDOTAG_OldWindowVirtY	equ	UNDOTAG_TagBase+29	; LONG
+UNDOTAG_NewWindowVirtX	equ	UNDOTAG_TagBase+30	; LONG
+UNDOTAG_NewWindowVirtY	equ	UNDOTAG_TagBase+31	; LONG
 
 ;enum ScalosUndoCleanupMode
 CLEANUP_Default		equ	0
@@ -91,23 +109,41 @@ CLEANUP_ByType		equ	4
 	ULONG 	usid_SaveIcon
 	LABEL	usid_SIZEOF
 
+  STRUCTURE 	UndoSizeWindowData,0
+	APT	uswd_WindowTask		;struct internalScaWindowTask *
+	LONG 	uswd_OldLeft
+	LONG 	uswd_OldTop
+	ULONG 	uswd_OldWidth
+	ULONG 	uswd_OldHeight
+	LONG 	uswd_NewLeft
+	LONG 	uswd_NewTop
+	ULONG 	uswd_NewWidth
+	ULONG 	uswd_NewHeight
+	LONG 	uswd_OldVirtX
+	LONG 	uswd_OldVirtY
+	LONG 	uswd_NewVirtX
+	LONG 	uswd_NewVirtY
+	LABEL	uswd_SIZEOF
+
 ; uev_Data_SIZEOF is the largest of all sizes of the sub-structures
 ; UndoCopyMoveEventData, UndoIconEventData, UndoCleanupData, and UndoSnaphotIconData
 
 uev_Data_SIZEOF	set     ucmed_SIZEOF
-	IFGT    usid_SIZEOF-ucmed_SIZEOF
+	IFGT    usid_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     usid_SIZEOF
 	ENDIF
-	IFGT    ucd_SIZEOF-ucmed_SIZEOF
+	IFGT    ucd_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     ucd_SIZEOF
 	ENDIF
-	IFGT    ucin_SIZEOF-ucmed_SIZEOF
+	IFGT    ucin_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     ucin_SIZEOF
 	ENDIF
-	IFGT    uid_SIZEOF-ucmed_SIZEOF
+	IFGT    uid_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     uid_SIZEOF
 	ENDIF
-
+	IFGT    uswd_SIZEOF-uev_Data_SIZEOF
+uev_Data_SIZEOF	set     uswd_SIZEOF
+	ENDIF
 
   STRUCTURE	UndoEvent,0
 	STRUCT	uev_Node,LN_SIZE

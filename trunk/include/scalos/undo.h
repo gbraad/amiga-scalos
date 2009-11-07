@@ -30,11 +30,11 @@ enum ScalosUndoType
 	UNDO_ChangeIconPos,
 	UNDO_Rename,
 	UNDO_Relabel,
-//	  UNDO_Delete,
-//	  UNDO_Leaveout,
-//	  UNDO_PutAway,
-//	  UNDO_NewDrawer,
-//	  UNDO_SizeToFit,
+	UNDO_Delete,
+	UNDO_Leaveout,
+	UNDO_PutAway,
+	UNDO_NewDrawer,
+	UNDO_SizeToFit,
 	};
 
 enum ScalosUndoTags
@@ -58,6 +58,19 @@ enum ScalosUndoTags
 	UNDOTAG_DisposeHook,		// struct Hook *
 	UNDOTAG_SaveIcon,		// ULONG
 	UNDOTAG_CustomAddHook,		// struct Hook *
+	UNDOTAG_WbArg,			// struct WBArg *
+	UNDOTAG_OldWindowLeft,		// LONG
+	UNDOTAG_OldWindowTop,           // LONG
+	UNDOTAG_OldWindowWidth,		// ULONG
+	UNDOTAG_OldWindowHeight,	// ULONG
+	UNDOTAG_NewWindowLeft,		// LONG
+	UNDOTAG_NewWindowTop,           // LONG
+	UNDOTAG_NewWindowWidth,		// ULONG
+	UNDOTAG_NewWindowHeight,	// ULONG
+	UNDOTAG_OldWindowVirtX,		// LONG
+	UNDOTAG_OldWindowVirtY,		// LONG
+	UNDOTAG_NewWindowVirtX,		// LONG
+	UNDOTAG_NewWindowVirtY,		// LONG
 	};
 
 enum ScalosUndoCleanupMode
@@ -122,6 +135,22 @@ struct UndoEvent
 			Object *usid_IconObj;		// Iconobject BEFORE snapshot/unsnaphot
 			ULONG usid_SaveIcon;
 			} uev_SnapshotData;
+		struct UndoSizeWindowData
+			{
+			struct internalScaWindowTask *uswd_WindowTask;
+			LONG uswd_OldLeft;
+			LONG uswd_OldTop;
+			ULONG uswd_OldWidth;
+			ULONG uswd_OldHeight;
+			LONG uswd_NewLeft;
+			LONG uswd_NewTop;
+			ULONG uswd_NewWidth;
+			ULONG uswd_NewHeight;
+			LONG uswd_OldVirtX;
+			LONG uswd_OldVirtY;
+			LONG uswd_NewVirtX;
+			LONG uswd_NewVirtY;
+			} uev_SizeWindowData;
 		} uev_Data;
 	};
 

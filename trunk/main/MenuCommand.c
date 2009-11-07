@@ -602,6 +602,22 @@ static void SizeToFitProg(struct internalScaWindowTask *iwt, const struct MenuCm
 			NewLeft = iwt->iwt_WinScreen->Height - NewHeight;
 		}
 
+	UndoAddEvent(UNDO_SizeToFit,
+		UNDOTag_WindowTask, iwt,
+		UNDOTAG_OldWindowLeft, iwt->iwt_WindowTask.wt_Window->LeftEdge,
+		UNDOTAG_OldWindowTop, iwt->iwt_WindowTask.wt_Window->TopEdge,
+		UNDOTAG_OldWindowWidth, iwt->iwt_WindowTask.wt_Window->Width,
+		UNDOTAG_OldWindowHeight, iwt->iwt_WindowTask.wt_Window->Height,
+		UNDOTAG_NewWindowLeft, NewLeft,
+		UNDOTAG_NewWindowTop, NewTop,
+		UNDOTAG_NewWindowWidth, NewWidth,
+		UNDOTAG_NewWindowHeight, NewHeight,
+		UNDOTAG_OldWindowVirtX, iwt->iwt_WindowTask.wt_XOffset,
+		UNDOTAG_OldWindowVirtY, iwt->iwt_WindowTask.wt_YOffset,
+		UNDOTAG_NewWindowVirtX, VirtRect.MinX,
+		UNDOTAG_NewWindowVirtY, VirtRect.MinY,
+		TAG_END);
+
 	d1(kprintf("%s/%s/%ld: XOffset=%ld  YOffset=%ld\n", __FILE__, __FUNC__, __LINE__, \
 		iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
 
@@ -1138,6 +1154,14 @@ static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 		else
 			DirLock = iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
 
+		UndoAddEvent(UNDO_Leaveout,
+			UNDOTAG_UndoMultiStep, undoStep,
+			UNDOTAG_IconNode, in,
+			UNDOTAG_IconDirLock, DirLock,
+			UNDOTAG_IconPosX, NO_ICON_POSITION_SHORT,
+			UNDOTAG_IconPosY, NO_ICON_POSITION_SHORT,
+			TAG_END);
+
 		DoLeaveOutIcon(iwt, DirLock, GetIconName(in),
 			NO_ICON_POSITION_SHORT, NO_ICON_POSITION_SHORT);
 
@@ -1189,6 +1213,12 @@ static void PutAwayIconNode(struct internalScaWindowTask *iwt, struct ScaIconNod
 			iconDirLockClone = DupLock(iconDirLock);
 			if ((BPTR)NULL == iconDirLockClone)
 				break;
+
+			UndoAddEvent(UNDO_PutAway,
+				UNDOTAG_UndoMultiStep, undoStep,
+				UNDOTAG_IconNode, in,
+				UNDOTAG_IconDirLock, iconDirLock,
+				TAG_END);
 
 			// !!! side effects: UnLocks(iconDirLock) and frees <in> !!!
 			PutAwayIcon(iwt, iconDirLock, IconName, TRUE);
