@@ -1401,14 +1401,12 @@ MSGID_COM_FIND
 Trouver un ou des fichiers
 ;Find File(s)
 ;
-;+++translateme+++
 MSGID_COM_UNDO
-Undo
+Précédent
 ;Undo
 ;
-;+++translateme+++
 MSGID_COM_REDO
-Redo
+Suivant
 ;Redo
 ;
 ;-----------------------------------------------------------
