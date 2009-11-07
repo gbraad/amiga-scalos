@@ -40,6 +40,7 @@
 #include <utility/tagitem.h>
 #include <utility/hooks.h>
 #include <scalos/scalos.h>
+#include <scalos/undo.h>
 
 // Prototypes
 #include <clib/alib_protos.h>
@@ -75,6 +76,7 @@
 #define MAKE_ID(a,b,c,d)     ((ULONG) (a)<<24 | (ULONG) (b)<<16 | (ULONG) (c)<<8 | (ULONG) (d))
 #endif
 
+#define	BNULL		((BPTR) NULL)
 
 // Some macros to make the MUI code a bit easier to read.
 #define KeyCheckMarkHelpID(selected, control, cyclechain, ident, help)\

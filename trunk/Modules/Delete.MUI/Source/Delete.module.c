@@ -352,9 +352,11 @@ void SetupInterface  (void);
 
 	// Open the about window & GNU GPL details....
 	get(CM_Quiet , MUIA_Selected   , &Source);
-	if(Source == 0) set(WI_About, MUIA_Window_Open, TRUE);
+	if(Source == 0)
+		set(WI_About, MUIA_Window_Open, TRUE);
 
-	if(!ListFiles((struct WBStartup *)argv)) ExitMUI(MUI_App, NULL);
+	if(!ListFiles((struct WBStartup *)argv))
+		ExitMUI(MUI_App, NULL);
 
 	// Main loop: Block on the MUI Notify...
 	while (Running)

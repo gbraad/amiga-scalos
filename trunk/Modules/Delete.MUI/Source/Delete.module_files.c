@@ -31,9 +31,9 @@
 //  BOOL ListFiles    (WBStartup *)
 //  LONG CopyFile     (STRPTR, STRPTR, ULONG)
 //  void UpdateDrawer (STRPTR)
-//  LONG FileDelete   (STRPTR, BOOL)
-//  LONG DeleteIcon   (STRPTR, BOOL)
-//  LONG DirDelete    (STRPTR, BOOL)
+//  LONG FileDelete   (STRPTR, BOOL, APTR)
+//  LONG DeleteIcon   (STRPTR, BOOL, APTR)
+//  LONG DirDelete    (STRPTR, BOOL, APTR)
 //  void KillFiles    (WBStartup *)
 //  void DirCount     (STRPTR, DetailStats *)
 //  BOOL GetDetails   (WBStartup *)
@@ -83,6 +83,12 @@ BOOL           Unprotect  = FALSE; // If TRUE all files are automagically unprot
 ULONG          SizeCount  = 0    ; // Number of bytes being deleted in total
 BOOL           GotDetails = FALSE; // If TRUE then Sizecount is the size of all files and subdirectories
 ULONG          DoneSize   =     0; // Number of bytes we've deleted already
+
+//----------------------------------------------------------------------------
+
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
+
+//----------------------------------------------------------------------------
 
 /* int estrlen(STRPTR)                                                       */
 /* -=-=-=-=-=-=-=-=-=-                                                       */
@@ -549,7 +555,7 @@ void UpdateDrawer(STRPTR Name)
 /* or trashcan copy are required then this is a bit of a waste of space I    */
 /* suppose... but it's only just over 20k anyway...                          */
 
-LONG FileDelete(STRPTR FileName, BOOL Trash)
+LONG FileDelete(STRPTR FileName, BOOL Trash, APTR UndoStep)
 {
 ///
 	LONG  CurrentPos = 0;
@@ -585,6 +591,7 @@ LONG FileDelete(STRPTR FileName, BOOL Trash)
 	if(Trash)
 		{
 		d1(KPrintF("%s/%s/%ld: Attempting to copy to trashcan\n", __FILE__, __FUNC__, __LINE__));
+		d2(KPrintF("%s/%s/%ld: FileBuffer=<%s>  FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, FileBuffer, FileName));
 
 	        CurrentPos = strlen(FileBuffer);
 		if(!AddPart(FileBuffer, FilePart(FileName), MAX_FILENAME_LEN))
@@ -685,7 +692,7 @@ LONG FileDelete(STRPTR FileName, BOOL Trash)
 /* delete it. It's just a fast'n'simple way to remove the icons for files and*/
 /* directories.                                                              */
 
-LONG DeleteIcon(STRPTR FileName, BOOL Trash)
+LONG DeleteIcon(STRPTR FileName, BOOL Trash, APTR UndoStep)
 {
 ///
 	BPTR IconLock = (BPTR)NULL;
@@ -699,7 +706,7 @@ LONG DeleteIcon(STRPTR FileName, BOOL Trash)
 	        Examine(IconLock, GlobalFIB);
 	        UnLock(IconLock);
 
-	        Result = FileDelete(FileName, Trash);
+		Result = FileDelete(FileName, Trash, UndoStep);
 
 		if(Result == RESULT_OK)
 			{
@@ -729,7 +736,7 @@ LONG DeleteIcon(STRPTR FileName, BOOL Trash)
 /* is TRUE then the directory, and all it's contents, are copied to the      */
 /* global trashcan before deleting (if one has been specified)               */
 
-LONG DirDelete(STRPTR DirName, BOOL Trash)
+LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 {
 ///
 	struct ScaUpdateIcon_IW  Update ;
@@ -851,7 +858,7 @@ LONG DirDelete(STRPTR DirName, BOOL Trash)
 						{
 				                d1(kprintf("DirDelete(): %s is a file, removing it\n", OldFIB.fib_FileName);)
 
-				                Result = FileDelete(OldFIB.fib_FileName, Trash);
+						Result = FileDelete(OldFIB.fib_FileName, Trash, UndoStep);
 						if(Result == RESULT_OK)
 							{
 							if(!DeleteFile(OldFIB.fib_FileName))
@@ -871,7 +878,7 @@ LONG DirDelete(STRPTR DirName, BOOL Trash)
 						{
 				                d1(kprintf("DirDelete(): %s is a directory, removing it\n", OldFIB.fib_FileName);)
 
-				                Result = DirDelete(OldFIB.fib_FileName, Trash);
+				                Result = DirDelete(OldFIB.fib_FileName, Trash, UndoStep);
 						if(Result == RESULT_OK)
 							{
 							if(!DeleteFile(OldFIB.fib_FileName))
@@ -937,12 +944,26 @@ void KillFiles(struct WBStartup *WBStart)
 	BPTR              kf_Old    = (BPTR)NULL;
 	BPTR              kf_File   = (BPTR)NULL;
 	LONG              kf_Result = 0;
-	BOOL             *Trash     = NULL;
+	BOOL              Trash     = FALSE;
 	STRPTR            TrashDir  = NULL;
+	APTR 		  UndoStep = NULL;
+	struct ScaWindowStruct *ws = NULL;
+	struct ScaWindowList *wl;
 
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	get(CM_TrashCan, MUIA_Selected, (APTR)&Trash);
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+	if (wl)
+		{
+		struct ScaWindowStruct *ws = wl->wl_WindowStruct;
+
+		UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject,
+			SCCM_IconWin_BeginUndoStep);
+
+		SCA_UnLockWindowList();
+		}
 
 	if(Trash)
 		{
@@ -975,6 +996,8 @@ void KillFiles(struct WBStartup *WBStart)
 
 		if(Trash)
 		        {
+			struct ScaWindowStruct *wsFile;
+
 			if(estrlen(TrashDir))
 				{
 				stccpy(FileBuffer, TrashDir, MAX_FILENAME_LEN);
@@ -982,6 +1005,21 @@ void KillFiles(struct WBStartup *WBStart)
 			else
 				{
 				stccpy(FileBuffer, "SYS:TrashCan/", MAX_FILENAME_LEN);
+				}
+
+			wsFile = FindScalosWindow(kf_Args[kf_Num].wa_Lock);
+			if (wsFile)
+				{
+				DoMethod(wsFile->ws_WindowTask->mt_MainObject,
+					SCCM_IconWin_AddUndoEvent,
+					UNDO_Delete,
+					UNDOTAG_CopySrcDirLock, kf_Args[kf_Num].wa_Lock,
+					UNDOTAG_CopySrcName, kf_Args[kf_Num].wa_Name,
+					UNDOTAG_CopyDestName, FileBuffer,
+					TAG_END
+					);
+
+				SCA_UnLockWindowList();
 				}
 		        }
 
@@ -1010,7 +1048,7 @@ void KillFiles(struct WBStartup *WBStart)
 
 					if (kf_Fib->fib_DirEntryType < 0)
 						{
-						kf_Result = FileDelete(kf_Fib->fib_FileName, (Trash != FALSE));
+						kf_Result = FileDelete(kf_Fib->fib_FileName, Trash, UndoStep);
 						if(kf_Result == RESULT_OK)
 							{
 							if(!DeleteFile(kf_Fib->fib_FileName))
@@ -1026,12 +1064,12 @@ void KillFiles(struct WBStartup *WBStart)
 							stccpy(PathBuffer, kf_Fib->fib_FileName, MAX_FILENAME_LEN);
 							safe_strcat(PathBuffer, ".info", MAX_FILENAME_LEN);
 
-							kf_Result = DeleteIcon(PathBuffer, (Trash != FALSE));
+							kf_Result = DeleteIcon(PathBuffer, Trash, UndoStep);
 							}
 						}
 					else
 						{
-						kf_Result = DirDelete(DirBuffer, (Trash != FALSE));
+						kf_Result = DirDelete(DirBuffer, Trash, UndoStep);
 						if(kf_Result == RESULT_OK)
 							{
 							UnLock(kf_Args[kf_Num].wa_Lock);
@@ -1048,7 +1086,7 @@ void KillFiles(struct WBStartup *WBStart)
 								}
 
 							safe_strcat(DirBuffer, ".info", MAX_FILENAME_LEN);
-							kf_Result = DeleteIcon(DirBuffer, (Trash != FALSE));
+							kf_Result = DeleteIcon(DirBuffer, Trash, UndoStep);
 
 							DirBuffer[strlen(DirBuffer) - 5] = '\0';
 							UpdateDrawer(DirBuffer);
@@ -1063,7 +1101,7 @@ void KillFiles(struct WBStartup *WBStart)
 					stccpy(PathBuffer, kf_Args[kf_Num].wa_Name, MAX_FILENAME_LEN);
 					safe_strcat(PathBuffer, ".info", MAX_FILENAME_LEN);
 
-					kf_Result = DeleteIcon(PathBuffer, (Trash != FALSE));
+					kf_Result = DeleteIcon(PathBuffer, Trash, UndoStep);
 					}
 
 				// Better get back to home.
@@ -1097,7 +1135,7 @@ void KillFiles(struct WBStartup *WBStart)
 					}
 				else
 					{
-					kf_Result = DirDelete(DirBuffer, (Trash != FALSE));
+					kf_Result = DirDelete(DirBuffer, Trash, UndoStep);
 					if(kf_Result == RESULT_OK)
 						{
 						UnLock(kf_Args[kf_Num].wa_Lock);
@@ -1114,7 +1152,7 @@ void KillFiles(struct WBStartup *WBStart)
 							}
 
 						safe_strcat(DirBuffer, ".info", MAX_FILENAME_LEN);
-						kf_Result = DeleteIcon(DirBuffer, (Trash != FALSE));
+						kf_Result = DeleteIcon(DirBuffer, Trash, UndoStep);
 
 						DirBuffer[strlen(DirBuffer) - 5] = '\0';
 						UpdateDrawer(DirBuffer);
@@ -1130,6 +1168,17 @@ void KillFiles(struct WBStartup *WBStart)
 	// Release the fibs...
 	FreeDosObject(DOS_FIB, kf_Fib   );
 	FreeDosObject(DOS_FIB, GlobalFIB);
+
+	if (ws)
+		{
+		if (UndoStep)
+			{
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_EndUndoStep,
+				UndoStep);
+			}
+		SCA_UnLockWindowList();
+		}
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
@@ -1335,4 +1384,36 @@ BOOL GetDetails(struct WBStartup *WBStart)
 	return(TRUE);
 ///
 }
+
+//----------------------------------------------------------------------------
+
+///
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START \n", __FUNC__, __LINE__));
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	if (wl)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			if ((BNULL == dirLock && BNULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
+				{
+				return ws;
+				}
+			}
+		SCA_UnLockWindowList();
+		}
+
+	return NULL;
+}
+///
+
+//----------------------------------------------------------------------------
 
