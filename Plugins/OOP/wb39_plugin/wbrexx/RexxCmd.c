@@ -2631,8 +2631,8 @@ LONG Cmd_ZoomWindow(APTR UserData, struct RexxMsg *Message, STRPTR *Args)
 
 static LONG OpenWBHelpFile(void)
 {
-	STATIC_PATCHFUNC(WBHelpProcess);
 	struct Process *WBHelpProc;
+	STATIC_PATCHFUNC(WBHelpProcess);
 
 	WBHelpProc = CreateNewProcTags(NP_Name, (ULONG) "WB39 WBHelp Handler",
 			NP_Priority, 0,
@@ -2650,12 +2650,12 @@ static LONG OpenWBHelpFile(void)
 
 static SAVEDS(void) WBHelpProcess(void)
 {
-	d1(kprintf("%s/%s/%ld Start WBHelp Process\n", __FILE__, __FUNC__, __LINE__);)
-
-	LONG Result = RETURN_OK;
+//	LONG Result;
 	BPTR lock = 0;
 	struct Locale *locale;
 	AMIGAGUIDECONTEXT handle = NULL;
+
+	d1(kprintf("%s/%s/%ld Start WBHelp Process\n", __FILE__, __FUNC__, __LINE__);)
 
 	do	{
 		struct NewAmigaGuide nag;
@@ -2673,7 +2673,7 @@ static SAVEDS(void) WBHelpProcess(void)
 		locale = OpenLocale(NULL);
 		if (NULL == locale)
 			{
-			Result = IoErr();
+			//Result = IoErr();
 			break;
 			}
 
@@ -2716,7 +2716,7 @@ static SAVEDS(void) WBHelpProcess(void)
 		d1(kprintf( "%s/%s/%ld: nag_Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, nag.nag_Lock);)
 		if (0 == nag.nag_Lock)
 			{
-			Result = IoErr();
+			//Result = IoErr();
 			break;
 			}
 
@@ -2729,7 +2729,7 @@ static SAVEDS(void) WBHelpProcess(void)
 		d1(kprintf("%s/%s/%ld: handle=%08lx\n", __FILE__, __FUNC__, __LINE__, handle);)
 		if (NULL == handle)
 			{
-			Result = IoErr();
+			//Result = IoErr();
 			break;
 			}
 

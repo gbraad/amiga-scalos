@@ -10,7 +10,12 @@ AS		= phxass
 PRECOMP 	= INCLUDE:All.gst
 LD      	= slink
 LDFLAGS 	= quiet batch noicons sd
-LDLIBS  	= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
+LDLIBS  	= LIB:sc.lib \
+			LIB:debug.lib \
+			LIB:amiga.lib \
+			LIB:mempools.lib \
+			////SAS-lib/snprintf.lib \
+			LIB:sc.lib 
 OBJ_DIR		= .sasobj
 DESTPLUG	= Scalos:Plugins/OOP
 COMMON_DIR 	= ../../../../common/Plugin
@@ -58,10 +63,6 @@ WBREXXOBJS = $(WBREXXCSRCS:%.c=$(OBJ_DIR)/%.o)
 
 #############################################################
 
-LIBS	= LIB:mempools.lib LIB:sc.lib LIB:debug.lib LIB:amiga.lib
-
-#############################################################
-
 all:	$(WBREXXNAME) \
 	$(WBREXXNAME).debug \
 # install
@@ -104,11 +105,11 @@ $(OBJ_DIR)/WBRexx.o $(OBJ_DIR)/RexxGetAttrs.o $(OBJ_DIR)/RexxIcon.o \
 
 $(WBREXXNAME): $(WBREXXOBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
-	@$(LD) FROM $(WBREXXOBJS) TO $(WBREXXNAME) lib $(LIBS) $(LDFLAGS) STRIPDEBUG 
+	@$(LD) FROM $(WBREXXOBJS) TO $@ LIB $(LDLIBS) $(LDFLAGS) STRIPDEBUG 
 
 $(WBREXXNAME).debug: $(WBREXXOBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
-	@$(LD) FROM $(WBREXXOBJS) TO $(WBREXXNAME).debug lib $(LIBS) $(LDFLAGS) ADDSYM
+	@$(LD) FROM $(WBREXXOBJS) TO $@ lib $(LDLIBS) $(LDFLAGS) ADDSYM
 
 #############################################################
 
