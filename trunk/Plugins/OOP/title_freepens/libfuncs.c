@@ -66,6 +66,8 @@ struct Library *NewlibBase;
 struct Interface *INewlib;
 #endif /* __amigaos4__ */
 
+STRPTR VersTag = LIB_VERSTRING;
+
 BOOL initPlugin(APTR base)
 {
 #ifdef __amigaos4__

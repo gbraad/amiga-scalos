@@ -62,6 +62,7 @@ struct Interface *INewlib;
 
 struct myLibBase *globalLibBase;
 
+STRPTR VersTag = LIB_VERSTRING;
 
 /* Hook function for FormatDate() which takes a character and pushes into
  * the string specified in the hook.h_Data field

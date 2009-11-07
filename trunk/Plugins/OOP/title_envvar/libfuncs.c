@@ -24,6 +24,7 @@
 #include <utility/hooks.h>
 
 #include <defs.h>
+#include "plugin_data.h"
 
 //----------------------------------------------------------------
 
@@ -48,6 +49,9 @@ struct DOSIFace *IDOS = NULL;
 struct Library *NewlibBase = NULL;
 struct Interface *INewlib = NULL;
 #endif /* __amigaos4__ */
+
+STRPTR VersTag = LIB_VERSTRING;
+
 
 BOOL initPlugin(APTR base)
 {
