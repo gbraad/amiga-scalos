@@ -1,6 +1,7 @@
 ; ScalosMenu.ct
 ; $Date$
 ; $Revision$
+; $Id$
 ## version $VER: ScalosMenu.catalog 40.18 (24 Aug 2006 23:56:40)
 ## codeset 0s
 ## language français
@@ -588,14 +589,12 @@ MSGID_COM_FIND
 Trouver des fichiers
 ;Find File(s)
 ;
-;+++translateme+++
 MSGID_COM_UNDO
-Undo
+Précédent
 ;Undo
 ;
-;+++translateme+++
 MSGID_COM_REDO
-Redo
+Suivant
 ;Redo
 ;
 ;---------------------------------------------
