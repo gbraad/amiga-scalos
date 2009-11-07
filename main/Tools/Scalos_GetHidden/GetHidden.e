@@ -1,4 +1,4 @@
-OPT PREPROCESS, STACK=25000, REG=5
+OPT PREPROCESS, STACK=32000, LARGE
 
 MODULE	'dos/dos', 'dos/dosextens', 'dos/datetime', 'amigalib/boopsi','tools/installhook', 'workbench/startup',
 
@@ -6,16 +6,18 @@ MODULE	'dos/dos', 'dos/dosextens', 'dos/datetime', 'amigalib/boopsi','tools/inst
 
 	'muimaster', 'libraries/mui', 'mui/nlistview_mcc', 'mui/nlist_mcc', 'debug',
 
-	'mui/lamp_mcc', 'icon', '*MyDebugOnOff', 'debug', '*VERSTAG', '*getpath', '*GeticonObject',
+	'mui/lamp_mcc', 'icon', '*MyDebugOnOff', '*VERSTAGECX','debug', '*getpath', '*GeticonObject',
 
 	'scalos/scalos41.6','scalos', 'intuition/classusr', 'intuition/classes', 'amigalib/boopsi',
 
-	'*Scalos_GetHidden_Locale','locale','libraries/locale'
+	'*Scalos_GetHidden_Locale','locale','libraries/locale','*GetTCP','*OnlineUpdate','exec/memory','exec/nodes',
+
+	'tools/boopsi'
 
 
 #define FIBF_HIDDEN Shl(1,7)
 
-#define THE_FILE 'GeHidden2.e'
+#define THE_FILE 'GeHidden.e'
 
 OBJECT oListData
    nom     : PTR TO CHAR
@@ -26,7 +28,7 @@ OBJECT oListData
    chemin  : PTR TO CHAR
 ENDOBJECT
 
-ENUM ER_MUILIB=1, ER_LIB, ER_ICONLIB, ER_APP, UN_HIDE, OP_DIR
+ENUM ER_NONE, ER_MUILIB, ER_LIB, ER_ICONLIB, ER_APP, UN_HIDE, OP_DIR, ABOUT_MUI, ABOUT, UPDATE
 
 DEF	textbuffer[120]:STRING,
 	list_Prot,
@@ -68,17 +70,20 @@ DEF	textbuffer[120]:STRING,
 	gr_list,
 	menufiletypes,
 	menuopen,
-	cat:PTR TO catalog_Scalos_GetHidden
+	cat:PTR TO catalog_Scalos_GetHidden,
+	buf_Search[300]:STRING,wb_message=0,opened=FALSE,txt_DirSplash,
+	up=0
 
 DEF hook_lv_display:hook,
     hook_lv_construct:hook,
     hook_lv_destruct:hook,
     hook_lv_compare:hook,
     hook_lv_compare2:hook,
-    contextmenu_hook:hook
+    contextmenu_hook:hook,
+    appMsgHook:hook
 
 PROC main() HANDLE
-DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[100]:STRING
+DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,wintitre[100]:STRING,tcp_version=NIL,menu,jmc=NIL
 
 	IF (scalosbase := OpenLibrary(SCALOSNAME,SCALOSREVISION)) = NIL THEN Raise(ER_LIB)
 	IF (muimasterbase:=OpenLibrary(MUIMASTER_NAME,MUIMASTER_VMIN))=NIL THEN Raise(ER_MUILIB)
@@ -95,6 +100,20 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 	installhook(hook_lv_compare, {hooklvcompare})
 	installhook(hook_lv_compare2, {hooklvcompare2})
 	installhook(contextmenu_hook, {contextmenu_func})
+	installhook(appMsgHook,{appMsgFunc})
+
+	tcp_version	:= String(EstrLen(VERSTRING)+6)
+	StringF(tcp_version, '$VER: \s', VERSTRING)
+	-> SetStr(tcp_version,StrLen(tcp_version)-22)
+
+	menu:=[ NM_TITLE,	0, (cat.msg_MenuProject.getstr() )	, 0 ,0,0,0,
+   		NM_ITEM,	0, NM_BARLABEL				, 0 ,0,0,0,
+   		NM_ITEM,	0, (cat.msg_MenuAbout.getstr() )	, 'A' ,0,0, ABOUT,
+   		NM_ITEM,	0, (cat.msg_MenuAboutMui.getstr() )	, 'M' ,0,0, ABOUT_MUI,
+		NM_ITEM,	0, NM_BARLABEL				, 0 ,0,0,0,
+   		NM_ITEM,	0, (cat.msg_MenuUpdate.getstr() )	, 'G' ,0,0, UPDATE,
+   		NM_ITEM,	0, (cat.msg_MenuQuit.getstr() )		, 'Q' ,0,0, MUIV_Application_ReturnID_Quit,
+		NM_END, 	0, NIL					, 0 ,0,0,0]:newmenu
 
 	menufiletypes:=MenustripObject,
 		Child, MenuObject,
@@ -111,12 +130,13 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 
 	app := ApplicationObject,
 		MUIA_Application_Title      , 'GetHidden.module',
-		MUIA_Application_Version    , VERSDATE,
+		MUIA_Application_Version    , VERSTRING,
 		MUIA_Application_Copyright  , COPYRIGHT,
 		MUIA_Application_Author     , 'Jean_Marie COAT',
 		MUIA_Application_Description, 'UnSet Hidden protection of drawers/files for SCALOS',
 		MUIA_Application_Base       , 'GetHidden.module',
 		MUIA_Application_DiskObject, get_MyDiskObject(appicon),
+		MUIA_Application_Menustrip,    Mui_MakeObjectA(MUIO_MenustripNM,[menu,0]),
 
 -> ***************************
 
@@ -126,10 +146,16 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 			MUIA_Window_ScreenTitle, VERSTAG,
 			MUIA_Window_Width,  MUIV_Window_Width_Screen(25),
 			MUIA_Window_Height, MUIV_Window_Height_Screen(25),
+			MUIA_Window_AppWindow, 1,
 			WindowContents, VGroup,
 				Child, txt_HeadSplash:=TextObject,
-					MUIA_Text_PreParse,'\eb\ec',
+					MUIA_Text_PreParse,'\ec',
 					MUIA_Text_Contents, (cat.msg_Searching.getstr() ),
+				End,
+
+				Child, txt_DirSplash:=TextObject,	-> +++
+					MUIA_Text_PreParse,'\el',
+					MUIA_Text_Contents, '',
 				End,
 
 				Child, HGroup,
@@ -153,15 +179,15 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 					Child, ColGroup(3),
 						Child, HGroup,
 							Child, Label2(cat.msg_Dirs.getstr() ),
-							Child, txt_Dirs  :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', cat.msg_NumberDirs.getstr() ),
+							Child, txt_Dirs  :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'0',NIL,'\ec\eb\e3', cat.msg_NumberDirs.getstr() ),
 						End,
 						Child, HGroup,
 							Child, Label2(cat.msg_Files.getstr() ),
-							Child, txt_Files :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', cat.msg_NumberFiles.getstr() ),
+							Child, txt_Files :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'0',NIL,'\ec\eb\e3', cat.msg_NumberFiles.getstr() ),
 						End,
 						Child, HGroup,
 							Child, Label2(cat.msg_Total.getstr() ),
-							Child, txt_Num   :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'',NIL,'\ec\eb\e3', cat.msg_NumberTotal.getstr() ),
+							Child, txt_Num   :=makeTXT(40,MUIV_Frame_Text,MUII_TextBack,NIL,'0',NIL,'\ec\eb\e3', cat.msg_NumberTotal.getstr() ),
 						End,
 					End,
 				End,
@@ -180,14 +206,35 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 	doMethodA(bt_UnHide,  	[MUIM_Notify, MUIA_Pressed, 0, app, 2, MUIM_Application_ReturnID, UN_HIDE])
 
 	doMethodA(gr_list, 	[MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, app, 3, MUIM_CallHook, contextmenu_hook, MUIV_TriggerValue])
+	doMethodA(win,		[MUIM_Notify,MUIA_AppMessage,MUIV_EveryTime,list_Prot,3,MUIM_CallHook,appMsgHook,MUIV_TriggerValue])
+
+	-> doMethodA(win,		[MUIM_Notify,MUIA_AppMessage,MUIV_EveryTime,list_Prot,3,MUIM_WriteLong, 1, {set_AppWin}])
 
 	set(bt_UnHide, MUIA_Disabled, 1)
 
 	getargs()
 
+	up:=NEW [app,
+		win,
+		'GetHidden',
+		'GetHidden update',
+		tcp_version,
+		NIL,
+		NIL,
+		NIL,
+		NIL,
+		NIL,
+		NIL,
+		NIL,
+		NIL,
+		NIL,
+		NIL,
+		NIL]:updObject
+
 	get(app,MUIA_Application_Iconified,{icone})
 	IF icone THEN set(app,MUIA_Application_Iconified, FALSE)
 
+/******************************************************************************************************
 	get(win, MUIA_Window_Open, {opened})
 	IF opened
 		set(bt_Arret, MUIA_Disabled, 1)
@@ -201,6 +248,8 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 		ENDIF
 		IF (arret=1) THEN set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_UserAborted.getstr() ) ELSE set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_Completed.getstr() )
 	ENDIF
+*******************************************************************************************************/
+
 
 	WHILE running
 		result:= doMethodA(app,[MUIM_Application_Input,{sigs}])
@@ -244,6 +293,24 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 				set(bt_UnHide,  MUIA_Disabled, 0)
 				set(list_Prot, MUIA_NList_Quiet,0)
 				set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_HiddenRemoved.getstr() )
+
+			CASE UPDATE
+				update(up)
+
+	                CASE ABOUT
+				jmc:=String(StrLen(VERSTRING)+StrLen(COPYRIGHT)+StrLen(COMPILER_STRING)+50)
+				StringF(jmc,'\ec\s\n\s\nCompiled with ECX \e3\d\e2 Version: \e3\s\en', VERSTRING, COPYRIGHT, ECX_VERSION, __TARGET__)
+				Mui_RequestA(app,win,0, cat.msg_ReqBodyHidden.getstr() , cat.msg_ReqOkay.getstr() , jmc, NIL)
+
+	                CASE ABOUT_MUI
+        	            	domethod(app,[MUIM_Application_AboutMUI,NIL])
+
+			DEFAULT
+			 	set(bt_Arret, MUIA_Disabled, 1)	-> +++
+				vnumlist(list_Prot)
+				IF numlist > 0 THEN set(bt_UnHide,  MUIA_Disabled, 0)
+				-> set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_Completed.getstr() )
+
 		ENDSELECT
 
 		IF (running AND sigs) THEN Wait(sigs)
@@ -257,10 +324,19 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 		IF utilitybase	 THEN CloseLibrary(utilitybase)
 		IF iconbase 	 THEN CloseLibrary(iconbase)
 		IF muimasterbase THEN CloseLibrary(muimasterbase)
+		IF up  THEN END up
+		IF tcp_version <> NIL
+			DisposeLink(tcp_version)
+			tcp_version:=NIL
+		ENDIF
+		IF jmc <> NIL
+			DisposeLink(jmc)
+			jmc:=NIL
+		ENDIF
 		cat.close()
 		IF localebase THEN CloseLibrary( localebase )
   		SELECT exception
-			    CASE ER_LIB
+			CASE ER_LIB
 				WriteF(cat.msg_ScalosFailed.getstr() ,SCALOSNAME, SCALOSREVISION)
 				CleanUp(20)
 			CASE ER_MUILIB
@@ -274,6 +350,7 @@ DEF	ent:PTR TO oListData,npc=0, appicon:PTR TO diskobject,opened=FALSE,wintitre[
 			CASE ER_APP
 				WriteF(cat.msg_ErrorApp.getstr() )
 				CleanUp(20)
+
 		ENDSELECT
 ENDPROC 0
 
@@ -394,17 +471,17 @@ DEF tempnom,str[512]:STRING
 
 		check_HiddenBit(str)
 
-
-
 		refresh()
+
+		DisposeLink(tempnom)
 ENDPROC
 
 ->***************
 
 PROC getargs()
-DEF 	the_File[512]:STRING, rdargs, myargs:PTR TO LONG, wb:PTR TO wbstartup, args:PTR TO wbarg
+DEF 	the_File[300]:STRING, rdargs, myargs:PTR TO LONG, wb:PTR TO wbstartup, args:PTR TO wbarg,buf_Args[256]:STRING
 
-
+wb_message:=1
 	IF wbmessage<>NIL				/* from wb */
     		wb:=wbmessage
    		args:=wb.arglist
@@ -418,11 +495,21 @@ DEF 	the_File[512]:STRING, rdargs, myargs:PTR TO LONG, wb:PTR TO wbstartup, args
         			FOR rdargs := 1 TO wb.numargs-1
         				NameFromLock(args[rdargs].lock,the_File,StrMax(the_File))
 					IF StrLen(args[rdargs].name)>0 THEN AddPart(the_File, args[rdargs].name,StrMax(the_File))
+					AddPart(the_File,'', StrMax(the_File))
 					numobj++
 
 					d1(kPrintF('\s/getargs()/wb.numargs=[\d] the_File=<\s>\n', [THE_FILE, wb.numargs,the_File]))
 
 					refresh()
+
+					-> WriteF('\s\n',the_File)
+
+					-> StringF(buf_Search, (cat.msg_Searching.getstr() ),the_File)
+
+					-> set(txt_HeadSplash, MUIA_Text_Contents, buf_Search)
+
+					-> WriteF('\s\n',buf_Search)
+
 					inspect(the_File)
 					refresh()
 
@@ -438,35 +525,42 @@ DEF 	the_File[512]:STRING, rdargs, myargs:PTR TO LONG, wb:PTR TO wbstartup, args
 
 	ELSE
 		myargs:=[0]
-		IF (rdargs:=ReadArgs('GetHidden 1.1 (13.01.08) © 2008-2009 Jean-Marie COAT <agalliance@free.fr>\n\tSwitch on files protections: Read/Write and Delete\nENTRY/A',myargs,0))>0
+
+		StringF(buf_Args,'\s\nPATH/A',VERSTAG)
+
+		IF (rdargs:=ReadArgs(buf_Args ,myargs,0))>0
 			IF myargs[0]
 				StrCopy(the_File,myargs[0],ALL)
 			ENDIF
 			IF rdargs THEN FreeArgs(rdargs)
-		ELSE
-			WriteF(cat.msg_EntryName.getstr() )
-			ReadStr(stdout, the_File)
 		ENDIF
 
-		set(win, MUIA_Window_Open, MUI_TRUE)
+		IF StrLen(the_File) > 0 THEN set(win, MUIA_Window_Open, MUI_TRUE) ELSE Raise(WriteF( cat.msg_NoWBargsFound.getstr() ))
 
 		refresh()
 		inspect_cli(the_File)
 		refresh()
-
 	ENDIF
 
 	IF (numlist > 0) THEN set(menuopen, MUIA_Menuitem_Enabled,1) ELSE set(menuopen, MUIA_Menuitem_Enabled,0)
 
 	d1(kPrintF('\s/proc_Analyse()/numlist=\d \n', [THE_FILE, numlist]))
 
+	set(bt_Arret, MUIA_Disabled, 1)
+wb_message:=0
 ENDPROC
 
 PROC inspect(the_File)
 DEF	fib:PTR TO fileinfoblock, isfile=FALSE, my_File, s_lock
- 
+
+	set(bt_Arret, MUIA_Disabled, 0)
+
+	StringF(buf_Search, (cat.msg_Searching.getstr() ),the_File)
+	set(txt_HeadSplash, MUIA_Text_Contents, buf_Search)
+
+	fib := AllocDosObject(DOS_FIB, NIL)
+
 	IF s_lock:=Lock(the_File, ACCESS_READ)
-		fib := AllocDosObject(DOS_FIB, NIL)
         	Examine(s_lock, fib)
 		my_File := String(StrLen(the_File)+2)
 		NameFromLock(s_lock,my_File, StrMax(my_File))
@@ -480,6 +574,7 @@ DEF	fib:PTR TO fileinfoblock, isfile=FALSE, my_File, s_lock
 		d1(kPrintF('\s/inspect(\s)/fib.entrytype=\d isfile=\d\n', [THE_FILE, the_File, fib.entrytype, isfile]))
 
 		-> WriteF('\s: Please wait...\n',VERSTRING)
+
 		IF (isfile)
 			-> WriteF('*** Analyze file: "\s"\n', the_File)
         		getprotect(my_File)
@@ -491,22 +586,36 @@ DEF	fib:PTR TO fileinfoblock, isfile=FALSE, my_File, s_lock
 			refresh()
 
 		ENDIF
-		FreeDosObject(DOS_FIB, fib)
 		UnLock(s_lock)
-
 		DisposeLink(my_File)
-
 		proc_EndProcess()
+
+		get(win, MUIA_Window_Open, {opened})		-> +++
+		IF opened
+			IF (arret=1) THEN set(bt_Arret, MUIA_Disabled, 1)
+			set(bt_UnHide, MUIA_Disabled, 0)
+
+			IF (set_UnHide)
+				proc_CountDirFiles()
+			ELSE
+				set(txt_Splash,     MUIA_Text_Contents, cat.msg_AnyHiddenFound.getstr() )
+				set(bt_UnHide, MUIA_Disabled, 1)
+			ENDIF
+			IF (arret=1) THEN set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_UserAborted.getstr() ) ELSE set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_Completed.getstr() )
+		ENDIF
 	ENDIF
+
+	FreeDosObject(DOS_FIB, fib)
 ENDPROC
 
 PROC inspect_cli(the_File)
 DEF	s_lock, fib:PTR TO fileinfoblock, isfile=FALSE, my_File
- 
+
+	fib := AllocDosObject(DOS_FIB, NIL)
+
 	IF s_lock:=Lock(the_File, ACCESS_READ)
-		fib := AllocDosObject(DOS_FIB, NIL)
         	Examine(s_lock, fib)
-		my_File := String(StrLen(the_File)+2)
+		my_File := String(StrLen(the_File)+256)
 		NameFromLock(s_lock,my_File, StrMax(my_File))
 
 		set(txt_Splash, MUIA_Text_Contents, my_File)
@@ -530,7 +639,6 @@ DEF	s_lock, fib:PTR TO fileinfoblock, isfile=FALSE, my_File
 
 		-> WriteF('\n*** ANALYZE COMPLETED ! ***\n')
 		UnLock(s_lock)
-		FreeDosObject(DOS_FIB, fib)
 		DisposeLink(my_File)
 		proc_EndProcess()
 	ELSE
@@ -538,23 +646,32 @@ DEF	s_lock, fib:PTR TO fileinfoblock, isfile=FALSE, my_File
 		WriteF(cat.msg_IoErrorFile.getstr(), the_File, IoErr(), textbuffer)
 		CleanUp(20)
 	 ENDIF
+	FreeDosObject(DOS_FIB, fib)
 ENDPROC
 
-
 PROC exdir(dir)
-DEF fib:PTR TO fileinfoblock,dirlock=NIL,olddir = NIL
+DEF fib:PTR TO fileinfoblock,dirlock=NIL,olddir = NIL,buf_File[300]:STRING
+
+       	fib := AllocDosObject(DOS_FIB, NIL)
 
 	IF dirlock := Lock(dir,-2)
 		olddir := CurrentDir(dirlock)
-        	fib := AllocDosObject(DOS_FIB, NIL)
+
         	IF (Examine(dirlock, fib))
        			WHILE ExNext(dirlock, fib) AND (arret=0) AND (CheckSignal(SIGBREAKF_CTRL_C)=0)
+
+			NameFromLock(dirlock,buf_File, StrMax(buf_File))
+			-> IF StrLen(fib.filename)>0 THEN AddPart(buf_File, fib.filename,StrMax(buf_File))
+			AddPart(buf_File,'', StrMax(buf_File))
+
+			StringF(buf_Search, (cat.msg_Txt_DirSplash.getstr() ),buf_File)
+			set(txt_DirSplash, MUIA_Text_Contents, buf_Search)
+
 				set(txt_Splash, MUIA_Text_Contents, fib.filename)
-        			IF(fib.entrytype<0) -> Fichier
+	       			IF(fib.entrytype<0) -> Fichier
 					refresh()
                 			getprotect(fib.filename)
 					refresh()
-
         			ELSE					-> Répertoire
 					refresh()
 					getprotect(fib.filename)
@@ -567,8 +684,10 @@ DEF fib:PTR TO fileinfoblock,dirlock=NIL,olddir = NIL
     		ENDIF
 		UnLock(dirlock)
 	  	CurrentDir(olddir)
-		FreeDosObject(DOS_FIB, fib)
+
 	ENDIF
+
+	FreeDosObject(DOS_FIB, fib)
 ENDPROC
 
 ->----------------------------------------------------
@@ -587,9 +706,10 @@ DEF	name, full_Path[512]:STRING, buf_Prot[9]:STRING
 	name:=String(StrLen(tampon))
 	StrCopy(name, tampon, ALL)
 
+       	fib := AllocDosObject(DOS_FIB, NIL)
 
 	IF lock_file:=Lock(name, -2)
-        	fib := AllocDosObject(DOS_FIB, NIL)
+
  		Examine(lock_file,fib)
 
 		NameFromLock(lock_file, full_Path, StrMax(full_Path))
@@ -625,9 +745,10 @@ DEF	name, full_Path[512]:STRING, buf_Prot[9]:STRING
 		-> set(txt_Splash, MUIA_Text_Contents, name)
 
 		UnLock(lock_file)
-		FreeDosObject(DOS_FIB, fib)
+
 		DisposeLink(name)
 	ENDIF
+	FreeDosObject(DOS_FIB, fib)
 ENDPROC
 
 ->**************
@@ -635,17 +756,20 @@ ENDPROC
 PROC getprotect(file)
 DEF	fib:PTR TO fileinfoblock ,lock_file
 DEF	ah=0, as=0, ap=0, aa=0, ar=0, aw=0, ae=0, ad=0
-DEF	name, full_Path[512]:STRING, buf_Prot[10]:STRING, s, h
+DEF	name, full_Path[512]:STRING, buf_Prot[8]:STRING, s, h
 
 	StringF(buf_Prot,'')
 	name:=String(StrLen(file))
 	StrCopy(name, file, ALL)
 
+       	fib := AllocDosObject(DOS_FIB, NIL)
+
 	IF lock_file:=Lock(name, -2)
-        	fib := AllocDosObject(DOS_FIB, NIL)
+
  		Examine(lock_file,fib)
 
 		NameFromLock(lock_file, full_Path, StrMax(full_Path))
+
 		-> IF fib.entrytype = 2
 		-> 	AddPart(full_Path, '', '')
 		-> ENDIF
@@ -682,7 +806,7 @@ DEF	name, full_Path[512]:STRING, buf_Prot[10]:STRING, s, h
 			getpathdir(name)
 			-> intypes(name,list_Prot,buf_Prot)
 
-->------- intypes(ftypesdir, obj, protection) --------
+-> ------- intypes(ftypesdir, obj, protection) --------
 
 			StrCopy(bufchemin,path,ALL)
 			IF bufchemin[StrLen(bufchemin)-1]<>":" THEN StrAdd(bufchemin,'/')
@@ -714,29 +838,34 @@ DEF	name, full_Path[512]:STRING, buf_Prot[10]:STRING, s, h
 
 			new:=[bufnom,buf_Prot,buftaille,s,h,bufchemin]:oListData
 			doMethodA(list_Prot, [MUIM_NList_InsertSingle,new,MUIV_NList_Insert_Sorted])
-			->refresh()
+
+			refresh()
 			proc_CountDirFiles()
-			->refresh()
+			refresh()
 
 			DisposeLink(s)
 			DisposeLink(h)
 
 			d1(kPrintF('\s/intypes() bufnom = \s protection = \s\n buftaille = \s S = \s H = \s\n bufchemin = \s\n', [THE_FILE, bufnom, protection, buftaille, s, h, bufchemin]))
 
-->---------------
+-> ---------------
 
-			set(txt_Splash, MUIA_Text_Contents, name)
+			-> set(txt_Splash, MUIA_Text_Contents, name)
 
 		ELSE
 			proc_StartProcess()
 		ENDIF
 		UnLock(lock_file)
-		FreeDosObject(DOS_FIB, fib)
+
 		DisposeLink(name)
 	ENDIF
+
+	FreeDosObject(DOS_FIB, fib)
 ENDPROC
 
 PROC proc_Installbits(buffer_Prot, hide, script, pure, archive, read, write, execute, delete)
+
+	StringF(buffer_Prot,'')
 
 	IF hide=1	THEN StrAdd(buffer_Prot,'H') ELSE StrAdd(buffer_Prot,'-')
 
@@ -763,8 +892,10 @@ DEF	nprot=NIL, pt=FALSE, name, full_Path[512]:STRING
 	name:=String(StrLen(file))
 	StrCopy(name, file, ALL)
 
+       	fib := AllocDosObject(DOS_FIB, NIL)
+
 	IF lock_file:=Lock(name, -2)
-        	fib := AllocDosObject(DOS_FIB, NIL)
+
  		Examine(lock_file,fib)
 
 		NameFromLock(lock_file, full_Path, StrMax(full_Path))
@@ -787,19 +918,19 @@ DEF	nprot=NIL, pt=FALSE, name, full_Path[512]:STRING
 
 	    	IF ah=1 THEN nprot:=(fib.protection - FIBF_HIDDEN)
 
-	    	IF as=1 THEN nprot:=nprot+FIBF_SCRIPT
+	    	IF as=1 THEN nprot:= nprot + FIBF_SCRIPT
 
-	    	IF ap=1 THEN nprot:=nprot+FIBF_PURE
+	    	IF ap=1 THEN nprot:= nprot + FIBF_PURE
 
-	    	IF aa=1 THEN nprot:=nprot+FIBF_ARCHIVE
+	    	IF aa=1 THEN nprot:= nprot - FIBF_ARCHIVE
 
-	    	IF ar=0 THEN nprot:=nprot+FIBF_READ
+	    	IF ar=0 THEN nprot:= nprot + FIBF_READ
 
-	    	IF aw=0 THEN nprot:=nprot+FIBF_WRITE
+	    	IF aw=0 THEN nprot:= nprot + FIBF_WRITE
 
-	    	IF ae=0 THEN nprot:=nprot+FIBF_EXECUTE
+	    	IF ae=0 THEN nprot:= nprot + FIBF_EXECUTE
 
-	    	IF ad=0 THEN nprot:=nprot+FIBF_DELETE
+	    	IF ad=0 THEN nprot:= nprot + FIBF_DELETE
 
 		d1(kPrintF('\s/setprotect()/fib.entrytype=[\d] - Name=<\s> nprot = \z\h[8]\n', [THE_FILE, fib.entrytype,FilePart(full_Path),nprot]))
 
@@ -816,9 +947,11 @@ DEF	nprot=NIL, pt=FALSE, name, full_Path[512]:STRING
 		ENDIF
 		nprot:=NIL
 		UnLock(lock_file)
-		FreeDosObject(DOS_FIB, fib)
+
 	ENDIF
 	DisposeLink(name)
+
+	FreeDosObject(DOS_FIB, fib)
 
 ENDPROC
 
@@ -840,8 +973,11 @@ PROC intypes(ftypesdir, obj, protection)
 
   StrCopy(bufchemin,path,ALL)
   IF bufchemin[StrLen(bufchemin)-1]<>":" THEN StrAdd(bufchemin,'/')
+
+  fib := AllocDosObject(DOS_FIB, NIL)
+
   IF lock:=Lock(ftypesdir,-2)
-	fib := AllocDosObject(DOS_FIB, NIL)
+
    	Examine(lock, fib)
 
 	CopyMem(fib.datestamp,dt.stamp,SIZEOF datestamp)
@@ -878,8 +1014,9 @@ PROC intypes(ftypesdir, obj, protection)
 	d1(kPrintF('\s/intypes() bufnom = \s protection = \s\n buftaille = \s S = \s H = \s\n bufchemin = \s\n', [THE_FILE, bufnom, protection, buftaille, s, h, bufchemin]))
 
     	UnLock(lock)
-	FreeDosObject(DOS_FIB, fib)
   ENDIF
+
+  FreeDosObject(DOS_FIB, fib)
 ENDPROC
 
 ->**********************
@@ -990,12 +1127,12 @@ DEF	s_Disk=0, s_Dir=0, aide_Nom, aide_Protect, aide_Size, aide_Date, aide_Heure,
 		-> get(list_Prot,MUIA_NList_Entries,{numlist})
 		-> viewnum()
 
-		aide_Nom	:= 'Name:   '
-		aide_Protect	:= 'Access: '
-		aide_Size	:= 'Size:   '
-		aide_Date	:= 'Date:   '
-		aide_Heure	:= 'Time:   '
-		aide_Chemin	:= 'Path:   '
+		aide_Nom	:= (cat.msg_BubbleName.getstr() )	-> 'Name:'
+		aide_Protect	:= (cat.msg_BubbleProtect.getstr() )	-> 'Access: '
+		aide_Size	:= (cat.msg_BubbleSize.getstr() )	-> 'Size:   '
+		aide_Date	:= (cat.msg_BubbleDate.getstr() )	-> 'Date:   '
+		aide_Heure	:= (cat.msg_BubbleTime.getstr() )	-> 'Time:   '
+		aide_Chemin	:= (cat.msg_BubblePath.getstr() )	-> 'Path:   '
 
 		StrCopy(bufnom,		array[0], ALL)
 		StrCopy(bufprotect,	array[1], ALL)
@@ -1005,14 +1142,14 @@ DEF	s_Disk=0, s_Dir=0, aide_Nom, aide_Protect, aide_Size, aide_Date, aide_Heure,
 		StrCopy(bufchemin,	array[5], ALL)
 
 		IF StrCmp(bufnom,'\e3',2)=TRUE 		THEN MidStr(bufnom,bufnom,2,StrLen(bufnom)-2)
-		IF StrCmp(bufprotect,'H',1)=FALSE	THEN set(bt_UnHide, MUIA_Disabled,1) ELSE set(bt_UnHide, MUIA_Disabled,0)
+		-> IF StrCmp(bufprotect,'H',1)=FALSE	THEN set(bt_UnHide, MUIA_Disabled,1) ELSE set(bt_UnHide, MUIA_Disabled,0)
 
 
 		s_Disk := InStr(buftaille, '6:26', 0)
-		IF s_Disk <> -1 THEN StrCopy(buftaille,'Volume')
+		IF s_Disk <> -1 THEN StrCopy(buftaille, cat.msg_BubbleVolume.getstr() )	-> 'Volume'
 
 		s_Dir := InStr(buftaille, '6:22', 0)
-		IF s_Dir <> -1 THEN StrCopy(buftaille,'Directory')
+		IF s_Dir <> -1 THEN StrCopy(buftaille, cat.msg_BubbleDir.getstr() )	-> 'Directory'
 
 		d1(kPrintF('\s/hooklvdisplay()/buftaille = \s - s_Disk=\d s_Dir =\d\n', [THE_FILE, buftaille, s_Disk, s_Dir]))
 
@@ -1107,6 +1244,65 @@ ENDPROC
 
 /**********************************************************************************/
 
+
+PROC appMsgFunc(hook, obj, x:PTR TO LONG)
+DEF	ap:PTR TO wbarg, amsg:PTR TO appmessage, i, buf[300]:STRING, b,
+	bufapp[300]:STRING, str[300]:STRING,buf_ApName[256]:STRING
+
+IF wb_message=0
+	set_UnHide:=FALSE
+	set(bt_Arret, MUIA_Disabled, 0)
+	set(bt_UnHide, MUIA_Disabled, 1)
+	doMethodA(obj, [MUIM_NList_Clear])
+	set(txt_Files, MUIA_Text_Contents, '0')
+	set(txt_Dirs, MUIA_Text_Contents,  '0')
+	set(txt_Num, MUIA_Text_Contents, '0')
+
+  	amsg:=x[]
+  	b:=buf;i:=0
+  	ap:=amsg.arglist
+
+	arret:=0
+  	WHILE (i<amsg.numargs) AND (arret=0)
+    		NameFromLock(ap.lock,buf,StrMax(buf))
+    		AddPart(buf,ap.name,StrMax(buf))
+    		StringF(bufapp,'\s',b)
+    		StrCopy(str,b,ALL)
+		StringF(buf_Search, cat.msg_Searching.getstr() ,str)
+		set(txt_HeadSplash, MUIA_Text_Contents, buf_Search)
+		refresh()
+    		inspect(str)
+
+		StringF(buf_ApName,'"\s" \s',bufapp, cat.msg_Completed.getstr() )	-> +++
+		set(txt_HeadSplash, MUIA_Text_Contents, buf_ApName)			-> +++
+
+		refresh()
+    		ap++
+    		i++
+  	ENDWHILE
+
+	vnumlist(obj)
+
+	IF (set_UnHide)
+		proc_CountDirFiles()
+	ELSE
+		set(txt_Splash,     MUIA_Text_Contents, cat.msg_AnyHiddenFound.getstr() )
+		set(bt_UnHide, MUIA_Disabled, 1)
+		viewnum()
+	ENDIF
+
+	get(app,MUIA_Application_Iconified,{icone})
+	IF icone THEN set(app,MUIA_Application_Iconified, FALSE)
+
+	IF (arret=1) THEN set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_UserAborted.getstr() ) /* ELSE set(txt_HeadSplash, MUIA_Text_Contents, cat.msg_Completed.getstr() ) */
+
+	doMethodA(obj, [MUIM_NList_Redraw,MUIV_NList_Redraw_All]) -> ou MUIV_NList_Redraw_Title
+
+ENDIF
+ENDPROC 
+
+/**********************************************************************************/
+
 PROC makeLV(fixh,ajusth,ttxt,tf,msel,h,context) IS NListviewObject,
 		MUIA_Height, fixh,
 		MUIA_NList_AdjustHeight, ajusth,
@@ -1138,4 +1334,4 @@ PROC makeTXT(w,tf,bk,type,tx,c,j,h) IS TextObject,
 	End
 
 
-CHAR VERSTAG, ' - ',__TARGET__, 0
+CHAR VERSTAG, ' - Compiled with: ', COMPILER_STRING
