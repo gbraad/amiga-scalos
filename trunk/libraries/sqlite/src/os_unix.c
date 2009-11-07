@@ -1193,11 +1193,11 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
 */
 static int rangeLock(unixFile *pFile, int op, int *pErrcode){
   struct flock lock;
-  int rc;
+  int rc = 0;
+#if 0
   lock.l_type = op;
   lock.l_start = SHARED_FIRST;
   lock.l_whence = SEEK_SET;
-#if 0
   if( (pFile->fileFlags & SQLITE_WHOLE_FILE_LOCKING)==0 ){
     lock.l_len = SHARED_SIZE;
     rc = fcntl(pFile->h, F_SETLK, &lock);
@@ -1219,8 +1219,6 @@ static int rangeLock(unixFile *pFile, int op, int *pErrcode){
       }
     }
   }
-#else
-	rc = 0;
 #endif
   return rc;
 }
@@ -1472,8 +1470,9 @@ static int unixLock(sqlite3_file *id, int locktype){
     pFile->locktype = PENDING_LOCK;
     pLock->locktype = PENDING_LOCK;
   }
-#endif
+
 end_lock:
+#endif
   unixLeaveMutex();
   OSTRACE4("LOCK    %d %s %s\n", pFile->h, locktypeName(locktype), 
       rc==SQLITE_OK ? "ok" : "failed");
@@ -1642,8 +1641,9 @@ static int unixUnlock(sqlite3_file *id, int locktype){
       }
     }
   }
-#endif
+	
 end_unlock:
+#endif
   unixLeaveMutex();
   if( rc==SQLITE_OK ) pFile->locktype = locktype;
   return rc;
@@ -2547,7 +2547,8 @@ static int afpLock(sqlite3_file *id, int locktype){
   ** operating system calls for the specified lock.
   */
   if( locktype==SHARED_LOCK ){
-    int lk, lrc1, lrc2, lrc1Errno;
+    int lk, lrc1, lrc2;
+    int lrc1Errno = 0;
     
     /* Now get the read-lock SHARED_LOCK */
     /* note that the quality of the randomness doesn't matter that much */
