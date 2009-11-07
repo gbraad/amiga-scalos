@@ -69,6 +69,8 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList);
+static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList);
+static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -98,6 +100,8 @@ static SAVEDS(LONG) UndoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 static SAVEDS(LONG) RedoRenameEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoRelabelEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoRelabelEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) UndoSizeWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) RedoSizeWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 
 //----------------------------------------------------------------------------
 
@@ -110,6 +114,7 @@ static SAVEDS(LONG) RedoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 struct List globalUndoList;		// global Undo list for all file-related actions
 SCALOSSEMAPHORE UndoListListSemaphore;	// Semaphore to protect globalUndoList
 static ULONG UndoCount;			// Number of entries in globalUndoList
+static ULONG maxUndoSteps = 10;
 
 struct List globalRedoList;		// global Redo list for all file-related actions
 SCALOSSEMAPHORE RedoListListSemaphore;	// Semaphore to protect globalRedoList
@@ -217,6 +222,17 @@ BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
 				case UNDO_Relabel:
 					Success = AddRelabelEvent(uev, TagList);
 					break;
+				case UNDO_SizeToFit:
+					Success = AddSizeWindowEvent(uev, TagList);
+					break;
+				case UNDO_Delete:
+					Success = AddDeleteEvent(uev, TagList);
+					break;
+				case UNDO_Leaveout:
+				case UNDO_PutAway:
+				case UNDO_NewDrawer:
+					//TODO
+					break;
 				default:
 					if (uev->uev_CustomAddHook)
 						{
@@ -275,10 +291,19 @@ void UndoEndStep(APTR event)
 
 		ScalosObtainSemaphore(&UndoListListSemaphore);
 		AddTail(&globalUndoList, &ust->ust_Node);
-		UndoCount++;
+		if (++UndoCount > maxUndoSteps)
+			{
+			// maxUndoSteps exceeded - dispose oldest list entry
+			ust = (struct UndoStep *) RemHead(&globalUndoList);
+			UndoCount--;
+			}
+		else
+			{
+			ust = NULL;	// do not dipose ust here!
+			}
+
 		ScalosReleaseSemaphore(&UndoListListSemaphore);
 
-		ust = NULL;	// do not dipose ust here!
 		} while (0);
 
 	if (ust)
@@ -1051,6 +1076,158 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		FreePathBuffer(name);
 
 	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList)
+{
+	BOOL Success = FALSE;
+	STRPTR name;
+
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		BPTR dirLock;
+		CONST_STRPTR fName;
+		static struct Hook UndoDisposeCopyMoveDataHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoDisposeCopyMoveData),	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook UndoDeleteHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoMoveEvent),      	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook RedoDeleteHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(RedoMoveEvent),      	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+
+		uev->uev_DisposeHook = (struct Hook *) GetTagData(UNDOTAG_DisposeHook, (ULONG) &UndoDisposeCopyMoveDataHook, TagList);
+
+		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoDeleteHook, TagList);
+		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoDeleteHook, TagList);
+
+		name = AllocPathBuffer();
+		if (NULL == name)
+			break;
+
+		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+
+		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, BNULL, TagList);
+		d1(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
+		if (BNULL == dirLock)
+			break;
+
+		if (!NameFromLock(dirLock, name, Max_PathLen))
+			break;
+
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+
+		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
+		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
+			break;
+
+		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
+		if (NULL == fName)
+			break;
+
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+
+		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
+		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
+			break;
+
+		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) "SYS:Trashcan", TagList);
+		if (NULL == fName)
+			break;
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+
+		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
+		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
+			break;
+
+		Success = TRUE;
+		} while (0);
+
+	if (name)
+		FreePathBuffer(name);
+
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList)
+{
+	BOOL Success = FALSE;
+
+	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		static struct Hook UndoSizeWindowHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoSizeWindowEvent),  	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook RedoSizeWindowHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(RedoSizeWindowEvent),	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+
+		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoSizeWindowHook, TagList);
+		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoSizeWindowHook, TagList);
+
+		uev->uev_Data.uev_SizeWindowData.uswd_WindowTask = (struct internalScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
+		if (NULL == uev->uev_Data.uev_SizeWindowData.uswd_WindowTask)
+			break;
+
+		d2(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_WindowTask));
+
+		uev->uev_Data.uev_SizeWindowData.uswd_OldLeft = GetTagData(UNDOTAG_OldWindowLeft, 0, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_OldTop = GetTagData(UNDOTAG_OldWindowTop, 0, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_OldWidth = GetTagData(UNDOTAG_OldWindowWidth, 0, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_OldHeight = GetTagData(UNDOTAG_OldWindowHeight, 0, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX = GetTagData(UNDOTAG_OldWindowVirtX, 0, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY = GetTagData(UNDOTAG_OldWindowVirtY, 0, TagList);
+
+		uev->uev_Data.uev_SizeWindowData.uswd_NewLeft = GetTagData(UNDOTAG_NewWindowLeft, uev->uev_Data.uev_SizeWindowData.uswd_OldLeft, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_NewTop = GetTagData(UNDOTAG_NewWindowTop, uev->uev_Data.uev_SizeWindowData.uswd_OldTop, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_NewWidth = GetTagData(UNDOTAG_NewWindowWidth, uev->uev_Data.uev_SizeWindowData.uswd_OldWidth, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_NewHeight = GetTagData(UNDOTAG_NewWindowHeight, uev->uev_Data.uev_SizeWindowData.uswd_OldHeight, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_NewVirtX = GetTagData(UNDOTAG_NewWindowVirtX, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX, TagList);
+		uev->uev_Data.uev_SizeWindowData.uswd_NewVirtY = GetTagData(UNDOTAG_NewWindowVirtY, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY, TagList);
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_OldWindowLeft=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldLeft));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_OldWindowTop=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldTop));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_OldWindowWidth=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldWidth));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_OldWindowHeight=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldHeight));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_OldWindowVirtX=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_OldWindowVirtY=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_NewWindowLeft=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewLeft));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_NewWindowTop=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewTop));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_NewWindowWidth=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewWidth));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_NewWindowHeight=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewHeight));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_NewWindowVirtX=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewVirtX));
+		d2(kprintf("%s/%s/%ld: UNDOTAG_NewWindowVirtY=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewVirtY));
+
+		Success = TRUE;
+		} while (0);
+
+	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -2291,15 +2468,127 @@ static SAVEDS(LONG) UndoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 
 static SAVEDS(LONG) RedoRelabelEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
-	BOOL Success = FALSE;
+	BOOL Success;
 
 	(void) hook;
 	(void) object;
+
+	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	do	{
 		Success	= Relabel(uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
 			 uev->uev_Data.uev_CopyMoveData.ucmed_destName);
 		} while (0);
+
+	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) UndoSizeWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	struct internalScaWindowTask *iwt;
+	BOOL Success = FALSE;
+
+	(void) hook;
+	(void) object;
+
+	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+
+	do	{
+		d2(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
+
+		iwt = UndoFindWindowByWindowTask(uev->uev_Data.uev_SizeWindowData.uswd_WindowTask);
+		if (NULL == iwt)
+			break;
+
+		ScalosObtainSemaphoreShared(iwt->iwt_WindowTask.wt_WindowSemaphore);
+
+		d2(kprintf("%s/%s/%ld: XOffset=%ld  YOffset=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
+
+		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_DeltaMove,
+			uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX - iwt->iwt_WindowTask.wt_XOffset,
+			uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY - iwt->iwt_WindowTask.wt_YOffset);
+
+		d2(KPrintF("%s/%s/%ld: Left=%ld  Top=%ld  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			uev->uev_Data.uev_SizeWindowData.uswd_OldLeft, uev->uev_Data.uev_SizeWindowData.uswd_OldTop, \
+			uev->uev_Data.uev_SizeWindowData.uswd_OldWidth, uev->uev_Data.uev_SizeWindowData.uswd_OldHeight));
+
+		if (iwt->iwt_WindowTask.wt_Window)
+			{
+			ChangeWindowBox(iwt->iwt_WindowTask.wt_Window,
+				uev->uev_Data.uev_SizeWindowData.uswd_OldLeft,
+				uev->uev_Data.uev_SizeWindowData.uswd_OldTop,
+				uev->uev_Data.uev_SizeWindowData.uswd_OldWidth,
+				uev->uev_Data.uev_SizeWindowData.uswd_OldHeight);
+			}
+
+		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
+
+		Success = TRUE;
+		} while (0);
+
+	if (iwt)
+		SCA_UnLockWindowList();
+
+	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) RedoSizeWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	struct internalScaWindowTask *iwt;
+	BOOL Success = FALSE;
+
+	(void) hook;
+	(void) object;
+
+	d2(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+
+	do	{
+		d2(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
+
+		iwt = UndoFindWindowByWindowTask(uev->uev_Data.uev_SizeWindowData.uswd_WindowTask);
+		if (NULL == iwt)
+			break;
+
+		ScalosObtainSemaphoreShared(iwt->iwt_WindowTask.wt_WindowSemaphore);
+
+		d2(kprintf("%s/%s/%ld: XOffset=%ld  YOffset=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
+
+		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_DeltaMove,
+			uev->uev_Data.uev_SizeWindowData.uswd_NewVirtX - iwt->iwt_WindowTask.wt_XOffset,
+			uev->uev_Data.uev_SizeWindowData.uswd_NewVirtY - iwt->iwt_WindowTask.wt_YOffset);
+
+		d2(KPrintF("%s/%s/%ld: Left=%ld  Top=%ld  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			uev->uev_Data.uev_SizeWindowData.uswd_NewLeft, uev->uev_Data.uev_SizeWindowData.uswd_NewTop, \
+			uev->uev_Data.uev_SizeWindowData.uswd_NewWidth, uev->uev_Data.uev_SizeWindowData.uswd_NewHeight));
+
+		if (iwt->iwt_WindowTask.wt_Window)
+			{
+			ChangeWindowBox(iwt->iwt_WindowTask.wt_Window,
+				uev->uev_Data.uev_SizeWindowData.uswd_NewLeft,
+				uev->uev_Data.uev_SizeWindowData.uswd_NewTop,
+				uev->uev_Data.uev_SizeWindowData.uswd_NewWidth,
+				uev->uev_Data.uev_SizeWindowData.uswd_NewHeight);
+			}
+
+		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
+
+		Success = TRUE;
+		} while (0);
+
+	if (iwt)
+		SCA_UnLockWindowList();
+
+	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }

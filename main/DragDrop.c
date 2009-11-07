@@ -987,6 +987,7 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 	InitBackDropList(&bdl);	// +jmc+
 
 	do	{
+		APTR undoStep;
 		struct ScaIconNode *in;
 		struct ScalosArg *arg;
 
@@ -1024,6 +1025,8 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 		if (NULL == replyPort)
 			break;
 
+		undoStep = UndoBeginStep();
+
 		for (arg = *ArgList; arg; arg = (struct ScalosArg *) arg->scarg_Node.mln_Succ)
 			{
 			ULONG Result;
@@ -1039,6 +1042,13 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 				{
 				d1(KPrintF("%s/%s/%ld: drin_x=%ld  drin_y=%ld\n", __FILE__, __FUNC__, __LINE__, DrInfo->drin_x, DrInfo->drin_y));
 				d1(KPrintF("%s/%s/%ld: scarg_xpos=%ld  scarg_ypos=%ld\n", __FILE__, __FUNC__, __LINE__, arg->scarg_xpos, arg->scarg_ypos));
+
+				UndoAddEvent(UNDO_Leaveout,
+					UNDOTAG_UndoMultiStep, undoStep,
+					UNDOTAG_WbArg, arg,
+					UNDOTAG_IconPosX, DrInfo->drin_x + arg->scarg_xpos,
+					UNDOTAG_IconPosY, DrInfo->drin_y + arg->scarg_ypos,
+					TAG_END);
 
 				DoLeaveOutIcon(iwtSrc,
 					arg->scarg_lock,
@@ -1123,6 +1133,8 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 					}
 				}
 			}
+
+		UndoEndStep(undoStep);
 		} while (0);
 
 	if (replyPort)
@@ -1334,6 +1346,12 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 				{
 				// drop left-out icon back into its native window
 				DrInfo->drin_Drops.drop_PutAway = TRUE;
+
+				UndoAddEvent(UNDO_PutAway,
+					UNDOTAG_UndoMultiStep, undoStep,
+					UNDOTAG_WbArg, DrInfo->drin_Arg,
+					TAG_END);
+				
 				PutAwayIcon(iwtSrc,
 					DrInfo->drin_Arg->scarg_lock,
 					DrInfo->drin_Arg->scarg_name,
@@ -1394,6 +1412,8 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 					}
 				}
 			}
+
+		UndoEndStep(undoStep);
 
 		DeleteMsgPort(replyPort);
 		replyPort = NULL;
