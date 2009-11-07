@@ -186,6 +186,13 @@ struct KeyboardCommand
 
 //----------------------------------------------------------------------------
 
+#if defined(__SASC)
+int snprintf(char *, size_t, const char *, /*args*/ ...);
+int vsnprintf(char *, size_t, const char *, va_list ap);
+#endif /* __SASC */
+
+//----------------------------------------------------------------------------
+
 // WBRexx.c
 LONG DoRexxCommand(CONST_STRPTR Command);
 LONG ReturnRexxMsg(struct RexxMsg * Message,CONST_STRPTR Result);
