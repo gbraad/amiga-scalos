@@ -51,6 +51,7 @@ struct UndoStep
 	{
 	struct Node ust_Node;
 	struct List ust_EventList;	// List of events in this step
+	Object *ust_FileTransObj;	// valid during Undo and Redo processing
 	};
 
 //----------------------------------------------------------------------------
@@ -71,6 +72,7 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList);
+static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -84,6 +86,7 @@ static struct ScaIconNode *UndoFindIconByName(struct internalScaWindowTask *iwt,
 static BOOL UndoChangeIconPosEvent(struct UndoEvent *uev);
 static BOOL RedoChangeIconPosEvent(struct UndoEvent *uev);
 static SAVEDS(LONG) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoDisposeIconData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoDisposeCleanupData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoDisposeSnapshotData(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -102,6 +105,8 @@ static SAVEDS(LONG) UndoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 static SAVEDS(LONG) RedoRelabelEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoSizeWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoSizeWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) UndoNewDrawerEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 
 //----------------------------------------------------------------------------
 
@@ -228,9 +233,11 @@ BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
 				case UNDO_Delete:
 					Success = AddDeleteEvent(uev, TagList);
 					break;
+				case UNDO_NewDrawer:
+					Success = AddNewDrawerEvent(uev, TagList);
+					break;
 				case UNDO_Leaveout:
 				case UNDO_PutAway:
-				case UNDO_NewDrawer:
 					//TODO
 					break;
 				default:
@@ -243,6 +250,8 @@ BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
 
 				if (Success)
 					{
+					uev->uev_UndoStep = ust;
+
 					AddTail(&ust->ust_EventList, &uev->uev_Node);
 					uev = NULL;
 
@@ -422,21 +431,36 @@ BOOL Undo(void)
 
 	if (ust)
 		{
-		struct UndoEvent *uev;
+		ust->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
+			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
+			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
+			TAG_END);
 
-		for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
-			uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
-			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+		if (ust->ust_FileTransObj)
 			{
-			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
-			if (uev->uev_UndoHook)
-				CallHookPkt(uev->uev_UndoHook, NULL, uev);
-			}
+			struct UndoEvent *uev;
 
-		// Move undo step to redo list
-		ScalosObtainSemaphore(&RedoListListSemaphore);
-		AddTail(&globalRedoList, &ust->ust_Node);
-		ScalosReleaseSemaphore(&RedoListListSemaphore);
+			for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
+				uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
+				uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+				{
+				d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
+				if (uev->uev_UndoHook)
+					CallHookPkt(uev->uev_UndoHook, NULL, uev);
+				}
+
+			// Move undo step to redo list
+			ScalosObtainSemaphore(&RedoListListSemaphore);
+			AddTail(&globalRedoList, &ust->ust_Node);
+			ScalosReleaseSemaphore(&RedoListListSemaphore);
+
+			SCA_DisposeScalosObject(ust->ust_FileTransObj);
+			ust->ust_FileTransObj = NULL;
+			}
+		else
+			{
+			UndoDisposeStep(ust);
+			}
 		}
 
 	return TRUE;
@@ -456,22 +480,37 @@ BOOL Redo(void)
 
 	if (ust)
 		{
-		struct UndoEvent *uev;
+		ust->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
+			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
+			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
+			TAG_END);
 
-		for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
-			uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
-			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+		if (ust->ust_FileTransObj)
 			{
-			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_RedoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_RedoHook));
-			if (uev->uev_RedoHook)
-				CallHookPkt(uev->uev_RedoHook, NULL, uev);
-			}
+			struct UndoEvent *uev;
 
-		// Move redo step to undo list
-		ScalosObtainSemaphore(&UndoListListSemaphore);
-		AddTail(&globalUndoList, &ust->ust_Node);
-		UndoCount++;
-		ScalosReleaseSemaphore(&UndoListListSemaphore);
+			for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
+				uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
+				uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+				{
+				d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_RedoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_RedoHook));
+				if (uev->uev_RedoHook)
+					CallHookPkt(uev->uev_RedoHook, NULL, uev);
+				}
+
+			// Move redo step to undo list
+			ScalosObtainSemaphore(&UndoListListSemaphore);
+			AddTail(&globalUndoList, &ust->ust_Node);
+			UndoCount++;
+			ScalosReleaseSemaphore(&UndoListListSemaphore);
+
+			SCA_DisposeScalosObject(ust->ust_FileTransObj);
+			ust->ust_FileTransObj = NULL;
+			}
+		else
+			{
+			UndoDisposeStep(ust);
+			}
 		}
 
 	return TRUE;
@@ -1234,6 +1273,87 @@ static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 //----------------------------------------------------------------------------
 
+static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
+{
+	BOOL Success = FALSE;
+	STRPTR name;
+
+	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		BPTR dirLock;
+		CONST_STRPTR fName;
+		static struct Hook UndoDisposeNewDrawerHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoDisposeNewDrawerData),	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook UndoNewDrawerHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoNewDrawerEvent),      	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook RedoNewDrawerHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(RedoNewDrawerEvent),      	// h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+
+		uev->uev_DisposeHook = (struct Hook *) GetTagData(UNDOTAG_DisposeHook, (ULONG) &UndoDisposeNewDrawerHook, TagList);
+
+		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoNewDrawerHook, TagList);
+		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoNewDrawerHook, TagList);
+
+		name = AllocPathBuffer();
+		if (NULL == name)
+			break;
+
+		d2(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+
+		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, BNULL, TagList);
+		d2(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
+		if (BNULL == dirLock)
+			break;
+
+		if (!NameFromLock(dirLock, name, Max_PathLen))
+			break;
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+
+		uev->uev_Data.uev_NewDrawerData.und_DirName = AllocCopyString(name);
+		if (NULL == uev->uev_Data.uev_NewDrawerData.und_DirName)
+			break;
+
+		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
+		if (NULL == fName)
+			break;
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+
+		uev->uev_Data.uev_NewDrawerData.und_srcName = AllocCopyString(fName);
+		if (NULL == uev->uev_Data.uev_NewDrawerData.und_srcName)
+			break;
+
+		uev->uev_Data.uev_NewDrawerData.und_CreateIcon = GetTagData(UNDOTAG_CreateIcon, TRUE, TagList);
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_CreateIcon=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_NewDrawerData.und_CreateIcon));
+
+		Success = TRUE;
+		} while (0);
+
+	if (name)
+		FreePathBuffer(name);
+
+	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
 static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
@@ -1303,7 +1423,6 @@ static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	BOOL Success = FALSE;
 	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
-	Object *fileTransObj = NULL;
 
 	(void) hook;
 	(void) object;
@@ -1321,14 +1440,7 @@ static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 		if (BNULL == destDirLock)
 			break;
 
-		fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
-			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
-			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
-			TAG_END);
-		if (NULL == fileTransObj)
-			break;
-
-		Result = DoMethod(fileTransObj, SCCM_FileTrans_Copy,
+		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_Copy,
 			srcDirLock, destDirLock,
 			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
 			uev->uev_Data.uev_CopyMoveData.ucmed_destName,
@@ -1338,9 +1450,6 @@ static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 
 		Success = TRUE;
 		} while (0);
-
-	if (fileTransObj)
-		SCA_DisposeScalosObject(fileTransObj);
 
 	if (BNULL != srcDirLock)
 		UnLock(srcDirLock);
@@ -1360,7 +1469,6 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 	BOOL Success = FALSE;
 	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
-	Object *fileTransObj = NULL;
 
 	(void) hook;
 	(void) object;
@@ -1386,17 +1494,9 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 
 		debugLock_d1(destDirLock);
 
-		fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
-			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
-			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
-			TAG_END);
-		if (NULL == fileTransObj)
-			break;
-
-		d1(kprintf("%s/%s/%ld: fileTransObj=%08lx\n", __FILE__, __FUNC__, __LINE__, fileTransObj));
 		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
 
-		Result = DoMethod(fileTransObj, SCCM_FileTrans_Move,
+		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_Move,
 			destDirLock, srcDirLock,
 			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
 			uev->uev_OldPosX, uev->uev_OldPosY);
@@ -1407,9 +1507,6 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 
 		Success = TRUE;
 		} while (0);
-
-	if (fileTransObj)
-		SCA_DisposeScalosObject(fileTransObj);
 
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
@@ -1431,7 +1528,6 @@ static SAVEDS(LONG) RedoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 	BOOL Success = FALSE;
 	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
-	Object *fileTransObj = NULL;
 
 	(void) hook;
 	(void) object;
@@ -1449,14 +1545,7 @@ static SAVEDS(LONG) RedoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 		if (BNULL == destDirLock)
 			break;
 
-		fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
-			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
-			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
-			TAG_END);
-		if (NULL == fileTransObj)
-			break;
-
-		Result = DoMethod(fileTransObj, SCCM_FileTrans_Move,
+		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_Move,
 			srcDirLock, destDirLock,
 			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
 			uev->uev_NewPosX, uev->uev_NewPosY);
@@ -1465,9 +1554,6 @@ static SAVEDS(LONG) RedoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 
 		Success = TRUE;
 		} while (0);
-
-	if (fileTransObj)
-		SCA_DisposeScalosObject(fileTransObj);
 
 	if (BNULL != srcDirLock)
 		UnLock(srcDirLock);
@@ -1484,7 +1570,6 @@ static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct U
 	BOOL Success = FALSE;
 	BPTR srcDirLock;
 	BPTR destDirLock = BNULL;
-	Object *fileTransObj = NULL;
 
 	(void) hook;
 	(void) object;
@@ -1502,14 +1587,7 @@ static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct U
 		if (BNULL == destDirLock)
 			break;
 
-		fileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
-			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
-			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
-			TAG_END);
-		if (NULL == fileTransObj)
-			break;
-
-		Result = DoMethod(fileTransObj, SCCM_FileTrans_CreateLink,
+		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_CreateLink,
 			srcDirLock, destDirLock,
 			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
 			uev->uev_NewPosX, uev->uev_NewPosY);
@@ -1518,9 +1596,6 @@ static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct U
 
 		Success = TRUE;
 		} while (0);
-
-	if (fileTransObj)
-		SCA_DisposeScalosObject(fileTransObj);
 
 	if (BNULL != srcDirLock)
 		UnLock(srcDirLock);
@@ -1752,6 +1827,31 @@ static SAVEDS(LONG) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, stru
 	return 0;
 }
 
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	(void) hook;
+	(void) object;
+
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	if (uev)
+		{
+		if (uev->uev_Data.uev_NewDrawerData.und_DirName)
+			{
+			FreeCopyString(uev->uev_Data.uev_NewDrawerData.und_DirName);
+			uev->uev_Data.uev_NewDrawerData.und_DirName = NULL;
+			}
+		if (uev->uev_Data.uev_NewDrawerData.und_srcName)
+			{
+			FreeCopyString(uev->uev_Data.uev_NewDrawerData.und_srcName);
+			uev->uev_Data.uev_NewDrawerData.und_srcName = NULL;
+			}
+		}
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+
+	return 0;
+}
 //----------------------------------------------------------------------------
 
 static SAVEDS(LONG) UndoDisposeIconData(struct Hook *hook, APTR object, struct UndoEvent *uev)
@@ -2587,6 +2687,136 @@ static SAVEDS(LONG) RedoSizeWindowEvent(struct Hook *hook, APTR object, struct U
 
 	if (iwt)
 		SCA_UnLockWindowList();
+
+	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) UndoNewDrawerEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	BOOL Success = FALSE;
+	BPTR srcDirLock;
+	STRPTR IconName = NULL;
+
+	(void) hook;
+	(void) object;
+
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		BPTR oldDir;
+		LONG Result;
+
+		srcDirLock = Lock(uev->uev_Data.uev_NewDrawerData.und_DirName, ACCESS_READ);
+		d1(kprintf("%s/%s/%ld: srcDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, srcDirLock, uev->uev_Data.uev_NewDrawerData.und_DirName));
+		if (BNULL == srcDirLock)
+			break;
+
+		if (0 == strlen(uev->uev_Data.uev_NewDrawerData.und_srcName))
+			break;
+
+		oldDir = CurrentDir(srcDirLock);
+
+		Result = DeleteFile(uev->uev_Data.uev_NewDrawerData.und_srcName);
+		if (!Result)
+			break;
+
+		if (uev->uev_Data.uev_NewDrawerData.und_CreateIcon)
+			{
+			// Remove associated icon
+			struct ScaUpdateIcon_IW upd;
+
+			IconName = UndoBuildIconName(uev->uev_Data.uev_NewDrawerData.und_srcName);
+			if (NULL == IconName)
+				break;
+
+			Result = DeleteFile(IconName);
+			if (!Result)
+				break;
+
+			upd.ui_iw_Lock = srcDirLock;
+			upd.ui_iw_Name = uev->uev_Data.uev_NewDrawerData.und_srcName;
+
+			SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
+			}
+
+		CurrentDir(oldDir);
+
+		if (!Result)
+			break;	// DeleteFile failed
+
+		Success = TRUE;
+		} while (0);
+
+	if (BNULL != srcDirLock)
+		UnLock(srcDirLock);
+	if (IconName)
+		FreePathBuffer(IconName);
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	BOOL Success = FALSE;
+	BPTR srcDirLock;
+	BPTR newDirLock = BNULL;
+	Object *IconObj = NULL;
+	BPTR oldDir = BNULL;
+
+	(void) hook;
+	(void) object;
+
+	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		srcDirLock = Lock(uev->uev_Data.uev_NewDrawerData.und_DirName, ACCESS_READ);
+		if (BNULL == srcDirLock)
+			break;
+
+		oldDir = CurrentDir(srcDirLock);
+
+		newDirLock = CreateDir(uev->uev_Data.uev_NewDrawerData.und_srcName);
+		debugLock_d2(newDirLock);
+		if (NULL == newDirLock)
+			break;
+
+		if (uev->uev_Data.uev_NewDrawerData.und_CreateIcon)
+			{
+			struct ScaUpdateIcon_IW upd;
+
+			IconObj	= GetDefIconObject(WBDRAWER, NULL);
+
+			d2(kprintf(__FILE__ "/%s/%ld: IconObj=%08lx\n", __FUNC__, __LINE__, IconObj));
+
+			if (NULL == IconObj)
+				break;
+
+			upd.ui_iw_Lock = srcDirLock;
+			upd.ui_iw_Name = uev->uev_Data.uev_NewDrawerData.und_srcName;
+
+			PutIconObjectTags(IconObj, uev->uev_Data.uev_NewDrawerData.und_srcName,
+				TAG_END);
+
+			SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
+			}
+
+		Success = TRUE;
+		} while (0);
+
+	if (oldDir)
+		CurrentDir(oldDir);
+	if (IconObj)
+		DisposeIconObject(IconObj);
+	if (BNULL != srcDirLock)
+		UnLock(srcDirLock);
+	if (BNULL != newDirLock)
+		UnLock(newDirLock);
 
 	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
