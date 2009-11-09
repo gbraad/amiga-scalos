@@ -71,6 +71,7 @@ enum ScalosUndoTags
 	UNDOTAG_OldWindowVirtY,		// LONG
 	UNDOTAG_NewWindowVirtX,		// LONG
 	UNDOTAG_NewWindowVirtY,		// LONG
+	UNDOTAG_CreateIcon,		// LONG
 	};
 
 enum ScalosUndoCleanupMode
@@ -115,6 +116,13 @@ struct UndoEvent
 			STRPTR ucmed_srcName;
 			STRPTR ucmed_destName;
 			} uev_CopyMoveData;
+		struct UndoNewDrawerData
+			{
+			// we do not keep Locks to src directory here since it wouldn't be nice to block rename/delete of referenced objects!
+			STRPTR und_DirName;
+			STRPTR und_srcName;
+			BOOL und_CreateIcon;
+			} uev_NewDrawerData;
 		struct UndoIconEventData
 			{
 			// we do not keep Locks to icon directory here since it wouldn't be nice to block rename/delete of referenced objects!
@@ -152,6 +160,8 @@ struct UndoEvent
 			LONG uswd_NewVirtY;
 			} uev_SizeWindowData;
 		} uev_Data;
+
+	struct UndoStep *uev_UndoStep;
 	};
 
 /*----------------------------------------------------------------------------------*/
