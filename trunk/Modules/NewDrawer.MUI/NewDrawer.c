@@ -12,6 +12,8 @@
 #include <intuition/classusr.h>
 #include <libraries/mui.h>
 #include <mui/BetterString_mcc.h>
+#include <scalos/scalos.h>
+#include <scalos/undo.h>
 #include <workbench/startup.h>
 #include <datatypes/iconobject.h>
 
@@ -32,6 +34,7 @@
 #include <proto/utility.h>
 #include <proto/muimaster.h>
 #include <proto/preferences.h>
+#include <proto/scalos.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -104,10 +107,9 @@ static STRPTR GetLocString(ULONG MsgId);
 static BOOL CheckInfoData(const struct InfoData *info);
 static BOOL isDiskWritable(BPTR dLock);
 static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev);
-
 static void ReadPrefs(STRPTR PrefsFile);	// +jmc+ - Load Prefs.
 static void WritePrefs(STRPTR PrefsFile);	// +jmc+ - Save pres.
-static BYTE gd_Selected = 1;			// +jmc+ - CreateIcon gadget state.
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
 
 //----------------------------------------------------------------------------
 
@@ -129,6 +131,7 @@ struct Library *MUIMasterBase = NULL;
 struct Library *IconBase = NULL;
 struct Library *IconobjectBase = NULL;
 struct Library *PreferencesBase = NULL;
+struct ScalosBase *ScalosBase = NULL;
 
 #ifdef __amigaos4__
 struct IntuitionIFace *IIntuition = NULL;
@@ -137,7 +140,10 @@ struct MUIMasterIFace *IMUIMaster = NULL;
 struct IconIFace *IIcon = NULL;
 struct IconobjectIFace *IIconobject = NULL;
 struct PreferencesIFace *IPreferences = NULL;
+struct ScalosIFace *IScalos = NULL;
 #endif
+
+static BYTE gd_Selected = 1;			// +jmc+ - CreateIcon gadget state.
 
 static struct Catalog *gb_Catalog;
 
@@ -208,7 +214,7 @@ int main(int argc, char *argv[])
 
 		APP_Main = ApplicationObject,
 			MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
-			MUIA_Application_Version,	"$VER: Scalos NewDrawer.module V40.5 (" __DATE__ ") " COMPILER_STRING,
+			MUIA_Application_Version,	"$VER: Scalos NewDrawer.module V40.6 (" __DATE__ ") " COMPILER_STRING,
 			MUIA_Application_Copyright,	"© The Scalos Team, 2004" CURRENTYEAR,
 			MUIA_Application_Author,	"The Scalos Team",
 			MUIA_Application_Description,	"Scalos NewDrawer module",
@@ -468,6 +474,18 @@ static BOOL OpenLibraries(void)
 		}
 #endif
 
+	ScalosBase = (struct ScalosBase *) OpenLibrary(SCALOSNAME, 40);
+	if (NULL == ScalosBase)
+		return FALSE;
+#ifdef __amigaos4__
+	else
+		{
+		IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
+		if (NULL == IScalos)
+			return FALSE;
+		}
+#endif //__amigaos4__
+
 	return TRUE;
 }
 
@@ -475,6 +493,18 @@ static BOOL OpenLibraries(void)
 
 static void CloseLibraries(void)
 {
+#ifdef __amigaos4__
+	if (IScalos)
+		{
+		DropInterface((struct Interface *)IScalos);
+		IScalos = NULL;
+		}
+#endif
+	if (ScalosBase)
+		{
+		CloseLibrary((struct Library *) ScalosBase);
+		ScalosBase = NULL;
+		}
 #ifdef __amigaos4__
 	if (IPreferences)
 		{
@@ -598,12 +628,16 @@ static LONG MakeNewDrawer(struct WBStartup *wbMsg)
 	BPTR oldDir = CurrentDir(wbMsg->sm_ArgList[1].wa_Lock);
 	LONG Result = RETURN_OK;
 	STRPTR NewObjName = NULL;
+	struct ScaWindowStruct *ws;
+	APTR UndoStep = NULL;
 	BPTR newDirLock;
 	ULONG CreateIcon = FALSE;
 
 	d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
 
 	GetAttr(MUIA_String_Contents, StringNewName, (APTR) &NewObjName);
+
+	ws = FindScalosWindow(wbMsg->sm_ArgList[1].wa_Lock);
 
 	if ('/' == NewObjName[strlen(NewObjName) - 1])	// +jmc+
 			{
@@ -615,8 +649,26 @@ static LONG MakeNewDrawer(struct WBStartup *wbMsg)
 	
 	GetAttr(MUIA_Selected, CheckmarkCreateIcon, &CreateIcon);
 
+	if (ws)
+		{
+		UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_BeginUndoStep);
+		}
+
 	if (NewObjName && strlen(NewObjName) > 0)
 		{
+		if (ws)
+			{
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_AddUndoEvent,
+				UNDO_NewDrawer,
+				UNDOTAG_UndoMultiStep, UndoStep,
+				UNDOTAG_CopySrcDirLock, wbMsg->sm_ArgList[1].wa_Lock,
+				UNDOTAG_CopySrcName, NewObjName,
+				UNDOTAG_CreateIcon, CreateIcon,
+				TAG_END
+				);
+			}
+
 		newDirLock = CreateDir(NewObjName);
 
 		d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
@@ -655,6 +707,11 @@ static LONG MakeNewDrawer(struct WBStartup *wbMsg)
 	
 	CurrentDir(oldDir);
 
+	if (ws)
+		{
+		DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_EndUndoStep, UndoStep);
+		SCA_UnLockWindowList();
+		}
 	if (Result)
 		ReportError(Result, NewObjName);
 
@@ -930,3 +987,33 @@ ULONG mui_getv(APTR obj, ULONG attr)
 
 //----------------------------------------------------------------------------
 
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START \n", __FUNC__, __LINE__));
+	debugLock_d1(dirLock);
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	if (wl)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			if (((BPTR)NULL == dirLock && (BPTR)NULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
+				{
+				d1(KPrintF(__FILE__ "/%s/%ld: END  ws=%08lx\n", __FUNC__, __LINE__, ws));
+				return ws;
+				}
+			}
+		SCA_UnLockWindowList();
+		}
+
+	d1(KPrintF(__FILE__ "/%s/%ld: END  (not found)\n", __FUNC__, __LINE__));
+	return NULL;
+}
+
+//----------------------------------------------------------------------------

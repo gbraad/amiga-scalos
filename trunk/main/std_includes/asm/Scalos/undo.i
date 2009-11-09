@@ -69,6 +69,7 @@ UNDOTAG_OldWindowVirtX	equ	UNDOTAG_TagBase+28	; LONG
 UNDOTAG_OldWindowVirtY	equ	UNDOTAG_TagBase+29	; LONG
 UNDOTAG_NewWindowVirtX	equ	UNDOTAG_TagBase+30	; LONG
 UNDOTAG_NewWindowVirtY	equ	UNDOTAG_TagBase+31	; LONG
+UNDOTAG_CreateIcon	equ	UNDOTAG_TagBase+32	; LONG
 
 ;enum ScalosUndoCleanupMode
 CLEANUP_Default		equ	0
@@ -125,6 +126,12 @@ CLEANUP_ByType		equ	4
 	LONG 	uswd_NewVirtY
 	LABEL	uswd_SIZEOF
 
+  STRUCTURE 	UndoNewDrawerData
+	APTR 	und_DirName		; STRPTR
+	APTR 	und_srcName		; STRPTR
+	ULONG	und_CreateIcon
+	LABEL 	und_SIZEOF
+
 ; uev_Data_SIZEOF is the largest of all sizes of the sub-structures
 ; UndoCopyMoveEventData, UndoIconEventData, UndoCleanupData, and UndoSnaphotIconData
 
@@ -144,6 +151,9 @@ uev_Data_SIZEOF	set     uid_SIZEOF
 	IFGT    uswd_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     uswd_SIZEOF
 	ENDIF
+	IFGT    und_SIZEOF-uev_Data_SIZEOF
+uev_Data_SIZEOF	set     und_SIZEOF
+	ENDIF
 
   STRUCTURE	UndoEvent,0
 	STRUCT	uev_Node,LN_SIZE
@@ -161,6 +171,8 @@ uev_Data_SIZEOF	set     uswd_SIZEOF
 	LONG uev_NewPosY
 
 	STRUCT  uev_Data,uev_Data_SIZEOF
+
+	APTR	uev_UndoStep		;struct UndoStep *
 
 	LABEL	uev_SIZEOF
 

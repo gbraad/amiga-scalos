@@ -89,6 +89,8 @@ struct ScalosGfxIFace *IScalosGfx;
 static const int FILMHOLE_WIDTH = 12;
 static const int FILMHOLE_HEIGHT = 10;
 
+STRPTR VersTag = LIB_VERSTRING;
+
 //---------------------------------------------------------------------------------------
 
 static BOOL GenerateRemappedThumbnail(struct ScaWindowTask *wt,

@@ -11,12 +11,12 @@
 #define PLUGIN_TYPE	PREVIEW
 
 #define	LIB_VERSION	41
-#define	LIB_REVISION	3
+#define	LIB_REVISION	4
 
 #define LIB_NAME	"defpicture.pvplugin"
-#define LIB_VERSTRING   "$VER: defpicture.pvplugin " \
+#define LIB_VERSTRING   "\0$VER: defpicture.pvplugin " \
 			STR(LIB_VERSION) "." STR(LIB_REVISION)  \
-			" (26.11.2006)" \
+			" (07.11.2009)" \
 			COMPILER_STRING " ©2006" CURRENTYEAR \
 			" The Scalos Team"
 

@@ -15,6 +15,8 @@
 #include <workbench/startup.h>
 #include <workbench/icon.h>
 #include <datatypes/iconobject.h>
+#include <scalos/scalos.h>
+#include <scalos/undo.h>
 #include <reaction/reaction.h>
 #include <reaction/reaction_macros.h>
 
@@ -29,6 +31,7 @@
 #include <proto/locale.h>
 #include <proto/utility.h>
 #include <proto/resource.h>
+#include <proto/scalos.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +62,7 @@ static ULONG MessageLoop(void);
 static void UpdateGadgets(struct WBStartup *WBenchMsg);
 static LONG MakeNewDrawer(void);
 static void ReportError(LONG Result, CONST_STRPTR NewObjName);
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
 
 
 #define PROGNAME "NewDrawer.module"
@@ -75,6 +79,7 @@ struct Library       *GadToolsBase;
 T_LOCALEBASE LocaleBase;
 struct Library       *IconBase;
 struct Library 	     *IconobjectBase = NULL;
+struct ScalosBase    *ScalosBase = NULL;
 T_UTILITYBASE UtilityBase;
 
 static struct Screen        *gb_Screen;
@@ -205,12 +210,21 @@ static BOOL OpenLibraries(void)
 	if (NULL == IconobjectBase)
 		return FALSE;
 
+	ScalosBase = (struct ScalosBase *) OpenLibrary(SCALOSNAME, 40);
+	if (NULL == ScalosBase)
+		return FALSE;
+
 	return TRUE;
 }
 
 
 static void CloseLibraries(void)
 {
+	if (ScalosBase)
+		{
+		CloseLibrary((struct Library *) ScalosBase);
+		ScalosBase = NULL;
+		}
 	if (IconobjectBase)
 		{
 		CloseLibrary(IconobjectBase);
@@ -342,14 +356,35 @@ static LONG MakeNewDrawer(void)
 	BPTR oldDir = CurrentDir(WBenchMsg->sm_ArgList[1].wa_Lock);
 	LONG Result = RETURN_OK;
 	STRPTR NewObjName = NULL;
+	struct ScaWindowStruct *ws;
+	APTR UndoStep = NULL;
 	BPTR newDirLock;
 	ULONG CreateIcon = FALSE;
+
+	ws = FindScalosWindow(wbMsg->sm_ArgList[1].wa_Lock);
 
 	GetAttr(STRINGA_TextVal, gb_Gadgets[String_NewDrawer], (ULONG *) &NewObjName);
 	GetAttr(GA_Selected, gb_Gadgets[CheckBox_CreateIcon], &CreateIcon);
 
+	if (ws)
+		{
+		UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_BeginUndoStep);
+		}
+
 	if (NewObjName && strlen(NewObjName) > 0)
 		{
+		if (ws)
+			{
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_AddUndoEvent,
+				UNDO_NewDrawer,
+				UNDOTAG_UndoMultiStep, UndoStep,
+				UNDOTAG_CopySrcDirLock, wbMsg->sm_ArgList[1].wa_Lock,
+				UNDOTAG_CopySrcName, NewObjName,
+				UNDOTAG_CreateIcon, CreateIcon,
+				TAG_END
+				);
+			}
 		newDirLock = CreateDir(NewObjName);
 		if (newDirLock)
 			{
@@ -374,6 +409,12 @@ static LONG MakeNewDrawer(void)
 			{
 			Result = IoErr();
 			}
+		}
+
+	if (ws)
+		{
+		DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_EndUndoStep, UndoStep);
+		SCA_UnLockWindowList();
 		}
 
 	CurrentDir(oldDir);
@@ -402,3 +443,32 @@ static void ReportError(LONG Result, CONST_STRPTR NewObjName)
 		NewObjName, FaultText);
 }
 
+//----------------------------------------------------------------------------
+
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START \n", __FUNC__, __LINE__));
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	if (wl)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			if (((BPTR)NULL == dirLock && BNULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
+				{
+				return ws;
+				}
+			}
+		SCA_UnLockWindowList();
+		}
+
+	return NULL;
+}
+
+//----------------------------------------------------------------------------
