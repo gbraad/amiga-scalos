@@ -2612,7 +2612,7 @@ static void MenuUndoProg(struct internalScaWindowTask *iwt, const struct MenuCmd
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 	d1(KPrintF("%s/%s/%ld: mca_IconNode=%08lx\n", __FILE__, __FUNC__, __LINE__, mcArg->mca_IconNode));
 
-	Undo();
+	Undo(iwt);
 }
 
 //---------------------------------------------------------------------------------------
@@ -2622,7 +2622,7 @@ static void MenuRedoProg(struct internalScaWindowTask *iwt, const struct MenuCmd
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 	d1(KPrintF("%s/%s/%ld: mca_IconNode=%08lx\n", __FILE__, __FUNC__, __LINE__, mcArg->mca_IconNode));
 
-	Redo();
+	Redo(iwt);
 }
 
 //---------------------------------------------------------------------------------------

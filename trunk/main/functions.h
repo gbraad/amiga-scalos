@@ -947,8 +947,8 @@ BOOL UndoAddEvent(enum ScalosUndoType type, ULONG FirstTag, ...);
 BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList);
 APTR UndoBeginStep(void);
 void UndoEndStep(APTR event);
-BOOL Undo(void);
-BOOL Redo(void);
+BOOL Undo(struct internalScaWindowTask *iwt);
+BOOL Redo(struct internalScaWindowTask *iwt);
 ///
 /* ------------------------------------------------- */
 
