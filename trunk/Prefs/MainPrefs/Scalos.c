@@ -3090,7 +3090,7 @@ static ULONG ControlBarGadgetsListDragQuery(struct IClass *cl,Object *obj,struct
 
 static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
-	d2(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
+	d1(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
 
 	if (msg->obj == obj)
 		{
@@ -3119,7 +3119,7 @@ static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct 
 
 			DoMethod(msg->obj, MUIM_NList_NextSelected, &id);
 
-			d2(KPrintF(__FILE__ "/%s/%ld: id=%ld\n", __FUNC__, __LINE__, id));
+			d1(KPrintF(__FILE__ "/%s/%ld: id=%ld\n", __FUNC__, __LINE__, id));
 
 			if (MUIV_NList_NextSelected_End == id)
 				break;
@@ -3153,7 +3153,7 @@ static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct 
 		set(msg->obj, MUIA_NList_Active, MUIV_NList_Active_Off);
 		DoMethod(msg->obj,MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_Off, NULL);
 
-		d2(KPrintF(__FILE__ "/%s/%ld: END\n", __FUNC__, __LINE__));
+		d1(KPrintF(__FILE__ "/%s/%ld: END\n", __FUNC__, __LINE__));
 
 		return(0);
 	}
