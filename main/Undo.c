@@ -2843,7 +2843,7 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 
 		newDirLock = CreateDir(uev->uev_Data.uev_NewDrawerData.und_srcName);
 		debugLock_d2(newDirLock);
-		if (NULL == newDirLock)
+		if (BNULL == newDirLock)
 			break;
 
 		if (uev->uev_Data.uev_NewDrawerData.und_CreateIcon)
