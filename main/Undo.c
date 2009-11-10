@@ -64,6 +64,8 @@ static struct UndoEvent *UndoCreateEvent(void);
 static void UndoDisposeEvent(struct UndoEvent *uev);
 static SAVEDS(LONG) UndoDummyFunc(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static void RedoCleanup(void);
+static SAVEDS(ULONG) UndoTask(struct UndoStep **ust, struct SM_RunProcess *msg);
+static SAVEDS(ULONG) RedoTask(struct UndoStep **ust, struct SM_RunProcess *msg);
 static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList);
@@ -418,59 +420,33 @@ static void RedoCleanup(void)
 
 //----------------------------------------------------------------------------
 
-BOOL Undo(void)
+BOOL Undo(struct internalScaWindowTask *iwt)
 {
 	struct UndoStep *ust;
+	BOOL Success = FALSE;
 
 	ScalosObtainSemaphore(&UndoListListSemaphore);
 	ust = (struct UndoStep *) RemTail(&globalUndoList);
 	UndoCount--;
 	ScalosReleaseSemaphore(&UndoListListSemaphore);
 
-	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+	d2(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
 
 	if (ust)
 		{
-		ust->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
-			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
-			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
-			TAG_END);
-
-		if (ust->ust_FileTransObj)
-			{
-			struct UndoEvent *uev;
-
-			for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
-				uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
-				uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
-				{
-				d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
-				if (uev->uev_UndoHook)
-					CallHookPkt(uev->uev_UndoHook, NULL, uev);
-				}
-
-			// Move undo step to redo list
-			ScalosObtainSemaphore(&RedoListListSemaphore);
-			AddTail(&globalRedoList, &ust->ust_Node);
-			ScalosReleaseSemaphore(&RedoListListSemaphore);
-
-			SCA_DisposeScalosObject(ust->ust_FileTransObj);
-			ust->ust_FileTransObj = NULL;
-			}
-		else
-			{
-			UndoDisposeStep(ust);
-			}
+		Success = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_RunProcess, UndoTask,
+			&ust, sizeof(ust), iInfos.xii_iinfos.ii_MainMsgPort);
 		}
 
-	return TRUE;
+	return Success;
 }
 
 //----------------------------------------------------------------------------
 
-BOOL Redo(void)
+BOOL Redo(struct internalScaWindowTask *iwt)
 {
 	struct UndoStep *ust;
+	BOOL Success = FALSE;
 
 	ScalosObtainSemaphore(&RedoListListSemaphore);
 	ust = (struct UndoStep *) RemTail(&globalRedoList);
@@ -480,40 +456,124 @@ BOOL Redo(void)
 
 	if (ust)
 		{
-		ust->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
-			SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
-			SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
-			TAG_END);
-
-		if (ust->ust_FileTransObj)
-			{
-			struct UndoEvent *uev;
-
-			for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
-				uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
-				uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
-				{
-				d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_RedoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_RedoHook));
-				if (uev->uev_RedoHook)
-					CallHookPkt(uev->uev_RedoHook, NULL, uev);
-				}
-
-			// Move redo step to undo list
-			ScalosObtainSemaphore(&UndoListListSemaphore);
-			AddTail(&globalUndoList, &ust->ust_Node);
-			UndoCount++;
-			ScalosReleaseSemaphore(&UndoListListSemaphore);
-
-			SCA_DisposeScalosObject(ust->ust_FileTransObj);
-			ust->ust_FileTransObj = NULL;
-			}
-		else
-			{
-			UndoDisposeStep(ust);
-			}
+		Success = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_RunProcess, RedoTask,
+			&ust, sizeof(ust), iInfos.xii_iinfos.ii_MainMsgPort);
 		}
 
-	return TRUE;
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(ULONG) UndoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
+{
+	static CONST_STRPTR ProgTaskName = "Scalos_UndoTask";
+	APTR prWindowPtr;
+	struct Process *myProc = (struct Process *) FindTask(NULL);
+
+	(void) msg;
+
+	d2(kprintf("%s/%s/%ld: START  *ust=%08lx\n", __FILE__, __FUNC__, __LINE__, *ust));
+
+	prWindowPtr = myProc->pr_WindowPtr;
+	myProc->pr_WindowPtr = (APTR) ~0;    // suppress error requesters
+
+	myProc->pr_Task.tc_Node.ln_Name = (STRPTR) ProgTaskName;
+	SetProgramName(ProgTaskName);
+
+	(*ust)->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
+		SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
+		SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
+		TAG_END);
+
+	if ((*ust)->ust_FileTransObj)
+		{
+		struct UndoEvent *uev;
+
+		for (uev = (struct UndoEvent *) (*ust)->ust_EventList.lh_Head;
+			uev != (struct UndoEvent *) &(*ust)->ust_EventList.lh_Tail;
+			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+			{
+			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
+			if (uev->uev_UndoHook)
+				CallHookPkt(uev->uev_UndoHook, NULL, uev);
+			}
+
+		// Move undo step to redo list
+		ScalosObtainSemaphore(&RedoListListSemaphore);
+		AddTail(&globalRedoList, &(*ust)->ust_Node);
+		ScalosReleaseSemaphore(&RedoListListSemaphore);
+
+		SCA_DisposeScalosObject((*ust)->ust_FileTransObj);
+		(*ust)->ust_FileTransObj = NULL;
+		}
+	else
+		{
+		UndoDisposeStep(*ust);
+		}
+
+	// restore pr_WindowPtr
+	myProc->pr_WindowPtr = prWindowPtr;
+
+	d2(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+
+	return 0;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(ULONG) RedoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
+{
+	static CONST_STRPTR ProgTaskName = "Scalos_RedoTask";
+	APTR prWindowPtr;
+	struct Process *myProc = (struct Process *) FindTask(NULL);
+
+	(void) msg;
+
+	d2(kprintf("%s/%s/%ld: START  *ust=%08lx\n", __FILE__, __FUNC__, __LINE__, *ust));
+
+	prWindowPtr = myProc->pr_WindowPtr;
+	myProc->pr_WindowPtr = (APTR) ~0;    // suppress error requesters
+
+	myProc->pr_Task.tc_Node.ln_Name = (STRPTR) ProgTaskName;
+	SetProgramName(ProgTaskName);
+
+	(*ust)->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
+		SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
+		SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
+		TAG_END);
+
+	if ((*ust)->ust_FileTransObj)
+		{
+		struct UndoEvent *uev;
+
+		for (uev = (struct UndoEvent *) (*ust)->ust_EventList.lh_Head;
+			uev != (struct UndoEvent *) &(*ust)->ust_EventList.lh_Tail;
+			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+			{
+			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_RedoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_RedoHook));
+			if (uev->uev_RedoHook)
+				CallHookPkt(uev->uev_RedoHook, NULL, uev);
+			}
+
+		// Move redo step to undo list
+		ScalosObtainSemaphore(&UndoListListSemaphore);
+		AddTail(&globalUndoList, &(*ust)->ust_Node);
+		UndoCount++;
+		ScalosReleaseSemaphore(&UndoListListSemaphore);
+
+		SCA_DisposeScalosObject((*ust)->ust_FileTransObj);
+		(*ust)->ust_FileTransObj = NULL;
+		}
+	else
+		{
+		UndoDisposeStep(*ust);
+		}
+
+	// restore pr_WindowPtr
+	myProc->pr_WindowPtr = prWindowPtr;
+
+	return 0;
 }
 
 //----------------------------------------------------------------------------
