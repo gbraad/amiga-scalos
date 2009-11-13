@@ -1,0 +1,248 @@
+; Updater.ct
+; $Date$
+; $Revision$
+## version $VER: Updater.catalog 40.1 (05 Nov 2009 18:50:08)
+## codeset 0s
+## language français
+;
+;#arrayopts static __far
+;
+;
+MSGID_TITLENAME
+Scalos : Rechercher
+;Scalos Updater
+;
+;-----------------------------------------------------------
+;
+MSGID_MENU_PROJECT
+Projet
+;Project
+;
+MSGID_MENU_PROJECT_ABOUT
+A propos...
+;About...
+;
+MSGID_MENU_PROJECT_ABOUTMUI
+A propos de MUI...
+;About MUI...
+;
+MSGID_MENU_PROJECT_QUIT
+Quitter
+;Quit
+;
+MSGID_MENU_PROJECT_QUIT_SHORT
+Q
+;Q
+;
+;-----------------------------------------------------------
+;
+MSGID_ABOUTREQOK
+_OKay
+;_OK
+;
+MSGID_ABOUTREQFORMAT
+\33c\033bScalos Updater.module V%ld.%ld\033n\n\
+%s\n\
+© 2009%s The Scalos Team
+;\33c\033bScalos Updater.module V%ld.%ld\033n\n\
+;%s\n\
+;© 2009%s The Scalos Team
+;
+;-----------------------------------------------------------
+;
+;+++translateme+++
+MSGID_COMPONENTLIST_DIRECTORY
+Directory
+;Directory
+;
+;+++translateme+++
+MSGID_COMPONENTLIST_FILE
+Filename
+;Filename
+;
+;+++translateme+++
+MSGID_COMPONENTLIST_AVAILABLE_VERSION
+Available
+;Available
+;
+;+++translateme+++
+MSGID_COMPONENTLIST_INSTALLED_VERSION
+Installed
+;Installed
+;
+;+++translateme+++
+MSGID_COMPONENTLIST_UPDATE
+Update
+;Update
+;
+;-----------------------------------------------------------
+;
+;+++translateme+++
+MSGID_BUTTON_CHECKFORUPDATES
+Check For Updates
+;Check For Updates
+;
+;+++translateme+++
+MSGID_BUTTON_CHECKFORUPDATES_SHORT
+C
+;C
+;
+;+++translateme+++
+MSGID_BUTTON_CHECKFORUPDATES_HELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_BUTTON_STARTUPDATE
+Begin Update
+;Begin Update
+;
+;+++translateme+++
+MSGID_BUTTON_STARTUPDATE_SHORT
+B
+;B
+;
+;+++translateme+++
+MSGID_BUTTON_STARTUPDATE_HELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_BUTTON_SELECT_ALL
+Select All
+;Select All
+;
+;+++translateme+++
+MSGID_BUTTON_SELECT_ALL_SHORT
+A
+;A
+;
+;+++translateme+++
+MSGID_BUTTON_SELECT_ALL_HELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_BUTTON_DESELECT_ALL
+Deselect All
+;Deselect All
+;
+;+++translateme+++
+MSGID_BUTTON_DESELECT_ALL_SHORT
+D
+;D
+;
+;+++translateme+++
+MSGID_BUTTON_DESELECT_ALL_HELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_TEXT_SELECTED_COUNT
+%ld Selected
+;%ld Selected
+;
+;-----------------------------------------------------------
+;
+;+++translateme+++
+MSG_PROGRESS_RESOLVING_NAME
+Resolving name %s...
+;Resolving name %s...
+;
+;+++translateme+++
+MSG_PROGRESS_CONNECTING
+Connecting to %s...
+;Connecting to %s...
+;
+;+++translateme+++
+MSG_PROGRESS_SEND_HTTP_REQUEST
+Sending HTTP Request...
+;Sending HTTP Request...
+;
+;+++translateme+++
+MSG_PROGRESS_PROCESS_HTTP_RESPONSE
+Processing HTTP Response...
+;Processing HTTP Response...
+;
+;+++translateme+++
+MSG_PROGRESS_DONE
+Finished!
+;Finished!
+;
+;+++translateme+++
+MSG_PROGRESS_FAILURE
+Failed to connect to %s : %s
+;Failed to connect to %s : %s
+;
+;+++translateme+++
+MSG_PROGRESS_START_UPDATE
+Starting Update...
+;Starting Update...
+;
+;+++translateme+++
+MSG_PROGRESS_DOWNLOAD_UPDATE
+Downloading update %s...
+;Downloading update %s...
+;
+;+++translateme+++
+MSG_PROGRESS_FAILED
+Failed.
+;Failed.
+;
+;-----------------------------------------------------------
+;
+;+++translateme+++
+MSGID_MENU_COMPONENTS_TITLE
+Components
+;Components
+;
+;+++translateme+++
+MSGID_MENU_COMPONENTS_SELECT_ALL
+Select All
+;Select All
+;
+;+++translateme+++
+MSGID_MENU_COMPONENTS_SELECT_NONE
+Deselect All
+;Deselect All
+;
+;-----------------------------------------------------------
+;
+MSGID_STARTUP_FAILURE
+Le démarrage du module de recherche a échoué.
+;Updater Module startup failed
+;
+MSGID_STARTUP_RETRY_QUIT_GAD
+Essayer de nouveau | Quitter
+;Try again|Quit
+;
+MSGID_STARTUP_MCC_NOT_FOUND
+Ouverture impossible de la classe MUI '%s' V%lu.%lu.\n\
+La classe n'est pas installée.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;The class is not installed.
+;
+MSGID_STARTUP_OLD_MCC
+Ouverture impossible de la classe MUI '%s' V%lu.%lu.\n\
+\n\
+Actuellement installée : V%lu.%lu, \n\
+installez une version supérieure S.V.P !
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;\n\
+;Currently installed is V%lu.%lu, please upgrade!
+;
+MSGID_STARTUP_MCC_IN_USE
+Ouverture impossible de la classe MUI '%s' V%lu.%lu.\n\
+%lu.%lu est actuellement utilisé par d'autres applications.\n\
+\n\
+Une fois que vous vaez installé la version requise,\n\
+fermez tous les programmes MUI, soyez sure que l'ancienne classe\n\
+ne soit plus en mémoire et essayez de nouveau.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;%lu.%lu is currently in use by other applications.\n\
+;\n\
+;Once you have installed the required version,\n\
+;close all MUI programs, make sure the old class\n\
+;is flushed from memory and try again.
+;
+;-----------------------------------------------------------
