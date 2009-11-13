@@ -1,0 +1,251 @@
+; Updater.ct
+## version $VER: Updater.catalog 40.1 (05 Nov 20098 18:50:08)
+## codeset 0s
+## language deutsch
+;
+;#arrayopts static __far
+;
+;
+MSGID_TITLENAME
+Scalos Aktualisierer
+;Scalos Updater
+;
+;-----------------------------------------------------------
+;
+MSGID_MENU_PROJECT
+Projekt
+;Project
+;
+;
+MSGID_MENU_PROJECT_ABOUT
+Über...
+;About...
+;
+;
+MSGID_MENU_PROJECT_ABOUTMUI
+Über MUI...
+;About MUI...
+;
+;
+MSGID_MENU_PROJECT_QUIT
+Beenden
+;Quit
+;
+;
+MSGID_MENU_PROJECT_QUIT_SHORT
+Q
+;Q
+;
+;-----------------------------------------------------------
+;
+MSGID_ABOUTREQOK
+_OK
+;_OK
+;
+;
+MSGID_ABOUTREQFORMAT
+\33c\033bScalos Updater.module V%ld.%ld\033n\n\
+%s\n\
+© 2009%s Das Scalos Team
+;\33c\033bScalos Updater.module V%ld.%ld\033n\n\
+;%s\n\
+;© 2009%s The Scalos Team
+;
+;-----------------------------------------------------------
+;
+MSGID_COMPONENTLIST_DIRECTORY
+Verzeichnis
+;Directory
+;
+;
+MSGID_COMPONENTLIST_FILE
+Dateiname
+;Filename
+;
+;
+MSGID_COMPONENTLIST_AVAILABLE_VERSION
+Verfügbar
+;Available
+;
+;
+MSGID_COMPONENTLIST_INSTALLED_VERSION
+Installiert
+;Installed
+;
+;
+MSGID_COMPONENTLIST_UPDATE
+Akt.
+;Update
+;
+;-----------------------------------------------------------
+;
+;
+MSGID_BUTTON_CHECKFORUPDATES
+Nach Updates suchen
+;Check For Updates
+;
+;
+MSGID_BUTTON_CHECKFORUPDATES_SHORT
+U
+;C
+;
+;+++translateme+++
+MSGID_BUTTON_CHECKFORUPDATES_HELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_BUTTON_STARTUPDATE
+Update starten
+;Begin Update
+;
+;
+MSGID_BUTTON_STARTUPDATE_SHORT
+S
+;B
+;
+;
+MSGID_BUTTON_STARTUPDATE_HELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_BUTTON_SELECT_ALL
+Alles auswählen
+;Select All
+;
+;+++translateme+++
+MSGID_BUTTON_SELECT_ALL_SHORT
+A
+;A
+;
+;+++translateme+++
+MSGID_BUTTON_SELECT_ALL_HELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_BUTTON_DESELECT_ALL
+Alles abwählen
+;Deselect All
+;
+;
+MSGID_BUTTON_DESELECT_ALL_SHORT
+W
+;D
+;
+;+++translateme+++
+MSGID_BUTTON_DESELECT_ALL_HELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_TEXT_SELECTED_COUNT
+%ld ausgewählt
+;%ld Selected
+;
+;-----------------------------------------------------------
+;
+;
+MSG_PROGRESS_RESOLVING_NAME
+Namen %s auflösen...
+;Resolving name %s...
+;
+;
+MSG_PROGRESS_CONNECTING
+Verbinden mit %s...
+;Connecting to %s...
+;
+;
+MSG_PROGRESS_SEND_HTTP_REQUEST
+HTTP-Anfrage senden...
+;Sending HTTP Request...
+;
+;
+MSG_PROGRESS_PROCESS_HTTP_RESPONSE
+HTTP-Antwort verarbeiten...
+;Processing HTTP Response...
+;
+;
+MSG_PROGRESS_DONE
+Fertig!
+;Finished!
+;
+;
+MSG_PROGRESS_FAILURE
+Keine Verbindung zu %s : %s
+;Failed to connect to %s : %s
+;
+;
+MSG_PROGRESS_START_UPDATE
+Aktualisierung beginnt...
+;Starting Update...
+;
+;
+MSG_PROGRESS_DOWNLOAD_UPDATE
+Herunterladen von Update %s...
+;Downloading update %s...
+;
+;
+MSG_PROGRESS_FAILED
+Fehlgeschlagen.
+;Failed.
+;
+;-----------------------------------------------------------
+;
+;
+MSGID_MENU_COMPONENTS_TITLE
+Komponenten
+;Components
+;
+;
+MSGID_MENU_COMPONENTS_SELECT_ALL
+Alles auswählen
+;Select All
+;
+;
+MSGID_MENU_COMPONENTS_SELECT_NONE
+Alles abwählen
+;Deselect All
+;
+;-----------------------------------------------------------
+;
+MSGID_STARTUP_FAILURE
+Updater.module kann nicht gestartet werden
+;Updater Module startup failed
+;
+;
+MSGID_STARTUP_RETRY_QUIT_GAD
+Wiederholen|Beenden
+;Try again|Quit
+;
+;
+MSGID_STARTUP_MCC_NOT_FOUND
+Konnte die MUI Klasse '%s' v%lu.%lu nicht öffnen.\n\
+Die Klasse ist nicht installiert.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;The class is not installed.
+;
+;
+MSGID_STARTUP_OLD_MCC
+Konnte die MUI Klasse '%s' v%lu.%lu nicht öffnen.\n\n\
+Sie haben momentan Version v%lu.%lu installiert und\n\
+sollten die Klasse daher aktualisieren!
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;\n\
+;Currently installed is V%lu.%lu, please upgrade!
+;
+;
+MSGID_STARTUP_MCC_IN_USE
+Konnte die MUI Klasse '%s' v%lu.%lu nicht öffnen.\n\n\
+Version %lu.%lu wird momentan von einer anderen Anwendung\n\
+verwendet. Wenn sie die benötigte Version installiert haben,\n\
+schließen sie alle MUI Programme und probieren es erneut.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;%lu.%lu is currently in use by other applications.\n\
+;\n\
+;Once you have installed the required version,\n\
+;close all MUI programs, make sure the old class\n\
+;is flushed from memory and try again.
+;
+;-----------------------------------------------------------
