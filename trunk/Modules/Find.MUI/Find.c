@@ -318,6 +318,7 @@ struct WBStartup *WBenchMsg;
 static char CurrentPath[1024];
 
 static T_TIMEREQUEST *TimerIO;
+static struct MsgPort *TimerPort;
 static T_TIMEVAL LastUpdate;
 
 DISPATCHER_PROTO(myFindResultsNList);
@@ -1102,7 +1103,8 @@ static BOOL OpenLibraries(void)
 		}
 #endif
 
-	TimerIO = (T_TIMEREQUEST *)CreateIORequest(CreateMsgPort(), sizeof(T_TIMEREQUEST));
+	TimerPort = CreateMsgPort();
+	TimerIO = (T_TIMEREQUEST *)CreateIORequest(TimerPort, sizeof(T_TIMEREQUEST));
 	if (NULL == TimerIO)
 		return FALSE;
 
@@ -1133,6 +1135,11 @@ static void CloseLibraries(void)
 
 		TimerIO	= NULL;
 		TimerBase = NULL;
+		}
+	if (TimerPort)
+		{
+		DeleteMsgPort(TimerPort);
+		TimerPort = NULL;
 		}
 	if (LocaleBase)
 		{
