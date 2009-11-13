@@ -32,8 +32,10 @@ ifeq ($(MACHINE), ppc-amigaos)
 
 INCLUDES	+=      -I$(ICONOBJMCC_DIR) \
 
-LFLAGS	+=	-lauto
-
+LFLAGS	+=	-lauto \
+		-lcurl \
+		-lamisslauto \
+		-lz \
 
 else
 

@@ -197,6 +197,7 @@ struct WBStartup *WBenchMsg;
 static char TextProgressBuffer[256];
 
 static T_TIMEREQUEST *TimerIO;
+static struct MsgPort *TimerPort;
 
 static ULONG globalImageNr = 0;
 
@@ -623,7 +624,8 @@ static BOOL OpenLibraries(void)
 		}
 #endif
 
-	TimerIO = (T_TIMEREQUEST *)CreateIORequest(CreateMsgPort(), sizeof(T_TIMEREQUEST));
+	TimerPort = CreateMsgPort();
+	TimerIO = (T_TIMEREQUEST *)CreateIORequest(TimerPort, sizeof(T_TIMEREQUEST));
 	if (NULL == TimerIO)
 		return FALSE;
 
@@ -654,6 +656,11 @@ static void CloseLibraries(void)
 
 		TimerIO	= NULL;
 		TimerBase = NULL;
+		}
+	if (TimerPort)
+		{
+		DeleteMsgPort(TimerPort);
+		TimerPort = NULL;
 		}
 #ifdef __amigaos4__
 	if (IDOS)
@@ -1705,18 +1712,22 @@ static void UpdateSelectedCount(void)
 
 //----------------------------------------------------------------------------
 
+#if !defined(__amigaos4__)
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 	struct timeval *timeout)
 {
 	return (int) WaitSelect(nfds, readfds, writefds, exceptfds, timeout, NULL);
 }
+#endif
 
 //----------------------------------------------------------------------------
 
+#if !defined(__amigaos4__)
 int ioctl(int s, int cmd, char *arg)
 {
 	return IoctlSocket(s, cmd, arg);
 }
+#endif
 
 //----------------------------------------------------------------------------
 
