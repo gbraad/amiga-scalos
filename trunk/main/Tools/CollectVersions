@@ -10,6 +10,8 @@ tmpfname = "t:xyzzy"
 versionfilename = "ram:versions.txt"
 
 
+call addlib("rexxsupport.library", 0, -30, 0)
+
 'version >' tmpfname
 rc = open( 'tmpfile', tmpfname, 'R' )
 versionstring = readln( 'tmpfile' )
@@ -36,12 +38,13 @@ say "Deleting old directory tree..."
 
 'mkdir -v -p ' || LocalPkgPath
 
+
 rc = open( 'versionfile', versionfilename, 'W' )
 
 call writeln('versionfile', "; AUTOMATICALLY GENERATED FILE, DO NOT EDIT MANUALLY!!!")
 
 /* Scalos main */
-call getversion("scalos:", "scalos")
+call getversion("scalos:", "scalos", "Scalos.catalog")
 
 /* --- datatypes */
 call getversion("sys:classes/datatypes", "amigaiconobject.datatype")
@@ -56,32 +59,33 @@ call getversion("Libs:", "iconobject.library")
 echo " "
 
 /* --- prefs */
-call getversion("scalos:prefs", "FileTypes.prefsplugin")
-call getversion("scalos:prefs", "Menu.prefsplugin")
-call getversion("scalos:prefs", "Pattern.prefsplugin")
-call getversion("scalos:prefs", "Palette.prefsplugin")
-call getversion("scalos:prefs", "Scalos Menu")
-call getversion("scalos:prefs", "Scalos Palette")
-call getversion("scalos:prefs", "Scalos Pattern")
-call getversion("scalos:prefs", "Scalos Prefs")
+call getversion("scalos:prefs", "FileTypes.prefsplugin", "ScalosFileTypes.catalog")
+call getversion("scalos:prefs", "Menu.prefsplugin", "ScalosMenu.catalog")
+call getversion("scalos:prefs", "Pattern.prefsplugin", "ScalosPattern.catalog")
+call getversion("scalos:prefs", "Palette.prefsplugin", "ScalosPalette.catalog")
+call getversion("scalos:prefs", "PopupMenu.prefsplugin", "ScalosPopupMenu.catalog")
+call getversion("scalos:prefs", "Scalos Menu", "ScalosMenu.catalog")
+call getversion("scalos:prefs", "Scalos Palette", "ScalosPalette.catalog")
+call getversion("scalos:prefs", "Scalos Pattern", "ScalosPattern.catalog")
+call getversion("scalos:prefs", "Scalos Prefs", "Scalos_Prefs.catalog")
 
 /* --- modules */
-call getversion("scalos:modules", "Format_Disk.module")
-call getversion("scalos:modules", "Delete.module")
-call getversion("scalos:modules", "Find.module")
-call getversion("scalos:modules", "Empty_Trashcan.module")
-call getversion("scalos:modules", "Exchange.module")
-call getversion("scalos:modules", "Execute_Command.module")
-call getversion("scalos:modules", "IconProperties.module")
-call getversion("scalos:modules", "Information.module")
-call getversion("scalos:modules", "NewDrawer.module")
-call getversion("scalos:modules", "Rename.module")
-call getversion("scalos:modules", "WindowProperties.module")
+call getversion("scalos:modules", "Format_Disk.module", "FormatDisk.catalog")
+call getversion("scalos:modules", "Delete.module", "Delete.catalog")
+call getversion("scalos:modules", "Find.module", "Find.catalog")
+call getversion("scalos:modules", "Empty_Trashcan.module", "Empty_Trashcan.catalog")
+call getversion("scalos:modules", "Exchange.module", "Exchange.catalog")
+call getversion("scalos:modules", "Execute_Command.module", "Execute_Command.catalog")
+call getversion("scalos:modules", "IconProperties.module", "IconProperties.catalog")
+call getversion("scalos:modules", "Information.module", "Information.catalog")
+call getversion("scalos:modules", "NewDrawer.module", "NewDrawer.catalog")
+call getversion("scalos:modules", "Rename.module", "Rename.catalog")
+call getversion("scalos:modules", "WindowProperties.module", "WindowProperties.catalog")
 
 /*  --- plugins */
-call getversion("Scalos:Plugins/Filetypes", "drawercontents.plugin")
-call getversion("Scalos:Plugins/Filetypes", "exifpicture.plugin")
-call getversion("Scalos:Plugins/Filetypes", "picturedimensions.plugin")
+call getversion("Scalos:Plugins/Filetypes", "drawercontents.plugin", "DrawerContentsPlugin.catalog")
+call getversion("Scalos:Plugins/Filetypes", "exifpicture.plugin", "ExifPicturePlugin.catalog")
+call getversion("Scalos:Plugins/Filetypes", "picturedimensions.plugin", "PictureDimensionsPlugin.catalog")
 
 /* OOP Plugins */
 call getversion("Scalos:Plugins/OOP", "devicefilter.plugin")
@@ -107,90 +111,13 @@ call getversion("libs:", "guigfx.library")
 call getversion("libs:", "render.library")
 call getversion("libs:", "popupmenu.library")
 
-/* --- Catalogs - dansk */
-call getversion("Locale:Catalogs/dansk/Scalos", "Scalos.catalog")
-call getversion("Locale:Catalogs/dansk/Scalos", "ScalosPattern.catalog")
-call getversion("Locale:Catalogs/dansk/Scalos", "ScalosMenu.catalog")
-call getversion("Locale:Catalogs/dansk/Scalos", "ScalosPalette.catalog")
-
-/* --- Catalogs - deutsch */
-call getversion("Locale:Catalogs/deutsch/Scalos", "Scalos.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "IconProperties.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "WindowProperties.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "ScalosMenu.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "ScalosPalette.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "ExifPicturePlugin.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "PictureDimensionsPlugin.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "DrawerContentsPlugin.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "ScalosPopupMenu.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "FormatDisk.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Empty_Trashcan.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Exchange.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Execute_Command.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "NewDrawer.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Rename.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Information.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Scalos_Prefs.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "ScalosPattern.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "ScalosFileTypes.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Delete.catalog")
-call getversion("Locale:Catalogs/deutsch/Scalos", "Find.catalog")
-
-/* --- Catalogs - español */
-call getversion("Locale:Catalogs/español/Scalos", "Scalos.catalog")
-call getversion("Locale:Catalogs/español/Scalos", "ScalosPattern.catalog")
-call getversion("Locale:Catalogs/español/Scalos", "ScalosMenu.catalog")
-call getversion("Locale:Catalogs/español/Scalos", "ScalosPalette.catalog")
-
-/* --- Catalogs - français */
-call getversion("Locale:Catalogs/français/Scalos", "Scalos.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "IconProperties.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "WindowProperties.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "ScalosMenu.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "ScalosPalette.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "ExifPicturePlugin.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "PictureDimensionsPlugin.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "DrawerContentsPlugin.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "ScalosPopupMenu.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "FormatDisk.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Empty_Trashcan.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Exchange.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Execute_Command.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "NewDrawer.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Rename.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Information.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Scalos_Prefs.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "ScalosPattern.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "ScalosFileTypes.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Delete.catalog")
-call getversion("Locale:Catalogs/français/Scalos", "Find.catalog")
-
-/* --- Catalogs - italiano */
-call getversion("Locale:Catalogs/italiano/Scalos", "ScalosPattern.catalog")
-call getversion("Locale:Catalogs/italiano/Scalos", "ScalosMenu.catalog")
-call getversion("Locale:Catalogs/italiano/Scalos", "ScalosPalette.catalog")
-
-/* --- Catalogs - polski */
-call getversion("Locale:Catalogs/polski/Scalos", "Scalos.catalog")
-
-/* --- Catalogs - svenska */
-call getversion("Locale:Catalogs/svenska/Scalos", "ScalosPattern.catalog")
-call getversion("Locale:Catalogs/svenska/Scalos", "ScalosMenu.catalog")
-call getversion("Locale:Catalogs/svenska/Scalos", "ScalosPalette.catalog")
-
-/* --- Catalogs - ÃeÓtina */
-call getversion("Locale:Catalogs/ÃeÓtina/Scalos", "Scalos.catalog")
-call getversion("Locale:Catalogs/ÃeÓtina/Scalos", "ScalosPattern.catalog")
-call getversion("Locale:Catalogs/ÃeÓtina/Scalos", "ScalosMenu.catalog")
-call getversion("Locale:Catalogs/ÃeÓtina/Scalos", "ScalosPalette.catalog")
-
 rc = close( 'versionfile' )
 
 exit
 
 
 getversion: procedure expose PkgPath LocalPkgPath
-parse arg dirname, filename
+parse arg dirname, filename, catalogname
 
 connectstr = ""
 if right(dirname,1) ~= ":" then connectstr = "/"
@@ -225,15 +152,37 @@ if rc = 0 then
 	/* say vfstring */
 
 	'lha -q -r -e -x a "' || LHAName || '" "' || filePath || '"'
-	if rc = 0 then
-		do
-		call writeln('versionfile', vfstring)
-		end
-	else
+	if rc ~= 0 then
 		do
 		say "lha failed with " || filePath || " not found!"
+		return
 		end
 
+	if length(catalogname) > 0 then
+		do
+		catalogdir = "Locale:catalogs"
+		languages = showdir(catalogdir)
+		do n=0 by 1 to words(languages)
+			lang = word(languages, n)
+			scaloscatalogdir = catalogdir || "/" || lang || "/Scalos"
+			scaloscatalogs = showdir(scaloscatalogdir)
+			if length(scaloscatalogs) > 0 then
+				do
+				if index(scaloscatalogs, catalogname) > 0 then
+					do
+					catalog = scaloscatalogdir || "/" || catalogname
+					'lha -q -r -e -x a "' || LHAName || '" "' || catalog || '"'
+					if rc ~= 0 then
+						do
+						say "lha failed with " || filePath || " not found!"
+						return
+						end
+					end
+				end
+		end
+		end
+
+		call writeln('versionfile', vfstring)
 	end
 else
 	do
