@@ -116,7 +116,7 @@ rc = close( 'versionfile' )
 exit
 
 
-getversion: procedure expose PkgPath LocalPkgPath
+getversion: procedure expose PkgPath LocalPkgPath os
 parse arg dirname, filename, catalogname
 
 connectstr = ""
@@ -147,9 +147,7 @@ if rc = 0 then
 
 	LHAName = LocalPkgPath || filename || ".lha"
 	PkgName = PkgPath || filename || ".lha"
-
-	vfstring = 'DIR="' || dirname || '" FILE="' || filename || '" VERSION=' || vstring || ' PKG="' || PkgName || '"'
-	/* say vfstring */
+	Hash = "0"
 
 	'lha -q -r -e -x a "' || LHAName || '" "' || filePath || '"'
 	if rc ~= 0 then
@@ -182,7 +180,28 @@ if rc = 0 then
 		end
 		end
 
-		call writeln('versionfile', vfstring)
+	xfname = "t:signature.sha1"
+	'openssl dgst -sha1 -sign Scalos.pem  -out "' || xfname || '" "' || LHAName || '"'
+	if rc ~= 0 then
+		do
+		say "Failed to create signature for " || LHAName
+		return
+		end
+
+	rc = open( 'sha1file', xfname, 'R' )
+	hashbin = readch( 'sha1file', 128 )
+	rc = close( 'sha1file' )
+	'delete ' || xfname || ' quiet'
+/*	say length(hashbin) */
+	Hash = ""
+	do n=1 to length(hashbin)
+		Hash = Hash || c2x(substr(hashbin, n, 1))
+		end
+
+	vfstring = 'DIR="' || dirname || '" FILE="' || filename || '" OS="' || os || '" VERSION=' || vstring || ' PKG="' || PkgName || '" HASH="' || Hash || '"'
+	/* say vfstring */
+
+	call writeln('versionfile', vfstring)
 	end
 else
 	do
