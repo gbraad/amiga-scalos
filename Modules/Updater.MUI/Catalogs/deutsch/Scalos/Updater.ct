@@ -63,9 +63,9 @@ Dateiname
 ;Filename
 ;
 ;
-MSGID_COMPONENTLIST_AVAILABLE_VERSION
-Verfügbar
-;Available
+MSGID_COMPONENTLIST_LATEST_VERSION
+Neueste
+;Latest
 ;
 ;
 MSGID_COMPONENTLIST_INSTALLED_VERSION
@@ -144,6 +144,90 @@ MSGID_TEXT_SELECTED_COUNT
 %ld ausgewählt
 ;%ld Selected
 ;
+;
+MSGID_REGISTER_MAIN
+Komponenten
+;Main
+;
+;
+MSGID_REGISTER_CONFIGURATION
+Einstellungen
+;Configuration
+;
+;
+MSGID_GROUP_PROXY
+Proxy-Einstellungen
+;Proxy Settings
+;
+;
+MSGID_CHECK_USE_PROXY
+Proxy verwenden?
+;Use Proxy?
+;
+;+++translateme+++
+MSGID_CHECK_USE_PROXY_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_STRING_PROXY_ADDR
+Adresse
+;Address
+;
+;+++translateme+++
+MSGID_STRING_PROXY_ADDR_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_STRING_PROXY_PORT
+Port
+;Port
+;
+;+++translateme+++
+MSGID_STRING_PROXY_PORT_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_CHECK_USE_PROXYAUTH
+Proxy braucht Benutzer und Passwort?
+;Proxy requires authentication?
+;
+;+++translateme+++
+MSGID_CHECK_USE_PROXYAUTH_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_STRING_PROXY_USERNAME
+Benutzername
+;User Name
+;
+;+++translateme+++
+MSGID_STRING_PROXY_USERNAME_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_STRING_PROXY_PASSWD
+Passwort
+;Password
+;
+;+++translateme+++
+MSGID_STRING_PROXY_PASSWD_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_REQFORMAT_OPENSSL_ERROR
+In der Funktion \033b%s\033n ist\n\
+der OpenSSL-Aufruf \033b%s\033n fehlgeschlagen:\n\
+%s
+;In function \033b%s\033n,\n\
+;OpenSSL call \033b%s\033n failed:\n\
+;%s
+;
 ;-----------------------------------------------------------
 ;
 ;
@@ -190,6 +274,11 @@ Herunterladen von Update %s...
 MSG_PROGRESS_FAILED
 Fehlgeschlagen.
 ;Failed.
+;
+;
+MSG_PROGRESS_VERIFY_SIGNATURE
+Signatur wird geprüft...
+;Verifying signature...
 ;
 ;-----------------------------------------------------------
 ;

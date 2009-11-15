@@ -97,14 +97,6 @@ $(OBJ_DIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
-$(OBJ_DIR)/%.o : %.s
-	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
-	@$(AS) $(AFLAGS) $< to $@
-
-$(OBJ_DIR)/%.o : %.asm
-	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
-	@$(AS) $(AFLAGS) $< to $@
-
 #############################################################
 
 install:
