@@ -53,8 +53,8 @@ MSGID_COMPONENTLIST_FILE (//)
 Filename
 ;
 ;
-MSGID_COMPONENTLIST_AVAILABLE_VERSION (//)
-Available
+MSGID_COMPONENTLIST_LATEST_VERSION (//)
+Latest
 ;
 ;
 MSGID_COMPONENTLIST_INSTALLED_VERSION (//)
@@ -117,6 +117,72 @@ MSGID_BUTTON_DESELECT_ALL_HELP (//)
 MSGID_TEXT_SELECTED_COUNT (//)
 %ld Selected
 ;
+;
+MSGID_REGISTER_MAIN (//)
+Main
+;
+;
+MSGID_REGISTER_CONFIGURATION (//)
+Configuration
+;
+;
+MSGID_GROUP_PROXY (//)
+Proxy Settings
+;
+;
+MSGID_CHECK_USE_PROXY (//)
+Use Proxy?
+;
+;
+MSGID_CHECK_USE_PROXY_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_STRING_PROXY_ADDR (//)
+Address
+;
+;
+MSGID_STRING_PROXY_ADDR_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_STRING_PROXY_PORT (//)
+Port
+;
+;
+MSGID_STRING_PROXY_PORT_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_CHECK_USE_PROXYAUTH (//)
+Proxy requires authentication?
+;
+;
+MSGID_CHECK_USE_PROXYAUTH_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_STRING_PROXY_USERNAME (//)
+User Name
+;
+;
+MSGID_STRING_PROXY_USERNAME_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_STRING_PROXY_PASSWD (//)
+Password
+;
+;
+MSGID_STRING_PROXY_PASSWD_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_REQFORMAT_OPENSSL_ERROR (//)
+In function \033b%s\033n,\n\
+OpenSSL call \033b%s\033n failed:\n\
+%s
+;
 ;-----------------------------------------------------------
 ;
 MSG_PROGRESS_RESOLVING_NAME (4000//)
@@ -153,6 +219,10 @@ Downloading update %s...
 ;
 MSG_PROGRESS_FAILED (//)
 Failed.
+;
+;
+MSG_PROGRESS_VERIFY_SIGNATURE (//)
+Verifying signature...
 ;
 ;-----------------------------------------------------------
 ;
