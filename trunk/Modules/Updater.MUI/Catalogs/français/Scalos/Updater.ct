@@ -226,6 +226,80 @@ OpenSSL call \033b%s\033n failed:\n\
 ;OpenSSL call \033b%s\033n failed:\n\
 ;%s
 ;
+;+++translateme+++
+MSGID_REQFORMAT_NO_UPDATES_FOUND
+No Updates found for %s.\n\
+You already have the most recent\n\
+Scalos components installed.
+;No Updates found for %s.\n\
+;You already have the most recent\n\
+;Scalos components installed.
+;
+;+++translateme+++
+MSGID_CHECK_SHOW_ALL_COMPONENTS
+Show up-to-date components?
+;Show up-to-date components?
+;
+;+++translateme+++
+MSGID_CHECK_SHOW_ALL_COMPONENTS_SHORTHELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_CHECK_ASK_EVERY_UPDATE
+Ask about every component update?
+;Ask about every component update?
+;
+;+++translateme+++
+MSGID_CHECK_ASK_EVERY_UPDATE_SHORTHELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_ABOUTREQ_YES_NO_ABORT
+_Yes|_No|_Abort
+;_Yes|_No|_Abort
+;
+;+++translateme+++
+MSGID_REQFORMAT_ASK_UPDATE
+Are you sure you want to update\n\
+\"%s\" to version %ld.%ld\n\
+(Installed Version: %ld.%ld) ?
+;Are you sure you want to update\n\
+;\"%s\" to version %ld.%ld\n\
+;(Installed Version: %ld.%ld) ?
+;
+;+++translateme+++
+MSGID_ERROR_DOWNLOADING_UPDATE
+Error downloading update package \"%s\"\n\
+%s
+;Error downloading update package \"%s\"\n\
+;%s
+;
+;+++translateme+++
+MSGID_REQ_CONTINUE_ABORT
+_Continue|_Abort
+;_Continue|_Abort
+;
+;+++translateme+++
+MSGID_ERROR_LHA1
+Error: LHA failed to unpack \"%s\".
+;Error: LHA failed to unpack \"%s\".
+;
+;+++translateme+++
+MSGID_ERROR_LHA2
+Error: LHA failed to unpack\n\
+catalog files for \"%s\".
+;Error: LHA failed to unpack\n\
+;catalog files for \"%s\".
+;
+;+++translateme+++
+MSGID_ERROR_OPEN_LHAFILE
+Error: failed to open temporary\n\
+archive \"%s\" for updating \"%s\".
+;Error: failed to open temporary\n\
+;archive \"%s\" for updating \"%s\".
+;
 ;-----------------------------------------------------------
 ;
 ;+++translateme+++

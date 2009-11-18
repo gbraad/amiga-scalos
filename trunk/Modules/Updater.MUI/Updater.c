@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <dos/dos.h>
 #include <exec/types.h>
@@ -12,12 +13,11 @@
 #include <exec/ports.h>
 #include <exec/io.h>
 #include <exec/execbase.h>
-#include <dos/dos.h>
+#include <dos/dostags.h>
 #include <libraries/dos.h>
 #include <libraries/asl.h>
 #include <libraries/mui.h>
 #include <libraries/gadtools.h>
-#include <mui/NListview_mcc.h>
 #include <devices/clipboard.h>
 #include <devices/timer.h>
 #include <workbench/workbench.h>
@@ -28,6 +28,9 @@
 #include <openssl/pem.h>
 #include <scalos/scalos.h>
 #include <curl/curl.h>
+
+#include <mui/NListview_mcc.h>
+#include <mui/Lamp_mcc.h>
 
 #include <clib/alib_protos.h>
 
@@ -101,8 +104,12 @@ struct ComponentListEntry
 	ULONG cle_RemoteVersion;
 	ULONG cle_RemoteRevision;
 
-	Object *cle_ImageObject;
-	ULONG cle_ImageNr;
+	Object *cle_LampObject;
+	ULONG cle_LampImageNr;
+
+	Object *cle_CheckboxObject;
+	ULONG cle_CheckboxImageNr;
+
 	ULONG cle_Selected;
 
 	ULONG cle_LocalVersion;
@@ -110,13 +117,21 @@ struct ComponentListEntry
 
 	char cle_LocalVersionString[10];
 	char cle_RemoteVersionString[10];
-	char cle_ImageNrString[20];
+	char cle_CheckboxImageNrString[20];
+	char cle_LampImageNrString[20];
 	};
 
 struct ProgressData
 	{
 	ULONG pgd_Min;
 	ULONG pgd_Max;
+	};
+
+struct MUIP_ScalosPrefs_MCCList
+	{
+	CONST_STRPTR MccName;
+	ULONG MccMinVersion;
+	ULONG MccMinRevision;
 	};
 
 //----------------------------------------------------------------------------
@@ -141,6 +156,7 @@ static void ComponentsDestructHookFunc(struct Hook *hook, Object *obj, struct NL
 static ULONG ComponentsDisplayHookFunc(struct Hook *hook, Object *obj, struct NList_DisplayMessage *msg);
 static LONG ComponentsCompareHookFunc(struct Hook *hook, Object *obj, struct NList_CompareMessage *msg);
 static void ComponentToggleUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg);
+static void ToggleShowAllHookFunc(struct Hook *hook, Object *obj, Msg *msg);
 static STRPTR GetAssignListVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRPTR VersionString, size_t MaxLen);
 static STRPTR GetFileVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRPTR VersionString, size_t MaxLen);
 static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, ULONG *Version, ULONG *Revision);
@@ -160,14 +176,11 @@ static UBYTE HexDigit(char ch);
 static STRPTR EscapeHttpName(CONST_STRPTR name);
 static BOOL SetProxyOptions(CURL *curl);
 static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation);
+static BOOL ErrorMsg(ULONG MsgId, ...);
+static void ParseArguments(void);
 
 //----------------------------------------------------------------------------
 
-static struct Hook AboutHook = {{ NULL, NULL }, HOOKFUNC_DEF(OpenAboutFunc), NULL };
-static struct Hook AboutMUIHook = {{ NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIFunc), NULL };
-
-//----------------------------------------------------------------------------
- 
 // local data items
 
 struct DosLibrary *DOSBase;
@@ -200,6 +213,7 @@ static Object *WIN_AboutMUI;
 static Object *MenuAbout, *MenuAboutMUI, *MenuQuit;
 static Object *GaugeProgress;
 static Object *NListComponents;
+static Object *NListHiddenComponents;
 static Object *SelectedCountMsg;
 static Object *ButtonCheckForUpdates, *ButtonStartUpdate;
 static Object *ButtonSelectAll, *ButtonDeselectAll;
@@ -207,6 +221,8 @@ static Object *ContextMenuComponents;
 static Object *CheckUseProxy, *CheckUseProxyAuth;
 static Object *StringProxyAddr, *StringProxyPort;
 static Object *StringProxyUser, *StringProxyPwd;
+static Object *CheckShowAllComponents;
+static Object *CheckAskEveryUpdate;
 
 struct WBStartup *WBenchMsg;
 
@@ -227,11 +243,14 @@ static CONST_STRPTR OsName = "MorphOS";
 static CONST_STRPTR OsName = "AmigaOS3";
 #endif
 
+static struct Hook AboutHook = {{ NULL, NULL }, HOOKFUNC_DEF(OpenAboutFunc), NULL };
+static struct Hook AboutMUIHook = {{ NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIFunc), NULL };
 static struct Hook ComponentsConstructHook = {{ NULL, NULL }, HOOKFUNC_DEF(ComponentsConstructHookFunc), NULL };
 static struct Hook ComponentsDestructHook = {{ NULL, NULL }, HOOKFUNC_DEF(ComponentsDestructHookFunc), NULL };
 static struct Hook ComponentsDisplayHook = {{ NULL, NULL }, HOOKFUNC_DEF(ComponentsDisplayHookFunc), NULL };
 static struct Hook ComponentsCompareHook = {{ NULL, NULL }, HOOKFUNC_DEF(ComponentsCompareHookFunc), NULL };
 static struct Hook ComponentToggleUpdateHook = {{ NULL, NULL }, HOOKFUNC_DEF(ComponentToggleUpdateHookFunc), NULL };
+static struct Hook ToggleShowAllHook = {{ NULL, NULL }, HOOKFUNC_DEF(ToggleShowAllHookFunc), NULL };
 static struct Hook CheckForUpdatesHook = {{ NULL, NULL }, HOOKFUNC_DEF(CheckForUpdatesHookFunc), NULL };
 static struct Hook StartUpdateUpdateHook = {{ NULL, NULL }, HOOKFUNC_DEF(StartUpdateUpdateHookFunc), NULL };
 static struct Hook SelectAllComponentsHook = {{ NULL, NULL }, HOOKFUNC_DEF(SelectAllComponentsHookFunc), NULL };
@@ -240,8 +259,11 @@ static struct Hook DeselectAllComponentsHook = {{ NULL, NULL }, HOOKFUNC_DEF(Des
 static CONST_STRPTR TempFilePath = "ram:";
 static CONST_STRPTR ScalosHttpAddr = "scalos.noname.fr";
 
-static ULONG fUseProxy = FALSE;   	// Flag: use HTTP Proxy
-static ULONG fUseProxyAuth = FALSE;
+static ULONG fAutoCheck = FALSE;   		// Flag: Check for updates immediately on startup
+static ULONG fUseProxy = FALSE;   		// Flag: use HTTP Proxy
+static ULONG fUseProxyAuth = FALSE;		// Flag: use username/password for proxy authentication
+static ULONG fShowAllComponents = FALSE;	// Flag: show all components
+static ULONG fAskEveryUpdate = FALSE;		// Flag: ask user for every updated component
 static STRPTR ProxyAddr = "proxy-host.com";
 static USHORT ProxyPort = 8080;
 static STRPTR ProxyUser = "user";
@@ -257,14 +279,19 @@ static RSA *ScalosPubKeyRSA;		// Scalos Public key for signature verification
 
 //----------------------------------------------------------------------------
 
+static const struct MUIP_ScalosPrefs_MCCList RequiredMccList[] =
+	{
+	{ MUIC_Lamp, 11, 1 },
+	{ MUIC_NListview, 18, 0 },
+	{ NULL, 0, 0 }
+	};
+
 static CONST_STRPTR RegisterTitles[] =
 	{
 	(CONST_STRPTR) MSGID_REGISTER_MAIN,
 	(CONST_STRPTR) MSGID_REGISTER_CONFIGURATION,
 	NULL
 	};
-
-//----------------------------------------------------------------------------
 
 // Context menu in components list
 static struct NewMenu NewContextMenuComponents[] =
@@ -282,6 +309,7 @@ static struct NewMenu NewContextMenuComponents[] =
 
 int main(int argc, char *argv[])
 {
+	const struct MUIP_ScalosPrefs_MCCList *mcc;
 	LONG win_opened;
 	
 	WBenchMsg = (argc == 0) ? (struct WBStartup *)argv : NULL;
@@ -291,11 +319,16 @@ int main(int argc, char *argv[])
 		return 20;
 		}
 
-	if (!CheckMCCVersion(MUIC_NListview, 19, 66))
+	for (mcc = RequiredMccList; mcc->MccName; mcc++)
 		{
-		d1(KPrintF(__FILE__ "/%s/%ld: CheckMCCVersion failed\n", __FUNC__, __LINE__));
-		return 10;
+		if (!CheckMCCVersion(mcc->MccName, mcc->MccMinVersion, mcc->MccMinRevision))
+			{
+			d1(KPrintF(__FILE__ "/%s/%ld: CheckMCCVersion(%s) failed\n", __FUNC__, __LINE__, mcc->MccName));
+			return 10;
+			}
 		}
+
+	ParseArguments();
 
 	TranslateStringArray(RegisterTitles);
 
@@ -326,7 +359,7 @@ int main(int argc, char *argv[])
 					Child, VGroup,
 						Child, NListviewObject,
 							MUIA_NListview_NList, NListComponents = NewObject(myComponentsNListClass->mcc_Class, 0,
-								MUIA_NList_Format, "BAR,BAR,BAR,BAR,BAR",
+								MUIA_NList_Format, ",BAR,BAR,BAR,BAR,BAR",
 								MUIA_Background, MUII_ListBack,
 								MUIA_NList_ConstructHook2, &ComponentsConstructHook,
 								MUIA_NList_DestructHook2, &ComponentsDestructHook,
@@ -336,7 +369,25 @@ int main(int argc, char *argv[])
 								MUIA_NList_Title, TRUE,
 								MUIA_NList_TitleSeparator, TRUE,
 								MUIA_NList_SortType, 1,
-								MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 1,
+								MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 3,
+								MUIA_ContextMenu, ContextMenuComponents,
+								End, //NListObject
+							End, //NListviewObject
+
+						Child, NListviewObject,
+							MUIA_ShowMe, FALSE,
+							MUIA_NListview_NList, NListHiddenComponents = NewObject(myComponentsNListClass->mcc_Class, 0,
+								MUIA_NList_Format, ",BAR,BAR,BAR,BAR,BAR",
+								MUIA_Background, MUII_ListBack,
+								MUIA_NList_ConstructHook2, &ComponentsConstructHook,
+								MUIA_NList_DestructHook2, &ComponentsDestructHook,
+								MUIA_NList_DisplayHook2, &ComponentsDisplayHook,
+								MUIA_NList_CompareHook2, &ComponentsCompareHook,
+								MUIA_NList_AdjustWidth, TRUE,
+								MUIA_NList_Title, TRUE,
+								MUIA_NList_TitleSeparator, TRUE,
+								MUIA_NList_SortType, 1,
+								MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 3,
 								MUIA_ContextMenu, ContextMenuComponents,
 								End, //NListObject
 							End, //NListviewObject
@@ -455,6 +506,23 @@ int main(int argc, char *argv[])
 								End, //HGroup
 							
 							End, //VGroup
+
+						Child, ColGroup(2),
+							Child, Label1((ULONG) GetLocString(MSGID_CHECK_SHOW_ALL_COMPONENTS)),
+							Child, HGroup,
+								Child, CheckShowAllComponents  = CheckMark(fShowAllComponents),
+								Child, HVSpace,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CHECK_SHOW_ALL_COMPONENTS_SHORTHELP),
+								End, //HGroup
+						
+							Child, Label1((ULONG) GetLocString(MSGID_CHECK_ASK_EVERY_UPDATE)),
+							Child, HGroup,
+								Child, CheckAskEveryUpdate = CheckMark(fAskEveryUpdate),
+								Child, HVSpace,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CHECK_ASK_EVERY_UPDATE_SHORTHELP),
+								End, //HGroup
+							End, //ColGroup,
+
 						End, //VGroup
 
 					End, //RegisterGroup
@@ -540,6 +608,9 @@ int main(int argc, char *argv[])
 	DoMethod(CheckUseProxyAuth, MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
 		StringProxyPwd, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 
+	DoMethod(CheckShowAllComponents, MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		CheckShowAllComponents, 2, MUIM_CallHook, &ToggleShowAllHook);
+
 	UpdateSelectedCount();
 
 	DoMethod(ButtonStartUpdate, MUIM_Notify, MUIA_Pressed, FALSE,
@@ -560,6 +631,11 @@ int main(int argc, char *argv[])
 		{
 		ULONG sigs = 0;
 		BOOL Run = TRUE;
+
+		if (fAutoCheck)
+			{
+			CallHookPkt(&CheckForUpdatesHook, ButtonCheckForUpdates, NULL);
+			}
 
 		while (Run)
 			{
@@ -1145,10 +1221,13 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 static void ProcessVersionFile(CONST_STRPTR text, size_t len)
 {
+	ULONG ShowAllComponents;
 	size_t TotalLen = len;
 
 	d1(KPrintF("%s/%s/%ld: Received data\n", __FILE__, __FUNC__, __LINE__));
 	d1(KPrintF("%s/%s/%ld: =======================\n", __FILE__, __FUNC__, __LINE__));
+
+	get(CheckShowAllComponents, MUIA_Selected, &ShowAllComponents);
 
 	while (len)
 		{
@@ -1167,64 +1246,77 @@ static void ProcessVersionFile(CONST_STRPTR text, size_t len)
 			{
 			enum { ARG_DIR, ARG_FILE, ARG_VERSION, ARG_PKG, ARG_OS, ARG_HASH };
 			static CONST_STRPTR Template = "DIR/A/K,FILE/A/K,VERSION/A/K,PKG/K,OS/A/K,HASH/K";
-			struct RDArgs ReadArgs;
+			struct RDArgs *ReadArgs;
 			LONG Args[6];
 
 			memset(Args, 0, sizeof(Args));
-			memset(&ReadArgs, 0, sizeof(ReadArgs));
 
-			ReadArgs.RDA_Source.CS_Buffer = (STRPTR) text;
-			ReadArgs.RDA_Source.CS_Length = LineLen;
-			ReadArgs.RDA_Source.CS_CurChr = 0;
-			ReadArgs.RDA_Flags |= RDAF_NOPROMPT;
-
-			if (ReadArgs(Template, Args, &ReadArgs))
+			ReadArgs = AllocDosObject(DOS_RDARGS, NULL);
+			if (ReadArgs)
 				{
-				struct ComponentListEntry cle;
+				ReadArgs->RDA_Source.CS_Buffer = (STRPTR) text;
+				ReadArgs->RDA_Source.CS_Length = LineLen;
+				ReadArgs->RDA_Source.CS_CurChr = 0;
+				ReadArgs->RDA_Flags |= RDAF_NOPROMPT;
 
-				cle.cle_Dir = (STRPTR) Args[ARG_DIR];
-				cle.cle_File = (STRPTR) Args[ARG_FILE];
-				cle.cle_Package = (STRPTR) Args[ARG_PKG];
-				cle.cle_Hash = (STRPTR) Args[ARG_HASH];
-				cle.cle_Selected = FALSE;
-
-				d1(KPrintF("%s/%s/%ld: DIR=<%s> FILE=<%s> VERSION=<%s> PKG=<%s> OS=<%s>\n", __FILE__, __FUNC__, __LINE__, \
-					Args[ARG_DIR], Args[ARG_FILE], Args[ARG_VERSION], Args[ARG_PKG], Args[ARG_OS]));
-
-				if (0 == strcmp(OsName, (STRPTR) Args[ARG_OS]))
+				if (ReadArgs(Template, Args, ReadArgs))
 					{
-					if (2 == sscanf((STRPTR) Args[ARG_VERSION], "%lu.%lu", &cle.cle_RemoteVersion, &cle.cle_RemoteRevision))
+					struct ComponentListEntry cle;
+
+					cle.cle_Dir = (STRPTR) Args[ARG_DIR];
+					cle.cle_File = (STRPTR) Args[ARG_FILE];
+					cle.cle_Package = (STRPTR) Args[ARG_PKG];
+					cle.cle_Hash = (STRPTR) Args[ARG_HASH];
+					cle.cle_Selected = FALSE;
+
+					d1(KPrintF("%s/%s/%ld: DIR=<%s> FILE=<%s> VERSION=<%s> PKG=<%s> OS=<%s>\n", __FILE__, __FUNC__, __LINE__, \
+						Args[ARG_DIR], Args[ARG_FILE], Args[ARG_VERSION], Args[ARG_PKG], Args[ARG_OS]));
+
+					if (0 == strcmp(OsName, (STRPTR) Args[ARG_OS]))
 						{
-						char VersionString[80];
+						if (2 == sscanf((STRPTR) Args[ARG_VERSION], "%lu.%lu", &cle.cle_RemoteVersion, &cle.cle_RemoteRevision))
+							{
+							char VersionString[80];
 
-						if (':' == cle.cle_Dir[strlen(cle.cle_Dir) - 1])
-							GetAssignListVersionString(cle.cle_Dir, cle.cle_File, VersionString, sizeof(VersionString));
-						else
-							GetFileVersionString(cle.cle_Dir, cle.cle_File, VersionString, sizeof(VersionString));
+							if (':' == cle.cle_Dir[strlen(cle.cle_Dir) - 1])
+								GetAssignListVersionString(cle.cle_Dir, cle.cle_File, VersionString, sizeof(VersionString));
+							else
+								GetFileVersionString(cle.cle_Dir, cle.cle_File, VersionString, sizeof(VersionString));
 
-						d1(KPrintF("%s/%s/%ld: VersionString=<%s>\n", __FILE__, __FUNC__, __LINE__, VersionString));
-						
-						ExtractVersionNumberFromVersionString(VersionString,
-							&cle.cle_LocalVersion, &cle.cle_LocalRevision);
+							d1(KPrintF("%s/%s/%ld: VersionString=<%s>\n", __FILE__, __FUNC__, __LINE__, VersionString));
+							
+							ExtractVersionNumberFromVersionString(VersionString,
+								&cle.cle_LocalVersion, &cle.cle_LocalRevision);
 
-						d1(KPrintF("%s/%s/%ld: cle_LocalVersion=%lu  cle_LocalRevision=%lu\n", __FILE__, __FUNC__, __LINE__, cle.cle_LocalVersion, cle.cle_LocalRevision));
+							d1(KPrintF("%s/%s/%ld: cle_LocalVersion=%lu  cle_LocalRevision=%lu\n", __FILE__, __FUNC__, __LINE__, cle.cle_LocalVersion, cle.cle_LocalRevision));
 
-						cle.cle_Selected = (cle.cle_LocalVersion < cle.cle_RemoteVersion)
-							|| ((cle.cle_LocalVersion == cle.cle_RemoteVersion) && (cle.cle_LocalRevision < cle.cle_RemoteRevision));
+							cle.cle_Selected = (cle.cle_LocalVersion < cle.cle_RemoteVersion)
+								|| ((cle.cle_LocalVersion == cle.cle_RemoteVersion) && (cle.cle_LocalRevision < cle.cle_RemoteRevision));
 
-						if (cle.cle_Selected)
-							SelectedCount++;
+							if (cle.cle_Selected)
+								SelectedCount++;
 
-						DoMethod(NListComponents, MUIM_NList_InsertSingle,
-							&cle, MUIV_NList_Insert_Sorted);
+							if (cle.cle_Selected || ShowAllComponents)
+								{
+								DoMethod(NListComponents, MUIM_NList_InsertSingle,
+									&cle, MUIV_NList_Insert_Sorted);
+								}
+							else
+								{
+								DoMethod(NListHiddenComponents, MUIM_NList_InsertSingle,
+									&cle, MUIV_NList_Insert_Sorted);
+								}
+							}
 						}
+
+					FreeArgs(ReadArgs);
+					}
+				else
+					{
+					d2(KPrintF("%s/%s/%ld: ReadArgs failed IoErr=%ld\n", __FILE__, __FUNC__, __LINE__, IoErr()));
 					}
 
-				FreeArgs(&ReadArgs);
-				}
-			else
-				{
-				d2(KPrintF("%s/%s/%ld: ReadArgs failed IoErr=%ld\n", __FILE__, __FUNC__, __LINE__, IoErr()));
+				FreeDosObject(DOS_RDARGS, ReadArgs);
 				}
 			}
 
@@ -1236,6 +1328,14 @@ static void ProcessVersionFile(CONST_STRPTR text, size_t len)
 		}
 
 	d1(KPrintF("%s/%s/%ld: =======================\n", __FILE__, __FUNC__, __LINE__));
+
+	if (0 == SelectedCount)
+		{
+		MUI_Request(APP_Main, WIN_Main, 0, NULL,
+			GetLocString(MSGID_ABOUTREQOK),
+			GetLocString(MSGID_REQFORMAT_NO_UPDATES_FOUND),
+			OsName);
+		}
 }
 
 //----------------------------------------------------------------------------
@@ -1290,9 +1390,15 @@ static APTR ComponentsConstructHookFunc(struct Hook *hook, Object *obj, struct N
 		cle->cle_LocalVersion = cleIn->cle_LocalVersion;
 		cle->cle_LocalRevision = cleIn->cle_LocalRevision;
 		cle->cle_Selected = cleIn->cle_Selected;
-		cle->cle_ImageNr = ++globalImageNr;
+		cle->cle_CheckboxImageNr = ++globalImageNr;
+		cle->cle_LampImageNr = ++globalImageNr;
 
-		cle->cle_ImageObject = ImageObject,
+		cle->cle_LampObject = LampObject,
+			MUIA_Lamp_Type, MUIV_Lamp_Type_Huge,
+			MUIA_Lamp_Color, cle->cle_Selected ? MUIV_Lamp_Color_LoadingData : MUIV_Lamp_Color_Off,
+			End;
+
+		cle->cle_CheckboxObject = ImageObject,
 			MUIA_Image_Spec, MUII_CheckMark,
 			ImageButtonFrame,
 			MUIA_CycleChain, TRUE,
@@ -1301,10 +1407,15 @@ static APTR ComponentsConstructHookFunc(struct Hook *hook, Object *obj, struct N
 			MUIA_Background, MUII_ButtonBack,
 			MUIA_ShowSelState, FALSE,
 			End;
-		DoMethod(obj, MUIM_NList_UseImage, cle->cle_ImageObject, cle->cle_ImageNr, 0);
+
+		DoMethod(obj, MUIM_NList_UseImage, cle->cle_LampObject, cle->cle_LampImageNr, 0);
+		DoMethod(obj, MUIM_NList_UseImage, cle->cle_CheckboxObject, cle->cle_CheckboxImageNr, 0);
 
 		snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu", cle->cle_LocalVersion, cle->cle_LocalRevision);
 		snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu", cle->cle_RemoteVersion, cle->cle_RemoteRevision);
+
+		snprintf(cle->cle_CheckboxImageNrString, sizeof(cle->cle_CheckboxImageNrString), "\33o[%ld@%ld|0]", cle->cle_CheckboxImageNr, cle->cle_CheckboxImageNr);
+		snprintf(cle->cle_LampImageNrString, sizeof(cle->cle_LampImageNrString), "\33o[%ld]", cle->cle_LampImageNr);
 		}
 
 	return cle;
@@ -1325,13 +1436,18 @@ static void ComponentsDestructHookFunc(struct Hook *hook, Object *obj, struct NL
 		if (cle->cle_File)
 			free(cle->cle_File);
 
-		if (cle->cle_ImageObject)
+		if (cle->cle_CheckboxObject)
 			{
-			DoMethod(obj, MUIM_NList_UseImage, NULL, cle->cle_ImageNr, 0);
-			MUI_DisposeObject(cle->cle_ImageObject);
-			cle->cle_ImageObject = NULL;
+			DoMethod(obj, MUIM_NList_UseImage, NULL, cle->cle_CheckboxImageNr, 0);
+			MUI_DisposeObject(cle->cle_CheckboxObject);
+			cle->cle_CheckboxObject = NULL;
 			}
-
+		if (cle->cle_LampObject)
+			{
+			DoMethod(obj, MUIM_NList_UseImage, NULL, cle->cle_LampImageNr, 0);
+			MUI_DisposeObject(cle->cle_LampObject);
+			cle->cle_LampObject = NULL;
+			}
 		FreePooled(msg->pool, msg->entry, sizeof(struct ComponentListEntry));
 		}
 }
@@ -1342,50 +1458,51 @@ static ULONG ComponentsDisplayHookFunc(struct Hook *hook, Object *obj, struct NL
 		{
 		struct ComponentListEntry *cle = (struct ComponentListEntry *) msg->entry;
 
-		snprintf(cle->cle_ImageNrString, sizeof(cle->cle_ImageNrString), "\33o[%ld@%ld|0]", cle->cle_ImageNr, cle->cle_ImageNr);
-		msg->strings[0] = cle->cle_ImageNrString;
-		msg->strings[1] = cle->cle_Dir;
-		msg->strings[2] = cle->cle_File;
-		msg->strings[3] = cle->cle_RemoteVersionString;
-		msg->strings[4] = cle->cle_LocalVersionString;
+		msg->strings[0] = cle->cle_LampImageNrString;
+		msg->strings[1] = cle->cle_CheckboxImageNrString;
+		msg->strings[2] = cle->cle_Dir;
+		msg->strings[3] = cle->cle_File;
+		msg->strings[4] = cle->cle_RemoteVersionString;
+		msg->strings[5] = cle->cle_LocalVersionString;
 
 		msg->preparses[0] = MUIX_C;
 
 		if (0 == cle->cle_LocalVersion)
 			{
 			// local version not available
-			msg->preparses[1] = msg->preparses[2] =
-				msg->preparses[3] = msg->preparses[4] = MUIX_I;
+			msg->preparses[2] = msg->preparses[3] =
+				msg->preparses[4] = msg->preparses[4] = MUIX_I;
 			}
 		else if ( (cle->cle_LocalVersion < cle->cle_RemoteVersion) ||
 			(cle->cle_LocalVersion == cle->cle_RemoteVersion && cle->cle_LocalRevision < cle->cle_RemoteRevision) )
 			{
 			// needs to be updated
-			msg->preparses[1] = msg->preparses[2] =
-				msg->preparses[3] = msg->preparses[4] = MUIX_B;
+			msg->preparses[2] = msg->preparses[3] =
+				msg->preparses[4] = msg->preparses[5] = MUIX_B;
 			}
 		else if ( (cle->cle_LocalVersion == cle->cle_RemoteVersion) && (cle->cle_LocalRevision == cle->cle_RemoteRevision) )
 			{
 			// versions match
-			msg->preparses[1] = msg->preparses[2] =
-				msg->preparses[3] = msg->preparses[4] = MUIX_N;
+			msg->preparses[2] = msg->preparses[3] =
+				msg->preparses[4] = msg->preparses[5] = MUIX_N;
 			}
 		else
 			{
 			// Huh?
 			// Local version newer than remote version
-			msg->preparses[1] = msg->preparses[2] =
-				msg->preparses[3] = msg->preparses[4] = MUIX_PH;
+			msg->preparses[2] = msg->preparses[3] =
+				msg->preparses[4] = msg->preparses[5] = MUIX_PH;
 			}
 		}
 	else
 		{
 		// display titles
-		msg->strings[0] = GetLocString(MSGID_COMPONENTLIST_UPDATE); ;
-		msg->strings[1] = GetLocString(MSGID_COMPONENTLIST_DIRECTORY);
-		msg->strings[2] = GetLocString(MSGID_COMPONENTLIST_FILE);
-		msg->strings[3] = GetLocString(MSGID_COMPONENTLIST_LATEST_VERSION);
-		msg->strings[4] = GetLocString(MSGID_COMPONENTLIST_INSTALLED_VERSION);
+		msg->strings[0] = "   ";
+		msg->strings[1] = GetLocString(MSGID_COMPONENTLIST_UPDATE); ;
+		msg->strings[2] = GetLocString(MSGID_COMPONENTLIST_DIRECTORY);
+		msg->strings[3] = GetLocString(MSGID_COMPONENTLIST_FILE);
+		msg->strings[4] = GetLocString(MSGID_COMPONENTLIST_LATEST_VERSION);
+		msg->strings[5] = GetLocString(MSGID_COMPONENTLIST_INSTALLED_VERSION);
 		}
 
 	return 0;
@@ -1404,25 +1521,25 @@ static LONG ComponentsCompareHookFunc(struct Hook *hook, Object *obj, struct NLi
 		// primary sorting
 		switch (col1)
 			{
-		case 1:		// sort by directory
+		case 2:		// sort by directory
 			if (ncm->sort_type & MUIV_NList_TitleMark_TypeMask)
 				Result = Stricmp(cle2->cle_Dir, cle1->cle_Dir);
 			else
 				Result = Stricmp(cle1->cle_Dir, cle2->cle_Dir);
 			break;
-		case 2:		// sort by filename
+		case 3:		// sort by filename
 			if (ncm->sort_type & MUIV_NList_TitleMark_TypeMask)
 				Result = Stricmp(cle2->cle_File, cle1->cle_File);
 			else
 				Result = Stricmp(cle1->cle_File, cle2->cle_File);
 			break;
-		case 3:		// sort by version
+		case 4:		// sort by version
 			if (ncm->sort_type & MUIV_NList_TitleMark_TypeMask)
 				Result = cle2->cle_RemoteVersion - cle1->cle_RemoteVersion;
 			else
 				Result = cle1->cle_RemoteVersion - cle2->cle_RemoteVersion;
 			break;
-		case 4:		// sort by revision
+		case 5:		// sort by revision
 			if (ncm->sort_type & MUIV_NList_TitleMark_TypeMask)
 				Result = cle2->cle_RemoteRevision - cle1->cle_RemoteRevision;
 			else
@@ -1437,25 +1554,25 @@ static LONG ComponentsCompareHookFunc(struct Hook *hook, Object *obj, struct NLi
 			// Secondary sorting
 			switch (col2)
 				{
-			case 1:		// sort by directory
+			case 2:		// sort by directory
 				if (ncm->sort_type2 & MUIV_NList_TitleMark2_TypeMask)
 					Result = Stricmp(cle2->cle_Dir, cle1->cle_Dir);
 				else
 					Result = Stricmp(cle1->cle_Dir, cle2->cle_Dir);
 				break;
-			case 2:		// sort by filename
+			case 3:		// sort by filename
 				if (ncm->sort_type2 & MUIV_NList_TitleMark2_TypeMask)
 					Result = Stricmp(cle2->cle_File, cle1->cle_File);
 				else
 					Result = Stricmp(cle1->cle_File, cle2->cle_File);
 				break;
-			case 3:		// sort by version
+			case 4:		// sort by version
 				if (ncm->sort_type2 & MUIV_NList_TitleMark2_TypeMask)
 					Result = cle2->cle_RemoteVersion - cle1->cle_RemoteVersion;
 				else
 					Result = cle1->cle_RemoteVersion - cle2->cle_RemoteVersion;
 				break;
-			case 4:		// sort by revision
+			case 5:		// sort by revision
 				if (ncm->sort_type2 & MUIV_NList_TitleMark2_TypeMask)
 					Result = cle2->cle_RemoteRevision - cle1->cle_RemoteRevision;
 				else
@@ -1490,10 +1607,11 @@ static void ComponentToggleUpdateHookFunc(struct Hook *hook, Object *obj, Msg *m
 
 		DoMethod(NListComponents, MUIM_NList_GetEntry,
 			n, &cle);
-		if (cle && cle->cle_ImageNr == ButtonNr)
+		if (cle && cle->cle_CheckboxImageNr == ButtonNr)
 			{
 			cle->cle_Selected = !cle->cle_Selected;
-			set(cle->cle_ImageObject, MUIA_Selected, cle->cle_Selected);
+			set(cle->cle_CheckboxObject, MUIA_Selected, cle->cle_Selected);
+			set(cle->cle_LampObject, MUIA_Lamp_Color, cle->cle_Selected ? MUIV_Lamp_Color_LoadingData : MUIV_Lamp_Color_Off);
 
 			if (cle->cle_Selected)
 				SelectedCount++;
@@ -1506,6 +1624,73 @@ static void ComponentToggleUpdateHookFunc(struct Hook *hook, Object *obj, Msg *m
 			UpdateSelectedCount();
 			}
 		}
+}
+
+//----------------------------------------------------------------------------
+
+static void ToggleShowAllHookFunc(struct Hook *hook, Object *obj, Msg *msg)
+{
+	ULONG ShowAll;
+	ULONG Entries;
+
+	set(NListComponents, MUIA_NList_Quiet, TRUE);
+	set(NListHiddenComponents, MUIA_NList_Quiet, TRUE);
+
+	get(CheckShowAllComponents, MUIA_Selected, &ShowAll);
+
+	d1(KPrintF("%s/%s/%ld: Button clicked, n=%ld\n", __FILE__, __FUNC__, __LINE__, ButtonNr));
+
+	if (ShowAll)
+		{
+		// Move all entries from NListHiddenComponents to NListComponents
+		get(NListHiddenComponents, MUIA_NList_Entries, &Entries);
+
+		while (Entries--)
+			{
+			struct ComponentListEntry *cle = NULL;
+
+			DoMethod(NListHiddenComponents, MUIM_NList_GetEntry, 0, &cle);
+
+			if (cle)
+				{
+				cle->cle_Selected = FALSE;
+
+				DoMethod(NListComponents, MUIM_NList_InsertSingle,
+					cle, MUIV_NList_Insert_Sorted);
+
+				DoMethod(NListHiddenComponents, MUIM_NList_Remove, 0);
+				}
+			}
+		DoMethod(NListComponents, MUIM_NList_ColWidth, MUIV_NList_ColWidth_All, MUIV_NList_ColWidth_Default);
+		}
+	else
+		{
+		// Move all entries from NListComponents to NListHiddenComponents
+		get(NListComponents, MUIA_NList_Entries, &Entries);
+
+		while (Entries--)
+			{
+			struct ComponentListEntry *cle = NULL;
+
+			DoMethod(NListComponents, MUIM_NList_GetEntry, 0, &cle);
+
+			if (cle)
+				{
+				cle->cle_Selected = FALSE;
+
+				DoMethod(NListHiddenComponents, MUIM_NList_InsertSingle,
+					cle, MUIV_NList_Insert_Sorted);
+
+				DoMethod(NListComponents, MUIM_NList_Remove, 0);
+				}
+			}
+		}
+
+	set(NListComponents, MUIA_NList_Quiet, FALSE);
+	set(NListHiddenComponents, MUIA_NList_Quiet, FALSE);
+
+	SelectedCount = 0;
+	UpdateSelectedCount();
 }
 
 //----------------------------------------------------------------------------
@@ -1709,6 +1894,8 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 	CURL *curl;
 
 	set(GaugeProgress, MUIA_Gauge_Current, 0);
+	DoMethod(NListComponents, MUIM_NList_Clear);
+	DoMethod(NListHiddenComponents, MUIM_NList_Clear);
 
 	curl = curl_easy_init();
 	if (curl)
@@ -1770,27 +1957,33 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
+	ULONG AskEveryUpdate;
 	CURL *curl;
 
 	set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_START_UPDATE));
 	set(GaugeProgress, MUIA_Gauge_Current, 0);
 
+	get(CheckAskEveryUpdate, MUIA_Selected, &AskEveryUpdate);
+
 	curl = curl_easy_init();
 	if (curl)
 		{
+		BOOL AbortUpdate = FALSE;
 		ULONG Count = 0;
 		ULONG Entries;
 		ULONG n;
 
 		get(NListComponents, MUIA_NList_Entries, &Entries);
 
-		for (n = 0; n < Entries; n++)
+		for (n = 0; !AbortUpdate && n < Entries; n++)
 			{
 			FILE *fh = NULL;
 			struct ComponentListEntry *cle = NULL;
-			STRPTR Buffer = NULL;
+			STRPTR LhaName = NULL;
 			STRPTR HttpAddr = NULL;
 			STRPTR EscapedPackageName = NULL;
+			STRPTR LhaCmdLine = NULL;
+			BOOL Success = FALSE;
 
 			DoMethod(NListComponents, MUIM_NList_GetEntry,
 				n, &cle);
@@ -1798,10 +1991,15 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 			do	{
 				struct ProgressData pgd;
 				size_t len;
+				LONG rc;
+				BOOL SkipFile = FALSE;
 				CURLcode res;
 
 				if (!cle->cle_Selected)
 					break;
+
+				set(cle->cle_LampObject, MUIA_Lamp_Color, MUIV_Lamp_Color_ReceivingData);
+				DoMethod(NListComponents, MUIM_NList_RedrawEntry, cle);
 
 				pgd.pgd_Min = (100 * Count) / SelectedCount;
 				pgd.pgd_Max = (100 * (1 + Count)) / SelectedCount;
@@ -1810,12 +2008,12 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				len = 1 + strlen(TempFilePath) + strlen(FilePart(cle->cle_Package));
 
-				Buffer = malloc(len);
-				if (NULL == Buffer)
+				LhaName = malloc(len);
+				if (NULL == LhaName)
 					break;
 
-				strcpy(Buffer, TempFilePath);
-				AddPart(Buffer, FilePart(cle->cle_Package), len);
+				strcpy(LhaName, TempFilePath);
+				AddPart(LhaName, FilePart(cle->cle_Package), len);
 
 				snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
 					GetLocString(MSG_PROGRESS_DOWNLOAD_UPDATE), cle->cle_Package);
@@ -1835,9 +2033,12 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				d2(KPrintF("%s/%s/%ld: HttpAddr=<%s>\n", __FILE__, __FUNC__, __LINE__, HttpAddr));
 
-				fh = fopen(Buffer, "wb");
+				fh = fopen(LhaName, "wb");
 				if (NULL == fh)
+					{
+					AbortUpdate = ErrorMsg(MSGID_ERROR_OPEN_LHAFILE, LhaName, cle->cle_File);
 					break;
+					}
 
 				if (!SetProxyOptions(curl))
 					break;
@@ -1853,21 +2054,106 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				res = curl_easy_perform(curl);
 				if (0 != res)
+					{
+					STRPTR ErrorBuffer;
+
+					ERR_load_crypto_strings();
+
+					ErrorBuffer = ERR_error_string(ERR_get_error(), NULL);
+					d2(KPrintF("%s/%s/%ld:  <%s>\n", __FILE__, __FUNC__, __LINE__, ErrorBuffer));
+
+					AbortUpdate = ErrorMsg(MSGID_ERROR_DOWNLOADING_UPDATE, cle->cle_File, ErrorMsg);
+
+					ERR_free_strings();
 					break;
+					}
 
 				fclose(fh);
 				fh = NULL;
 
 				set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_VERIFY_SIGNATURE));
 
-				if (!VerifyFileSignature(Buffer, cle->cle_Hash))
+				if (!VerifyFileSignature(LhaName, cle->cle_Hash))
 					{
 					d2(KPrintF("%s/%s/%ld: File signature mismatch\n", __FILE__, __FUNC__, __LINE__));
-					DeleteFile(Buffer);
 					break;
 					}
 
-//      lha x -v Delete.module.lha #?.catalog locale:
+				if (AskEveryUpdate)
+					{
+					LONG ReqRes;
+
+					ReqRes = MUI_Request(APP_Main, WIN_Main, 0, NULL,
+						GetLocString(MSGID_ABOUTREQ_YES_NO_ABORT),
+						GetLocString(MSGID_REQFORMAT_ASK_UPDATE),
+						cle->cle_File,
+						cle->cle_RemoteVersion,
+						cle->cle_RemoteRevision,
+						cle->cle_LocalVersion,
+						cle->cle_LocalRevision);
+
+					d2(KPrintF("%s/%s/%ld: ReqRes=%ld\n", __FILE__, __FUNC__, __LINE__, ReqRes));
+					if (1 == ReqRes)
+						SkipFile = FALSE;	// "Yes"
+					else if (2 == ReqRes)
+						SkipFile = TRUE;	// "No"
+					else
+						{
+						AbortUpdate = TRUE;
+						break;			// "Abort" selected
+						}
+					}
+
+				if (!SkipFile)
+					{
+					size_t LhaCmdLineLen;
+
+					LhaCmdLineLen = 1 + strlen(LhaName) + strlen(cle->cle_File) + strlen(cle->cle_Dir) + 40;
+					LhaCmdLine = malloc(LhaCmdLineLen);
+					if (NULL == LhaCmdLine)
+						break;
+
+					//      lha x -q Delete.module.lha Delete.module Scalos:modules
+					snprintf(LhaCmdLine, LhaCmdLineLen, "lha x -q \"%s\" \"%s\" \"%s\"",
+						LhaName, cle->cle_File, cle->cle_Dir);
+
+					d2(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
+
+					rc = SystemTags(LhaCmdLine,
+						NP_Input, Input(),
+						NP_Output, Output(),
+						TAG_END);
+					d2(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+					if (RETURN_OK != rc)
+						{
+						AbortUpdate = ErrorMsg(MSGID_ERROR_LHA1, cle->cle_File);
+						break;
+						}
+
+					free(LhaCmdLine);
+					LhaCmdLineLen = 1 + strlen(LhaName) + 80;
+					LhaCmdLine = malloc(LhaCmdLineLen);
+					if (NULL == LhaCmdLine)
+						break;
+
+					//      lha x -q Delete.module.lha #?.catalog locale:
+					snprintf(LhaCmdLine, LhaCmdLineLen, "lha x -q \"%s\" #?.catalog locale:",
+						LhaName);
+
+					d2(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
+
+					rc = SystemTags(LhaCmdLine,
+						NP_Input, Input(),
+						NP_Output, Output(),
+						TAG_END);
+					d2(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+					if (RETURN_OK != rc)
+						{
+						AbortUpdate = ErrorMsg(MSGID_ERROR_LHA2, cle->cle_File);
+						break;
+						}
+					Success = TRUE;
+					}
 
 				set(GaugeProgress, MUIA_Gauge_Current, pgd.pgd_Max);
 
@@ -1876,13 +2162,28 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 			if (fh)
 				fclose(fh);
-			if (Buffer)
-				free(Buffer);
+			if (LhaName)
+				{
+				DeleteFile(LhaName);
+				free(LhaName);
+				}
 			if (HttpAddr)
 				free(HttpAddr);
 			if (EscapedPackageName)
 				free(EscapedPackageName);
+			if (LhaCmdLine)
+				free(LhaCmdLine);
 
+			if (cle->cle_Selected)
+				{
+				set(cle->cle_LampObject, MUIA_Lamp_Color, Success ? MUIV_Lamp_Color_Ok : MUIV_Lamp_Color_FatalError);
+				}
+			if (Success)
+				{
+				cle->cle_Selected = FALSE;
+				set(cle->cle_CheckboxObject, MUIA_Selected, cle->cle_Selected);
+				}
+			DoMethod(NListComponents, MUIM_NList_RedrawEntry, cle);
 			}
 		curl_easy_cleanup(curl);
 		}
@@ -1912,7 +2213,8 @@ static void SelectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *msg
 		if (!cle->cle_Selected)
 			{
 			cle->cle_Selected = TRUE;
-			set(cle->cle_ImageObject, MUIA_Selected, cle->cle_Selected);
+			set(cle->cle_CheckboxObject, MUIA_Selected, cle->cle_Selected);
+			set(cle->cle_LampObject, MUIA_Lamp_Color, cle->cle_Selected ? MUIV_Lamp_Color_LoadingData : MUIV_Lamp_Color_Off);
 
 			if (cle->cle_Selected)
 				SelectedCount++;
@@ -1946,7 +2248,8 @@ static void DeselectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *m
 		if (cle->cle_Selected)
 			{
 			cle->cle_Selected = FALSE;
-			set(cle->cle_ImageObject, MUIA_Selected, cle->cle_Selected);
+			set(cle->cle_CheckboxObject, MUIA_Selected, cle->cle_Selected);
+			set(cle->cle_LampObject, MUIA_Lamp_Color, cle->cle_Selected ? MUIV_Lamp_Color_LoadingData : MUIV_Lamp_Color_Off);
 
 			if (cle->cle_Selected)
 				SelectedCount++;
@@ -2359,4 +2662,63 @@ static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation)
 
 //----------------------------------------------------------------------------
 
+static BOOL ErrorMsg(ULONG MsgId, ...)
+{
+	char Buffer[200];
+	LONG res;
+	va_list args;
+
+	va_start(args, MsgId);
+
+	vsnprintf(Buffer, sizeof(Buffer), GetLocString(MsgId), args);
+
+	res = MUI_Request(APP_Main, WIN_Main, 0, NULL,
+		GetLocString(MSGID_REQ_CONTINUE_ABORT),
+		Buffer);
+
+	va_end(args);
+
+	return (BOOL) (1 != res);
+}
+
+//----------------------------------------------------------------------------
+
+static void ParseArguments(void)
+{
+	if (WBenchMsg)
+		{
+		// Called from Workbench, check ToolTypes
+		d2(kprintf("%s/%ld: Called from Workbench\n", __FUNC__, __LINE__));
+		}
+	else
+		{
+		// Called from command line
+		enum { ARG_USEPROXY, ARG_PROXYAUTH, ARG_SHOWALL, ARG_ASKUPDATES,
+			ARG_AUTOCHECK, ARG_PROXY, ARG_PROXYPORT, ARG_PROXYUSER,
+			ARG_PROXYPASSWORD, ARG_TEMPFILEPATH, ARG_SCALOSHTTP,
+			ARG_LAST };
+		static CONST_STRPTR Template = "USEPROXY/S,PROXYAUTH/S,SHOWALL/S,ASK/S,"
+			"AUTOCHECK/S,PROXY/K,PROXYPORT/N,PROXYUSER/K,PROXYPASSWORD/K,"
+			"TEMPFILEPATH/K,SCALOSHTTP/K";
+		struct RDArgs *ReadArgs;
+		LONG Args[ARG_LAST];
+
+		memset(Args, 0, sizeof(Args));
+
+		ReadArgs = ReadArgs(Template, Args, NULL);
+		d2(kprintf("%s/%ld: ReadArgs=%08lx\n", __FUNC__, __LINE__, ReadArgs));
+		if (ReadArgs)
+			{
+			fAutoCheck = Args[ARG_AUTOCHECK];
+			fUseProxy = Args[ARG_USEPROXY];
+			fUseProxyAuth = Args[ARG_PROXYAUTH];
+			fShowAllComponents = Args[ARG_SHOWALL];
+			fAskEveryUpdate = Args[ARG_ASKUPDATES];
+
+			FreeArgs(ReadArgs);
+			}
+		}
+}
+
+//----------------------------------------------------------------------------
 
