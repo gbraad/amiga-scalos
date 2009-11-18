@@ -298,7 +298,8 @@ Sprachkataloge für \"%s\".
 ;
 MSGID_ERROR_OPEN_LHAFILE
 Fehler beim Anlegen des temporären\n\
-Archivs zur Aktualisierung von \"%s\".
+Archivs \"%s\" zur\n\
+Aktualisierung von \"%s\".
 ;Error: failed to open temporary\n\
 ;archive \"%s\" for updating \"%s\".
 ;
