@@ -1,6 +1,7 @@
 ; Updater.ct
 ; $Date$
 ; $Revision$
+; $Id$
 ## version $VER: Updater.catalog 40.1 (05 Nov 2009 18:50:08)
 ## codeset 0s
 ## language français
@@ -9,7 +10,7 @@
 ;
 ;
 MSGID_TITLENAME
-Scalos : Rechercher
+Scalos : mise à jour
 ;Scalos Updater
 ;
 ;-----------------------------------------------------------
@@ -50,71 +51,58 @@ MSGID_ABOUTREQFORMAT
 ;
 ;-----------------------------------------------------------
 ;
-;+++translateme+++
 MSGID_COMPONENTLIST_DIRECTORY
-Directory
+Répertoire
 ;Directory
 ;
-;+++translateme+++
 MSGID_COMPONENTLIST_FILE
-Filename
+Fichier
 ;Filename
 ;
-;+++translateme+++
 MSGID_COMPONENTLIST_LATEST_VERSION
-Latest
+Dernier
 ;Latest
 ;
-;+++translateme+++
 MSGID_COMPONENTLIST_INSTALLED_VERSION
-Installed
+Installé
 ;Installed
 ;
-;+++translateme+++
 MSGID_COMPONENTLIST_UPDATE
-Update
+Mise à jour
 ;Update
 ;
 ;-----------------------------------------------------------
 ;
-;+++translateme+++
 MSGID_BUTTON_CHECKFORUPDATES
-Check For Updates
+Chercher les mises à jour
 ;Check For Updates
 ;
-;+++translateme+++
 MSGID_BUTTON_CHECKFORUPDATES_SHORT
 C
 ;C
 ;
-;+++translateme+++
 MSGID_BUTTON_CHECKFORUPDATES_HELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_BUTTON_STARTUPDATE
-Begin Update
+Commencer la mise à jour
 ;Begin Update
 ;
-;+++translateme+++
 MSGID_BUTTON_STARTUPDATE_SHORT
-B
+J
 ;B
 ;
-;+++translateme+++
 MSGID_BUTTON_STARTUPDATE_HELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_BUTTON_SELECT_ALL
-Select All
+Tout sélectionner
 ;Select All
 ;
-;+++translateme+++
 MSGID_BUTTON_SELECT_ALL_SHORT
-A
+T
 ;A
 ;
 ;+++translateme+++
@@ -122,12 +110,10 @@ MSGID_BUTTON_SELECT_ALL_HELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_BUTTON_DESELECT_ALL
-Deselect All
+Tout déselectionner
 ;Deselect All
 ;
-;+++translateme+++
 MSGID_BUTTON_DESELECT_ALL_SHORT
 D
 ;D
@@ -137,29 +123,24 @@ MSGID_BUTTON_DESELECT_ALL_HELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_TEXT_SELECTED_COUNT
-%ld Selected
+%ld Sélectionné(s)
 ;%ld Selected
 ;
-;+++translateme+++
 MSGID_REGISTER_MAIN
-Main
+Principal
 ;Main
 ;
-;+++translateme+++
 MSGID_REGISTER_CONFIGURATION
 Configuration
 ;Configuration
 ;
-;+++translateme+++
 MSGID_GROUP_PROXY
-Proxy Settings
+Options du Proxy
 ;Proxy Settings
 ;
-;+++translateme+++
 MSGID_CHECK_USE_PROXY
-Use Proxy?
+Utiliser un Proxy ?
 ;Use Proxy?
 ;
 ;+++translateme+++
@@ -167,9 +148,8 @@ MSGID_CHECK_USE_PROXY_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_STRING_PROXY_ADDR
-Address
+Adresse
 ;Address
 ;
 ;+++translateme+++
@@ -177,7 +157,6 @@ MSGID_STRING_PROXY_ADDR_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_STRING_PROXY_PORT
 Port
 ;Port
@@ -187,9 +166,8 @@ MSGID_STRING_PROXY_PORT_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_CHECK_USE_PROXYAUTH
-Proxy requires authentication?
+Le Proxy néccessite une authentification ?
 ;Proxy requires authentication?
 ;
 ;+++translateme+++
@@ -197,9 +175,8 @@ MSGID_CHECK_USE_PROXYAUTH_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_STRING_PROXY_USERNAME
-User Name
+Nom d'utilisateur
 ;User Name
 ;
 ;+++translateme+++
@@ -207,9 +184,8 @@ MSGID_STRING_PROXY_USERNAME_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_STRING_PROXY_PASSWD
-Password
+Mot de passe
 ;Password
 ;
 ;+++translateme+++
@@ -217,27 +193,24 @@ MSGID_STRING_PROXY_PASSWD_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_REQFORMAT_OPENSSL_ERROR
-In function \033b%s\033n,\n\
-OpenSSL call \033b%s\033n failed:\n\
+Dans la fonction \033b%s\033n,\n\
+OpenSSL appelant \033b%s\033n a échoué :\n\
 %s
 ;In function \033b%s\033n,\n\
 ;OpenSSL call \033b%s\033n failed:\n\
 ;%s
 ;
-;+++translateme+++
 MSGID_REQFORMAT_NO_UPDATES_FOUND
-No Updates found for %s.\n\
-You already have the most recent\n\
-Scalos components installed.
+Pas de mise à jour pour %s.\n\
+Vous possédez déjà les composants\n\
+les plus récents de Scalos.
 ;No Updates found for %s.\n\
 ;You already have the most recent\n\
 ;Scalos components installed.
 ;
-;+++translateme+++
 MSGID_CHECK_SHOW_ALL_COMPONENTS
-Show up-to-date components?
+Voir les vieux composants ?
 ;Show up-to-date components?
 ;
 ;+++translateme+++
@@ -245,9 +218,8 @@ MSGID_CHECK_SHOW_ALL_COMPONENTS_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_CHECK_ASK_EVERY_UPDATE
-Ask about every component update?
+Demander pour chaque mise à jour des composants ?
 ;Ask about every component update?
 ;
 ;+++translateme+++
@@ -255,118 +227,100 @@ MSGID_CHECK_ASK_EVERY_UPDATE_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_ABOUTREQ_YES_NO_ABORT
-_Yes|_No|_Abort
+_Oui|_Non|_Annuler
 ;_Yes|_No|_Abort
 ;
 ;+++translateme+++
 MSGID_REQFORMAT_ASK_UPDATE
-Are you sure you want to update\n\
-\"%s\" to version %ld.%ld\n\
-(Installed Version: %ld.%ld) ?
+Etes-vous certain de vouloir mettre à jour\n\
+\"%s\" en version %ld.%ld\n\
+(Version installée : %ld.%ld) ?
 ;Are you sure you want to update\n\
 ;\"%s\" to version %ld.%ld\n\
 ;(Installed Version: %ld.%ld) ?
 ;
-;+++translateme+++
 MSGID_ERROR_DOWNLOADING_UPDATE
-Error downloading update package \"%s\"\n\
+Erreur pendant le téléchargement du pack \"%s\"\n\
 %s
 ;Error downloading update package \"%s\"\n\
 ;%s
 ;
-;+++translateme+++
 MSGID_REQ_CONTINUE_ABORT
-_Continue|_Abort
+_Continuer|_Annuler
 ;_Continue|_Abort
 ;
-;+++translateme+++
 MSGID_ERROR_LHA1
-Error: LHA failed to unpack \"%s\".
+Erreur : LHA n'a pas réussit à désarchiver \"%s\".
 ;Error: LHA failed to unpack \"%s\".
 ;
-;+++translateme+++
 MSGID_ERROR_LHA2
-Error: LHA failed to unpack\n\
-catalog files for \"%s\".
+Erreur : LHA n'a pas réussit à désarchiver\n\
+les catalogues pour \"%s\".
 ;Error: LHA failed to unpack\n\
 ;catalog files for \"%s\".
 ;
 ;+++translateme+++
 MSGID_ERROR_OPEN_LHAFILE
-Error: failed to open temporary\n\
-archive \"%s\" for updating \"%s\".
+Erreur : Impossible d'ouvrir l'archive\n\
+temporaire \"%s\" pour mettre à jour \"%s\".
 ;Error: failed to open temporary\n\
 ;archive \"%s\" for updating \"%s\".
 ;
 ;-----------------------------------------------------------
 ;
-;+++translateme+++
 MSG_PROGRESS_RESOLVING_NAME
-Resolving name %s...
+Résolution du nom %s...
 ;Resolving name %s...
 ;
-;+++translateme+++
 MSG_PROGRESS_CONNECTING
-Connecting to %s...
+Connection à %s...
 ;Connecting to %s...
 ;
-;+++translateme+++
 MSG_PROGRESS_SEND_HTTP_REQUEST
-Sending HTTP Request...
+Envoi de la requête HTTP...
 ;Sending HTTP Request...
 ;
-;+++translateme+++
 MSG_PROGRESS_PROCESS_HTTP_RESPONSE
-Processing HTTP Response...
+Processus de réponse HTTP...
 ;Processing HTTP Response...
 ;
-;+++translateme+++
 MSG_PROGRESS_DONE
-Finished!
+Terminé !
 ;Finished!
 ;
-;+++translateme+++
 MSG_PROGRESS_FAILURE
-Failed to connect to %s : %s
+Impossible de se connecter à %s : %s
 ;Failed to connect to %s : %s
 ;
-;+++translateme+++
 MSG_PROGRESS_START_UPDATE
-Starting Update...
+Démarrage de la mise à jour...
 ;Starting Update...
 ;
-;+++translateme+++
 MSG_PROGRESS_DOWNLOAD_UPDATE
-Downloading update %s...
+Téléchargement de la mise à jour %s...
 ;Downloading update %s...
 ;
-;+++translateme+++
 MSG_PROGRESS_FAILED
-Failed.
+Echoué.
 ;Failed.
 ;
-;+++translateme+++
 MSG_PROGRESS_VERIFY_SIGNATURE
-Verifying signature...
+Vérification de la signature...
 ;Verifying signature...
 ;
 ;-----------------------------------------------------------
 ;
-;+++translateme+++
 MSGID_MENU_COMPONENTS_TITLE
-Components
+Composants
 ;Components
 ;
-;+++translateme+++
 MSGID_MENU_COMPONENTS_SELECT_ALL
-Select All
+Tout sélectionner
 ;Select All
 ;
-;+++translateme+++
 MSGID_MENU_COMPONENTS_SELECT_NONE
-Deselect All
+Tout déselectionner
 ;Deselect All
 ;
 ;-----------------------------------------------------------
