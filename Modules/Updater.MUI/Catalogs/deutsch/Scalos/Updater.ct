@@ -228,6 +228,80 @@ der OpenSSL-Aufruf \033b%s\033n fehlgeschlagen:\n\
 ;OpenSSL call \033b%s\033n failed:\n\
 ;%s
 ;
+;
+MSGID_REQFORMAT_NO_UPDATES_FOUND
+Keine Aktualisierungen für %s gefunden.\n\
+Sie haben bereits die aktuellsten\n\
+Scalos-Komponenten installiert.
+;No Updates found for %s.\n\
+;You already have the most recent\n\
+;Scalos components installed.
+;
+;
+MSGID_CHECK_SHOW_ALL_COMPONENTS
+Auch aktuelle Komponenten zeigen?
+;Show up-to-date components?
+;
+;+++translateme+++
+MSGID_CHECK_SHOW_ALL_COMPONENTS_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_CHECK_ASK_EVERY_UPDATE
+Bei Aktualisierung jeder Komponente nachfragen?
+;Ask about every component update?
+;
+;+++translateme+++
+MSGID_CHECK_ASK_EVERY_UPDATE_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_ABOUTREQ_YES_NO_ABORT
+_Ja|_Nein|_Abbruch
+;_Yes|_No|_Abort
+;
+;
+MSGID_REQFORMAT_ASK_UPDATE
+Möchten Sie wirklch die Scalos-Komponente \"%s\"\n\
+auf die Version %ld.%ld aktualisieren?\n\
+(Derzeit installiert: V%ld.%ld)
+;Are you sure you want to update\n\
+;\"%s\" to version %ld.%ld\n\
+;(Installed Version: %ld.%ld) ?
+;
+;
+MSGID_ERROR_DOWNLOADING_UPDATE
+Fehler beim Herunterladen der Komponente \"%s\":\n\
+%s
+;Error downloading update package \"%s\"\n\
+;%s
+;
+;
+MSGID_REQ_CONTINUE_ABORT
+_Weiter|_Abbruch
+;_Continue|_Abort
+;
+;
+MSGID_ERROR_LHA1
+Fehler beim AUspacken von \"%s\" mit LHA.
+;Error: LHA failed to unpack \"%s\".
+;
+;
+MSGID_ERROR_LHA2
+Fehler beim AUspacken der\n\
+Sprachkataloge für \"%s\".
+;Error: LHA failed to unpack\n\
+;catalog files for \"%s\".
+;
+;
+MSGID_ERROR_OPEN_LHAFILE
+Fehler beim Anlegen des temporären\n\
+Archivs zur Aktualisierung von \"%s\".
+;Error: failed to open temporary\n\
+;archive \"%s\" for updating \"%s\".
+;
 ;-----------------------------------------------------------
 ;
 ;

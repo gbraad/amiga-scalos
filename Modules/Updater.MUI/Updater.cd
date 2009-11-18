@@ -183,6 +183,61 @@ In function \033b%s\033n,\n\
 OpenSSL call \033b%s\033n failed:\n\
 %s
 ;
+;
+MSGID_REQFORMAT_NO_UPDATES_FOUND (//)
+No Updates found for %s.\n\
+You already have the most recent\n\
+Scalos components installed.
+;
+;
+MSGID_CHECK_SHOW_ALL_COMPONENTS (//)
+Show up-to-date components?
+;
+;
+MSGID_CHECK_SHOW_ALL_COMPONENTS_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_CHECK_ASK_EVERY_UPDATE (//)
+Ask about every component update?
+;
+;
+MSGID_CHECK_ASK_EVERY_UPDATE_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_ABOUTREQ_YES_NO_ABORT (//)
+_Yes|_No|_Abort
+;
+;
+MSGID_REQFORMAT_ASK_UPDATE (//)
+Are you sure you want to update\n\
+\"%s\" to version %ld.%ld\n\
+(Installed Version: %ld.%ld) ?
+;
+;
+MSGID_ERROR_DOWNLOADING_UPDATE (//)
+Error downloading update package \"%s\"\n\
+%s
+;
+;
+MSGID_REQ_CONTINUE_ABORT (//)
+_Continue|_Abort
+;
+;
+MSGID_ERROR_LHA1 (//)
+Error: LHA failed to unpack \"%s\".
+;
+;
+MSGID_ERROR_LHA2 (//)
+Error: LHA failed to unpack\n\
+catalog files for \"%s\".
+;
+;
+MSGID_ERROR_OPEN_LHAFILE (//)
+Error: failed to open temporary\n\
+archive \"%s\" for updating \"%s\".
+;
 ;-----------------------------------------------------------
 ;
 MSG_PROGRESS_RESOLVING_NAME (4000//)
