@@ -38,13 +38,21 @@ say "Deleting old directory tree..."
 
 'mkdir -v -p ' || LocalPkgPath
 
+call loadexistingversionfile(os, versionfilename)
 
-rc = open( 'versionfile', versionfilename, 'W' )
+rc = open( 'versionfile', versionfilename, 'append' )
+if rc ~= 1 then
+	do
+	say "failed to open version file " || versionfilename " !"
+	exit
+	end
+
+rc = seek( 'versionfile', 0, 'End' )
 
 call writeln('versionfile', "; AUTOMATICALLY GENERATED FILE, DO NOT EDIT MANUALLY!!!")
 
 /* Scalos main */
-call getversion("scalos:", "scalos", "Scalos.catalog")
+call getversion("scalos:", "Scalos", "Scalos.catalog")
 
 /* --- datatypes */
 call getversion("sys:classes/datatypes", "amigaiconobject.datatype")
@@ -115,9 +123,12 @@ rc = close( 'versionfile' )
 
 exit
 
+/* -------------------------------------------------------------------------------- */
 
 getversion: procedure expose PkgPath LocalPkgPath os
 parse arg dirname, filename, catalogname
+
+say "processing " || filename
 
 connectstr = ""
 if right(dirname,1) ~= ":" then connectstr = "/"
@@ -209,4 +220,55 @@ else
 	end
 
 return
+
+/* -------------------------------------------------------------------------------- */
+
+loadexistingversionfile: procedure
+parse arg osname, versionfilename
+
+oldversionfilename = 'ram:versions-old'
+
+/* use wget to download any existing version file */
+'wget -q --output-document=' || oldversionfilename || ' http://scalos.noname.fr/versions.txt'
+if rc ~= 0 then
+	do
+	say "wget failed to retrieve old version file !"
+	exit
+	end
+
+rc = open( 'versionfile', versionfilename, 'write' )
+if rc ~= 1 then
+	do
+	say "failed to open version file " || versionfilename " !"
+	exit
+	end
+
+rc = open( 'oldversionfile', oldversionfilename, 'read' )
+if rc ~= 1 then
+	do
+	say "failed to open old version file " || oldversionfilename " !"
+	exit
+	end
+
+call writeln('versionfile', "; AUTOMATICALLY GENERATED FILE, DO NOT EDIT MANUALLY!!!")
+
+/* copy all lines for operating systems different from "osname" to new file */
+do while ~eof('oldversionfile')
+	vline = readln('oldversionfile')
+	if index(vline, 'OS="' || osname || '"') = 0 & length(vline) > 0 & left(vline, 1) ~= ';' then
+		do
+		rc = writeln('versionfile', vline)
+		end
+	end
+
+rc = close( 'versionfile' )
+rc = close( 'oldversionfile' )
+
+/* remove old version file */
+'delete ' || oldversionfilename || ' quiet'
+
+return
+
+/* -------------------------------------------------------------------------------- */
+
 
