@@ -64,7 +64,6 @@ call getversion("sys:classes/datatypes", "iconobject.datatype")
 
 /* --- libraries */
 call getversion("Libs:", "iconobject.library")
-echo " "
 
 /* --- prefs */
 call getversion("scalos:prefs", "FileTypes.prefsplugin", "ScalosFileTypes.catalog")
@@ -133,8 +132,8 @@ say "processing " || filename
 connectstr = ""
 if right(dirname,1) ~= ":" then connectstr = "/"
 
-filePath = dirname || connectstr || filename
-'version "' || filePath || '" >' tmpfname
+filePath = dirname || connectstr
+'version "' || filePath || filename || '" >' tmpfname
 /* say "version returned" rc */
 
 if rc = 0 then
@@ -160,11 +159,17 @@ if rc = 0 then
 	PkgName = PkgPath || filename || ".lha"
 	Hash = "0"
 
-	'lha -q -r -e -x a "' || LHAName || '" "' || filePath || '"'
+	'lha -Iqr a "' || LHAName || '" -w "' || filePath || '" "' || filename || '"'
 	if rc ~= 0 then
 		do
-		say "lha failed with " || filePath || " not found!"
+		say "lha failed with " || filename || " not found!"
 		return
+		end
+
+	/* try to add associated icon (may fail) */
+	if fileexists(filePath || filename || '.info') = 1 then
+		do
+		'lha -Iqr a "' || LHAName || '" -w "' || filePath || '" "' || filename || '.info"'
 		end
 
 	if length(catalogname) > 0 then
@@ -180,7 +185,7 @@ if rc = 0 then
 				if index(scaloscatalogs, catalogname) > 0 then
 					do
 					catalog = scaloscatalogdir || "/" || catalogname
-					'lha -q -r -e -x a "' || LHAName || '" "' || catalog || '"'
+					'lha -Iqrx a "' || LHAName || '" "' || catalog || '"'
 					if rc ~= 0 then
 						do
 						say "lha failed with " || filePath || " not found!"
@@ -268,6 +273,24 @@ rc = close( 'oldversionfile' )
 'delete ' || oldversionfilename || ' quiet'
 
 return
+
+/* -------------------------------------------------------------------------------- */
+
+fileexists: procedure
+parse arg filename
+
+rc = open( 'testfile', filename, 'read' )
+if rc ~= 1 then
+	do
+	found = 0
+	end
+else
+	do
+	found = 1
+	rc = close( 'testfile' )
+	end
+
+return found
 
 /* -------------------------------------------------------------------------------- */
 
