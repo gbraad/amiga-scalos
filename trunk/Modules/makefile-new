@@ -21,6 +21,7 @@ SUBDIRS	=	WindowProperties.MUI \
 		Find.MUI \
 		Delete.MUI \
                 Empty_Trashcan.MUI \
+		Updater.MUI \
                 FormatDisk.Gadtools \
 # 		Delete.Gadtools \
 #		Rename.Reaction \

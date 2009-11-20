@@ -231,7 +231,7 @@ MSGID_ABOUTREQ_YES_NO_ABORT
 _Oui|_Non|_Annuler
 ;_Yes|_No|_Abort
 ;
-;+++translateme+++
+;
 MSGID_REQFORMAT_ASK_UPDATE
 Etes-vous certain de vouloir mettre à jour\n\
 \"%s\" en version %ld.%ld\n\
@@ -260,12 +260,34 @@ les catalogues pour \"%s\".
 ;Error: LHA failed to unpack\n\
 ;catalog files for \"%s\".
 ;
-;+++translateme+++
+;
 MSGID_ERROR_OPEN_LHAFILE
 Erreur : Impossible d'ouvrir l'archive\n\
 temporaire \"%s\" pour mettre à jour \"%s\".
 ;Error: failed to open temporary\n\
 ;archive \"%s\" for updating \"%s\".
+;
+;+++translateme+++
+MSGID_STRING_SCALOS_SERVER
+Scalos Update Server
+;Scalos Update Server
+;
+;+++translateme+++
+MSGID_STRING_SCALOS_SERVER_SHORTHELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_REQ_INSTALL_UPDATES_GADGETS
+_Update|_Abort
+;_Update|_Abort
+;
+;+++translateme+++
+MSGID_REQ_INSTALL_UPDATES
+Are you sure you want to install\n\
+%ld Scalos updates now?
+;Are you sure you want to install\n\
+;%ld Scalos updates now?
 ;
 ;-----------------------------------------------------------
 ;

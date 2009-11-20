@@ -238,6 +238,23 @@ MSGID_ERROR_OPEN_LHAFILE (//)
 Error: failed to open temporary\n\
 archive \"%s\" for updating \"%s\".
 ;
+;
+MSGID_STRING_SCALOS_SERVER (//)
+Scalos Update Server
+;
+;
+MSGID_STRING_SCALOS_SERVER_SHORTHELP (//)
+...TBD...
+;
+;
+MSGID_REQ_INSTALL_UPDATES_GADGETS (//)
+_Update|_Abort
+;
+;
+MSGID_REQ_INSTALL_UPDATES (//)
+Are you sure you want to install\n\
+%ld Scalos updates now?
+;
 ;-----------------------------------------------------------
 ;
 MSG_PROGRESS_RESOLVING_NAME (4000//)
