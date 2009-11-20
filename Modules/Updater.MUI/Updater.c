@@ -149,7 +149,7 @@ static void TranslateStringArray(CONST_STRPTR *stringArray);
 static void TranslateNewMenu(struct NewMenu *nm);
 static STRPTR GetLocString(ULONG MsgId);
 BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev);
-static void ProcessVersionFile(CONST_STRPTR text, size_t len);
+static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len);
 static size_t VersionFileWrite( void *ptr, size_t size, size_t nmemb, void *stream);
 static APTR ComponentsConstructHookFunc(struct Hook *hook, Object *obj, struct NList_ConstructMessage *msg);
 static void ComponentsDestructHookFunc(struct Hook *hook, Object *obj, struct NList_DestructMessage *msg);
@@ -222,7 +222,9 @@ static Object *CheckUseProxy, *CheckUseProxyAuth;
 static Object *StringProxyAddr, *StringProxyPort;
 static Object *StringProxyUser, *StringProxyPwd;
 static Object *CheckShowAllComponents;
+static Object *StringScalosWebSite;
 static Object *CheckAskEveryUpdate;
+static Object *GroupSelection, *GroupActionButtons;
 
 struct WBStartup *WBenchMsg;
 
@@ -259,15 +261,16 @@ static struct Hook DeselectAllComponentsHook = {{ NULL, NULL }, HOOKFUNC_DEF(Des
 static CONST_STRPTR TempFilePath = "ram:";
 static CONST_STRPTR ScalosHttpAddr = "scalos.noname.fr";
 
-static ULONG fAutoCheck = FALSE;   		// Flag: Check for updates immediately on startup
+static ULONG fAuto = FALSE;                     // Flag: Check for updates immediately on startup
+						// After completed Check for updates, start update automatically
 static ULONG fUseProxy = FALSE;   		// Flag: use HTTP Proxy
 static ULONG fUseProxyAuth = FALSE;		// Flag: use username/password for proxy authentication
 static ULONG fShowAllComponents = FALSE;	// Flag: show all components
 static ULONG fAskEveryUpdate = FALSE;		// Flag: ask user for every updated component
-static STRPTR ProxyAddr = "proxy-host.com";
+static CONST_STRPTR ProxyAddr = "proxy-host.com";
 static USHORT ProxyPort = 8080;
-static STRPTR ProxyUser = "user";
-static STRPTR ProxyPasswd = "password";
+static CONST_STRPTR ProxyUser = "user";
+static CONST_STRPTR ProxyPasswd = "password";
 
 static CONST_STRPTR VersTag = "\0$VER: Scalos Updater.module V" VERS_MAJOR "." VERS_MINOR " (" __DATE__ ") " COMPILER_STRING;
 
@@ -327,8 +330,6 @@ int main(int argc, char *argv[])
 			return 10;
 			}
 		}
-
-	ParseArguments();
 
 	TranslateStringArray(RegisterTitles);
 
@@ -392,7 +393,7 @@ int main(int argc, char *argv[])
 								End, //NListObject
 							End, //NListviewObject
 
-						Child, HGroup,
+						Child, GroupSelection = HGroup,
 							Child, ColGroup(2),
 								Child, ButtonSelectAll = KeyButtonHelp(GetLocString(MSGID_BUTTON_SELECT_ALL),
 									GetLocString(MSGID_BUTTON_SELECT_ALL_SHORT),
@@ -423,7 +424,7 @@ int main(int argc, char *argv[])
 							End, //HGroup
 						
 
-						Child, ColGroup(2),
+						Child, GroupActionButtons = ColGroup(2),
 							Child, ButtonCheckForUpdates = KeyButtonHelp(GetLocString(MSGID_BUTTON_CHECKFORUPDATES),
 								GetLocString(MSGID_BUTTON_CHECKFORUPDATES_SHORT),
 								GetLocString(MSGID_BUTTON_CHECKFORUPDATES_HELP)),
@@ -507,7 +508,23 @@ int main(int argc, char *argv[])
 							
 							End, //VGroup
 
+						Child, HGroup,
+							GroupFrame,
+							MUIA_Background, MUII_GroupBack,
+							MUIA_FrameTitle, GetLocString(MSGID_STRING_SCALOS_SERVER),
+
+							Child, StringScalosWebSite = StringObject,
+								StringFrame,
+								MUIA_CycleChain, TRUE,
+								MUIA_String_Contents, ScalosHttpAddr,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_STRING_SCALOS_SERVER_SHORTHELP),
+								End, //StringObject
+							End, //HGroup
+
 						Child, ColGroup(2),
+							GroupFrame,
+							MUIA_Background, MUII_GroupBack,
+
 							Child, Label1((ULONG) GetLocString(MSGID_CHECK_SHOW_ALL_COMPONENTS)),
 							Child, HGroup,
 								Child, CheckShowAllComponents  = CheckMark(fShowAllComponents),
@@ -561,6 +578,8 @@ int main(int argc, char *argv[])
 
 	DoMethod(APP_Main, MUIM_Application_Load, MUIV_Application_Load_ENV);
 
+	ParseArguments();
+
 	//--------------------------------------------------------------------------//
 
 	DoMethod(WIN_Main, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, 
@@ -611,8 +630,6 @@ int main(int argc, char *argv[])
 	DoMethod(CheckShowAllComponents, MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
 		CheckShowAllComponents, 2, MUIM_CallHook, &ToggleShowAllHook);
 
-	UpdateSelectedCount();
-
 	DoMethod(ButtonStartUpdate, MUIM_Notify, MUIA_Pressed, FALSE,
 		ButtonStartUpdate, 2, MUIM_CallHook, &StartUpdateUpdateHook);
 	DoMethod(ButtonCheckForUpdates, MUIM_Notify, MUIA_Pressed, FALSE,
@@ -624,6 +641,11 @@ int main(int argc, char *argv[])
 	DoMethod(ButtonDeselectAll, MUIM_Notify, MUIA_Pressed, FALSE,
 		ButtonDeselectAll, 2, MUIM_CallHook, &DeselectAllComponentsHook);
 
+	set(GroupSelection, MUIA_ShowMe, !fAuto);
+	set(GroupActionButtons, MUIA_ShowMe, !fAuto);
+
+	UpdateSelectedCount();
+
 	set(WIN_Main, MUIA_Window_Open, TRUE);
 	get(WIN_Main, MUIA_Window_Open, &win_opened);
 
@@ -632,9 +654,23 @@ int main(int argc, char *argv[])
 		ULONG sigs = 0;
 		BOOL Run = TRUE;
 
-		if (fAutoCheck)
+		if (fAuto)
 			{
 			CallHookPkt(&CheckForUpdatesHook, ButtonCheckForUpdates, NULL);
+			if (SelectedCount > 0)
+				{
+				LONG res;
+
+				res = MUI_Request(APP_Main, WIN_Main, 0, NULL,
+					GetLocString(MSGID_REQ_INSTALL_UPDATES_GADGETS),
+					GetLocString(MSGID_REQ_INSTALL_UPDATES),
+					SelectedCount);
+
+				if (1 == res)
+					CallHookPkt(&StartUpdateUpdateHook, ButtonStartUpdate, NULL);
+				}
+
+			DoMethod(APP_Main, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 			}
 
 		while (Run)
@@ -1219,8 +1255,9 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 //----------------------------------------------------------------------------
 
-static void ProcessVersionFile(CONST_STRPTR text, size_t len)
+static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len)
 {
+	BOOL Success = FALSE;
 	ULONG ShowAllComponents;
 	size_t TotalLen = len;
 
@@ -1262,6 +1299,8 @@ static void ProcessVersionFile(CONST_STRPTR text, size_t len)
 				if (ReadArgs(Template, Args, ReadArgs))
 					{
 					struct ComponentListEntry cle;
+
+					Success = TRUE;
 
 					cle.cle_Dir = (STRPTR) Args[ARG_DIR];
 					cle.cle_File = (STRPTR) Args[ARG_FILE];
@@ -1314,6 +1353,7 @@ static void ProcessVersionFile(CONST_STRPTR text, size_t len)
 				else
 					{
 					d2(KPrintF("%s/%s/%ld: ReadArgs failed IoErr=%ld\n", __FILE__, __FUNC__, __LINE__, IoErr()));
+					d2(KPrintF("%s/%s/%ld: text=<%s>\n", __FILE__, __FUNC__, __LINE__, text));
 					}
 
 				FreeDosObject(DOS_RDARGS, ReadArgs);
@@ -1329,13 +1369,7 @@ static void ProcessVersionFile(CONST_STRPTR text, size_t len)
 
 	d1(KPrintF("%s/%s/%ld: =======================\n", __FILE__, __FUNC__, __LINE__));
 
-	if (0 == SelectedCount)
-		{
-		MUI_Request(APP_Main, WIN_Main, 0, NULL,
-			GetLocString(MSGID_ABOUTREQOK),
-			GetLocString(MSGID_REQFORMAT_NO_UPDATES_FOUND),
-			OsName);
-		}
+	return Success;
 }
 
 //----------------------------------------------------------------------------
@@ -1904,16 +1938,19 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 		CURLcode res;
 		struct ProgressData pgd;
 		struct VersionFileHandle vfh;
+		STRPTR ScalosWebSite = "";
 
 		memset(&vfh, 0, sizeof(vfh));
 
 		pgd.pgd_Min = 0;
 		pgd.pgd_Max = 50;
 
-		snprintf(addr, sizeof(addr), "%s%s", ScalosHttpAddr, "/versions.txt");
+		get(StringScalosWebSite, MUIA_String_Contents, &ScalosWebSite);
+
+		snprintf(addr, sizeof(addr), "%s%s", ScalosWebSite, "/versions.txt");
 
 		snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
-			GetLocString(MSG_PROGRESS_CONNECTING), ScalosHttpAddr);
+			GetLocString(MSG_PROGRESS_CONNECTING), ScalosWebSite);
 		set(GaugeProgress, MUIA_Gauge_InfoText, TextProgressBuffer);
 
 		if (SetProxyOptions(curl))
@@ -1926,22 +1963,36 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 			curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &pgd);
 
 			res = curl_easy_perform(curl);
-
-			/* always cleanup */
-			curl_easy_cleanup(curl);
+ 
+			d2(KPrintF("%s/%s/%ld: res=%ld\n", __FILE__, __FUNC__, __LINE__, res));
 
 			if (0 == res)
 				{
+				d2(KPrintF("%s/%s/%ld: vfh.vfh_TotalLength=%ld\n", __FILE__, __FUNC__, __LINE__, vfh.vfh_TotalLength));
+
 				set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_PROCESS_HTTP_RESPONSE));
-				ProcessVersionFile(vfh.vfh_AllocatedBuffer, vfh.vfh_TotalLength);
-				Success = TRUE;
+				Success = ProcessVersionFile(vfh.vfh_AllocatedBuffer, vfh.vfh_TotalLength);
+
+				if (0 == SelectedCount && fAuto)
+					{
+					MUI_Request(APP_Main, WIN_Main, 0, NULL,
+						GetLocString(MSGID_ABOUTREQOK),
+						GetLocString(MSGID_REQFORMAT_NO_UPDATES_FOUND),
+						OsName);
+					}
 				}
 			else
 				{
 				snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
-					GetLocString(MSG_PROGRESS_FAILURE), ScalosHttpAddr, curl_easy_strerror(res));
+					GetLocString(MSG_PROGRESS_FAILURE), ScalosWebSite, curl_easy_strerror(res));
+
 				set(GaugeProgress, MUIA_Gauge_InfoText, TextProgressBuffer);
+
+				ErrorMsg(MSG_PROGRESS_FAILURE, ScalosWebSite, curl_easy_strerror(res));
 				}
+
+			/* always cleanup */
+			curl_easy_cleanup(curl);
 			}
 
 		free(vfh.vfh_AllocatedBuffer);
@@ -1958,16 +2009,20 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
 	ULONG AskEveryUpdate;
+	STRPTR ScalosWebSite = "";
 	CURL *curl;
 
 	set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_START_UPDATE));
 	set(GaugeProgress, MUIA_Gauge_Current, 0);
+	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 0));
 
 	get(CheckAskEveryUpdate, MUIA_Selected, &AskEveryUpdate);
+	get(StringScalosWebSite, MUIA_String_Contents, &ScalosWebSite);
 
 	curl = curl_easy_init();
 	if (curl)
 		{
+		ULONG TotalUpdateCount = SelectedCount;
 		BOOL AbortUpdate = FALSE;
 		ULONG Count = 0;
 		ULONG Entries;
@@ -2001,10 +2056,12 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				set(cle->cle_LampObject, MUIA_Lamp_Color, MUIV_Lamp_Color_ReceivingData);
 				DoMethod(NListComponents, MUIM_NList_RedrawEntry, cle);
 
-				pgd.pgd_Min = (100 * Count) / SelectedCount;
-				pgd.pgd_Max = (100 * (1 + Count)) / SelectedCount;
+				pgd.pgd_Min = (100 * Count) / TotalUpdateCount;
+				pgd.pgd_Max = (100 * (1 + Count)) / TotalUpdateCount;
+				d2(KPrintF("%s/%s/%ld: pgd_Min=%ld  pgd_Max=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Min, pgd.pgd_Max));
 
 				set(GaugeProgress, MUIA_Gauge_Current, pgd.pgd_Min);
+				d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Min));
 
 				len = 1 + strlen(TempFilePath) + strlen(FilePart(cle->cle_Package));
 
@@ -2024,12 +2081,12 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				if (NULL == EscapedPackageName)
 					break;
 
-				len = 1 + strlen(ScalosHttpAddr) + strlen(EscapedPackageName);
+				len = 1 + strlen(ScalosWebSite) + strlen(EscapedPackageName);
 				HttpAddr = malloc(len);
 				if (NULL == HttpAddr)
 					break;
 
-				snprintf(HttpAddr, len, "%s%s", ScalosHttpAddr, EscapedPackageName);
+				snprintf(HttpAddr, len, "%s%s", ScalosWebSite, EscapedPackageName);
 
 				d2(KPrintF("%s/%s/%ld: HttpAddr=<%s>\n", __FILE__, __FUNC__, __LINE__, HttpAddr));
 
@@ -2107,15 +2164,24 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				if (!SkipFile)
 					{
 					size_t LhaCmdLineLen;
+					char ch = cle->cle_Dir[strlen(cle->cle_Dir) - 1];
 
-					LhaCmdLineLen = 1 + strlen(LhaName) + strlen(cle->cle_File) + strlen(cle->cle_Dir) + 40;
+					LhaCmdLineLen = 1 + strlen(LhaName) + 2 * strlen(cle->cle_File) + strlen(cle->cle_Dir) + 80;
 					LhaCmdLine = malloc(LhaCmdLineLen);
 					if (NULL == LhaCmdLine)
 						break;
 
-					//      lha x -q Delete.module.lha Delete.module Scalos:modules
-					snprintf(LhaCmdLine, LhaCmdLineLen, "lha x -q \"%s\" \"%s\" \"%s\"",
-						LhaName, cle->cle_File, cle->cle_Dir);
+					//      lha -qI e Delete.module.lha Delete.module Delete.module.info Scalos:modules
+					if ('/' == ch || ':' == ch)
+						{
+						snprintf(LhaCmdLine, LhaCmdLineLen, "lha -qI e \"%s\" \"%s\" \"%s.info\"  \"%s\"",
+							LhaName, cle->cle_File, cle->cle_File, cle->cle_Dir);
+						}
+					else
+						{
+						snprintf(LhaCmdLine, LhaCmdLineLen, "lha -qI e \"%s\" \"%s\" \"%s.info\"  \"%s/\"",
+							LhaName, cle->cle_File, cle->cle_File, cle->cle_Dir);
+						}
 
 					d2(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
 
@@ -2136,8 +2202,8 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					if (NULL == LhaCmdLine)
 						break;
 
-					//      lha x -q Delete.module.lha #?.catalog locale:
-					snprintf(LhaCmdLine, LhaCmdLineLen, "lha x -q \"%s\" #?.catalog locale:",
+					//      lha -qI x Delete.module.lha #?.catalog locale:
+					snprintf(LhaCmdLine, LhaCmdLineLen, "lha -qI x \"%s\" #?.catalog locale:",
 						LhaName);
 
 					d2(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
@@ -2156,6 +2222,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					}
 
 				set(GaugeProgress, MUIA_Gauge_Current, pgd.pgd_Max);
+				d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Max));
 
 				Count++;
 				} while (0);
@@ -2177,11 +2244,14 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 			if (cle->cle_Selected)
 				{
 				set(cle->cle_LampObject, MUIA_Lamp_Color, Success ? MUIV_Lamp_Color_Ok : MUIV_Lamp_Color_FatalError);
-				}
-			if (Success)
-				{
-				cle->cle_Selected = FALSE;
-				set(cle->cle_CheckboxObject, MUIA_Selected, cle->cle_Selected);
+
+				if (Success)
+					{
+					SelectedCount--;
+					cle->cle_Selected = FALSE;
+					set(cle->cle_CheckboxObject, MUIA_Selected, cle->cle_Selected);
+					UpdateSelectedCount();
+					}
 				}
 			DoMethod(NListComponents, MUIM_NList_RedrawEntry, cle);
 			}
@@ -2190,6 +2260,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 	set(GaugeProgress, MUIA_Gauge_Current, 100);
 	set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_DONE));
+	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 100));
 }
 
 //----------------------------------------------------------------------------
@@ -2321,7 +2392,12 @@ static int PerformUpdateProgressFunc(void *clientp, double dltotal, double dlnow
 
 	dlLevel = pgd->pgd_Min + (LONG) (((pgd->pgd_Max - pgd->pgd_Min) * dlnow) / dltotal);
 
-	d1(kprintf("%s/%ld: dlLevel=%ld\n", __FUNC__, __LINE__, dlLevel));
+	if (dlLevel < 0)
+		dlLevel = 0;
+	else if (dlLevel > 100)
+		dlLevel = 100;
+
+	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, dlLevel));
 	set(GaugeProgress, MUIA_Gauge_Current, dlLevel);
 
 	return 0;
@@ -2689,16 +2765,17 @@ static void ParseArguments(void)
 		{
 		// Called from Workbench, check ToolTypes
 		d2(kprintf("%s/%ld: Called from Workbench\n", __FUNC__, __LINE__));
+		//WBenchMsg->sm_ArgList[0]
 		}
 	else
 		{
 		// Called from command line
 		enum { ARG_USEPROXY, ARG_PROXYAUTH, ARG_SHOWALL, ARG_ASKUPDATES,
-			ARG_AUTOCHECK, ARG_PROXY, ARG_PROXYPORT, ARG_PROXYUSER,
+			ARG_AUTO, ARG_PROXY, ARG_PROXYPORT, ARG_PROXYUSER,
 			ARG_PROXYPASSWORD, ARG_TEMPFILEPATH, ARG_SCALOSHTTP,
 			ARG_LAST };
 		static CONST_STRPTR Template = "USEPROXY/S,PROXYAUTH/S,SHOWALL/S,ASK/S,"
-			"AUTOCHECK/S,PROXY/K,PROXYPORT/N,PROXYUSER/K,PROXYPASSWORD/K,"
+			"AUTO/S,PROXY/K,PROXYPORT/N,PROXYUSER/K,PROXYPASSWORD/K,"
 			"TEMPFILEPATH/K,SCALOSHTTP/K";
 		struct RDArgs *ReadArgs;
 		LONG Args[ARG_LAST];
@@ -2709,11 +2786,20 @@ static void ParseArguments(void)
 		d2(kprintf("%s/%ld: ReadArgs=%08lx\n", __FUNC__, __LINE__, ReadArgs));
 		if (ReadArgs)
 			{
-			fAutoCheck = Args[ARG_AUTOCHECK];
+			fAuto = Args[ARG_AUTO];
 			fUseProxy = Args[ARG_USEPROXY];
 			fUseProxyAuth = Args[ARG_PROXYAUTH];
 			fShowAllComponents = Args[ARG_SHOWALL];
 			fAskEveryUpdate = Args[ARG_ASKUPDATES];
+
+			if (Args[ARG_PROXYUSER])
+				setstring(StringProxyUser, Args[ARG_PROXYUSER]);
+			if (Args[ARG_PROXY])
+				setstring(StringProxyAddr, Args[ARG_PROXY]);
+			if (Args[ARG_PROXYPASSWORD])
+				setstring(StringProxyPwd, Args[ARG_PROXYPASSWORD]);
+			if (Args[ARG_SCALOSHTTP])
+				setstring(StringScalosWebSite, Args[ARG_SCALOSHTTP]);
 
 			FreeArgs(ReadArgs);
 			}

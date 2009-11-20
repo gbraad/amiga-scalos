@@ -305,6 +305,28 @@ archive \"%s\" for updating \"%s\".
 ;Error: failed to open temporary\n\
 ;archive \"%s\" for updating \"%s\".
 ;
+;+++translateme+++
+MSGID_STRING_SCALOS_SERVER
+Scalos Update Server
+;Scalos Update Server
+;
+;+++translateme+++
+MSGID_STRING_SCALOS_SERVER_SHORTHELP
+...TBD...
+;...TBD...
+;
+;+++translateme+++
+MSGID_REQ_INSTALL_UPDATES_GADGETS
+_Update|_Abort
+;_Update|_Abort
+;
+;+++translateme+++
+MSGID_REQ_INSTALL_UPDATES
+Are you sure you want to install\n\
+%ld Scalos updates now?
+;Are you sure you want to install\n\
+;%ld Scalos updates now?
+;
 ;-----------------------------------------------------------
 ;
 ;+++translateme+++

@@ -303,6 +303,29 @@ Aktualisierung von \"%s\".
 ;Error: failed to open temporary\n\
 ;archive \"%s\" for updating \"%s\".
 ;
+;
+MSGID_STRING_SCALOS_SERVER
+Scalos Aktualisierungs-Server
+;Scalos Update Server
+;
+;+++translateme+++
+MSGID_STRING_SCALOS_SERVER_SHORTHELP
+...TBD...
+;...TBD...
+;
+;
+MSGID_REQ_INSTALL_UPDATES_GADGETS
+_Aktualisieren|_Stop
+;_Update|_Abort
+;
+;
+MSGID_REQ_INSTALL_UPDATES
+Sind Sie sicher, daß Sie jetzt %ld \n\
+Aktualisierungen für Scalos durchführen möchten?
+;%ld Scalos updates now?
+;Are you sure you want to install\n\
+;%ld Scalos updates now?
+;
 ;-----------------------------------------------------------
 ;
 ;
