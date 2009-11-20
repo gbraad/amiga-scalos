@@ -14,8 +14,6 @@
 #define INFO_AUTOGETSIZE_ENV	"ENV:Scalos/InfoAutoGetSize"
 #define INFO_AUTOGETSIZE_ENVARC	"ENVARC:Scalos/InfoAutoGetSize"
 
-const char versTag[] = "\0$VER: ";	// $VER version string
-
 enum StartFromType
 	{
 	STARTFROM_Workbench,
