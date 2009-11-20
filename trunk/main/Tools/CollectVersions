@@ -36,7 +36,7 @@ LocalPkgPath = "RAM:" || strip(PkgPath, 'L', '/')
 say "Deleting old directory tree..."
 "delete " || LocalPkgPath || " all QUIET"
 
-'mkdir -v -p ' || LocalPkgPath
+'makedir ' || LocalPkgPath || ' ALL'
 
 call loadexistingversionfile(os, versionfilename)
 
