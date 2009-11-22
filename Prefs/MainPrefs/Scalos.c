@@ -4730,6 +4730,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 			Child, ColGroup(2),
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_SCALOS_HOME)),
 				Child, app->Obj[STRING_SCALOSHOME] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4742,6 +4743,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_THEMES)),
 				Child, app->Obj[STRING_THEMES] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4754,6 +4756,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_DEFAULTICONS)),
 				Child, app->Obj[STRING_DEFICONPATH] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4766,6 +4769,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_WBSTARTUP)),
 				Child, app->Obj[STRING_WBSTARTPATH] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4778,6 +4782,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_IMAGECACHE)),
 				Child, app->Obj[STRING_IMAGECACHE] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4793,6 +4798,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_THUMBNAILDB)),
 				Child, app->Obj[STRING_THUMBNAILDB] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopFile),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4804,6 +4810,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_DISKCOPY)),
 				Child, app->Obj[STRING_DISKCOPY] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopFile),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4815,6 +4822,7 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 
 				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_FORMAT)),
 				Child, app->Obj[STRING_FORMAT] = PopaslObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopFile),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -4859,6 +4867,7 @@ static Object *GenerateStartupPage(struct SCAModule *app)
 			Child, HGroup,
 				Child, Label((ULONG) GetLocString(MSGID_STARTUPPAGE_SPLASHCLOSEDELAY)),
 				Child, app->Obj[SLIDER_SPLASHCLOSE] = SliderObject,
+					MUIA_CycleChain, 1,
 					MUIA_Numeric_Min, 1,
 					MUIA_Numeric_Max, 10,
 					MUIA_Slider_Horiz, TRUE,
@@ -4882,6 +4891,7 @@ static Object *GenerateStartupPage(struct SCAModule *app)
 			Child, HGroup,
 				Child, Label((ULONG) GetLocString(MSGID_STARTUPPAGE_DOWAITDELAY)),
 				Child, app->Obj[SLIDER_WBSDELAY] = SliderObject,
+					MUIA_CycleChain, 1,
 					MUIA_Weight, 500,
 					MUIA_Numeric_Min, 1,
 					MUIA_Numeric_Max, 10,
@@ -4939,6 +4949,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, Label2((ULONG) GetLocString(MSGID_DESKTOPPAGE_TITLEBAR_REFRESH)),
 						Child, app->Obj[SLIDER_TITLEREFRESH] = SliderObject,
+							MUIA_CycleChain, 1,
 							MUIA_Numeric_Min, 1,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -4951,7 +4962,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_DESKTOPPAGE_TITLEBAR_REFRESH_MEMCHANGE)),
-						Child, app->Obj[CHECK_TITLEMEM] = CheckMark(FALSE),
+						Child, app->Obj[CHECK_TITLEMEM] = CheckMarkHelp(FALSE, MSGID_DESKTOPPAGE_TITLEBAR_REFRESH_MEMCHANGE_SHORTHELP),
 						Child, HVSpace,
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_TITLEBAR_REFRESH_MEMCHANGE_SHORTHELP),
 					End, //HGroup
@@ -4961,6 +4972,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, Label1((ULONG) GetLocString(MSGID_DESKTOPPAGE_SCREENTITLE_MODE)),
 						Child, app->Obj[CYCLE_SCREENTITLEMODE] = CycleObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Cycle_Entries, cScreenTitleModes,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_SCREENTITLE_MODE_SHORTHELP),
 						End, //Cycle
@@ -4984,6 +4996,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, Label2((ULONG) GetLocString(MSGID_DESKTOPPAGE_DISK_ICON_RATE)),
 						Child, app->Obj[SLIDER_DISKREFRESH] = SliderObject,
+							MUIA_CycleChain, 1,
 							MUIA_Weight, 500,
 							MUIA_Numeric_Min, 1,
 							MUIA_Numeric_Max, 10,
@@ -5114,6 +5127,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 					Child, HVSpace,
 
 					Child, app->Obj[STRING_CONSOLENAME] = BetterStringObject,
+						MUIA_CycleChain, TRUE,
 						StringFrame,
 						MUIA_String_Contents, "",
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_CONSOLENAME_SHORTHELP),
@@ -5229,12 +5243,14 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 						Child, HGroup,
 							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE)),
 							Child, app->Obj[CYCLE_ICONMINSIZE] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cIconSizes,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE_SHORTHELP),
 							End, //Cycle
 
 							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE)),
 							Child, app->Obj[CYCLE_ICONMAXSIZE] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cIconSizes,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE_SHORTHELP),
 							End, //Cycle
@@ -5256,6 +5272,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 					Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_NEWICONS_REMAP_PRECISION)),
 						Child, app->Obj[SLIDER_ICONRMAP_PRECISION] = NewObject(PrecisionSliderClass->mcc_Class, 0,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 1,
 							MUIA_Numeric_Max, 4,
 							MUIA_Slider_Horiz, TRUE,
@@ -5267,7 +5284,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_NEWICONS_TRANSPARENTBG)),
-						Child, app->Obj[CHECK_NIMASK] = CheckMark(FALSE),
+						Child, app->Obj[CHECK_NIMASK] = CheckMarkHelp(FALSE, MSGID_ICONSPAGE_NEWICONS_TRANSPARENTBG_SHORTHELP),
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_NEWICONS_TRANSPARENTBG_SHORTHELP),
 						Child, HVSpace,
 
@@ -5303,6 +5320,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 						Child, app->Obj[SLIDER_ICONTRANSPARENCY_DEFICONS] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 100,
 							MUIA_Slider_Horiz, TRUE,
@@ -5337,6 +5355,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_LABELS_TEXT)),
 						Child, app->Obj[CYCLE_LABELSTYLE] = CycleObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Cycle_Entries, cIconLabelStyles,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_LABELS_TEXT_SHORTHELP),
 						End, //Cycle
@@ -5345,6 +5364,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_LABELS_TEXTSPACE)),
 						Child, app->Obj[SLIDER_LABELSPACE] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5385,7 +5405,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT)),
-						Child, app->Obj[CHECK_SEL_ICONTEXT_RECTANGLE] = CheckMark(FALSE),
+						Child, app->Obj[CHECK_SEL_ICONTEXT_RECTANGLE] = CheckMarkHelp(FALSE, MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_SHORTHELP),
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RECT_SHORTHELP),
 						Child, HVSpace,
 
@@ -5396,6 +5416,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, ColGroup(2),
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_XBORDER)),
 						Child, app->Obj[SLIDER_SEL_ICONTEXT_RECT_BORDERX] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 20,
 							MUIA_Slider_Horiz, TRUE,
@@ -5405,6 +5426,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_YBORDER)),
 						Child, app->Obj[SLIDER_SEL_ICONTEXT_RECT_BORDERY] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 20,
 							MUIA_Slider_Horiz, TRUE,
@@ -5414,6 +5436,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SEL_ICONTEXT_RADIUS)),
 						Child, app->Obj[SLIDER_SEL_ICONTEXT_RECT_RADIUS] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 1,
 							MUIA_Numeric_Max, 20,
 							MUIA_Slider_Horiz, TRUE,
@@ -5439,7 +5462,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 				Child, HGroup,
 					Child, HVSpace,
 					Child, Label1((ULONG) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_ENABLE)),
-					Child, app->Obj[CHECK_ICONSPAGE_TTICONFONT_ENABLE] = CheckMark(FALSE),
+					Child, app->Obj[CHECK_ICONSPAGE_TTICONFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP),
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP),
 					End, //HGroup
 
@@ -5464,6 +5487,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 					Child, app->Obj[GROUP_ICONFONT_SELECT] = HGroup,
 						Child, app->Obj[POP_ICONFONT] = PopaslObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Popstring_Button, PopButton(MUII_PopUp),
 							MUIA_Popstring_String, BetterStringObject,
 								StringFrame,
@@ -5491,6 +5515,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 					Child, VGroup,
 						Child, app->Obj[POPSTRING_ICONSPAGE_TTICONFONT] = PopstringObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Popstring_Button, PopButton(MUII_PopUp),
 							MUIA_Popstring_String, BetterStringObject,
 								StringFrame,
@@ -5560,6 +5585,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, ColGroup(4),
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_LEFT)),
 						Child, app->Obj[ICONLEFT] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5568,6 +5594,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							End, // Slider
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_TOP)),
 						Child, app->Obj[ICONTOP] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5576,6 +5603,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							End, //Slider
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_RIGHT)),
 						Child, app->Obj[ICONRIGHT] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5584,6 +5612,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							End, //Slider
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_BOTTOM)),
 						Child, app->Obj[ICONBOTTOM] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5638,6 +5667,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, ColGroup(4),
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_LEFT)),
 						Child, app->Obj[THUMBNAILS_LEFTBORDER] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5646,6 +5676,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							End, // Slider
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_TOP)),
 						Child, app->Obj[THUMBNAILS_TOPBORDER] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5654,6 +5685,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							End, //Slider
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_RIGHT)),
 						Child, app->Obj[THUMBNAILS_RIGHTBORDER] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5662,6 +5694,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							End, //Slider
 						Child, Label((ULONG) GetLocString(MSGID_ICONSPAGE_ICONBORDER_BOTTOM)),
 						Child, app->Obj[THUMBNAILS_BOTTOMBORDER] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -5688,7 +5721,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 					Child, HGroup,
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_TOOLTIPS_SHOW)),
-						Child, app->Obj[CHECK_TOOLTIPS] = CheckMark(TRUE),
+						Child, app->Obj[CHECK_TOOLTIPS] = CheckMarkHelp(TRUE, MSGID_ICONSPAGE_TOOLTIPS_SHOW_SHORTHELP),
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_TOOLTIPS_SHOW_SHORTHELP),
 						Child, HVSpace,
 					End, //HGroup
@@ -5709,6 +5742,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 						Child, HGroup,
 							Child, Label2((ULONG) GetLocString(MSGID_ICONSPAGE_TOOLTIPS_DELAY)),
 							Child, app->Obj[SLIDER_TIPDELAY] = SliderObject,
+									MUIA_CycleChain, TRUE,
 									MUIA_Numeric_Min, 1,
 									MUIA_Numeric_Max, 10,
 									MUIA_Slider_Horiz, TRUE,
@@ -5722,6 +5756,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 /* currently unused */					MUIA_ShowMe, FALSE,
 							Child, Label2((ULONG) GetLocString(MSGID_ICONSPAGE_TOOLTIPS_FONT)),
 							Child, app->Obj[STRING_TOOLTIPFONT] = PopaslObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Popasl_Type, ASL_FontRequest,
 								MUIA_Popstring_Button, PopButton(MUII_PopUp),
 								MUIA_Popstring_String, BetterStringObject,
@@ -5745,6 +5780,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 							Child, app->Obj[SLIDER_ICONTOOLTIPS_TRANSPARENCY] = SliderObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Numeric_Min, 0,
 								MUIA_Numeric_Max, 100,
 								MUIA_Slider_Horiz, TRUE,
@@ -5825,12 +5861,14 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 						Child, ColGroup(2),
 							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SHOWTHUMBNAILS)),
 							Child, app->Obj[CYCLE_SHOWTHUMBNAILS] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cShowThumbnails,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SHOWTHUMBNAILS_SHORTHELP),
 							End, //Cycle
 
 							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_SIZE)),
 							Child, app->Obj[CYCLE_THUMBNAILSIZE] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cThumbnailSizes,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_SIZE_SHORTHELP),
 							End, //Cycle
@@ -5867,6 +5905,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_QUALITY_WORST)),
 
 						Child, app->Obj[SLIDER_THUMBNAILS_QUALITY] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, SCALOSPREVIEWA_Quality_Min,
 							MUIA_Numeric_Max, SCALOSPREVIEWA_Quality_Max,
 							MUIA_Slider_Horiz, TRUE,
@@ -5888,6 +5927,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 					Child, app->Obj[SLIDER_ICONTRANSPARENCY_THUMBNAILBACK] = SliderObject,
+						MUIA_CycleChain, TRUE,
 						MUIA_Numeric_Min, 0,
 						MUIA_Numeric_Max, 100,
 						MUIA_Slider_Horiz, TRUE,
@@ -5908,6 +5948,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, ColGroup(2),
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE)),
 						Child, app->Obj[SLIDER_THUMBNAILS_MAXAGE] = NewObject(ThumbnailLifetimeSliderClass->mcc_Class, 0,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 365,
 							MUIA_Slider_Horiz, TRUE,
@@ -5917,6 +5958,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MINSIZE_LIMIT)),
 						Child, app->Obj[SLIDER_THUMBNAILS_MINSIZE_LIMIT] = NumericbuttonObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 8,
 							MUIA_Numeric_Max, 256,
 							MUIA_Slider_Horiz, TRUE,
@@ -5970,12 +6012,14 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 						Child, ColGroup(2),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_ROUTINES)),
 							Child, app->Obj[CYCLE_ROUTINE] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cIconDragRoutines,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_ROUTINES_SHORTHELP),
 							End, //Cycle
 
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY)),
 							Child, app->Obj[CYCLE_TRANSPMODE] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cIconDragTransparents,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_SHORTHELP),
 							End, //Cycle
@@ -6002,12 +6046,14 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 						Child, ColGroup(2),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_STYLE)),
 							Child, app->Obj[CYCLE_STYLE] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cIconDragStyle,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_STYLE_SHORTHELP),
 							End, //Cycle
 
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_DROPMARKMODE)),
 							Child, app->Obj[CYCLE_DROPMARK] = CycleObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Cycle_Entries, cIconDropMark,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_DROPMARKMODE_SHORTHELP),
 							End, //Cycle
@@ -6111,6 +6157,7 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 					Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 					Child, app->Obj[SLIDER_ICONTRANSPARENCY_DRAG] = SliderObject,
+						MUIA_CycleChain, TRUE,
 						MUIA_Numeric_Min, 0,
 						MUIA_Numeric_Max, 100,
 						MUIA_Slider_Horiz, TRUE,
@@ -6129,6 +6176,7 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 					Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 					Child, app->Obj[SLIDER_ICONTRANSPARENCY_SHADOW] = SliderObject,
+						MUIA_CycleChain, TRUE,
 						MUIA_Numeric_Min, 0,
 						MUIA_Numeric_Max, 100,
 						MUIA_Slider_Horiz, TRUE,
@@ -6182,29 +6230,29 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 
 						Child, ColGroup(4),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_DISKICONS)),
-							Child, app->Obj[CHECK_TRIG_DISK] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_DISK] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_DRAWERICONS)),
-							Child, app->Obj[CHECK_TRIG_DRAWER] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_DRAWER] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_TOOLICONS)),
-							Child, app->Obj[CHECK_TRIG_TOOL] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_TOOL] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_PROJECTICONS)),
-							Child, app->Obj[CHECK_TRIG_PROJECT] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_PROJECT] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_TRASHCANICONS)),
-							Child, app->Obj[CHECK_TRIG_TRASHCAN] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_TRASHCAN] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_KICKICONS)),
-							Child, app->Obj[CHECK_TRIG_KICK] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_KICK] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_APPICONS)),
-							Child, app->Obj[CHECK_TRIG_APPICON] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_APPICON] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_APPWINDOWS)),
-							Child, app->Obj[CHECK_TRIG_APPWIN] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_APPWIN] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_ICONIFIED_WINDOWS)),
-							Child, app->Obj[CHECK_TRIG_ICONIFIEDWIN] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_ICONIFIEDWIN] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRIGGERS_SCALOS_WINDOWS)),
-							Child, app->Obj[CHECK_TRIG_SCALOSWIN] = CheckMark(FALSE),
+							Child, app->Obj[CHECK_TRIG_SCALOSWIN] = CheckMarkHelp(FALSE, MSGID_DRAGNDROPPAGE_TRIGGERS_SHORTHELP),
 						End, //ColGroup
 
 						Child, HVSpace,
@@ -6275,6 +6323,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, Label2((ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH)),
 						Child, app->Obj[SLIDER_WINTITLEREFRESH] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 1,
 							MUIA_Numeric_Max, 10,
 							MUIA_Slider_Horiz, TRUE,
@@ -6287,7 +6336,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH_MEMCHANGE)),
-						Child, app->Obj[CHECK_WINTITLEMEM] = CheckMark(FALSE),
+						Child, app->Obj[CHECK_WINTITLEMEM] = CheckMarkHelp(FALSE, MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH_MEMCHANGE_SHORTHELP),
 						Child, HVSpace,
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH_MEMCHANGE_SHORTHELP),
 					End, //HGroup
@@ -6307,6 +6356,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_WINDOWPAGE_WINDOWTYPE)),
 						Child, app->Obj[CYCLE_WINDOWTYPE] = CycleObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Cycle_Entries, cWindowRefresh,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_WINDOWTYPE_SHORTHELP),
 						End, //Cycle
@@ -6315,6 +6365,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_WINDOWPAGE_SHOWALL_DEFAULT)),
 						Child, app->Obj[CYCLE_SHOWALLDEFAULT] = CycleObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Cycle_Entries, cShowAllDefault,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_SHOWALL_DEFAULT_SHORTHELP),
 						End, //Cycle
@@ -6323,6 +6374,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_WINDOWPAGE_VIEWBY_DEFAULT)),
 						Child, app->Obj[CYCLE_VIEWBYICONSDEFAULT] = CycleObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Cycle_Entries, cViewByDefault,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_WINDOWTYPE_VIEWBY_DEFAULT_SHORTHELP),
 						End, //Cycle
@@ -6403,35 +6455,39 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_DEFAULT_WINDOWSIZE_LEFT)),
 						Child, app->Obj[WINLEFT] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 220,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 220,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_DEFAULT_WINDOWSIZE_TOP)),
 						Child, app->Obj[WINTOP] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 100,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 100,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_DEFAULT_WINDOWSIZE_WIDTH)),
 						Child, app->Obj[WINWIDTH] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 200,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 200,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_DEFAULT_WINDOWSIZE_HEIGHT)),
 						Child, app->Obj[WINHEIGHT] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 300,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 300,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 					End, //ColGroup
 
 					Child, HVSpace,
@@ -6449,35 +6505,39 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_LEFT)),
 						Child, app->Obj[CLEANLEFT] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 5,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 5,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_TOP)),
 						Child, app->Obj[CLEANTOP] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 5,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 5,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_XSKIP)),
 						Child, app->Obj[CLEANXSKIP] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 5,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 5,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_YSKIP)),
 						Child, app->Obj[CLEANYSKIP] = BetterStringObject,
-						StringFrame,
-						MUIA_String_Integer, 5,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_AdvanceOnCR, TRUE,
-						End, //BetterString
+							StringFrame,
+							MUIA_CycleChain, TRUE,
+							MUIA_String_Integer, 5,
+							MUIA_String_Accept, "0123456789",
+							MUIA_String_AdvanceOnCR, TRUE,
+							End, //BetterString
 					End, //ColGroup
 
 					Child, HVSpace,
@@ -6869,6 +6929,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 							Child, app->Obj[SLIDER_TRANSPARENCY_ACTIVEWINDOW] = SliderObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Numeric_Min, 0,
 								MUIA_Numeric_Max, 100,
 								MUIA_Slider_Horiz, TRUE,
@@ -6892,6 +6953,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 							Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 							Child, app->Obj[SLIDER_TRANSPARENCY_INACTIVEWINDOW] = SliderObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Numeric_Min, 0,
 								MUIA_Numeric_Max, 100,
 								MUIA_Slider_Horiz, TRUE,
@@ -6940,7 +7002,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 					Child, HGroup,
 						Child, HVSpace,
 						Child, Label1((ULONG) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE)),
-						Child, app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE] = CheckMark(FALSE),
+						Child, app->Obj[CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
 					End, //HGroup
 
@@ -6951,6 +7013,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 						Child, HGroup,
 //							  Child, Label2((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_FONT)),
 							Child, app->Obj[POP_TEXTMODEFONT] = PopaslObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Popstring_Button, PopButton(MUII_PopUp),
 								MUIA_Popstring_String, BetterStringObject,
 									StringFrame,
@@ -6978,6 +7041,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 
 						Child, VGroup,
 							Child, app->Obj[POPSTRING_TEXTWINDOW_TTTEXTWINDOWFONT] = PopstringObject,
+								MUIA_CycleChain, TRUE,
 								MUIA_Popstring_Button, PopButton(MUII_PopUp),
 								MUIA_Popstring_String, BetterStringObject,
 									StringFrame,
@@ -7085,6 +7149,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 						Child, app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 255,
 							MUIA_Slider_Horiz, TRUE,
@@ -7103,6 +7168,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_TRANSPARENCY_TRANSPARENT)),
 
 						Child, app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY] = SliderObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 255,
 							MUIA_Slider_Horiz, TRUE,
@@ -7188,6 +7254,7 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 				Child,	ColGroup(2),
 					Child, Label1((ULONG) GetLocString(MSGID_TTFONTSPAGE_ANTIALIASING)),
 					Child, app->Obj[CYCLE_TTANTIALIAS] = CycleObject,
+						MUIA_CycleChain, TRUE,
 						MUIA_Cycle_Entries, cTTFontsAntiAliasing,
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_ANTIALIASING_SHORTHELP),
 					End, //Radio
@@ -7198,6 +7265,7 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 				Child,	ColGroup(2),
 					Child, Label(GetLocString(MSGID_TTFONTSPAGE_GAMMA)),
 					Child, app->Obj[SLIDER_TTGAMMA] = NewObject(TTGammaSliderClass->mcc_Class, 0,
+						MUIA_CycleChain, TRUE,
 						MUIA_Numeric_Min, 100,
 						MUIA_Numeric_Max, 5000,
 						MUIA_Numeric_Value, 2500,
@@ -7219,12 +7287,13 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 				Child, HGroup,
 					Child, HVSpace,
 					Child, Label1((ULONG) GetLocString(MSGID_TTFONTSPAGE_SCREENFONT_ENABLE)),
-					Child, app->Obj[CHECK_TTSCREENFONT_ENABLE] = CheckMark(FALSE),
+					Child, app->Obj[CHECK_TTSCREENFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_TTFONTSPAGE_SCREENFONT_ENABLE_SHORTHELP),
 
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SCREENFONT_ENABLE_SHORTHELP),
 				End, //HGroup
 
 				Child, app->Obj[POPSTRING_TTSCREENFONT] = PopstringObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -7258,11 +7327,12 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 				Child, HGroup,
 					Child, HVSpace,
 					Child, Label1((ULONG) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_ENABLE)),
-					Child, app->Obj[CHECK_TTICONFONT_ENABLE] = CheckMark(FALSE),
+					Child, app->Obj[CHECK_TTICONFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP),
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_FONTSPAGE_TTFICONFONT_ENABLE_SHORTHELP),
 				End, //HGroup
 
 				Child, app->Obj[POPSTRING_TTICONFONT] = PopstringObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -7295,11 +7365,12 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 				Child, HGroup,
 					Child, HVSpace,
 					Child, Label1((ULONG) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE)),
-					Child, app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE] = CheckMark(FALSE),
+					Child, app->Obj[CHECK_TTTEXTWINDOWFONT_ENABLE] = CheckMarkHelp(FALSE, MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
 				End, //HGroup
 
 				Child, app->Obj[POPSTRING_TTTEXTWINDOWFONT] = PopstringObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
 					MUIA_Popstring_String, BetterStringObject,
 						StringFrame,
@@ -7348,7 +7419,7 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 			Child, ColGroup(2),
 				Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_POPUP_SELECTED_ALWAYS)),
 				Child, HGroup,
-					Child, app->Obj[CHECK_MISCPAGE_POPUP_SELECTED_ALWAYS] = CheckMark(FALSE),
+					Child, app->Obj[CHECK_MISCPAGE_POPUP_SELECTED_ALWAYS] = CheckMarkHelp(FALSE, MSGID_TTFONTSPAGE_TTFTEXTWINDOWFONT_ENABLE_SHORTHELP),
 					Child, HVSpace,
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_MISCPAGE_POPUP_SELECTED_ALWAYS_SHORTHELP),
 					End, //HGroup
@@ -7390,6 +7461,7 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 			Child, app->Obj[GROUP_DEFAULTSTACKSIZE] = ColGroup(2),
 				Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_DEFAULTSTACKSIZE)),
 				Child, app->Obj[SLIDER_DEFAULTSTACKSIZE] = SliderObject,
+					MUIA_CycleChain, TRUE,
 					MUIA_Numeric_Format, "%luK",
 					MUIA_Slider_Horiz, TRUE,
 					MUIA_Slider_Level, 16,
@@ -7412,6 +7484,7 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 			Child, app->Obj[GROUP_COPYBUFFERSIZE] = ColGroup(2),
 				Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_COPYBUFFERSIZE)),
 				Child, app->Obj[SLIDER_COPYBUFFERSIZE] = NewObject(BufferSizeSliderClass->mcc_Class, 0,
+					MUIA_CycleChain, TRUE,
 					MUIA_Slider_Horiz, TRUE,
 					MUIA_Slider_Level, 28 - 15,
 					MUIA_Slider_Min, 15,
@@ -7446,6 +7519,7 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 
 					Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_CREATE_LINKS)),
 					Child, app->Obj[CYCLE_CREATELINKS] = CycleObject,
+						MUIA_CycleChain, TRUE,
 						MUIA_Cycle_Entries, cCreateLinkTypes,
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_MISCPAGE_CREATE_LINKS_SHORTHELP),
 					End, //Image
