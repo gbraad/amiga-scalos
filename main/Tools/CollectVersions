@@ -1,5 +1,6 @@
 /* CollectVersions.rexx */
-/* 08 Nov 2009 11:41:47 */
+/* $Date$ */
+/* $Revision$ */
 
 options results
 
@@ -64,6 +65,10 @@ call getversion("sys:classes/datatypes", "iconobject.datatype")
 
 /* --- libraries */
 call getversion("Libs:", "iconobject.library")
+call getversion("Libs:", "popupmenu.library")
+call getversion("Libs:", "preferences.library")
+call getversion("Libs:", "scalosgfx.library")
+call getversion("Libs:", "sqlite3.library")
 
 /* --- prefs */
 call getversion("scalos:prefs", "FileTypes.prefsplugin", "ScalosFileTypes.catalog")
