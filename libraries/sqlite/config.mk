@@ -57,7 +57,7 @@ else
 ###############################################################################
 # AmigaOS
 
-LFLAGS  +=  	-nostartfiles \
+LFLAGS  +=  	-specs=gg:etc/specs -nostdlib -nostartfiles \
 		-lm \
 		-lmempools \
 		-ldebug \

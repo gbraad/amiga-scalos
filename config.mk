@@ -165,7 +165,7 @@ INCLUDES	=	-I$(TOPLEVEL)/include -Igg:include -Iinclude:
 
 DEBUG		=	-g
 
-LFLAGS		=	-nostdlib -noixemul -specs=gg:etc/specs -L $(TOPLEVEL)/68k-gcc-lib \
+LFLAGS		=	-noixemul -L $(TOPLEVEL)/68k-gcc-lib \
 			-Lgg:lib -Lgg:lib/libnix
 
 CFLAGS		=	$(WARNINGS) $(OPTIMIZE) $(DEBUG) $(CPU) $(OPTIONS) $(INCLUDES) -I.
@@ -178,7 +178,8 @@ ASFLAGS		=	quiet m=68020 linedebug opt=NRQB i=sc:Assembler_Headers/
 
 LIBPATH	 	= 	gg:lib
 
-STARTUP 	= 	$(LIBPATH)/libnix/ncrt0.o $(LIBPATH)/libnix/detach.o gg:lib/asm_debug.o 
+STARTUP 	= 	$(LIBPATH)/libnix/ncrt0.o 
+#STARTUP 	= 	$(LIBPATH)/libnix/detach.o gg:lib/asm_debug.o 
 
 OBJDIR		=	.obj_os3
 

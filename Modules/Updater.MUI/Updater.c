@@ -178,6 +178,9 @@ static BOOL SetProxyOptions(CURL *curl);
 static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation);
 static BOOL ErrorMsg(ULONG MsgId, ...);
 static void ParseArguments(void);
+#if !defined(__SASC) &&!defined(__MORPHOS__)
+size_t stccpy(char *dest, const char *src, size_t MaxLen);
+#endif //!defined(__SASC) &&!defined(__MORPHOS__)
 
 //----------------------------------------------------------------------------
 
@@ -193,6 +196,12 @@ T_TIMERBASE TimerBase;
 struct Library *AmiSSLMasterBase;
 struct Library *AmiSSLBase;
 
+#if defined(__GNUC__) && defined(M68K)
+extern T_UTILITYBASE __UtilityBase;
+#else /* defined(__GNUC__) && defined(M68K) */
+T_UTILITYBASE UtilityBase;
+#endif /* defined(__GNUC__) && defined(M68K) */
+
 #ifdef __amigaos4__
 struct DOSIFace *IDOS;
 struct IntuitionIFace *IIntuition = NULL;
@@ -201,6 +210,7 @@ struct ScalosIFace *IScalos = NULL;
 struct SocketIFace *ISocket = NULL;
 struct LocaleIFace *ILocale = NULL;
 struct TimerIFace *ITimer;
+struct UtilityIFace *IUtility;
 struct AmiSSLMasterIFace *IAmiSSLMaster;
 struct AmiSSLIFace *IAmiSSL;
 #endif
@@ -333,12 +343,14 @@ int main(int argc, char *argv[])
 
 	TranslateStringArray(RegisterTitles);
 
-	ContextMenuComponents = MUI_MakeObject(MUIO_MenustripNM, NewContextMenuComponents, 0);
+	ContextMenuComponents = MUI_MakeObject(MUIO_MenustripNM, (ULONG) NewContextMenuComponents, 0);
 	if (NULL == ContextMenuComponents)
 		{
 		fail(APP_Main, "Failed to create Collections Context Menu.");
 		}
-
+#if defined(M68K) && defined(__GNUC__)
+#undef NewObject
+#endif //defined(M68K) && defined(__GNUC__)
 	APP_Main = ApplicationObject,
 		MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
 		MUIA_Application_Version,	1 + VersTag,
@@ -853,6 +865,15 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif //__amigaos4__
 
+	UtilityBase = (APTR) OpenLibrary( "utility.library", 39 );
+	if (NULL == UtilityBase)
+		return FALSE;
+#ifdef __amigaos4__
+	IUtility = (APTR) GetInterface((struct Library *)UtilityBase, "main", 1, NULL);
+	if (NULL == IUtility)
+		return FALSE;
+#endif /* __amigaos4__ */
+
 	IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
 	if (NULL == IntuitionBase)
 		return FALSE;
@@ -993,7 +1014,7 @@ static void CloseLibraries(void)
 	if (DOSBase)
 		{
 		CloseLibrary((struct Library *) DOSBase);
-		DOSBase = NULL;
+		//DOSBase = NULL;	// do NOT clear DOSBase - it is still required for AmigaOS3/GCC
 		}
 	if (LocaleBase)
 		{
@@ -1061,6 +1082,18 @@ static void CloseLibraries(void)
 		{
 		CloseLibrary((struct Library *) IntuitionBase);
 		IntuitionBase = NULL;
+		}
+#ifdef __amigaos4__
+	if (IUtility)
+		{
+		DropInterface((struct Interface *)IUtility);
+		IUtility = NULL;
+		}
+#endif /* __amigaos4__ */
+	if (UtilityBase)
+		{
+		CloseLibrary((struct Library *) UtilityBase);
+		UtilityBase = NULL;
 		}
 }
 
@@ -1132,7 +1165,7 @@ static SAVEDS(void) INTERRUPT OpenAboutFunc(struct Hook *hook, Object *o, Msg ms
 	MUI_Request(APP_Main, WIN_Main, 0, NULL, 
 		GetLocString(MSGID_ABOUTREQOK), 
 		GetLocString(MSGID_ABOUTREQFORMAT), 
-		VERSION_MAJOR, VERSION_MINOR, COMPILER_STRING, CURRENTYEAR);
+		VERSION_MAJOR, VERSION_MINOR, (ULONG) COMPILER_STRING, (ULONG) CURRENTYEAR);
 }
 
 //----------------------------------------------------------------------------
@@ -1195,7 +1228,7 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 					(STRPTR) GetLocString(MSGID_STARTUP_FAILURE),
 					(STRPTR) GetLocString(MSGID_STARTUP_RETRY_QUIT_GAD),
                                         (STRPTR) GetLocString(MSGID_STARTUP_MCC_IN_USE),
-					name, minver, minrev, ver, rev))
+					(ULONG) name, minver, minrev, ver, rev))
 					{
 					flush = TRUE;
 					}
@@ -1227,7 +1260,7 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 					(STRPTR) GetLocString(MSGID_STARTUP_FAILURE),
 					(STRPTR) GetLocString(MSGID_STARTUP_RETRY_QUIT_GAD),
                                         (STRPTR) GetLocString(MSGID_STARTUP_OLD_MCC),
-					name, minver, minrev, ver, rev))
+					(ULONG) name, minver, minrev, ver, rev))
 					{
 					flush = TRUE;
 					}
@@ -1243,7 +1276,7 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 				(STRPTR) GetLocString(MSGID_STARTUP_FAILURE),
 				(STRPTR) GetLocString(MSGID_STARTUP_RETRY_QUIT_GAD),
                                 (STRPTR) GetLocString(MSGID_STARTUP_MCC_NOT_FOUND),
-				name, minver, minrev))
+				(ULONG) name, minver, minrev))
 				{
 				break;
 				}
@@ -1951,7 +1984,7 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 		snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
 			GetLocString(MSG_PROGRESS_CONNECTING), ScalosWebSite);
-		set(GaugeProgress, MUIA_Gauge_InfoText, TextProgressBuffer);
+		set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
 
 		if (SetProxyOptions(curl))
 			{
@@ -1970,7 +2003,7 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				{
 				d2(KPrintF("%s/%s/%ld: vfh.vfh_TotalLength=%ld\n", __FILE__, __FUNC__, __LINE__, vfh.vfh_TotalLength));
 
-				set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_PROCESS_HTTP_RESPONSE));
+				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_PROCESS_HTTP_RESPONSE));
 				Success = ProcessVersionFile(vfh.vfh_AllocatedBuffer, vfh.vfh_TotalLength);
 
 				if (0 == SelectedCount && fAuto)
@@ -1978,7 +2011,7 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					MUI_Request(APP_Main, WIN_Main, 0, NULL,
 						GetLocString(MSGID_ABOUTREQOK),
 						GetLocString(MSGID_REQFORMAT_NO_UPDATES_FOUND),
-						OsName);
+						(ULONG) OsName);
 					}
 				}
 			else
@@ -1986,7 +2019,7 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
 					GetLocString(MSG_PROGRESS_FAILURE), ScalosWebSite, curl_easy_strerror(res));
 
-				set(GaugeProgress, MUIA_Gauge_InfoText, TextProgressBuffer);
+				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
 
 				ErrorMsg(MSG_PROGRESS_FAILURE, ScalosWebSite, curl_easy_strerror(res));
 				}
@@ -1999,7 +2032,7 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 		}
 
 	set(GaugeProgress, MUIA_Gauge_Current, 100);
-	set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(Success ? MSG_PROGRESS_DONE : MSG_PROGRESS_FAILED));
+	set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(Success ? MSG_PROGRESS_DONE : MSG_PROGRESS_FAILED));
 
 	UpdateSelectedCount();
 }
@@ -2012,7 +2045,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 	STRPTR ScalosWebSite = "";
 	CURL *curl;
 
-	set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_START_UPDATE));
+	set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_START_UPDATE));
 	set(GaugeProgress, MUIA_Gauge_Current, 0);
 	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 0));
 
@@ -2074,7 +2107,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
 					GetLocString(MSG_PROGRESS_DOWNLOAD_UPDATE), cle->cle_Package);
-				set(GaugeProgress, MUIA_Gauge_InfoText, TextProgressBuffer);
+				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
 
 				EscapedPackageName = EscapeHttpName(cle->cle_Package);
 				d2(KPrintF("%s/%s/%ld: EscapedPackageName=%08lx\n", __FILE__, __FUNC__, __LINE__, EscapedPackageName));
@@ -2128,7 +2161,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				fclose(fh);
 				fh = NULL;
 
-				set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_VERIFY_SIGNATURE));
+				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_VERIFY_SIGNATURE));
 
 				if (!VerifyFileSignature(LhaName, cle->cle_Hash))
 					{
@@ -2143,7 +2176,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					ReqRes = MUI_Request(APP_Main, WIN_Main, 0, NULL,
 						GetLocString(MSGID_ABOUTREQ_YES_NO_ABORT),
 						GetLocString(MSGID_REQFORMAT_ASK_UPDATE),
-						cle->cle_File,
+						(ULONG) cle->cle_File,
 						cle->cle_RemoteVersion,
 						cle->cle_RemoteRevision,
 						cle->cle_LocalVersion,
@@ -2259,7 +2292,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 		}
 
 	set(GaugeProgress, MUIA_Gauge_Current, 100);
-	set(GaugeProgress, MUIA_Gauge_InfoText, GetLocString(MSG_PROGRESS_DONE));
+	set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_DONE));
 	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 100));
 }
 
@@ -2343,7 +2376,7 @@ static void UpdateSelectedCount(void)
 
 	snprintf(SelectedCountBuffer, sizeof(SelectedCountBuffer),
 		GetLocString(MSGID_TEXT_SELECTED_COUNT), SelectedCount);
-	set(SelectedCountMsg, MUIA_Text_Contents, SelectedCountBuffer);
+	set(SelectedCountMsg, MUIA_Text_Contents, (ULONG) SelectedCountBuffer);
 
 	set(ButtonStartUpdate, MUIA_Disabled, 0 == SelectedCount);
 	set(ButtonDeselectAll, MUIA_Disabled, 0 == SelectedCount);
@@ -2731,7 +2764,7 @@ static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation)
 	MUI_Request(APP_Main, WIN_Main, 0, NULL,
 		GetLocString(MSGID_ABOUTREQOK),
 		GetLocString(MSGID_REQFORMAT_OPENSSL_ERROR),
-		Function, Operation, ErrorBuffer);
+		(ULONG) Function, (ULONG) Operation, (ULONG) ErrorBuffer);
 
 	ERR_free_strings();
 }
@@ -2808,3 +2841,25 @@ static void ParseArguments(void)
 
 //----------------------------------------------------------------------------
 
+#if !defined(__SASC) &&!defined(__MORPHOS__)
+// Replacement for SAS/C library functions
+
+size_t stccpy(char *dest, const char *src, size_t MaxLen)
+{
+	size_t Count = 0;
+
+	while (*src && MaxLen > 1)
+		{
+		*dest++ = *src++;
+		MaxLen--;
+		Count++;
+		}
+	*dest = '\0';
+	Count++;
+
+	return Count;
+}
+
+#endif //!defined(__SASC) &&!defined(__MORPHOS__)
+
+//----------------------------------------------------------------------------
