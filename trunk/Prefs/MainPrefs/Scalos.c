@@ -6206,6 +6206,7 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_LOOK)),
 						Child, app->Obj[RADIO_BOBLOOK] = RadioObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Radio_Entries, cIconDragLook,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_LOOK_SHORTHELP),
 						End, //Radio
