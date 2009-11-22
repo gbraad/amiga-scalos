@@ -361,7 +361,7 @@ static LONG MakeNewDrawer(void)
 	BPTR newDirLock;
 	ULONG CreateIcon = FALSE;
 
-	ws = FindScalosWindow(wbMsg->sm_ArgList[1].wa_Lock);
+	ws = FindScalosWindow(WBenchMsg->sm_ArgList[1].wa_Lock);
 
 	GetAttr(STRINGA_TextVal, gb_Gadgets[String_NewDrawer], (ULONG *) &NewObjName);
 	GetAttr(GA_Selected, gb_Gadgets[CheckBox_CreateIcon], &CreateIcon);
@@ -379,7 +379,7 @@ static LONG MakeNewDrawer(void)
 				SCCM_IconWin_AddUndoEvent,
 				UNDO_NewDrawer,
 				UNDOTAG_UndoMultiStep, UndoStep,
-				UNDOTAG_CopySrcDirLock, wbMsg->sm_ArgList[1].wa_Lock,
+				UNDOTAG_CopySrcDirLock, WBenchMsg->sm_ArgList[1].wa_Lock,
 				UNDOTAG_CopySrcName, NewObjName,
 				UNDOTAG_CreateIcon, CreateIcon,
 				TAG_END
@@ -460,7 +460,7 @@ static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
 
 		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 			{
-			if (((BPTR)NULL == dirLock && BNULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
+			if (((BPTR)NULL == dirLock && (BPTR)NULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
 				{
 				return ws;
 				}
