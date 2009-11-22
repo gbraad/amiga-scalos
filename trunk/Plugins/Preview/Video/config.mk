@@ -65,7 +65,7 @@ else
 
 INCLUDES	+=	#
 
-LFLAGS	+=	\
+LFLAGS	+=	-specs=gg:etc/specs -nostdlib\
 		-lm2 \
 		-lgcc \
 		-lmempools \

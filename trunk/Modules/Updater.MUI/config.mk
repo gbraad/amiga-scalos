@@ -45,7 +45,21 @@ else
 ###############################################################################
 # AmigaOS
 
-LFLAGS	+=	#
+INCLUDES	+=      -I$(AMISSL_INC_DIR)\
+
+LFLAGS	+=	-nodefaultlibs \
+		-lcurl \
+		-lamissl \
+		-lz \
+		-lm2 \
+		-lgcc \
+		-lc \
+		-ldebug \
+		-lamiga \
+		-lstubs \
+
+CFLAGS		+=	-Dfd_set=APTR
+
 
 endif
 endif
