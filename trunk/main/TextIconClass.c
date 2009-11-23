@@ -584,8 +584,6 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 	static const struct ARGB DenomFile =  { (UBYTE) ~0, 80, 80, 80 };
 	static const struct ARGB NumDrawer = { (UBYTE) ~0, 65, 70, 65 };
 	static const struct ARGB DenomDrawer =  { (UBYTE) ~0, 80, 80, 80 };
-	static const struct ARGB NumHilight = { (UBYTE) ~0, 100, 100, 100 };
-	static const struct ARGB DenomHilight =  { (UBYTE) ~0, 80, 80, 80 };
 	struct ExtGadget *gg = (struct ExtGadget *) o;
 	struct iopDraw *iop = (struct iopDraw *) msg;
 	struct TextIClassInst *inst = INST_DATA(cl, o);
@@ -679,6 +677,7 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 			IA_Width, 1 + HighlightRect.MaxX - HighlightRect.MinX + 2,
 			IA_Height, 1 + HighlightRect.MaxY - HighlightRect.MinY,
 			IA_FGPen, BgColor,
+			TIHA_Transparency, (ULONG) CurrentPrefs.pref_SelectMarkerTransparency,
 			TAG_END);
 		DrawImage(iop->iopd_RastPort, (struct Image *) inst->txicl_Highlight, 0, 0);
 		};
@@ -686,10 +685,32 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 	if (inst->txicl_UserFlags & ICONOBJ_USERFLAGF_DrawHighlite)
 		{
 		// Highlight select area
-		DimRect(iop->iopd_RastPort,
-			NumHilight, DenomHilight,
-			HighlightRect.MinX, HighlightRect.MinY,
-			HighlightRect.MaxX, HighlightRect.MaxY);
+		ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+
+		if (CyberGfxBase && (ScreenDepth > 8))
+			{
+			UBYTE Transparency = (gg->Flags & GFLG_SELECTED) ? 255 : (CurrentPrefs.pref_SelectMarkerTransparency / 2);
+
+			SetAttrs(inst->txicl_Highlight,
+				IA_Left, HighlightRect.MinX,
+				IA_Top, HighlightRect.MinY,
+				IA_Width, 1 + HighlightRect.MaxX - HighlightRect.MinX + 2,
+				IA_Height, 1 + HighlightRect.MaxY - HighlightRect.MinY,
+				IA_FGPen, BgColor,
+				TIHA_Transparency, (ULONG) Transparency,
+				TAG_END);
+			DrawImage(iop->iopd_RastPort, (struct Image *) inst->txicl_Highlight, 0, 0);
+			}
+		else
+			{
+			static const struct ARGB NumHilight = { (UBYTE) ~0, 100, 100, 100 };
+			static const struct ARGB DenomHilight =  { (UBYTE) ~0, 80, 80, 80 };
+
+			DimRect(iop->iopd_RastPort,
+				NumHilight, DenomHilight,
+				HighlightRect.MinX, HighlightRect.MinY,
+				HighlightRect.MaxX, HighlightRect.MaxY);
+			}
 		}
 
 	if (inst->txicl_type < 0)
