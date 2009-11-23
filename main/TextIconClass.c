@@ -685,7 +685,7 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 	if (inst->txicl_UserFlags & ICONOBJ_USERFLAGF_DrawHighlite)
 		{
 		// Highlight select area
-		ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
+		ULONG ScreenDepth = GetBitMapAttr(iInfos.xii_iinfos.ii_Screen->RastPort.BitMap, BMA_DEPTH);
 
 		if (CyberGfxBase && (ScreenDepth > 8))
 			{

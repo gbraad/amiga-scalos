@@ -104,6 +104,13 @@ BOOL ThumbnailCacheInit(void)
 			break;
 			}
 
+		rc = SQLite3BusyTimeout(db, 100);
+		if (SQLITE_OK != rc )
+			{
+			d1(KPrintF("%s/%s/%ld: SQLite3BusyTimeout() failed: <%s>\n", __FILE__, __FUNC__, __LINE__, SQLite3Errmsg(db)));
+			break;
+			}
+
 		// try to create our table
 		rc = ThumbnailCacheCreateTable(db);
 		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
@@ -274,6 +281,8 @@ static int ThumbnailCacheAddEntry(sqlite3 *db, CONST_STRPTR FileName,
 
 		do	{
 			rc = SQLite3Step(pStmt);
+			if (SQLITE_BUSY == rc)
+				Delay(2);
 			} while (SQLITE_ROW == rc || SQLITE_BUSY == rc);
 
 		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
@@ -337,6 +346,8 @@ static BOOL ThumbnailCacheFindEntry(sqlite3 *db, CONST_STRPTR FileName,
 
 		do	{
 			rc = SQLite3Step(pStmt);
+			if (SQLITE_BUSY == rc)
+				Delay(2);
 			d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 			} while (SQLITE_BUSY == rc);
 
@@ -439,6 +450,8 @@ static BOOL ThumbnailCacheDeleteEntry(sqlite3 *db, CONST_STRPTR FileName)
 
 		do	{
 			rc = SQLite3Step(pStmt);
+			if (SQLITE_BUSY == rc)
+				Delay(2);
 			} while (SQLITE_ROW == rc || SQLITE_BUSY == rc);
 
 		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
@@ -502,6 +515,8 @@ static BOOL ThumbnailCacheUpdateEndOfLife(sqlite3 *db, CONST_STRPTR FileName, co
 
 		do	{
 			rc = SQLite3Step(pStmt);
+			if (SQLITE_BUSY == rc)
+				Delay(2);
 			} while (SQLITE_ROW == rc || SQLITE_BUSY == rc);
 
 		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
@@ -671,16 +686,17 @@ BOOL ThumbnailCacheFindARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 	sqlite3 *db = (sqlite3 *) ThumbnailCacheHandle;
 	struct FileInfoBlock *fib = NULL;
 	STRPTR FileName = NULL;
-	UBYTE *ImageData = NULL;
+	struct CachedThumbnail ctn;
 	BOOL Found = FALSE;
 	BOOL ShouldDeleteEntry = FALSE;
 
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 	debugLock_d1(fLock);
 
+	memset(&ctn, 0, sizeof(ctn));
+
 	do	{
 		T_TIMEVAL tv;
-		struct CachedThumbnail ctn;
 		size_t ImageDataSize;
 
 		if (NULL == db)
@@ -757,8 +773,8 @@ BOOL ThumbnailCacheFindARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 	if (FileName && ShouldDeleteEntry)
 		ThumbnailCacheDeleteEntry(db, FileName);
 
-	if (ImageData)
-		ScalosFreeVecPooled(ImageData);
+	if (ctn.ctn_ThumbnailData)
+		ScalosFreeVecPooled(ctn.ctn_ThumbnailData);
 	if (FileName)
 		FreePathBuffer(FileName);
 	if (fib)
@@ -1082,6 +1098,8 @@ BOOL ThumbnailCacheCleanup(APTR ThumbnailCacheHandle)
 		do	{
 			rc = SQLite3Step(pStmt);
 			d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+			if (SQLITE_BUSY == rc)
+				Delay(2);
 			} while (SQLITE_ROW == rc || SQLITE_BUSY == rc);
 
 		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
