@@ -23,6 +23,7 @@ SUBDIRS =	Rename.Reaction \
 		WindowProperties.MUI \
                 Information.MUI \
                 Execute_Command.MUI \
+                Updater.MUI \
 
 #############################################################
 
