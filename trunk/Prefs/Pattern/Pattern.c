@@ -297,9 +297,12 @@ int main(int argc, char *argv[])
 			WindowContents, VGroup,
 				Child,	Group_Plugin,
 				Child, ColGroup(3), 
-					Child, SaveButton = KeyButtonHelp(GetLocString(MSGID_SAVEBUTTON), 's', GetLocString(MSGID_SHORTHELP_SAVEBUTTON)),
-					Child, UseButton  = KeyButtonHelp(GetLocString(MSGID_USEBUTTON), 'u', GetLocString(MSGID_SHORTHELP_USEBUTTON)),
-					Child, CancelButton = KeyButtonHelp(GetLocString(MSGID_CANCELBUTTON), 'c', GetLocString(MSGID_SHORTHELP_CANCELBUTTON)),
+					Child, SaveButton = KeyButtonHelp(GetLocString(MSGID_SAVEBUTTON),
+								's', GetLocString(MSGID_SHORTHELP_SAVEBUTTON)),
+					Child, UseButton = KeyButtonHelp(GetLocString(MSGID_USEBUTTON),
+								'u', GetLocString(MSGID_SHORTHELP_USEBUTTON)),
+					Child, CancelButton = KeyButtonHelp(GetLocString(MSGID_CANCELBUTTON),
+								'c', GetLocString(MSGID_SHORTHELP_CANCELBUTTON)),
 					End,
 				End,
 			End,
@@ -378,9 +381,6 @@ int main(int argc, char *argv[])
 
 	DoMethod(MenuQuit, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
 		APP_Main, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-
-	DoMethod(WIN_Main, MUIM_Window_SetCycleChain, 
-		UseButton, CancelButton, NULL);
 
 	DoMethod(SaveButton, MUIM_Notify, MUIA_Pressed, FALSE,
 		APP_Main, 2, MUIM_Application_ReturnID, Application_Return_SAVE);

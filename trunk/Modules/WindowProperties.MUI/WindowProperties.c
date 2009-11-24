@@ -717,6 +717,7 @@ int main(int argc, char *argv[])
 										Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_TRANSPARENT)),
 
 										Child, SliderTransparencyActiveWindow = SliderObject,
+											MUIA_CycleChain, TRUE,
 											MUIA_Numeric_Min, 0,
 											MUIA_Numeric_Max, 100,
 											MUIA_Slider_Horiz, TRUE,
@@ -747,6 +748,7 @@ int main(int argc, char *argv[])
 										Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_TRANSPARENT)),
 
 										Child, SliderTransparencyInactiveWindow = SliderObject,
+											MUIA_CycleChain, TRUE,
 											MUIA_Numeric_Min, 0,
 											MUIA_Numeric_Max, 100,
 											MUIA_Slider_Horiz, TRUE,

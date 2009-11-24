@@ -380,10 +380,6 @@ int main(int argc, char *argv[])
 	DoMethod(MenuCreateIcons, MUIM_Notify, MUIA_Menuitem_Checked, MUIV_EveryTime,
 		Group_Plugin, 3, MUIM_Set, MUIA_ScalosPrefs_CreateIcons, MUIV_TriggerValue);
 
-	DoMethod(WIN_Main, MUIM_Window_SetCycleChain,
-		SaveButton, UseButton, CancelButton,
-		NULL);
-
 	if (GivenFileName)
 		{
 		DoMethod(Group_Plugin, MUIM_ScalosPrefs_LoadNamedConfig, GivenFileName);

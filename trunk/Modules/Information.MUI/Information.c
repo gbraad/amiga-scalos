@@ -163,6 +163,7 @@
 		MUIA_InputMode, MUIV_InputMode_RelVerify, \
 		MUIA_Image_Spec, MUII_TapeUp, \
 		MUIA_Background, MUII_ButtonBack, \
+		MUIA_CycleChain, TRUE, \
 		MUIA_ShowSelState, TRUE, \
 		End
 
@@ -172,6 +173,7 @@
 		MUIA_InputMode, MUIV_InputMode_RelVerify, \
 		MUIA_Image_Spec, MUII_TapeDown, \
 		MUIA_Background, MUII_ButtonBack, \
+		MUIA_CycleChain, TRUE, \
 		MUIA_ShowSelState, TRUE, \
 		End
 
@@ -195,6 +197,7 @@
 		End, \
 				\
 		Child, slidobj = SliderObject, \
+			MUIA_CycleChain, TRUE, \
 			MUIA_Slider_Horiz, TRUE, \
 			MUIA_Numeric_Min, -128, \
 			MUIA_Numeric_Max, 127, \
@@ -786,6 +789,7 @@ int main(int argc, char *argv[])
 
 					Child, Group_Virtual = ScrollgroupObject,
 						MUIA_ShowMe, strlen(PathName) > 0 ? ShowIconPath : FALSE,
+						MUIA_CycleChain, TRUE,
 						MUIA_Scrollgroup_FreeHoriz, TRUE,
 						MUIA_Scrollgroup_FreeVert, FALSE,
 						MUIA_Scrollgroup_Contents,
@@ -853,6 +857,7 @@ int main(int argc, char *argv[])
 
 							Child, GroupDisk = RegisterObject,
 								MUIA_Register_Titles, DeviceRegisterTitleStrings,
+								MUIA_CycleChain, TRUE,
 								MUIA_ShowMe, (WBDISK == IconType),
 
 								Child,	VGroup,
@@ -924,6 +929,7 @@ int main(int argc, char *argv[])
 
 							Child,	GroupDrawer = RegisterObject,
 								MUIA_Register_Titles, DrawerRegisterTitleStrings,
+								MUIA_CycleChain, TRUE,
 								MUIA_ShowMe, (WBDRAWER == IconType) || (WBGARBAGE == IconType),
 
 								Child,	VGroup,
@@ -1004,6 +1010,7 @@ int main(int argc, char *argv[])
 
 							Child,	GroupProject = RegisterObject,
 								MUIA_Register_Titles, ProjectRegisterTitleStrings,
+								MUIA_CycleChain, TRUE,
 								MUIA_ShowMe, WBPROJECT == IconType,
 
 								Child,	VGroup,
@@ -1112,6 +1119,7 @@ int main(int argc, char *argv[])
 
 											Child, Label1(GetLocString(MSGID_TOOL_PRIORITY)),
 											Child, SliderToolPriProject = SliderObject,
+												MUIA_CycleChain, TRUE,
 												MUIA_Slider_Horiz, TRUE,
 												MUIA_Numeric_Min, -128,
 												MUIA_Numeric_Max, 127,
@@ -1122,6 +1130,7 @@ int main(int argc, char *argv[])
 										Child, Label1(GetLocString(MSGID_START_FROM)),
 										Child, HGroup,
 											Child, CycleStartFromProject = CycleObject,
+												MUIA_CycleChain, TRUE,
 												MUIA_Cycle_Entries, StartFromCycleChoices,
 												MUIA_Cycle_Active, StartFrom,
 											End, //CycleObject
@@ -1163,6 +1172,7 @@ int main(int argc, char *argv[])
 										// for all other directories, those members will be removed later
 										Child, LabelStartPriTool2 = Label1S(GetLocString(MSGID_STARTPRI)),
 										Child, SliderStartPriTool2 = SliderObject,
+											MUIA_CycleChain, TRUE,
 											MUIA_Slider_Horiz, TRUE,
 											MUIA_Numeric_Min, -128,
 											MUIA_Numeric_Max, 127,
@@ -1203,6 +1213,7 @@ int main(int argc, char *argv[])
 
 							Child,	GroupTool = RegisterObject,
 								MUIA_Register_Titles, ToolRegisterTitleStrings,
+								MUIA_CycleChain, TRUE,
 								MUIA_ShowMe, WBTOOL == IconType,
 
 								Child,	VGroup,
@@ -1296,6 +1307,7 @@ int main(int argc, char *argv[])
 
 											Child, Label1(GetLocString(MSGID_TOOL_PRIORITY)),
 											Child, SliderToolPriTool = SliderObject,
+												MUIA_CycleChain, TRUE,
 												MUIA_Slider_Horiz, TRUE,
 												MUIA_Numeric_Min, -128,
 												MUIA_Numeric_Max, 127,
@@ -1308,6 +1320,7 @@ int main(int argc, char *argv[])
 											Child, CycleStartFromTool = CycleObject,
 												MUIA_Cycle_Entries, StartFromCycleChoices,
 												MUIA_Cycle_Active, StartFrom,
+												MUIA_CycleChain, TRUE,
 											End, //CycleObject
 
 											Child, Label1(GetLocString(MSGID_PROMPT_FOR_INPUT)),
@@ -1345,6 +1358,7 @@ int main(int argc, char *argv[])
 										// for all other directories, those members will be removed later
 										Child, LabelStartPriTool = Label1S(GetLocString(MSGID_STARTPRI)),
 										Child, SliderStartPriTool = SliderObject,
+											MUIA_CycleChain, TRUE,
 											MUIA_Slider_Horiz, TRUE,
 											MUIA_Numeric_Min, -128,
 											MUIA_Numeric_Max, 127,
