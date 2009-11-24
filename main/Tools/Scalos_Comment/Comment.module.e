@@ -21,7 +21,8 @@ OBJECT file
   pname
   comment
   protection
-  numblocks, size
+  numblocks
+  size
   datestamp:datestamp
   infodata:infodata
   type
@@ -359,7 +360,7 @@ menu := [NM_TITLE,0, (cat.msg_MenuProject.getstr() ), 0 ,0,0,0,
 			IF numlist > 1
 				set(bt_Arret, MUIA_Disabled, 0)
 
-				doMethodA(vlist,[MUIM_NList_Select,MUIV_NList_Select_All,MUIV_NList_Select_On,TRUE])
+				doMethodA(vlist,[MUIM_NList_Select,MUIV_NList_Select_All,MUIV_NList_Select_On, NIL ])
 
 				commentlist(vlist)
 
@@ -1495,4 +1496,4 @@ PROC makeIMG(id,cr,help,mode,spec,sel,show,freeh) IS ImageObject,
 		MUIA_ShortHelp, help,
 	      End
 
-CHAR VERSTAG, ' - ', __TARGET__ , 0
+CHAR VERSTAG, ' Compiled with: ', COMPILER_STRING, 0
