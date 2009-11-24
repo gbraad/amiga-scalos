@@ -442,6 +442,7 @@ void SetupInterface  (void);
                                     MUIA_Window_ScreenTitle, VSTR,
                                     WindowContents, VGroup,
                                         Child, RegisterGroup(Pages),
+					    MUIA_CycleChain, TRUE,
                                             MUIA_Background, MUII_RegisterBack,
                                             Child, VGroup,
                                                 Child, VGroup,

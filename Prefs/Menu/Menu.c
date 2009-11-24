@@ -141,7 +141,6 @@ static struct MUI_CustomClass *MenuPluginClass;
 static struct TagItem *SubWindowTagList;
 
 static APTR Group_Plugin;
-static APTR Group_Buttons2;
 static Object **PluginSubWindows;
 static APTR APP_Main;
 static APTR WIN_Main;
@@ -283,15 +282,14 @@ int main(int argc, char *argv[])
 			WindowContents, VGroup,
 				Child, Group_Plugin,
 
-				Child, Group_Buttons2 = HGroup,
-					MUIA_Group_SameWidth, TRUE,
+				Child, ColGroup(3),
 					Child, SaveButton = KeyButtonHelp(GetLocString(MSGID_SAVENAME), 
 								's', GetLocString(MSGID_SHORTHELP_SAVEBUTTON)),
 					Child, UseButton = KeyButtonHelp(GetLocString(MSGID_USENAME), 
 								'u', GetLocString(MSGID_SHORTHELP_USEBUTTON)),
 					Child, CancelButton = KeyButtonHelp(GetLocString(MSGID_CANCELNAME), 
 								'c', GetLocString(MSGID_SHORTHELP_CANCELBUTTON)),
-				End, //HGroup
+				End, //ColGroup(3)
 			End, //VGroup
 		End, //WindowObject
 
@@ -448,10 +446,6 @@ int main(int argc, char *argv[])
 
 	DoMethod(MenuCreateIcons, MUIM_Notify, MUIA_Menuitem_Checked, MUIV_EveryTime,
 		Group_Plugin, 3, MUIM_Set, MUIA_ScalosPrefs_CreateIcons, MUIV_TriggerValue);
-
-	DoMethod(WIN_Main, MUIM_Window_SetCycleChain,
-		SaveButton, UseButton, CancelButton,
-		NULL);
 
 	if (icon)
 		{

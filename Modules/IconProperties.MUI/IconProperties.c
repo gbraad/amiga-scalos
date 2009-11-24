@@ -93,6 +93,7 @@ long _stack = 16384;		// minimum stack size, used by SAS/C startup code
 		MUIA_ControlChar  , key,\
 		MUIA_InputMode    , MUIV_InputMode_RelVerify,\
 		MUIA_Background   , MUII_ButtonBack,\
+		MUIA_CycleChain, TRUE, \
 		MUIA_ShortHelp, HelpText,\
 		End
 
@@ -351,6 +352,7 @@ int main(int argc, char *argv[])
 								Child, Label1(GetLocString(MSGID_CHECKMARK_NOTEXT)),
 								Child, CheckMarkNoText = ImageObject,
 									ImageButtonFrame,
+									MUIA_CycleChain, TRUE,
 									MUIA_InputMode, MUIV_InputMode_Toggle,
 									MUIA_Image_Spec, MUII_CheckMark,
 									MUIA_Image_FreeVert, TRUE,
@@ -364,6 +366,7 @@ int main(int argc, char *argv[])
 								Child, Label1(GetLocString(MSGID_CHECKMARK_NODRAG)),
 								Child, CheckMarkNoDrag = ImageObject,
 									ImageButtonFrame,
+									MUIA_CycleChain, TRUE,
 									MUIA_InputMode, MUIV_InputMode_Toggle,
 									MUIA_Image_Spec, MUII_CheckMark,
 									MUIA_Image_FreeVert, TRUE,
@@ -377,6 +380,7 @@ int main(int argc, char *argv[])
 								Child, Label1(GetLocString(MSGID_CHECKMARK_NOTOOLTIPS)),
 								Child, CheckMarkNoToolTips = ImageObject,
 									ImageButtonFrame,
+									MUIA_CycleChain, TRUE,
 									MUIA_InputMode, MUIV_InputMode_Toggle,
 									MUIA_Image_Spec, MUII_CheckMark,
 									MUIA_Image_FreeVert, TRUE,
@@ -390,6 +394,7 @@ int main(int argc, char *argv[])
 								Child, Label1(GetLocString(MSGID_CHECKMARK_BROWSERMODE)),
 								Child, CheckMarkBrowserMode = ImageObject,
 									ImageButtonFrame,
+									MUIA_CycleChain, TRUE,
 									MUIA_InputMode, MUIV_InputMode_Toggle,
 									MUIA_Image_Spec, MUII_CheckMark,
 									MUIA_Image_FreeVert, TRUE,
@@ -407,6 +412,7 @@ int main(int argc, char *argv[])
 						End, //HGroup
 
 						Child, Group_Virtual = ScrollgroupObject, // +jmc+
+							MUIA_CycleChain, TRUE,
 							MUIA_Scrollgroup_VertBar, NULL,
 							MUIA_Scrollgroup_HorizBar, NULL,
 							MUIA_Scrollgroup_FreeHoriz, TRUE,
@@ -505,10 +511,6 @@ int main(int argc, char *argv[])
 
 		DoMethod(IconImage, MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
 			APP_Main, 3, MUIM_WriteLong, MUIV_TriggerValue, &selected);
-
-		DoMethod(WIN_Main, MUIM_Window_SetCycleChain,
-			OkButton, CancelButton,
-			NULL);
 
 		// disable Ok button for read-only icons
 		set(OkButton, MUIA_Disabled, !IsWriteable);

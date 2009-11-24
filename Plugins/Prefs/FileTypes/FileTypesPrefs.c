@@ -2037,6 +2037,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 
 		Child, RegisterObject,
 			MUIA_Register_Titles, RegisterTitles,
+			MUIA_CycleChain, TRUE,
 
 			// --- filetypes
 			Child, VGroup,

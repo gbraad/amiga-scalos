@@ -4923,6 +4923,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 
 		Child, RegisterObject,
 			MUIA_Register_Titles, cDesktopPages,
+			MUIA_CycleChain, TRUE,
 
 			// --- Desktop-Screen
 			Child, app->Obj[GROUP_SCRTITLE] = VGroup,
@@ -5198,6 +5199,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 		Child, RegisterObject,
 			MUIA_Register_Titles, cIconPages,
+			MUIA_CycleChain, TRUE,
 
 			// --- Icons-Attributes
 			Child, VGroup,
@@ -5994,6 +5996,7 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 
 		Child, RegisterObject,
 			MUIA_Register_Titles, cIconDragDropPages,
+			MUIA_CycleChain, TRUE,
 
 			// Drag and drop
 			Child, VGroup,
@@ -6284,6 +6287,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 
 		Child, RegisterObject,
 			MUIA_Register_Titles, cWindowPages,
+			MUIA_CycleChain, TRUE,
 
 			// --- Windows-General
 			Child, VGroup,
@@ -6552,6 +6556,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 			// --- Window-Control Bar Browser
 			Child, RegisterObject,
 				MUIA_Register_Titles, cWindowControlBar,
+				MUIA_CycleChain, TRUE,
 
 				// --- Browser Window Control Bar
 				Child, VGroup,
@@ -6989,6 +6994,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 
 		Child, RegisterObject,
 			MUIA_Register_Titles, cTextWindowPages,
+			MUIA_CycleChain, TRUE,
 
 			// Fonts
 			Child, VGroup,
@@ -7561,6 +7567,7 @@ static Object *GeneratePluginsPage(struct SCAModule *app)
 					Child, app->Obj[PLUGIN_LISTVIEW] = NListviewObject,
 						MUIA_NListview_NList, app->Obj[PLUGIN_LIST] = NListObject,
 							InputListFrame,
+							MUIA_CycleChain, TRUE,
 							MUIA_Background, MUII_ListBack,
 							MUIA_NList_Format, "W=-1, W=-1",
 							MUIA_NList_DefaultObjectOnClick, TRUE,
@@ -7590,6 +7597,7 @@ static Object *GeneratePluginsPage(struct SCAModule *app)
 						Child, app->Obj[ADD_PLUGIN] = TextObject,
 							MUIA_InputMode, MUIV_InputMode_RelVerify,
 							ButtonFrame,
+							MUIA_CycleChain, TRUE,
 							MUIA_Background, MUII_ButtonBack,
 							MUIA_Text_Contents, (ULONG) GetLocString(MSGID_PLUGINSPAGE_ADD_NEW),
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PLUGINSPAGE_ADD_NEW_SHORTHELP),
@@ -7600,6 +7608,7 @@ static Object *GeneratePluginsPage(struct SCAModule *app)
 						Child, app->Obj[REMOVE_PLUGIN] = TextObject,
 							MUIA_InputMode, MUIV_InputMode_RelVerify,
 							ButtonFrame,
+							MUIA_CycleChain, TRUE,
 							MUIA_Background, MUII_ButtonBack,
 							MUIA_Text_Contents, (ULONG) GetLocString(MSGID_PLUGINSPAGE_REMOVE_SELECTED),
 							MUIA_Disabled, TRUE,
@@ -7645,7 +7654,7 @@ static Object *GeneratePluginsPage(struct SCAModule *app)
 						MUIA_InputMode, MUIV_InputMode_RelVerify,
 						ButtonFrame,
 						MUIA_Background, MUII_ButtonBack,
-/* currently unused */									MUIA_Disabled, TRUE,
+/* currently unused */				MUIA_Disabled, TRUE,
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PLUGINSPAGE_EDIT_PREFERENCES_SHORTHELP),
 
 						Child, TextObject,
