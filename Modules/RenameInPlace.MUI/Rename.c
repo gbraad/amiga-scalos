@@ -121,7 +121,7 @@ const int Max_PathLen = 1000;
 
 int main(int argc, char *argv[])
 {
-	struct ScaWindowStruct *ws = NULL;
+	struct ScaWindowList *wl = NULL;
 	APTR UndoStep = NULL;
 	LONG win_opened;
 	ULONG n;
@@ -157,7 +157,6 @@ int main(int argc, char *argv[])
 
 	do	{
 		struct Rectangle IconRect;
-		struct ScaWindowList *wl;
 
 		if (!OpenLibraries())
 			break;
@@ -343,10 +342,12 @@ int main(int argc, char *argv[])
 		set(WIN_InPlace, MUIA_Window_Open, FALSE);
 		} while (0);
 
-	if (ws)
+	if (wl)
 		{
 		if (UndoStep)
 			{
+			struct ScaWindowStruct *ws = wl->wl_WindowStruct;
+
 			DoMethod(ws->ws_WindowTask->mt_MainObject,
 				SCCM_IconWin_EndUndoStep,
 				UndoStep);
