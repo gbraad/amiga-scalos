@@ -170,8 +170,10 @@ static int PerformUpdateProgressFunc(void *clientp, double dltotal, double dlnow
 static BOOL CalculateFileHash(CONST_STRPTR Filename, unsigned char *digest);
 static RSA* GetScalosPublicKey(void);
 static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureString);
-static BOOL HexStringDecode(CONST_STRPTR HexString, unsigned char *outbuf, size_t BuffLength);
-static UBYTE HexDigit(char ch);
+static void decodeblock(const unsigned char in[4], unsigned char out[3]);
+static BOOL Base64Decode(CONST_STRPTR Base64String, unsigned char *outbuf, size_t BuffLength);
+//static BOOL HexStringDecode(CONST_STRPTR HexString, unsigned char *outbuf, size_t BuffLength);
+//static UBYTE HexDigit(char ch);
 //static void ByteDump(unsigned char *Data, size_t Length);
 static STRPTR EscapeHttpName(CONST_STRPTR name);
 static BOOL SetProxyOptions(CURL *curl);
@@ -2538,9 +2540,10 @@ static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureStr
 		if (RSA_size(ScalosPubKeyRSA) != sizeof(signature))
 			break;
 
-		if (!HexStringDecode(SignatureString, signature, sizeof(signature)))
+		if (!Base64Decode(SignatureString, signature, sizeof(signature)))
+//		if (!HexStringDecode(SignatureString, signature, sizeof(signature)))
 			{
-			d2(KPrintF("%s/%s/%ld: HexStringDecode(%s) failed.\n", __FILE__, __FUNC__, __LINE__, SignatureString));
+			d2(KPrintF("%s/%s/%ld: Base64Decode(%s) failed.\n", __FILE__, __FUNC__, __LINE__, SignatureString));
 			break;
 			}
 
@@ -2577,6 +2580,76 @@ static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureStr
 
 //----------------------------------------------------------------------------
 
+/*
+** decodeblock
+**
+** decode 4 '6-bit' characters into 3 8-bit binary bytes
+*/
+static void decodeblock( const unsigned char in[4], unsigned char out[3] )
+{
+    out[0] = (unsigned char ) (in[0] << 2 | in[1] >> 4);
+    out[1] = (unsigned char ) (in[1] << 4 | in[2] >> 2);
+    out[2] = (unsigned char ) (((in[2] << 6) & 0xc0) | in[3]);
+}
+
+/*
+** decode
+**
+** decode a base64 encoded stream discarding padding, line breaks and noise
+*/
+static BOOL Base64Decode(CONST_STRPTR Base64String, unsigned char *outbuf, size_t BuffLength)
+{
+	while ( *Base64String && BuffLength)
+		{
+		size_t len;
+		unsigned char in[4], v;
+		int i;
+
+		for ( len = 0, i = 0; i < 4 && *Base64String; i++ )
+			{
+			v = 0;
+			while ( *Base64String && v == 0 )
+				{
+				static const char cd64[]="|$$$}rstuvwxyz{$$$$$$$>?@ABCDEFGHIJKLMNOPQRSTUVW$$$$$$XYZ[\\]^_`abcdefghijklmnopq";
+
+				v = (unsigned char) *Base64String++;
+				v = (unsigned char) ((v < 43 || v > 122) ? 0 : cd64[ v - 43 ]);
+				if ( v )
+					{
+					v = (unsigned char) ((v == '$') ? 0 : v - 61);
+					}
+				}
+			if ( *Base64String )
+				{
+				len++;
+				if( v )
+					{
+					in[i] = (unsigned char) (v - 1);
+					}
+				}
+			else
+				{
+				in[i] = 0;
+				}
+			}
+		if (len)
+			{
+			unsigned char out[3];
+
+			decodeblock( in, out );
+			for( i = 0; i < len - 1 && BuffLength; i++ )
+				{
+				*outbuf++ = out[i];
+				BuffLength--;
+				}
+			}
+		}
+
+	return TRUE;
+}
+
+//----------------------------------------------------------------------------
+#if 0
 static BOOL HexStringDecode(CONST_STRPTR HexString, unsigned char *outbuf, size_t BuffLength)
 {
 	while (strlen(HexString) >= 2 && BuffLength)
@@ -2611,7 +2684,7 @@ static UBYTE HexDigit(char ch)
 
 	return val;
 }
-
+#endif
 //----------------------------------------------------------------------------
 
 #if 0
