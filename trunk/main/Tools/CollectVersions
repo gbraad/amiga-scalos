@@ -55,6 +55,12 @@ call writeln('versionfile', "; AUTOMATICALLY GENERATED FILE, DO NOT EDIT MANUALL
 /* Scalos main */
 call getversion("scalos:", "Scalos", "Scalos.catalog")
 
+/* Test-String for Base64 encoder */
+/* say encodebase64('Polyfon zwitschernd aßen Mäxchens Vögel Rüben, Joghurt und Quark') */
+/* output should be
+UG9seWZvbiB6d2l0c2NoZXJuZCBhw59lbiBNw6R4Y2hlbnMgVsO2Z2VsIFLDvGJlbiwgSm9naHVydCB1bmQgUXVhcms=
+*/
+
 /* --- datatypes */
 call getversion("sys:classes/datatypes", "amigaiconobject.datatype")
 call getversion("sys:classes/datatypes", "amigaiconobj35.datatype")
@@ -214,10 +220,8 @@ if rc = 0 then
 	rc = close( 'sha1file' )
 	'delete ' || xfname || ' quiet'
 /*	say length(hashbin) */
-	Hash = ""
-	do n=1 to length(hashbin)
-		Hash = Hash || c2x(substr(hashbin, n, 1))
-		end
+/*	  Hash = c2x(hashbin) */
+	Hash = encodebase64(hashbin)
 
 	vfstring = 'DIR="' || dirname || '" FILE="' || filename || '" OS="' || os || '" VERSION=' || vstring || ' PKG="' || PkgName || '" HASH="' || Hash || '"'
 	/* say vfstring */
@@ -235,6 +239,8 @@ return
 
 loadexistingversionfile: procedure
 parse arg osname, versionfilename
+
+say "Downloading existing " || versionfilename || "."
 
 oldversionfilename = 'ram:versions-old'
 
@@ -299,4 +305,61 @@ return found
 
 /* -------------------------------------------------------------------------------- */
 
+encodebase64: procedure
+parse arg binstring
+
+/* Encodes a file in Base64.                         */
+/*                                                   */
+/* Written by James L. Dean                          */
+
+char_set='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+b64string = ''
+
+binlength = length(binstring)
+
+DO WHILE (binlength > 0)
+	num_octets=0
+	triple=0
+	DO octet_num=1 TO 3
+		IF binlength > 0 THEN
+			DO
+			octet = left(binstring, 1)
+			binstring = substr(binstring, 2)
+			triple = 256 * triple + C2D(octet)
+			num_octets = num_octets + 1
+			binlength = binlength - 1
+			END
+		ELSE
+			triple = 256 * triple
+	END
+
+	num_sextets = (8 * num_octets) % 6
+
+	IF 6*num_sextets < 8*num_octets THEN
+		num_sextets = num_sextets + 1
+
+	IF num_sextets > 0 THEN
+		DO
+		sextet_num = 1
+		DO WHILE(sextet_num <= 4)
+			quotient = triple % 64
+			stack.sextet_num = triple - 64 * quotient
+			sextet_num = sextet_num + 1
+			triple = quotient
+			END
+		DO WHILE (num_sextets >= 1)
+			sextet_num = sextet_num-1
+			b64string = b64string || SUBSTR(char_set, 1 + stack.sextet_num, 1)
+			num_sextets = num_sextets-1
+			END
+		DO WHILE (sextet_num > 1)
+			b64string = b64string || '='
+			sextet_num = sextet_num - 1
+			END
+		END
+END
+
+return b64string
+
+/* -------------------------------------------------------------------------------- */
 
