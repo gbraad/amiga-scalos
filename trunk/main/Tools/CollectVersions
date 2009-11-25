@@ -99,6 +99,7 @@ call getversion("scalos:modules", "Information.module", "Information.catalog")
 call getversion("scalos:modules", "NewDrawer.module", "NewDrawer.catalog")
 call getversion("scalos:modules", "Rename.module", "Rename.catalog")
 call getversion("scalos:modules", "WindowProperties.module", "WindowProperties.catalog")
+call getversion("scalos:modules", "Updater.module", "Updater.catalog")
 
 /*  --- plugins */
 call getversion("Scalos:Plugins/Filetypes", "drawercontents.plugin", "DrawerContentsPlugin.catalog")
