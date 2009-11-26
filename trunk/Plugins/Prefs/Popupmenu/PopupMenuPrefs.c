@@ -698,6 +698,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 		Child, RegisterObject,
 			MUIA_Register_Titles, PrefsPageNames,
+			MUIA_CycleChain, TRUE,
 /*
 			//------ Colours ----------------------
 			Child, VGroup,
