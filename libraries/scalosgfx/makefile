@@ -62,6 +62,7 @@ all:	$(NAME) $(DBGNAME)
 
 #############################################################
 
+$(OBJ_DIR)/scalosgfx-classic.o 	: scalosgfx_base.h scalosgfx.h
 $(OBJ_DIR)/scalosgfx.o 		: scalosgfx_base.h scalosgfx.h
 $(OBJ_DIR)/argb.o 		: scalosgfx_base.h scalosgfx.h
 $(OBJ_DIR)/blit.o 		: scalosgfx_base.h scalosgfx.h
