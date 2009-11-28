@@ -4,7 +4,7 @@
 extern struct Library *CyberGfxBase;
 #ifdef __amigaos4__
 #include <interfaces/cybergraphics.h>
-extern struct ScalosGfxIFace *ICybergraphics;
+extern struct CyberGfxIFace *ICyberGfx;
 #endif /* __amigaos4__ */
 
 #include <clib/cybergraphics_protos.h>
