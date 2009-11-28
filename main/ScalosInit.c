@@ -156,8 +156,9 @@ T_CONSOLEDEVICE	ConsoleDevice;
 #ifdef __GNUC__
 // Options for libnix
 char *__procname = "Workbench";
-long __priority = 5;
+int __priority = 5;
 unsigned long __stack = 16384;			// Stack requirement
+unsigned int __stack_size = 16384;
 #endif
 
 #ifdef	__SASC

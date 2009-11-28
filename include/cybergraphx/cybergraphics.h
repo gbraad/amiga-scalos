@@ -19,9 +19,9 @@
 #include <graphics/displayinfo.h>
 #endif
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && __GNUC__ > 2
 #pragma pack(2)
-#endif //defined(__GNUC__)
+#endif //defined(__GNUC__) && __GNUC__ > 2
 
 
 #define CYBERGFXNAME	"cybergraphics.library"
@@ -291,8 +291,8 @@ struct  CDrawMsg
 #define DESTALPHAVALUE_USESOURCE    2
 #define DESTALPHAVALUE_USEDEST      3
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && __GNUC__ > 2
 #pragma pack()
-#endif //defined(__GNUC__)
+#endif //defined(__GNUC__) && __GNUC__ > 2
 
 #endif  /* !CYBERGRAPHX_CYBERGRAPHICS_H */
