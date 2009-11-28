@@ -241,6 +241,12 @@
 		(HOOKFUNC)HookEntry, (HOOKFUNC)func
 #endif //__amigaos4__
 
+#if defined(M68K) && defined(__GNUC__)
+#undef NewObject
+#undef OpenWindowTags
+#undef PutIconObjectTags
+#endif //defined(M68K) && defined(__GNUC__)
+
 // ==============================================================
 //  Library function stuff
 // ==============================================================

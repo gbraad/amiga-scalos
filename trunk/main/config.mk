@@ -58,7 +58,8 @@ else
 
 INCLUDES	+=
 
-LFLAGS	+=	-lgcc \
+LFLAGS	+=	-lpng \
+		-lgcc \
 		-lnix \
 		-lnixmain \
 		-lamiga21 \
