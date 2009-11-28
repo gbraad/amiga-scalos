@@ -314,10 +314,10 @@ static SAVEDS(ULONG) INTERRUPT ARGBRectMultHookFunc(struct Hook *hook, Object *o
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
@@ -771,10 +771,10 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaHookFunc(struct Hook *hook, Object *
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
@@ -1315,10 +1315,10 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaKTHookFunc(struct Hook *hook, Object
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
@@ -1904,10 +1904,10 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBKTHookFunc(struct Hook *hook, Object *o, 
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
@@ -2626,10 +2626,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentKHookFunc(struct Hook *hook, Objec
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
@@ -2952,10 +2952,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentHookFunc(struct Hook *hook, Object
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
@@ -3313,10 +3313,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentAlphaHookFunc(struct Hook *hook, O
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
@@ -3918,10 +3918,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentAlphaKHookFunc(struct Hook *hook, 
 	APTR handle;
 
 	handle = LockBitMapTags(rp->BitMap,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
-		LBMI_BASEADDRESS, &Addr,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
+		LBMI_BASEADDRESS, (ULONG) &Addr,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
