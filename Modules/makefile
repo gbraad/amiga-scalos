@@ -16,7 +16,6 @@ SUBDIRS =	Rename.Reaction \
                 Find.MUI \
                 FormatDisk.Gadtools \
                 Rename.MUI \
-                RenameInPlace.MUI \
 		Delete.MUI \
                 NewDrawer.MUI \
 		IconProperties.MUI \

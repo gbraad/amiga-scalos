@@ -12,6 +12,7 @@
 #include <intuition/classusr.h>
 #include <libraries/mui.h>
 #include <mui/BetterString_mcc.h>
+#include <mui/textinput_mcc.h>
 #include <workbench/startup.h>
 #include <scalos/scalos.h>
 #include <scalos/undo.h>
@@ -44,7 +45,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	41
-#define	VERSION_MINOR	1
+#define	VERSION_MINOR	2
 
 //----------------------------------------------------------------------------
 
@@ -84,6 +85,9 @@ static BOOL CheckInfoData(const struct InfoData *info);
 static BOOL isDiskWritable(BPTR dLock);
 static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev);
 static BOOL IfLocateName(STRPTR FileName);
+static BOOL FindScalosIcon(struct Rectangle *IconNameRect, struct WBArg *Icon);
+static BOOL FindScalosDeviceIcon(struct Rectangle *IconNameRect,
+	BPTR DeviceLock, struct ScaWindowStruct *ws);
 static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
 
 //----------------------------------------------------------------------------
@@ -114,7 +118,7 @@ struct ScalosIFace *IScalos = NULL;
 
 static struct Catalog       *gb_Catalog;
 
-
+static BOOL RenameInPlace = FALSE;
 static BOOL RenameVolume = FALSE;
 
 static struct Hook AboutHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutHookFunc), NULL };
@@ -131,10 +135,7 @@ static Object *MenuAbout, *MenuAboutMUI, *MenuQuit;
 static Object *TextEnterName;
 static Object *TextPath;
 static Object *StringNewName;
-
-//----------------------------------------------------------------------------
-
-const int Max_PathLen = 1000;
+static Object *TextinputNewName;
 
 //----------------------------------------------------------------------------
 
@@ -147,24 +148,6 @@ int main(int argc, char *argv[])
 	struct WBStartup *WBenchMsg =
 		(argc == 0) ? (struct WBStartup *)argv : NULL;
 
-#if 0
-	if (WBenchMsg)
-		{
-		LONG n;
-
-		kprintf("NumArgs=%ld\n", WBenchMsg->sm_NumArgs);
-
-		for (n=0; n<WBenchMsg->sm_NumArgs; n++)
-			{
-			char xName[512];
-
-			NameFromLock(WBenchMsg->sm_ArgList[n].wa_Lock, xName, sizeof(xName));
-
-			kprintf("%ld. Lock=<%s>  Name=<%s>\n", n, xName, WBenchMsg->sm_ArgList[n].wa_Name);
-			}
-		}
-#endif
-
 	if (NULL == WBenchMsg)
 		{
 		return 5;
@@ -175,13 +158,21 @@ int main(int argc, char *argv[])
 		}
 
 	do	{
+		char EnvBuff[100];
+
 		if (!OpenLibraries())
 			break;
 
-		if (!CheckMCCVersion(MUIC_BetterString, 11, 0))
+		if (!CheckMCCVersion(MUIC_BetterString, 11, 0) ||
+			!CheckMCCVersion(MUIC_Textinput, MCC_Textinput_Version, MCC_Textinput_Revision))
 			break;
 
 		gb_Catalog = OpenCatalogA(NULL, "Scalos/Rename.catalog",NULL);
+
+		if (GetVar("Scalos/RENAMEINPLACE", EnvBuff, sizeof(EnvBuff), 0) >= 0)
+			{
+			RenameInPlace = TRUE;
+			}
 
 		wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
 		if (wl)
@@ -192,16 +183,59 @@ int main(int argc, char *argv[])
 				SCCM_IconWin_BeginUndoStep);
 			}
 
-		APP_Main = ApplicationObject,
-			MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
-			MUIA_Application_Version,	"$VER: Scalos Rename.module V"
-				STR(VERSION_MAJOR) "." STR(VERSION_MINOR) " (" __DATE__ ") " COMPILER_STRING,
-			MUIA_Application_Copyright,	"© The Scalos Team, 2004" CURRENTYEAR,
-			MUIA_Application_Author,	"The Scalos Team",
-			MUIA_Application_Description,	"Scalos Rename module",
-			MUIA_Application_Base,		"SCALOS_RENAME",
+		if (RenameInPlace)
+			{
+			struct Rectangle IconRect;
 
-			SubWindow, WIN_Main = WindowObject,
+			if (!FindScalosIcon(&IconRect, &WBenchMsg->sm_ArgList[1]))
+				break;
+
+			d1(KPrintF(__FILE__ "/%s/%ld: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", \
+				 __FUNC__, __LINE__, IconRect.MinX, IconRect.MinY, IconRect.MaxX, IconRect.MaxY));
+
+			WIN_Main = WindowObject,
+				MUIA_Window_AppWindow,	FALSE,
+				MUIA_Window_CloseGadget, FALSE,
+				MUIA_Window_DepthGadget, FALSE,
+				MUIA_Window_DragBar,	FALSE,
+				MUIA_Window_SizeGadget,	FALSE,
+				MUIA_Window_Borderless,	TRUE,
+
+				MUIA_Window_LeftEdge,	IconRect.MinX,
+				MUIA_Window_TopEdge,	IconRect.MinY,
+				MUIA_Window_Width,	1 + IconRect.MaxX - IconRect.MinX,
+				MUIA_Window_Height,	1 + IconRect.MaxY - IconRect.MinY,
+
+				WindowContents, VGroup,
+					MUIA_InnerRight, 0,
+					MUIA_InnerLeft, 0,
+					MUIA_InnerTop, 0,
+					MUIA_InnerBottom, 0,
+
+					Child, TextinputNewName = TextinputObject,
+						MUIA_InnerRight, 0,
+						MUIA_InnerLeft, 0,
+						MUIA_InnerTop, 0,
+						MUIA_InnerBottom, 0,
+						StringFrame,
+						MUIA_Textinput_RejectChars, "/:",
+						MUIA_Background, MUII_TextBack,
+						MUIA_CycleChain, TRUE,
+//						  MUIA_Textinput_Multiline, TRUE,
+						MUIA_Textinput_MaxLen, 108,
+						MUIA_Textinput_MaxLines, 2,
+						MUIA_Textinput_SetVMin, TRUE,
+						MUIA_Textinput_NoExtraSpacing, TRUE,
+						MUIA_Textinput_ProhibitParse, TRUE,
+						MUIA_Textinput_Styles, MUIV_Textinput_Styles_None,
+						MUIA_Textinput_ResetMarkOnCursor, TRUE,
+						End, //TextinputObject
+					End, //VGroup
+				End; //WindowObject
+			}
+		else
+			{
+			WIN_Main = WindowObject,
 				MUIA_Window_Title, GetLocString(MSGID_TITLENAME),
 //				MUIA_Window_ID,	MAKE_ID('M','A','I','N'),
 				MUIA_Window_AppWindow, TRUE,
@@ -258,8 +292,20 @@ int main(int argc, char *argv[])
 						Child, CancelButton = KeyButtonHelp(GetLocString(MSGID_CANCELBUTTON),
 									*GetLocString(MSGID_CANCELBUTTON_SHORT), GetLocString(MSGID_SHORTHELP_CANCELBUTTON)),
 						End, //HGroup
-				End, //VGroup
-			End, //WindowObject
+					End, //VGroup
+				End; //WindowObject
+			}
+
+		APP_Main = ApplicationObject,
+			MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
+			MUIA_Application_Version,	"$VER: Scalos Rename.module V"
+				STR(VERSION_MAJOR) "." STR(VERSION_MINOR) " (" __DATE__ ") " COMPILER_STRING,
+			MUIA_Application_Copyright,	"© The Scalos Team, 2004" CURRENTYEAR,
+			MUIA_Application_Author,	"The Scalos Team",
+			MUIA_Application_Description,	"Scalos Rename module",
+			MUIA_Application_Base,		"SCALOS_RENAME",
+
+			SubWindow, WIN_Main,
 
 			MUIA_Application_Menustrip, MenustripObject,
 				Child, MenuObjectT(GetLocString(MSGID_MENU_PROJECT)),
@@ -291,20 +337,31 @@ int main(int argc, char *argv[])
 			break;
 			}
 
+		if (RenameInPlace)
+			{
+			DoMethod(TextinputNewName, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
+				APP_Main, 2, MUIM_Application_ReturnID, Application_Return_Ok);
+
+			DoMethod(WIN_Main, MUIM_Notify, MUIA_Window_Activate, FALSE,
+				APP_Main, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+			}
+		else
+			{
+			DoMethod(CancelButton, MUIM_Notify, MUIA_Pressed, FALSE,
+				APP_Main, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+			DoMethod(OkButton, MUIM_Notify, MUIA_Pressed, FALSE,
+				APP_Main, 2, MUIM_Application_ReturnID, Application_Return_Ok);
+			DoMethod(SkipButton, MUIM_Notify, MUIA_Pressed, FALSE,
+				APP_Main, 2, MUIM_Application_ReturnID, Application_Return_Skip);
+
+			DoMethod(StringNewName, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
+				APP_Main, 2, MUIM_Application_ReturnID, Application_Return_Ok);
+			}
+
 		DoMethod(WIN_Main, MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
 			WIN_Main, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(WIN_Main, MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
 			APP_Main, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-
-		DoMethod(CancelButton, MUIM_Notify, MUIA_Pressed, FALSE,
-			APP_Main, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-		DoMethod(OkButton, MUIM_Notify, MUIA_Pressed, FALSE,
-			APP_Main, 2, MUIM_Application_ReturnID, Application_Return_Ok);
-		DoMethod(SkipButton, MUIM_Notify, MUIA_Pressed, FALSE,
-			APP_Main, 2, MUIM_Application_ReturnID, Application_Return_Skip);
-
-		DoMethod(StringNewName, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
-			APP_Main, 2, MUIM_Application_ReturnID, Application_Return_Ok);
 
 		DoMethod(MenuAbout, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
 			APP_Main, 2, MUIM_CallHook, &AboutHook);
@@ -320,10 +377,31 @@ int main(int argc, char *argv[])
 			BOOL Run = TRUE;
 			BOOL IsWriteable = isDiskWritable(arg->wa_Lock);
 
-			UpdateGadgets(arg);
+			if (RenameInPlace)
+				{
+				struct Rectangle IconRect;
 
-			set(OkButton, MUIA_Disabled, !IsWriteable);
-			set(StringNewName, MUIA_Disabled, !IsWriteable);
+				if (FindScalosIcon(&IconRect, arg))
+					{
+					set(TextinputNewName, MUIA_Disabled, !IsWriteable);
+
+					SetAttrs(WIN_Main,
+						MUIA_Window_LeftEdge,	IconRect.MinX,
+						MUIA_Window_TopEdge,	IconRect.MinY,
+						MUIA_Window_Width,	1 + IconRect.MaxX - IconRect.MinX,
+						MUIA_Window_Height,	1 + IconRect.MaxY - IconRect.MinY,
+						TAG_END);
+
+					d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
+					}
+				}
+			else
+				{
+				set(OkButton, MUIA_Disabled, !IsWriteable);
+				set(StringNewName, MUIA_Disabled, !IsWriteable);
+				}
+
+			UpdateGadgets(arg);
 
 			set(WIN_Main, MUIA_Window_Open, TRUE);
 			get(WIN_Main, MUIA_Window_Open, &win_opened);
@@ -336,7 +414,7 @@ int main(int argc, char *argv[])
 
 			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: \n", __LINE__));
 
-			set(WIN_Main, MUIA_Window_ActiveObject, StringNewName);
+			set(WIN_Main, MUIA_Window_ActiveObject, RenameInPlace ? TextinputNewName : StringNewName);
 
 			while (Run)
 				{
@@ -433,12 +511,6 @@ static BOOL OpenLibraries(void)
 		if (NULL == ILocale)
 			return FALSE;
 		}
-#endif //__amigaos4__
-
-#ifndef __amigaos4__
-	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library", 39);
-	if (NULL == UtilityBase)
-		return FALSE;
 #endif //__amigaos4__
 
 #ifndef __amigaos4__
@@ -597,19 +669,31 @@ static void UpdateGadgets(struct WBArg *arg)
 		}
 
 
-	sprintf(LabelText, GetLocString(MSGID_TEXTLINE_ENTERNEWNAME), FileName);
+	if (RenameInPlace)
+		{
+		SetAttrs(TextinputNewName,
+			MUIA_Textinput_Contents, FileName,
+			MUIA_Textinput_MarkStart, 0,
+			MUIA_Textinput_MarkEnd, strlen(FileName),
+			MUIA_Textinput_CursorPos, strlen(FileName),
+			TAG_END);
+		}
+	else
+		{
+		sprintf(LabelText, GetLocString(MSGID_TEXTLINE_ENTERNEWNAME), FileName);
 
-	SetAttrs(StringNewName,
-		MUIA_String_Contents, FileName,
-		MUIA_BetterString_SelectSize, -strlen(FileName),
-		TAG_END);
+		SetAttrs(StringNewName,
+			MUIA_String_Contents, FileName,
+			MUIA_BetterString_SelectSize, -strlen(FileName),
+			TAG_END);
 
-	SetAttrs(TextEnterName,
-		MUIA_Text_Contents, LabelText,
-		TAG_END);
-	SetAttrs(TextPath,
-		MUIA_Text_Contents, PathText,
-		TAG_END);
+		SetAttrs(TextEnterName,
+			MUIA_Text_Contents, LabelText,
+			TAG_END);
+		SetAttrs(TextPath,
+			MUIA_Text_Contents, PathText,
+			TAG_END);
+		}
 }
 
 //----------------------------------------------------------------------------
@@ -660,7 +744,10 @@ static LONG RenameObject(struct WBArg *arg, APTR UndoStep)
 
 	NameFromLock(arg->wa_Lock, ObjName, sizeof(ObjName));
 
-	GetAttr(MUIA_String_Contents, StringNewName, (APTR) &NewObjName);
+	if (RenameInPlace)
+		GetAttr(MUIA_Textinput_Contents, TextinputNewName, (APTR) &NewObjName);
+	else
+		GetAttr(MUIA_String_Contents, StringNewName, (APTR) &NewObjName);
 
 	if (arg->wa_Name && strlen(arg->wa_Name) > 0)
 		{
@@ -1011,6 +1098,175 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 		}
 
 	return FALSE;
+}
+
+//----------------------------------------------------------------------------
+
+static BOOL FindScalosIcon(struct Rectangle *IconNameRect, struct WBArg *Icon)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START  wa_Name=<%s>\n", __FUNC__, __LINE__, Icon->wa_Name);)
+	debugLock_d1(Icon->wa_Lock);
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+	d1(KPrintF(__FILE__ "/%s/%ld: wl=%08lx\n", __FUNC__, __LINE__, wl);)
+	if (wl)
+		{
+		if (NULL == Icon->wa_Name || strlen(Icon->wa_Name) < 1)
+			{
+			Found = FindScalosDeviceIcon(IconNameRect, Icon->wa_Lock, wl->wl_WindowStruct);
+			}
+		else
+			{
+			struct ScaWindowStruct *ws;
+
+			for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+				{
+				struct ScaWindowTask *wt = ws->ws_WindowTask;
+				const struct ScaIconNode *in;
+
+				if (ws->ws_Lock)
+					{
+					if (LOCK_SAME == SameLock(Icon->wa_Lock, ws->ws_Lock))
+						{
+						ULONG Left = 0, Top = 0;
+
+						GetAttr(SCCA_IconWin_InnerLeft, ws->ws_WindowTask->mt_MainObject, &Left);
+						GetAttr(SCCA_IconWin_InnerTop, ws->ws_WindowTask->mt_MainObject, &Top);
+
+						IconNameRect->MinX = ws->ws_Window->LeftEdge + Left;
+						IconNameRect->MinY = ws->ws_Window->TopEdge + Top;
+
+						d1(KPrintF(__FILE__ "/%s/%ld: MinX=%ld  MinY=%ld\n", __FUNC__, __LINE__, IconNameRect->MinX, IconNameRect->MinY);)
+
+						ObtainSemaphoreShared(wt->wt_IconSemaphore);
+
+						for (in = wt->wt_IconList; in; in = (const struct ScaIconNode *) in->in_Node.mln_Succ)
+							{
+							if (0 == Stricmp(in->in_Name, Icon->wa_Name))
+								{
+								const struct ExtGadget *gg = (const struct ExtGadget *) in->in_Icon;
+
+								IconNameRect->MinX += gg->BoundsLeftEdge - wt->wt_XOffset;
+								IconNameRect->MinY += gg->TopEdge + gg->Height - wt->wt_YOffset;
+								IconNameRect->MaxX = IconNameRect->MinX + gg->BoundsWidth - 1;
+								IconNameRect->MaxY = IconNameRect->MinY + gg->BoundsHeight - 1;
+
+								Found = TRUE;
+								break;
+								}
+							}
+
+						ReleaseSemaphore(wt->wt_IconSemaphore);
+						d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__);)
+
+						break;
+						}
+					}
+				else
+					{
+					// Desktop window
+					// Search through backdrop icons
+
+					IconNameRect->MinX = 0;
+					IconNameRect->MinY = 0;
+
+					ObtainSemaphoreShared(wt->wt_IconSemaphore);
+
+					for (in = wt->wt_IconList; in; in = (const struct ScaIconNode *) in->in_Node.mln_Succ)
+						{
+						if (in->in_Lock
+							&& LOCK_SAME == SameLock(Icon->wa_Lock, in->in_Lock)
+							&& 0 == Stricmp(in->in_Name, Icon->wa_Name))
+							{
+							const struct ExtGadget *gg = (const struct ExtGadget *) in->in_Icon;
+
+							d1(KPrintF(__FILE__ "/%s/%ld: FOUND, in=%08lx  <%s>\n", __FUNC__, __LINE__, in, GetIconName(in));)
+
+							IconNameRect->MinX += gg->BoundsLeftEdge - wt->wt_XOffset;
+							IconNameRect->MinY += gg->TopEdge + gg->Height - wt->wt_YOffset;
+							IconNameRect->MaxX = IconNameRect->MinX + gg->BoundsWidth - 1;
+							IconNameRect->MaxY = IconNameRect->MinY + gg->BoundsHeight - 1;
+
+							Found = TRUE;
+							break;
+							}
+						}
+					ReleaseSemaphore(wt->wt_IconSemaphore);
+					}
+				}
+			}
+
+		SCA_UnLockWindowList();
+		}
+
+	d1(KPrintF(__FILE__ "/%s/%ld: END\n", __FUNC__, __LINE__);)
+
+	return Found;
+}
+
+//----------------------------------------------------------------------------
+
+static BOOL FindScalosDeviceIcon(struct Rectangle *IconNameRect,
+	BPTR DeviceLock, struct ScaWindowStruct *ws)
+{
+	BOOL Found = FALSE;
+
+	for (; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+		{
+		if ((BPTR)NULL == ws->ws_Lock)
+			{
+			// This is the desktop window
+			struct ScaWindowTask *wt = ws->ws_WindowTask;
+			const struct ScaIconNode *in;
+
+			ObtainSemaphoreShared(wt->wt_IconSemaphore);
+
+			for (in = wt->wt_IconList; !Found && in; in = (const struct ScaIconNode *) in->in_Node.mln_Succ)
+				{
+				if (in->in_DeviceIcon && in->in_DeviceIcon->di_Volume)
+					{
+					STRPTR DevName;
+
+					DevName = malloc(2 + strlen(in->in_DeviceIcon->di_Volume));
+					if (DevName)
+						{
+						BPTR dLock;
+
+						strcpy(DevName, in->in_DeviceIcon->di_Volume);
+						strcat(DevName, ":");
+
+						IconNameRect->MinX = IconNameRect->MinY = 0;
+
+						dLock = Lock(DevName, ACCESS_READ);
+						if (dLock)
+							{
+							if (LOCK_SAME == SameLock(dLock, DeviceLock))
+								{
+								const struct ExtGadget *gg = (const struct ExtGadget *) in->in_Icon;
+
+								IconNameRect->MinX += gg->BoundsLeftEdge - wt->wt_XOffset;
+								IconNameRect->MinY += gg->TopEdge + gg->Height - wt->wt_YOffset;
+								IconNameRect->MaxX = IconNameRect->MinX + gg->BoundsWidth - 1;
+								IconNameRect->MaxY = IconNameRect->MinY + gg->BoundsHeight - 1;
+
+								Found = TRUE;
+								}
+							UnLock(dLock);
+							}
+						free(DevName);
+						}
+					}
+				}
+
+			ReleaseSemaphore(wt->wt_IconSemaphore);
+			break;
+			}
+		}
+
+	return Found;
 }
 
 //----------------------------------------------------------------------------

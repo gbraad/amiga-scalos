@@ -9,6 +9,15 @@
 #define d1(x)		;
 #define d2(x)		x;
 
+#define	debugLock_d1(LockName) ;
+#define	debugLock_d2(LockName) \
+	{\
+	char xxName[200];\
+	strcpy(xxName, "");\
+	NameFromLock((LockName), xxName, sizeof(xxName));\
+	kprintf(__FILE__ "/%s/%ld: " #LockName "=%08lx <%s>\n", __FUNC__, __LINE__, LockName, xxName);\
+	}
+
 
 extern int kprintf(CONST_STRPTR, ...);
 extern int KPrintF(CONST_STRPTR, ...);

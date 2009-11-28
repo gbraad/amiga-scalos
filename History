@@ -8,7 +8,11 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7	20091107        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.20.
+41.7    20091128	jl	- Improvement: eliminated separate Rename.module for rename-in-place.
+				  Now there is only one Rename.module, rename-in-place can be activated
+				  by setting an environment variable "Scalos/RENAMEINPLACE" to any
+				  value (e.g. "setenv Scalos/RENAMEINPLACE 1 save").
+	20091107        jl      - Improvement: Updated sqlite3.library to SQLite3 V3.6.20.
 	20091101	jl	- Bugfix: Highlighting window gadgets when mouse pointer was moved over
 				  them didn't work with AmigaOS4.
 	20091031	jl	- Bugfix: On MorphOS 2.x, main menu entries were never disabled.
