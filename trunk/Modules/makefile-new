@@ -14,7 +14,6 @@ SUBDIRS	=	WindowProperties.MUI \
 		IconProperties.MUI \
 		Information.MUI \
 		Rename.MUI \
-		RenameInPlace.MUI \
 		NewDrawer.MUI \
 		Execute_Command.MUI \
 		Exchange.MUI \
