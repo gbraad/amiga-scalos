@@ -3138,6 +3138,23 @@ MSGID_MISCPAGE_LABELS_FILEOPERATIONS
 File Operations
 ;File Operations
 ;
+;+++translateme+++
+MSGID_MISCPAGE_LABELS_UNDOSTEPS
+Maximum Number of Undo Steps
+;Maximum Number of Undo Steps
+;
+;+++translateme+++
+MSGID_MISCPAGE_UNDOSTEPS
+Max. Undo Steps:
+;Max. Undo Steps:
+;
+;+++translateme+++
+MSGID_MISCPAGE_UNDOSTEPS_SHORTHELP
+Here you can limit the number of\n\
+available Undo/Redo steps.
+;Here you can limit the number of\n\
+;available Undo/Redo steps.
+;
 ;-----------------------------------------------------------
 ;
 MSGID_PLUGINSPAGE_ACTIVEPLUGINS

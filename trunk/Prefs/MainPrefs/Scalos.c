@@ -7482,6 +7482,28 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 		End, //VGroup
 
 		Child, VGroup,
+			MUIA_FrameTitle, (ULONG) GetLocString(MSGID_MISCPAGE_LABELS_UNDOSTEPS),
+			GroupFrame,
+			MUIA_Background, MUII_GroupBack,
+
+			Child, HVSpace,
+
+			Child, ColGroup(2),
+				Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_UNDOSTEPS)),
+				Child, app->Obj[SLIDER_UNDOSTEPS] = SliderObject,
+					MUIA_CycleChain, TRUE,
+					MUIA_Slider_Horiz, TRUE,
+					MUIA_Slider_Level, 10,
+					MUIA_Slider_Min, 1,
+					MUIA_Slider_Max, 100,
+				End, //Slider
+				MUIA_ShortHelp, (ULONG) GetLocString(MSGID_MISCPAGE_UNDOSTEPS_SHORTHELP),
+			End, //ColGroup
+
+			Child, HVSpace,
+		End, //VGroup
+
+		Child, VGroup,
 			MUIA_FrameTitle, (ULONG) GetLocString(MSGID_MISCPAGE_LABELS_FILEOPERATIONS),
 			GroupFrame,
 			MUIA_Background, MUII_GroupBack,

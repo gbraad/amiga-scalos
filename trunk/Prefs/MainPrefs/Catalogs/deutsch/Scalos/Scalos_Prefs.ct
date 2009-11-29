@@ -3168,6 +3168,23 @@ MSGID_MISCPAGE_LABELS_FILEOPERATIONS
 Dateioperationen
 ;File Operations
 ;
+;
+MSGID_MISCPAGE_LABELS_UNDOSTEPS
+Maximale Zahl widerrufbarer Arbeitsschritte
+;Maximum Number of Undo Steps
+;
+;
+MSGID_MISCPAGE_UNDOSTEPS
+Max. Schritte:
+;Max. Undo Steps:
+;
+;
+MSGID_MISCPAGE_UNDOSTEPS_SHORTHELP
+Dies ist die maximale Zahl der letzten Arbeitsschritte,\n\
+die rückgangig gemacht werden können.
+;Here you can limit the number of\n\
+;available Undo/Redo steps.
+;
 ;-----------------------------------------------------------
 ;
 MSGID_PLUGINSPAGE_ACTIVEPLUGINS

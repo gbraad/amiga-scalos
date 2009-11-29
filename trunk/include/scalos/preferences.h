@@ -161,6 +161,7 @@ struct PrefsStruct
 #define	SCP_SelectMarkerTransparency	0x8000008d	// UBYTE - transparency for text window selection marker (0=transparent, 0xff=opaque)
 #define SCP_ControlBarGadgetsStd	0x8000008e	// array of SCP_GadgetEntry for normal windows
 #define SCP_ControlBarGadgetStringsStd	0x8000008f	// SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for normal windows
+#define SCP_MaxUndoSteps		0x80000090	// ULONG - maximum number of Undo/Redo steps
 
 //---------------------------------------------------------------
 

@@ -146,6 +146,7 @@ SCP_SelectMarkerBaseColor	EQU	$8000008c	; struct ARGB - base color for text wind
 SCP_SelectMarkerTransparency	EQU	$8000008d	; UBYTE - transparency for text window selection marker (0=transparent, 0xff=opaque)
 SCP_ControlBarGadgetsStd	EQU	$8000008e	; array of SCP_GadgetEntry for normal windows
 SCP_ControlBarGadgetStringsStd	EQU	$8000008f	; SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for normal windows
+SCP_MaxUndoSteps		EQU	$80000090	; ULONG - maximum number of Undo/Redo steps
 
 
 	ENDC	; PREFERENCES_I
