@@ -255,6 +255,8 @@ struct ScalosPrefs
 
 	struct ARGB pref_SelectMarkerBaseColor;			// base color for text window selection marker
 	UBYTE pref_SelectMarkerTransparency;			// transparency for text window selection marker (0..255)
+
+	ULONG pref_MaxUndoSteps;				// maximum number of Undo/Redo steps
 	};
 
 #endif /* SCALOSPREFS_H */

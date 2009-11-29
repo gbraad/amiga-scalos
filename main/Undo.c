@@ -121,7 +121,6 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 struct List globalUndoList;		// global Undo list for all file-related actions
 SCALOSSEMAPHORE UndoListListSemaphore;	// Semaphore to protect globalUndoList
 static ULONG UndoCount;			// Number of entries in globalUndoList
-static ULONG maxUndoSteps = 10;
 
 struct List globalRedoList;		// global Redo list for all file-related actions
 SCALOSSEMAPHORE RedoListListSemaphore;	// Semaphore to protect globalRedoList
@@ -302,9 +301,9 @@ void UndoEndStep(APTR event)
 
 		ScalosObtainSemaphore(&UndoListListSemaphore);
 		AddTail(&globalUndoList, &ust->ust_Node);
-		if (++UndoCount > maxUndoSteps)
+		if (++UndoCount > CurrentPrefs.pref_MaxUndoSteps)
 			{
-			// maxUndoSteps exceeded - dispose oldest list entry
+			// pref_MaxUndoSteps exceeded - dispose oldest list entry
 			ust = (struct UndoStep *) RemHead(&globalUndoList);
 			UndoCount--;
 			}

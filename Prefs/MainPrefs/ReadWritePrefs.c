@@ -284,6 +284,7 @@ struct MiscGroup
 	BYTE			mp_PopupApplySelectedAlways;
 	ULONG			mg_DefaultStackSize;
 	ULONG			mg_CopyBuffSize;
+	ULONG			mg_MaxUndoSteps;
 };
 
 enum DisplayFieldsIndex
@@ -511,6 +512,7 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		FALSE,			// mp_PopupApplySelectedAlways
 		16384,			// mg_DefaultStackSize
 		262144,			// mg_CopyBuffSize
+		10,			// mg_MaxUndoSteps
 	}
 };
 
@@ -945,8 +947,9 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	setcheckmark(app->Obj[CHECK_HARDEMULATION], currentPrefs.Miscellaneous.mg_bHardEmulation);
 	setcheckmark(app->Obj[CHECK_USEEXALL], currentPrefs.Miscellaneous.mg_bUseExAll);
 	setcycle(app->Obj[CYCLE_CREATELINKS], currentPrefs.Miscellaneous.mg_bCreateSoftLinks);
-	set(app->Obj[SLIDER_DEFAULTSTACKSIZE], MUIA_Slider_Level, currentPrefs.Miscellaneous.mg_DefaultStackSize / 1024);
-	set(app->Obj[SLIDER_COPYBUFFERSIZE], MUIA_Slider_Level, GetLog2(currentPrefs.Miscellaneous.mg_CopyBuffSize));
+	setslider(app->Obj[SLIDER_DEFAULTSTACKSIZE], currentPrefs.Miscellaneous.mg_DefaultStackSize / 1024);
+	setslider(app->Obj[SLIDER_COPYBUFFERSIZE], GetLog2(currentPrefs.Miscellaneous.mg_CopyBuffSize));
+	setslider(app->Obj[SLIDER_UNDOSTEPS], currentPrefs.Miscellaneous.mg_MaxUndoSteps);
 
 	//Popup menu apply selected qualifier
 	TranslateQualifierToString(currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier, 
@@ -1293,9 +1296,10 @@ static void FillPrefsStructures(struct SCAModule *app)
 	currentPrefs.Miscellaneous.mg_bMenuCurrentDir   = getv(app->Obj[CHECK_MENUCURRENTDIR], MUIA_Selected);
 	currentPrefs.Miscellaneous.mg_bHardEmulation    = getv(app->Obj[CHECK_HARDEMULATION], MUIA_Selected);
 	currentPrefs.Miscellaneous.mg_bUseExAll         = getv(app->Obj[CHECK_USEEXALL], MUIA_Selected);
-	currentPrefs.Miscellaneous.mg_bCreateSoftLinks = getv(app->Obj[CYCLE_CREATELINKS], MUIA_Cycle_Active);
+	currentPrefs.Miscellaneous.mg_bCreateSoftLinks 	= getv(app->Obj[CYCLE_CREATELINKS], MUIA_Cycle_Active);
 	currentPrefs.Miscellaneous.mg_DefaultStackSize	= 1024 * getv(app->Obj[SLIDER_DEFAULTSTACKSIZE], MUIA_Slider_Level);
-	currentPrefs.Miscellaneous.mg_CopyBuffSize  = 1 << getv(app->Obj[SLIDER_COPYBUFFERSIZE], MUIA_Slider_Level);
+	currentPrefs.Miscellaneous.mg_CopyBuffSize  	= 1 << getv(app->Obj[SLIDER_COPYBUFFERSIZE], MUIA_Slider_Level);
+	currentPrefs.Miscellaneous.mg_MaxUndoSteps 	= getv(app->Obj[SLIDER_UNDOSTEPS], MUIA_Slider_Level);
 
 	//Popup menu apply selected qualifier
 	lp = (CONST_STRPTR) getv(app->Obj[POPUP_SELECTED_HOTKEY], MUIA_String_Contents);
@@ -1397,6 +1401,7 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscUseExAll, &currentPrefs.Miscellaneous.mg_bUseExAll, sizeof(currentPrefs.Miscellaneous.mg_bUseExAll) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_CreateSoftLinks, &currentPrefs.Miscellaneous.mg_bCreateSoftLinks, sizeof(currentPrefs.Miscellaneous.mg_bCreateSoftLinks) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_CopyBuffLen, &currentPrefs.Miscellaneous.mg_CopyBuffSize, sizeof(currentPrefs.Miscellaneous.mg_CopyBuffSize) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_MaxUndoSteps, &currentPrefs.Miscellaneous.mg_MaxUndoSteps, sizeof(currentPrefs.Miscellaneous.mg_MaxUndoSteps) );
 		if (WorkbenchBase->lib_Version < 45)
 			SetPreferences(p_MyPrefsHandle, lID, SCP_DefaultStackSize, &currentPrefs.Miscellaneous.mg_DefaultStackSize, sizeof(currentPrefs.Miscellaneous.mg_DefaultStackSize) );
 
@@ -1576,6 +1581,7 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscUseExAll, &currentPrefs.Miscellaneous.mg_bUseExAll, sizeof(currentPrefs.Miscellaneous.mg_bUseExAll) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_CreateSoftLinks, &currentPrefs.Miscellaneous.mg_bCreateSoftLinks, sizeof(currentPrefs.Miscellaneous.mg_bCreateSoftLinks) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_CopyBuffLen, &currentPrefs.Miscellaneous.mg_CopyBuffSize, sizeof(currentPrefs.Miscellaneous.mg_CopyBuffSize) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_MaxUndoSteps, &currentPrefs.Miscellaneous.mg_MaxUndoSteps, sizeof(currentPrefs.Miscellaneous.mg_MaxUndoSteps) );
 		if (WorkbenchBase->lib_Version < 45)
 			GetPreferences(p_MyPrefsHandle, lID, SCP_DefaultStackSize, &currentPrefs.Miscellaneous.mg_DefaultStackSize, sizeof(currentPrefs.Miscellaneous.mg_DefaultStackSize) );
 		else

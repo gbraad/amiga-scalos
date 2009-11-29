@@ -2360,6 +2360,19 @@ Sets the buffer size for file copying.
 MSGID_MISCPAGE_LABELS_FILEOPERATIONS (//)
 File Operations
 ;
+;
+MSGID_MISCPAGE_LABELS_UNDOSTEPS (//)
+Maximum Number of Undo Steps
+;
+;
+MSGID_MISCPAGE_UNDOSTEPS (//)
+Max. Undo Steps:
+;
+;
+MSGID_MISCPAGE_UNDOSTEPS_SHORTHELP (//)
+Here you can limit the number of\n\
+available Undo/Redo steps.
+;
 ;-----------------------------------------------------------
 ;
 MSGID_PLUGINSPAGE_ACTIVEPLUGINS (5900//)
