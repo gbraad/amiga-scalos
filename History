@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20091128	jl	- Improvement: eliminated separate Rename.module for rename-in-place.
+41.7    20091129	jl	- Bugfix: In pattern preferences, separate preview right of listview was broken.
+	20091128	jl	- Improvement: eliminated separate Rename.module for rename-in-place.
 				  Now there is only one Rename.module, rename-in-place can be activated
 				  by setting an environment variable "Scalos/RENAMEINPLACE" to any
 				  value (e.g. "setenv save Scalos/RENAMEINPLACE 1").

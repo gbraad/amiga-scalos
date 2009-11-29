@@ -11,12 +11,12 @@
 #define PLUGIN_TYPE	PREFS
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	19
+#define	LIB_REVISION	20
 
 #define LIB_NAME	"Pattern.prefsplugin"
 #define LIB_VERSTRING   "$VER: " LIB_NAME " " \
 			STR(LIB_VERSION) "." STR(LIB_REVISION)  \
-			" (01.11.2006)" \
+			" " __DATE__  \
 			COMPILER_STRING " ©2003" CURRENTYEAR \
 			" The Scalos Team"
 
