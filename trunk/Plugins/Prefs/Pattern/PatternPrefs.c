@@ -809,7 +809,8 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 						MUIA_ShowMe, inst->ppb_fPreview && !inst->ppb_UseThumbNails,
 						End, //BalanceObject
 
-					Child, inst->ppb_Objects[OBJNDX_Group_Preview] = VGroup,
+					Child, inst->ppb_Objects[OBJNDX_Group_Preview] = VGroupV,
+						Child, HVSpace,
 						Child, inst->ppb_Objects[OBJNDX_PreviewImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
 							MUIA_ScaDtpic_Name, (ULONG) "",
 							MUIA_ScaDtpic_Tiled, FALSE,
@@ -818,11 +819,12 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 							MUIA_Background, MUII_ButtonBack,
 							MUIA_InputMode, MUIV_InputMode_RelVerify,
 							End, //DataTypesMCC
+						Child, HVSpace,
 						MUIA_ShowMe, inst->ppb_fPreview && !inst->ppb_UseThumbNails,
 						MUIA_Disabled, TRUE,
 						MUIA_ShortHelp, GetLocString(MSGID_PREVIEWIMAGEBUBBLE),
 						MUIA_Weight, inst->ppb_PreviewWeight,
-						End, //VGroup
+						End, //VGroupV
 					End, // HGroup
 
 				Child, HGroup,
