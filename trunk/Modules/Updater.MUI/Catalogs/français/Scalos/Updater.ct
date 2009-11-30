@@ -131,6 +131,11 @@ MSGID_REGISTER_MAIN
 Principal
 ;Main
 ;
+;+++translateme+++
+MSGID_REGISTER_LOG
+Log
+;Log
+;
 MSGID_REGISTER_CONFIGURATION
 Configuration
 ;Configuration
@@ -149,8 +154,8 @@ MSGID_CHECK_USE_PROXY_SHORTHELP
 ;...TBD...
 ;
 MSGID_STRING_PROXY_ADDR
-Adresse
-;Address
+Adresse:
+;Address:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_ADDR_SHORTHELP
@@ -158,8 +163,8 @@ MSGID_STRING_PROXY_ADDR_SHORTHELP
 ;...TBD...
 ;
 MSGID_STRING_PROXY_PORT
-Port
-;Port
+Port:
+;Port:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_PORT_SHORTHELP
@@ -176,8 +181,8 @@ MSGID_CHECK_USE_PROXYAUTH_SHORTHELP
 ;...TBD...
 ;
 MSGID_STRING_PROXY_USERNAME
-Nom d'utilisateur
-;User Name
+Nom d'utilisateur:
+;User Name:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_USERNAME_SHORTHELP
@@ -185,8 +190,8 @@ MSGID_STRING_PROXY_USERNAME_SHORTHELP
 ;...TBD...
 ;
 MSGID_STRING_PROXY_PASSWD
-Mot de passe
-;Password
+Mot de passe:
+;Password:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_PASSWD_SHORTHELP
@@ -289,6 +294,56 @@ Are you sure you want to install\n\
 ;Are you sure you want to install\n\
 ;%ld Scalos updates now?
 ;
+;+++translateme+++
+MSGID_GROUP_LOG
+Update Log
+;Update Log
+;
+;+++translateme+++
+MSGID_POPASL_TEMPPATH
+Path for Temporary Files
+;Path for Temporary Files
+;
+;+++translateme+++
+MSGID_GROUP_MISCELLANEOUS
+Miscellaneous
+;Miscellaneous
+;
+;+++translateme+++
+MSGID_BUTTON_CLEAR_LOG
+Clear Log
+;Clear Log
+;
+;+++translateme+++
+MSGID_BUTTON_CLEAR_LOG_SHORT
+C
+;C
+;
+;+++translateme+++
+MSGID_BUTTON_CLEAR_LOG_SHORTHELP
+...TBD..
+;...TBD..
+;
+;+++translateme+++
+MSGID_BUTTON_SAVE_LOG
+Save Log...
+;Save Log...
+;
+;+++translateme+++
+MSGID_BUTTON_SAVE_LOG_SHORT
+S
+;S
+;
+;+++translateme+++
+MSGID_BUTTON_SAVE_LOG_SHORTHELP
+...TBD..
+;...TBD..
+;
+;+++translateme+++
+MSGID_SAVE_LOG_ASLTITLE
+Save Update Log...
+;Save Update Log...
+;
 ;-----------------------------------------------------------
 ;
 MSG_PROGRESS_RESOLVING_NAME
@@ -344,6 +399,77 @@ Tout sélectionner
 MSGID_MENU_COMPONENTS_SELECT_NONE
 Tout déselectionner
 ;Deselect All
+;
+;-----------------------------------------------------------
+;
+;+++translateme+++
+MSGID_LOG_READ_VERSIONINFO
+Reading version information from Scalos update server %s.\n
+;Reading version information from Scalos update server %s.\n
+;
+;+++translateme+++
+MSGID_LOG_ERROR_READ_VERSIONINFO
+Failed to get version information from Scalos update server %s : %s.\n
+;Failed to get version information from Scalos update server %s : %s.\n
+;
+;+++translateme+++
+MSGID_LOG_CHECKING_VERSIONS
+Processing information about available updates.\n
+;Processing information about available updates.\n
+;
+;+++translateme+++
+MSGID_LOG_UPDATES_FOUND
+Found %ld components to update.\n
+;Found %ld components to update.\n
+;
+;+++translateme+++
+MSGID_LOG_UPDATING
+Updating component %ld of %ld.\n
+;Updating component %ld of %ld.\n
+;
+;+++translateme+++
+MSGID_LOG_DOWNLOAD_PACKAGE
+Downloading update package for %s\n.
+;Downloading update package for %s\n.
+;
+;+++translateme+++
+MSGID_LOG_VERIFY_SIGNATURE
+Verifying signature of %s update package\n.
+;Verifying signature of %s update package\n.
+;
+;+++translateme+++
+MSGID_LOG_VERIFY_FAIL_SIGNATURE
+Failed to update %s - invalid signature!\n
+;Failed to update %s - invalid signature!\n
+;
+;+++translateme+++
+MSGID_LOG_DOWNLOAD_FAILED_PACKAGE
+Failed to download update package for %s - %s.\n
+;Failed to download update package for %s - %s.\n
+;
+;+++translateme+++
+MSGID_LOG_SKIP_PACKAGE
+Skipping update of %s, due to user's request.\n
+;Skipping update of %s, due to user's request.\n
+;
+;+++translateme+++
+MSGID_LOG_UNPACK_PACKAGE
+Unpacking update package for %s.\n
+;Unpacking update package for %s.\n
+;
+;+++translateme+++
+MSGID_LOG_UNPACK_FAIL_PACKAGE
+Failed to unpack update for %s.\n
+;Failed to unpack update for %s.\n
+;
+;+++translateme+++
+MSGID_LOG_UNPACK_CATALOGS_FAIL_PACKAGE
+Failed to unpack language catalogs for %s.\n
+;Failed to unpack language catalogs for %s.\n
+;
+;+++translateme+++
+MSGID_LOG_ERROR_OPEN_LHAFILE
+Error: failed to open temporary archive \"%s\" for updating \"%s\".\n
 ;
 ;-----------------------------------------------------------
 ;

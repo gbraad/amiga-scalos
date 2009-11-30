@@ -31,6 +31,7 @@
 
 #include <mui/NListview_mcc.h>
 #include <mui/Lamp_mcc.h>
+#include <mui/TextEditor_mcc.h>
 
 #include <clib/alib_protos.h>
 
@@ -38,6 +39,7 @@
 #include <proto/dos.h>
 #include <proto/intuition.h>
 #include <proto/utility.h>
+#include <proto/icon.h>
 #include <proto/asl.h>
 #include <proto/muimaster.h>
 #include <proto/locale.h>
@@ -139,8 +141,8 @@ struct MUIP_ScalosPrefs_MCCList
 // local functions
 
 static BOOL init(void);
-static void fail(APTR APP_Main, CONST_STRPTR str);
-static BOOL OpenLibraries(void);
+static void fail(APTR APP_Main, CONST_STRPTR str, int rc);
+static BOOL OpenLibraries(CONST_STRPTR LibName);
 static void CloseLibraries(void);
 static SAVEDS(APTR) INTERRUPT OpenAboutMUIFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT OpenAboutFunc(struct Hook *hook, Object *o, Msg msg);
@@ -164,6 +166,8 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg);
 static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg);
 static void SelectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *msg);
 static void DeselectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *msg);
+static void SaveLogHookFunc(struct Hook *hook, Object *obj, Msg *msg);
+static void AslIntuiMsgHookFunc(struct Hook *hook, Object *o, Msg msg);
 static void UpdateSelectedCount(void);
 static int CheckForUpdatesProgressFunc(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
 static int PerformUpdateProgressFunc(void *clientp, double dltotal, double dlnow, double ultotal, double ulnow);
@@ -179,6 +183,7 @@ static STRPTR EscapeHttpName(CONST_STRPTR name);
 static BOOL SetProxyOptions(CURL *curl);
 static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation);
 static BOOL ErrorMsg(ULONG MsgId, ...);
+static void AddLogMsg(ULONG MsgId, ...);
 static void ParseArguments(void);
 #if !defined(__SASC) &&!defined(__MORPHOS__)
 size_t stccpy(char *dest, const char *src, size_t MaxLen);
@@ -195,6 +200,7 @@ struct ScalosBase *ScalosBase = NULL;
 extern struct Library *SocketBase;
 T_LOCALEBASE LocaleBase = NULL;
 T_TIMERBASE TimerBase;
+struct Library *IconBase = NULL;
 struct Library *AmiSSLMasterBase;
 struct Library *AmiSSLBase;
 
@@ -213,6 +219,7 @@ struct SocketIFace *ISocket = NULL;
 struct LocaleIFace *ILocale = NULL;
 struct TimerIFace *ITimer;
 struct UtilityIFace *IUtility;
+struct IconIFace *IIcon = NULL;
 struct AmiSSLMasterIFace *IAmiSSLMaster;
 struct AmiSSLIFace *IAmiSSL;
 #endif
@@ -237,6 +244,12 @@ static Object *CheckShowAllComponents;
 static Object *StringScalosWebSite;
 static Object *CheckAskEveryUpdate;
 static Object *GroupSelection, *GroupActionButtons;
+static Object *TextEditorLog;
+static Object *ScrollBarLog;
+static Object *PopAslTempPath;
+static Object *ButtonClearLog, *ButtonSaveLog;
+
+static struct FileRequester *SaveLogAslRequest = NULL;
 
 struct WBStartup *WBenchMsg;
 
@@ -269,6 +282,8 @@ static struct Hook CheckForUpdatesHook = {{ NULL, NULL }, HOOKFUNC_DEF(CheckForU
 static struct Hook StartUpdateUpdateHook = {{ NULL, NULL }, HOOKFUNC_DEF(StartUpdateUpdateHookFunc), NULL };
 static struct Hook SelectAllComponentsHook = {{ NULL, NULL }, HOOKFUNC_DEF(SelectAllComponentsHookFunc), NULL };
 static struct Hook DeselectAllComponentsHook = {{ NULL, NULL }, HOOKFUNC_DEF(DeselectAllComponentsHookFunc), NULL };
+static struct Hook SaveLogHook = {{ NULL, NULL }, HOOKFUNC_DEF(SaveLogHookFunc), NULL };
+static struct Hook AslIntuiMsgHook = {{ NULL, NULL }, HOOKFUNC_DEF(AslIntuiMsgHookFunc), NULL };
 
 static CONST_STRPTR TempFilePath = "ram:";
 static CONST_STRPTR ScalosHttpAddr = "scalos.noname.fr";
@@ -279,6 +294,7 @@ static ULONG fUseProxy = FALSE;   		// Flag: use HTTP Proxy
 static ULONG fUseProxyAuth = FALSE;		// Flag: use username/password for proxy authentication
 static ULONG fShowAllComponents = FALSE;	// Flag: show all components
 static ULONG fAskEveryUpdate = FALSE;		// Flag: ask user for every updated component
+static ULONG fQuiet = FALSE;			// FLag: skip requester telling there are no updates
 static CONST_STRPTR ProxyAddr = "proxy-host.com";
 static USHORT ProxyPort = 8080;
 static CONST_STRPTR ProxyUser = "user";
@@ -298,12 +314,14 @@ static const struct MUIP_ScalosPrefs_MCCList RequiredMccList[] =
 	{
 	{ MUIC_Lamp, 11, 1 },
 	{ MUIC_NListview, 18, 0 },
+	{ MUIC_TextEditor, 15, 28 },
 	{ NULL, 0, 0 }
 	};
 
 static CONST_STRPTR RegisterTitles[] =
 	{
 	(CONST_STRPTR) MSGID_REGISTER_MAIN,
+	(CONST_STRPTR) MSGID_REGISTER_LOG,
 	(CONST_STRPTR) MSGID_REGISTER_CONFIGURATION,
 	NULL
 	};
@@ -348,7 +366,7 @@ int main(int argc, char *argv[])
 	ContextMenuComponents = MUI_MakeObject(MUIO_MenustripNM, (ULONG) NewContextMenuComponents, 0);
 	if (NULL == ContextMenuComponents)
 		{
-		fail(APP_Main, "Failed to create Collections Context Menu.");
+		fail(APP_Main, "Failed to create Collections Context Menu.", 20);
 		}
 #if defined(M68K) && defined(__GNUC__)
 #undef NewObject
@@ -372,6 +390,8 @@ int main(int argc, char *argv[])
 
 	//------- Main page ----------------
 					Child, VGroup,
+						MUIA_Background, MUII_RegisterBack,
+
 						Child, NListviewObject,
 							MUIA_NListview_NList, NListComponents = NewObject(myComponentsNListClass->mcc_Class, 0,
 								MUIA_NList_Format, ",BAR,BAR,BAR,BAR,BAR",
@@ -449,8 +469,41 @@ int main(int argc, char *argv[])
 
 						End, //VGroup
 
+	//------- Log page ----------------
+					Child, VGroup,
+						MUIA_Background, MUII_RegisterBack,
+
+						Child, HGroup,
+							GroupFrame,
+							MUIA_Background, MUII_GroupBack,
+							MUIA_FrameTitle, GetLocString(MSGID_GROUP_LOG),
+								Child, TextEditorLog = TextEditorObject,
+									TextFrame,
+									MUIA_Background, MUII_TextBack,
+									MUIA_TextEditor_ReadOnly, TRUE,
+								End, //TextEditorObject
+								Child, ScrollBarLog = ScrollbarObject,
+									MUIA_Background, MUII_PropBack,
+									SliderFrame,
+								End, //ScrollbarObject
+							End, //HGroup
+
+						Child, ColGroup(2),
+							Child, ButtonClearLog = KeyButtonHelp(GetLocString(MSGID_BUTTON_CLEAR_LOG),
+								GetLocString(MSGID_BUTTON_CLEAR_LOG_SHORT),
+								GetLocString(MSGID_BUTTON_CLEAR_LOG_SHORTHELP)),
+							Child, ButtonSaveLog = KeyButtonHelp(GetLocString(MSGID_BUTTON_SAVE_LOG),
+								GetLocString(MSGID_BUTTON_SAVE_LOG_SHORT),
+								GetLocString(MSGID_BUTTON_SAVE_LOG_SHORTHELP)),
+							End, //HGroup
+
+						
+						End, //VGroup
+
 	//------- Configuration page ----------------
 					Child, VGroup,
+						MUIA_Background, MUII_RegisterBack,
+
 						Child, VGroup,
 							GroupFrame,
 							MUIA_Background, MUII_GroupBack,
@@ -497,7 +550,7 @@ int main(int argc, char *argv[])
 										MUIA_Disabled, !fUseProxy,
 										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CHECK_USE_PROXYAUTH_SHORTHELP),
 										End, //Checkmark()
-									
+
 									Child, HVSpace,
 									End, //HGroup
 								End, //HGroup,
@@ -519,7 +572,7 @@ int main(int argc, char *argv[])
 									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_STRING_PROXY_PASSWD_SHORTHELP),
 									End, //StringObject
 								End, //HGroup
-							
+
 							End, //VGroup
 
 						Child, HGroup,
@@ -535,9 +588,29 @@ int main(int argc, char *argv[])
 								End, //StringObject
 							End, //HGroup
 
+						Child, HGroup,
+							GroupFrame,
+							MUIA_Background, MUII_GroupBack,
+							MUIA_FrameTitle, GetLocString(MSGID_POPASL_TEMPPATH),
+
+							Child, PopAslTempPath = PopaslObject,
+								MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
+								MUIA_Dropable, TRUE,
+								MUIA_Popstring_String, StringObject,
+									StringFrame,
+									MUIA_Background, MUII_TextBack,
+									MUIA_String_Contents, TempFilePath,
+									MUIA_CycleChain, TRUE,
+								End, //StringObject
+//								ASLFR_TitleText, (ULONG) GetLocString(MSGID_PATHSPAGE_SCALOS_HOME_ASLTITLE),
+//								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PATHSPAGE_SCALOS_HOME_SHORTHELP),
+								End, //PopaslObject
+							End, //HGroup
+
 						Child, ColGroup(2),
 							GroupFrame,
 							MUIA_Background, MUII_GroupBack,
+							MUIA_FrameTitle, GetLocString(MSGID_GROUP_MISCELLANEOUS),
 
 							Child, Label1((ULONG) GetLocString(MSGID_CHECK_SHOW_ALL_COMPONENTS)),
 							Child, HGroup,
@@ -545,7 +618,7 @@ int main(int argc, char *argv[])
 								Child, HVSpace,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CHECK_SHOW_ALL_COMPONENTS_SHORTHELP),
 								End, //HGroup
-						
+
 							Child, Label1((ULONG) GetLocString(MSGID_CHECK_ASK_EVERY_UPDATE)),
 							Child, HGroup,
 								Child, CheckAskEveryUpdate = CheckMark(fAskEveryUpdate),
@@ -555,6 +628,7 @@ int main(int argc, char *argv[])
 							End, //ColGroup,
 
 						End, //VGroup
+	//-------------------------------------------
 
 					End, //RegisterGroup
 
@@ -587,7 +661,7 @@ int main(int argc, char *argv[])
 
 	if (NULL == APP_Main)
 		{
-		fail(APP_Main, "Failed to create Application.");
+		fail(APP_Main, "Failed to create Application.", 20);
 		}
 
 	DoMethod(APP_Main, MUIM_Application_Load, MUIV_Application_Load_ENV);
@@ -649,21 +723,35 @@ int main(int argc, char *argv[])
 	DoMethod(ButtonCheckForUpdates, MUIM_Notify, MUIA_Pressed, FALSE,
 		ButtonCheckForUpdates, 2, MUIM_CallHook, &CheckForUpdatesHook);
 
+	// Connect TextEditor object with its scrollbar
+	set(TextEditorLog,  MUIA_TextEditor_Slider, ScrollBarLog);
+
 	// Setup callback hooks for "Select All" and "Deselect All" buttons
 	DoMethod(ButtonSelectAll, MUIM_Notify, MUIA_Pressed, FALSE,
 		ButtonSelectAll, 2, MUIM_CallHook, &SelectAllComponentsHook);
 	DoMethod(ButtonDeselectAll, MUIM_Notify, MUIA_Pressed, FALSE,
 		ButtonDeselectAll, 2, MUIM_CallHook, &DeselectAllComponentsHook);
 
+	// Clear log when button "Clear Log" is pressed
+	DoMethod(ButtonClearLog, MUIM_Notify, MUIA_Pressed, FALSE,
+		TextEditorLog, 1, MUIM_TextEditor_ClearText);
+
+	// Call hook when button "Save Log" is pressed
+	DoMethod(ButtonSaveLog, MUIM_Notify, MUIA_Pressed, FALSE,
+		TextEditorLog, 2, MUIM_CallHook, &SaveLogHook);
+
 	set(GroupSelection, MUIA_ShowMe, !fAuto);
 	set(GroupActionButtons, MUIA_ShowMe, !fAuto);
 
 	UpdateSelectedCount();
 
-	set(WIN_Main, MUIA_Window_Open, TRUE);
-	get(WIN_Main, MUIA_Window_Open, &win_opened);
+	if (!fAuto)
+		{
+		set(WIN_Main, MUIA_Window_Open, TRUE);
+		get(WIN_Main, MUIA_Window_Open, &win_opened);
+		}
 
-	if (win_opened)
+	if (fAuto || win_opened)
 		{
 		ULONG sigs = 0;
 		BOOL Run = TRUE;
@@ -674,6 +762,9 @@ int main(int argc, char *argv[])
 			if (SelectedCount > 0)
 				{
 				LONG res;
+
+				set(WIN_Main, MUIA_Window_Open, TRUE);
+				get(WIN_Main, MUIA_Window_Open, &win_opened);
 
 				res = MUI_Request(APP_Main, WIN_Main, 0, NULL,
 					GetLocString(MSGID_REQ_INSTALL_UPDATES_GADGETS),
@@ -687,7 +778,7 @@ int main(int argc, char *argv[])
 			DoMethod(APP_Main, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 			}
 
-		while (Run)
+		while (Run && win_opened)
 			{
 			ULONG Action = DoMethod(APP_Main, MUIM_Application_NewInput, &sigs);
 
@@ -721,17 +812,20 @@ int main(int argc, char *argv[])
 	DoMethod(APP_Main, MUIM_Application_Save, MUIV_Application_Save_ENV);
 	DoMethod(APP_Main, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
 
-	fail(APP_Main, NULL);
+	fail(APP_Main, NULL, 0);
 
 	return 0;
 }
 
 //----------------------------------------------------------------------------
 
-static VOID fail(APTR APP_Main, CONST_STRPTR str)
+static VOID fail(APTR APP_Main, CONST_STRPTR str, int rc)
 {
-	int rc = 0;
-
+	if (SaveLogAslRequest)
+		{
+		MUI_FreeAslRequest(SaveLogAslRequest);
+		SaveLogAslRequest = NULL;
+		}
 	if (ScalosPubKeyRSA)
 		{
 		RSA_free(ScalosPubKeyRSA);
@@ -815,8 +909,15 @@ DISPATCHER_END
 
 static BOOL init(void)
 {
-	if (!OpenLibraries())
-		fail(NULL, "Failed to open "MUIMASTER_NAME".");
+	CONST_STRPTR LibName = "";
+
+	if (!OpenLibraries(LibName))
+		{
+		char ErrorString[100];
+
+		snprintf(ErrorString, sizeof(ErrorString), "Failed to open \"%s\".", LibName);
+		fail(NULL, ErrorString, 20);
+		}
 
 	if (LocaleBase)
 		FindCatalog = OpenCatalogA(NULL, "Scalos/Updater.catalog", NULL);
@@ -827,28 +928,28 @@ static BOOL init(void)
 	TranslateNewMenu(NewContextMenuComponents);
 
 	if (!InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
-		fail(NULL, "AmiSSL version is too old!\n");
+		fail(NULL, "AmiSSL version is too old!", 20);
 
 	AmiSSLBase = OpenAmiSSL();
 	if (NULL == AmiSSLBase)
-		fail(NULL, "Couldn't open AmiSSL!\n");
+		fail(NULL, "Couldn't open AmiSSL!", 20);
 
 #ifdef __amigaos4__
 	IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase, "main", 1, NULL);
 	if (NULL == IAmiSSL)
-		fail(NULL, "Couldn't get AmiSSL interface!\n");
+		fail(NULL, "Couldn't get AmiSSL interface!", 20);
 #endif //__amigaos4__
 
 	if (0 != InitAmiSSL(AmiSSL_ErrNoPtr, (ULONG) &errno,
 			    TAG_END))
 		{
-		fail(NULL, "Couldn't initialize AmiSSL!\n");
+		fail(NULL, "Couldn't initialize AmiSSL!", 20);
 		}
 
 	ScalosPubKeyRSA	= GetScalosPublicKey();
 	if (NULL == ScalosPubKeyRSA)
 		{
-		fail(NULL, "Couldn't get Scalos Public Key!\n");
+		fail(NULL, "Couldn't get Scalos Public Key!", 20);
 		}
 
 	return TRUE;
@@ -856,9 +957,10 @@ static BOOL init(void)
 
 //----------------------------------------------------------------------------
 
-static BOOL OpenLibraries(void)
+static BOOL OpenLibraries(CONST_STRPTR LibName)
 {
-	DOSBase = (struct DosLibrary *) OpenLibrary(DOSNAME, 39);
+	LibName = DOSNAME;
+	DOSBase = (struct DosLibrary *) OpenLibrary(LibName, 39);
 	if (NULL == DOSBase)
 		return FALSE;
 #ifdef __amigaos4__
@@ -867,7 +969,8 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif //__amigaos4__
 
-	UtilityBase = (APTR) OpenLibrary( "utility.library", 39 );
+	LibName = "utility.library";
+	UtilityBase = (APTR) OpenLibrary(LibName, 39 );
 	if (NULL == UtilityBase)
 		return FALSE;
 #ifdef __amigaos4__
@@ -876,7 +979,8 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif /* __amigaos4__ */
 
-	IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
+	LibName = "intuition.library";
+	IntuitionBase = (struct IntuitionBase *) OpenLibrary(LibName, 39);
 	if (NULL == IntuitionBase)
 		return FALSE;
 #ifdef __amigaos4__
@@ -888,7 +992,8 @@ static BOOL OpenLibraries(void)
 		}
 #endif //__amigaos4__
 
-	MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN-1);
+	LibName = MUIMASTER_NAME;
+	MUIMasterBase = OpenLibrary(LibName, MUIMASTER_VMIN-1);
 	if (NULL == MUIMasterBase)
 		return FALSE;
 #ifdef __amigaos4__
@@ -900,7 +1005,8 @@ static BOOL OpenLibraries(void)
 		}
 #endif //__amigaos4__
 
-	SocketBase = OpenLibrary("bsdsocket.library", 0);
+	LibName = "bsdsocket.library";
+	SocketBase = OpenLibrary(LibName, 0);
 	if (NULL == SocketBase)
 		return FALSE;
 #ifdef __amigaos4__
@@ -913,7 +1019,8 @@ static BOOL OpenLibraries(void)
 #endif //__amigaos4__
 
 
-	ScalosBase = (struct ScalosBase *) OpenLibrary("scalos.library", 40);
+	LibName = "scalos.library";
+	ScalosBase = (struct ScalosBase *) OpenLibrary(LibName, 40);
 	if (NULL == ScalosBase)
 		return FALSE;
 #ifdef __amigaos4__
@@ -925,7 +1032,8 @@ static BOOL OpenLibraries(void)
 		}
 #endif //__amigaos4__
 
-	LocaleBase = (T_LOCALEBASE) OpenLibrary("locale.library", 39);
+	LibName = "locale.library";
+	LocaleBase = (T_LOCALEBASE) OpenLibrary(LibName, 39);
 #ifdef __amigaos4__
 	if (NULL != LocaleBase)
 		{
@@ -940,7 +1048,8 @@ static BOOL OpenLibraries(void)
 	if (NULL == TimerIO)
 		return FALSE;
 
-	OpenDevice("timer.device", UNIT_VBLANK, &TimerIO->tr_node, 0);
+	LibName = "timer.device";
+	OpenDevice(LibName, UNIT_VBLANK, &TimerIO->tr_node, 0);
 	TimerBase = (T_TIMERBASE) TimerIO->tr_node.io_Device;
 	if (NULL == TimerBase)
 		return FALSE;
@@ -950,12 +1059,24 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif //__amigaos4__
 
-	AmiSSLMasterBase = OpenLibrary("amisslmaster.library", AMISSLMASTER_MIN_VERSION);
+
+	LibName = "amisslmaster.library";
+	AmiSSLMasterBase = OpenLibrary(LibName, AMISSLMASTER_MIN_VERSION);
 	if (NULL == AmiSSLMasterBase)
 		return FALSE;
 #ifdef __amigaos4__
 	IAmiSSLMaster = (struct AmiSSLMasterIFace *)GetInterface(AmiSSLMasterBase, "main", 1, NULL);
 	if (NULL == IAmiSSLMaster)
+		return FALSE;
+#endif //__amigaos4__
+
+	LibName = "icon.library";
+	IconBase = OpenLibrary(LibName, 39);
+	if (NULL == IconBase)
+		return FALSE;
+#ifdef __amigaos4__
+	IIcon = (struct IconIFace *)GetInterface(IconBase, "main", 1, NULL);
+	if (NULL == IIcon)
 		return FALSE;
 #endif //__amigaos4__
 
@@ -966,6 +1087,19 @@ static BOOL OpenLibraries(void)
 
 static void CloseLibraries(void)
 {
+#ifdef __amigaos4__
+	if (IIcon)
+		{
+		DropInterface((struct Interface *)IIcon);
+		IIcon = NULL;
+		}
+#endif
+	if (IconBase)
+		{
+		CloseLibrary(IconBase);
+		IconBase = NULL;
+		}
+
 	if (AmiSSLBase)
 		{
 #ifdef __amigaos4__
@@ -1997,6 +2131,8 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 			curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
 			curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &pgd);
 
+			AddLogMsg(MSGID_LOG_READ_VERSIONINFO, ScalosWebSite);
+
 			res = curl_easy_perform(curl);
  
 			d2(KPrintF("%s/%s/%ld: res=%ld\n", __FILE__, __FUNC__, __LINE__, res));
@@ -2005,10 +2141,14 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				{
 				d2(KPrintF("%s/%s/%ld: vfh.vfh_TotalLength=%ld\n", __FILE__, __FUNC__, __LINE__, vfh.vfh_TotalLength));
 
+				AddLogMsg(MSGID_LOG_CHECKING_VERSIONS);
+
 				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_PROCESS_HTTP_RESPONSE));
 				Success = ProcessVersionFile(vfh.vfh_AllocatedBuffer, vfh.vfh_TotalLength);
 
-				if (0 == SelectedCount && fAuto)
+				AddLogMsg(MSGID_LOG_UPDATES_FOUND, SelectedCount);
+
+				if (0 == SelectedCount && fAuto && !fQuiet)
 					{
 					MUI_Request(APP_Main, WIN_Main, 0, NULL,
 						GetLocString(MSGID_ABOUTREQOK),
@@ -2024,6 +2164,7 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
 
 				ErrorMsg(MSG_PROGRESS_FAILURE, ScalosWebSite, curl_easy_strerror(res));
+				AddLogMsg(MSGID_LOG_ERROR_READ_VERSIONINFO, ScalosWebSite, curl_easy_strerror(res));
 				}
 
 			/* always cleanup */
@@ -2075,6 +2216,8 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 			STRPTR LhaCmdLine = NULL;
 			BOOL Success = FALSE;
 
+			AddLogMsg(MSGID_LOG_UPDATING, Count, SelectedCount);
+
 			DoMethod(NListComponents, MUIM_NList_GetEntry,
 				n, &cle);
 
@@ -2084,9 +2227,12 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				LONG rc;
 				BOOL SkipFile = FALSE;
 				CURLcode res;
+				CONST_STRPTR TempFilePath = "";
 
 				if (!cle->cle_Selected)
 					break;
+
+				GetAttr(MUIA_String_Contents, PopAslTempPath, (APTR) &TempFilePath);
 
 				set(cle->cle_LampObject, MUIA_Lamp_Color, MUIV_Lamp_Color_ReceivingData);
 				DoMethod(NListComponents, MUIM_NList_RedrawEntry, cle);
@@ -2128,9 +2274,12 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				fh = fopen(LhaName, "wb");
 				if (NULL == fh)
 					{
+					AddLogMsg(MSGID_LOG_ERROR_OPEN_LHAFILE, LhaName, cle->cle_File);
 					AbortUpdate = ErrorMsg(MSGID_ERROR_OPEN_LHAFILE, LhaName, cle->cle_File);
 					break;
 					}
+
+				AddLogMsg(MSGID_LOG_DOWNLOAD_PACKAGE, cle->cle_Package);
 
 				if (!SetProxyOptions(curl))
 					break;
@@ -2147,16 +2296,14 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				res = curl_easy_perform(curl);
 				if (0 != res)
 					{
-					STRPTR ErrorBuffer;
+					CONST_STRPTR ErrorBuffer;
 
-					ERR_load_crypto_strings();
+					ErrorBuffer = curl_easy_strerror(res);
 
-					ErrorBuffer = ERR_error_string(ERR_get_error(), NULL);
 					d2(KPrintF("%s/%s/%ld:  <%s>\n", __FILE__, __FUNC__, __LINE__, ErrorBuffer));
 
 					AbortUpdate = ErrorMsg(MSGID_ERROR_DOWNLOADING_UPDATE, cle->cle_File, ErrorMsg);
-
-					ERR_free_strings();
+					AddLogMsg(MSGID_LOG_DOWNLOAD_FAILED_PACKAGE, cle->cle_Package, ErrorMsg);
 					break;
 					}
 
@@ -2165,9 +2312,12 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_VERIFY_SIGNATURE));
 
+				AddLogMsg(MSGID_LOG_VERIFY_SIGNATURE, cle->cle_Package);
+
 				if (!VerifyFileSignature(LhaName, cle->cle_Hash))
 					{
 					d2(KPrintF("%s/%s/%ld: File signature mismatch\n", __FILE__, __FUNC__, __LINE__));
+					AddLogMsg(MSGID_LOG_VERIFY_FAIL_SIGNATURE, cle->cle_Package);
 					break;
 					}
 
@@ -2196,7 +2346,11 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 						}
 					}
 
-				if (!SkipFile)
+				if (SkipFile)
+					{
+					AddLogMsg(MSGID_LOG_SKIP_PACKAGE, cle->cle_Package);
+					}
+				else
 					{
 					size_t LhaCmdLineLen;
 					char ch = cle->cle_Dir[strlen(cle->cle_Dir) - 1];
@@ -2219,6 +2373,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 						}
 
 					d2(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
+					AddLogMsg(MSGID_LOG_UNPACK_PACKAGE, cle->cle_Package);
 
 					rc = SystemTags(LhaCmdLine,
 						NP_Input, Input(),
@@ -2228,6 +2383,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					if (RETURN_OK != rc)
 						{
 						AbortUpdate = ErrorMsg(MSGID_ERROR_LHA1, cle->cle_File);
+						AddLogMsg(MSGID_LOG_UNPACK_FAIL_PACKAGE, cle->cle_Package);
 						break;
 						}
 
@@ -2251,6 +2407,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					if (RETURN_OK != rc)
 						{
 						AbortUpdate = ErrorMsg(MSGID_ERROR_LHA2, cle->cle_File);
+						AddLogMsg(MSGID_LOG_UNPACK_CATALOGS_FAIL_PACKAGE, cle->cle_Package);
 						break;
 						}
 					Success = TRUE;
@@ -2368,6 +2525,82 @@ static void DeselectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *m
 
 	set(NListComponents, MUIA_NList_Quiet, FALSE);
 	UpdateSelectedCount();
+}
+
+//----------------------------------------------------------------------------
+
+static void SaveLogHookFunc(struct Hook *hook, Object *obj, Msg *msg)
+{
+	if (NULL == SaveLogAslRequest)
+		{
+		//MUI_AllocAslRequest
+		SaveLogAslRequest = MUI_AllocAslRequestTags(ASL_FileRequest,
+			ASLFR_InitialFile, "UpdateLog.txt",
+			ASLFR_DoSaveMode, TRUE,
+			ASLFR_InitialDrawer, "SYS:",
+			ASLFR_IntuiMsgFunc, (ULONG) &AslIntuiMsgHook,
+			TAG_END);
+		}
+	if (SaveLogAslRequest)
+		{
+		BOOL Result;
+		struct Window *win = NULL;
+
+		get(WIN_Main, MUIA_Window_Window, (APTR) &win);
+
+		//MUI_AslRequest(
+		Result = MUI_AslRequestTags(SaveLogAslRequest,
+			ASLFR_TitleText, GetLocString(MSGID_SAVE_LOG_ASLTITLE),
+			ASLFR_Window, win,
+			ASLFR_SleepWindow, TRUE,
+			TAG_END);
+
+		if (Result)
+			{
+			BPTR dirLock;
+			BPTR oldDir = 0;
+			BPTR fh = 0;
+			STRPTR Contents = NULL;
+
+			do	{
+				dirLock = Lock(SaveLogAslRequest->fr_Drawer, ACCESS_READ);
+				if (0 == dirLock)
+					break;
+				
+				oldDir = CurrentDir(dirLock);
+
+				Contents = (STRPTR) DoMethod(TextEditorLog, MUIM_TextEditor_ExportText);
+				if (NULL == Contents)
+					break;
+
+				fh = Open(SaveLogAslRequest->fr_File, MODE_NEWFILE);
+				if (0 == fh)
+					break;
+
+				Write(fh, Contents, strlen(Contents));
+				} while (0);
+			if (fh)
+				Close(fh);
+			if (Contents)
+				FreeVec(Contents);
+			if (oldDir)
+				CurrentDir(oldDir);
+			if (dirLock)
+				UnLock(dirLock);
+			}
+		}
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct IntuiMessage *iMsg = (struct IntuiMessage *) msg;
+
+	if (IDCMP_REFRESHWINDOW == iMsg->Class)
+		{
+		DoMethod(APP_Main, MUIM_Application_CheckRefresh);
+		}
 }
 
 //----------------------------------------------------------------------------
@@ -2839,6 +3072,8 @@ static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation)
 		GetLocString(MSGID_REQFORMAT_OPENSSL_ERROR),
 		(ULONG) Function, (ULONG) Operation, (ULONG) ErrorBuffer);
 
+	AddLogMsg(MSGID_REQFORMAT_OPENSSL_ERROR, Function, Operation, ErrorBuffer);
+
 	ERR_free_strings();
 }
 
@@ -2865,13 +3100,85 @@ static BOOL ErrorMsg(ULONG MsgId, ...)
 
 //----------------------------------------------------------------------------
 
+static void AddLogMsg(ULONG MsgId, ...)
+{
+	char Buffer[200];
+	va_list args;
+
+	va_start(args, MsgId);
+
+	vsnprintf(Buffer, sizeof(Buffer), GetLocString(MsgId), args);
+
+	DoMethod(TextEditorLog, MUIM_TextEditor_InsertText,
+		Buffer,
+		MUIV_TextEditor_InsertText_Bottom);
+
+	va_end(args);
+}
+
+//----------------------------------------------------------------------------
+
 static void ParseArguments(void)
 {
 	if (WBenchMsg)
 		{
 		// Called from Workbench, check ToolTypes
+		BPTR oldDir;
+		struct DiskObject *icon;
+
+		oldDir = CurrentDir(WBenchMsg->sm_ArgList[0].wa_Lock);
+
 		d2(kprintf("%s/%ld: Called from Workbench\n", __FUNC__, __LINE__));
-		//WBenchMsg->sm_ArgList[0]
+
+		icon = GetDiskObject(WBenchMsg->sm_ArgList[0].wa_Name);
+		if (icon)
+			{
+			STRPTR tt;
+
+			tt = FindToolType(icon->do_ToolTypes, "QUIET");
+			fQuiet = (NULL != tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "AUTO");
+			fAuto = (NULL != tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "USEPROXY");
+			fUseProxy = (NULL != tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "PROXYAUTH");
+			fUseProxyAuth = (NULL != tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "SHOWALL");
+			fShowAllComponents = (NULL != tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "ASK");
+			fAskEveryUpdate	= (NULL != tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "PROXYUSER");
+			if (tt)
+				setstring(StringProxyUser, tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "PROXY");
+			if (tt)
+				setstring(StringProxyAddr, tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "PROXYPASSWORD");
+			if (tt)
+				setstring(StringProxyPwd, tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "SCALOSHTTP");
+			if (tt)
+				setstring(StringScalosWebSite, tt);
+
+			tt = FindToolType(icon->do_ToolTypes, "TEMPFILEPATH");
+			if (tt)
+				setstring(PopAslTempPath, tt);
+
+			//TODO:PROXYPORT
+
+			FreeDiskObject(icon);
+			}
+		
+		CurrentDir(oldDir);
 		}
 	else
 		{
@@ -2879,10 +3186,11 @@ static void ParseArguments(void)
 		enum { ARG_USEPROXY, ARG_PROXYAUTH, ARG_SHOWALL, ARG_ASKUPDATES,
 			ARG_AUTO, ARG_PROXY, ARG_PROXYPORT, ARG_PROXYUSER,
 			ARG_PROXYPASSWORD, ARG_TEMPFILEPATH, ARG_SCALOSHTTP,
+			ARG_QUIET,
 			ARG_LAST };
 		static CONST_STRPTR Template = "USEPROXY/S,PROXYAUTH/S,SHOWALL/S,ASK/S,"
 			"AUTO/S,PROXY/K,PROXYPORT/N,PROXYUSER/K,PROXYPASSWORD/K,"
-			"TEMPFILEPATH/K,SCALOSHTTP/K";
+			"TEMPFILEPATH/K,SCALOSHTTP/K,QUIET/S";
 		struct RDArgs *ReadArgs;
 		LONG Args[ARG_LAST];
 
@@ -2897,6 +3205,7 @@ static void ParseArguments(void)
 			fUseProxyAuth = Args[ARG_PROXYAUTH];
 			fShowAllComponents = Args[ARG_SHOWALL];
 			fAskEveryUpdate = Args[ARG_ASKUPDATES];
+			fQuiet  = Args[ARG_QUIET];
 
 			if (Args[ARG_PROXYUSER])
 				setstring(StringProxyUser, Args[ARG_PROXYUSER]);
@@ -2906,6 +3215,10 @@ static void ParseArguments(void)
 				setstring(StringProxyPwd, Args[ARG_PROXYPASSWORD]);
 			if (Args[ARG_SCALOSHTTP])
 				setstring(StringScalosWebSite, Args[ARG_SCALOSHTTP]);
+			if (Args[ARG_TEMPFILEPATH])
+				setstring(PopAslTempPath, Args[ARG_TEMPFILEPATH]);
+
+			//TODO:PROXYPORT
 
 			FreeArgs(ReadArgs);
 			}
