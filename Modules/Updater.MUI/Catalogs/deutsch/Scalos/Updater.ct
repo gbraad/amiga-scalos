@@ -150,6 +150,10 @@ Komponenten
 ;Main
 ;
 ;
+MSGID_REGISTER_LOG
+Protokoll
+;Log
+;
 MSGID_REGISTER_CONFIGURATION
 Einstellungen
 ;Configuration
@@ -171,8 +175,8 @@ MSGID_CHECK_USE_PROXY_SHORTHELP
 ;
 ;
 MSGID_STRING_PROXY_ADDR
-Adresse
-;Address
+Adresse:
+;Address:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_ADDR_SHORTHELP
@@ -181,8 +185,8 @@ MSGID_STRING_PROXY_ADDR_SHORTHELP
 ;
 ;
 MSGID_STRING_PROXY_PORT
-Port
-;Port
+Port:
+;Port:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_PORT_SHORTHELP
@@ -201,8 +205,8 @@ MSGID_CHECK_USE_PROXYAUTH_SHORTHELP
 ;
 ;
 MSGID_STRING_PROXY_USERNAME
-Benutzername
-;User Name
+Benutzername:
+;User Name:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_USERNAME_SHORTHELP
@@ -211,8 +215,8 @@ MSGID_STRING_PROXY_USERNAME_SHORTHELP
 ;
 ;
 MSGID_STRING_PROXY_PASSWD
-Passwort
-;Password
+Passwort:
+;Password:
 ;
 ;+++translateme+++
 MSGID_STRING_PROXY_PASSWD_SHORTHELP
@@ -326,6 +330,56 @@ Aktualisierungen für Scalos durchführen möchten?
 ;Are you sure you want to install\n\
 ;%ld Scalos updates now?
 ;
+;
+MSGID_GROUP_LOG
+Aktualisierungsprotokoll
+;Update Log
+;
+;
+MSGID_POPASL_TEMPPATH
+Pfad für temporäre Dateien
+;Path for Temporary Files
+;
+;
+MSGID_GROUP_MISCELLANEOUS
+Verschiedenes
+;Miscellaneous
+;
+;
+MSGID_BUTTON_CLEAR_LOG
+Protokoll löschen
+;Clear Log
+;
+;
+MSGID_BUTTON_CLEAR_LOG_SHORT
+L
+;C
+;
+;+++translateme+++
+MSGID_BUTTON_CLEAR_LOG_SHORTHELP
+...TBD..
+;...TBD..
+;
+;
+MSGID_BUTTON_SAVE_LOG
+Protokoll speichern...
+;Save Log...
+;
+;
+MSGID_BUTTON_SAVE_LOG_SHORT
+S
+;S
+;
+;+++translateme+++
+MSGID_BUTTON_SAVE_LOG_SHORTHELP
+...TBD..
+;...TBD..
+;
+;
+MSGID_SAVE_LOG_ASLTITLE
+Aktualisierungsprotokoll speichern...
+;Save Update Log...
+;
 ;-----------------------------------------------------------
 ;
 ;
@@ -394,6 +448,77 @@ Alles auswählen
 MSGID_MENU_COMPONENTS_SELECT_NONE
 Alles abwählen
 ;Deselect All
+;
+;-----------------------------------------------------------
+;
+;+++translateme+++
+MSGID_LOG_READ_VERSIONINFO
+Reading version information from Scalos update server %s.\n
+;Reading version information from Scalos update server %s.\n
+;
+;+++translateme+++
+MSGID_LOG_ERROR_READ_VERSIONINFO
+Failed to get version information from Scalos update server %s : %s.\n
+;Failed to get version information from Scalos update server %s : %s.\n
+;
+;+++translateme+++
+MSGID_LOG_CHECKING_VERSIONS
+Processing information about available updates.\n
+;Processing information about available updates.\n
+;
+;+++translateme+++
+MSGID_LOG_UPDATES_FOUND
+Found %ld components to update.\n
+;Found %ld components to update.\n
+;
+;+++translateme+++
+MSGID_LOG_UPDATING
+Updating component %ld of %ld.\n
+;Updating component %ld of %ld.\n
+;
+;+++translateme+++
+MSGID_LOG_DOWNLOAD_PACKAGE
+Downloading update package for %s\n.
+;Downloading update package for %s\n.
+;
+;+++translateme+++
+MSGID_LOG_VERIFY_SIGNATURE
+Verifying signature of %s update package\n.
+;Verifying signature of %s update package\n.
+;
+;+++translateme+++
+MSGID_LOG_VERIFY_FAIL_SIGNATURE
+Failed to update %s - invalid signature!\n
+;Failed to update %s - invalid signature!\n
+;
+;+++translateme+++
+MSGID_LOG_DOWNLOAD_FAILED_PACKAGE
+Failed to download update package for %s - %s.\n
+;Failed to download update package for %s - %s.\n
+;
+;+++translateme+++
+MSGID_LOG_SKIP_PACKAGE
+Skipping update of %s, due to user's request.\n
+;Skipping update of %s, due to user's request.\n
+;
+;+++translateme+++
+MSGID_LOG_UNPACK_PACKAGE
+Unpacking update package for %s.\n
+;Unpacking update package for %s.\n
+;
+;+++translateme+++
+MSGID_LOG_UNPACK_FAIL_PACKAGE
+Failed to unpack update for %s.\n
+;Failed to unpack update for %s.\n
+;
+;+++translateme+++
+MSGID_LOG_UNPACK_CATALOGS_FAIL_PACKAGE
+Failed to unpack language catalogs for %s.\n
+;Failed to unpack language catalogs for %s.\n
+;
+;+++translateme+++
+MSGID_LOG_ERROR_OPEN_LHAFILE
+Error: failed to open temporary archive \"%s\" for updating \"%s\".\n
 ;
 ;-----------------------------------------------------------
 ;
