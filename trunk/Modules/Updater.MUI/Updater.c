@@ -724,7 +724,7 @@ int main(int argc, char *argv[])
 		ButtonCheckForUpdates, 2, MUIM_CallHook, &CheckForUpdatesHook);
 
 	// Connect TextEditor object with its scrollbar
-	set(TextEditorLog,  MUIA_TextEditor_Slider, ScrollBarLog);
+	set(TextEditorLog,  MUIA_TextEditor_Slider, (ULONG) ScrollBarLog);
 
 	// Setup callback hooks for "Select All" and "Deselect All" buttons
 	DoMethod(ButtonSelectAll, MUIM_Notify, MUIA_Pressed, FALSE,
@@ -2535,9 +2535,9 @@ static void SaveLogHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 		{
 		//MUI_AllocAslRequest
 		SaveLogAslRequest = MUI_AllocAslRequestTags(ASL_FileRequest,
-			ASLFR_InitialFile, "UpdateLog.txt",
+			ASLFR_InitialFile, (ULONG) "UpdateLog.txt",
 			ASLFR_DoSaveMode, TRUE,
-			ASLFR_InitialDrawer, "SYS:",
+			ASLFR_InitialDrawer, (ULONG) "SYS:",
 			ASLFR_IntuiMsgFunc, (ULONG) &AslIntuiMsgHook,
 			TAG_END);
 		}
@@ -2550,8 +2550,8 @@ static void SaveLogHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 		//MUI_AslRequest(
 		Result = MUI_AslRequestTags(SaveLogAslRequest,
-			ASLFR_TitleText, GetLocString(MSGID_SAVE_LOG_ASLTITLE),
-			ASLFR_Window, win,
+			ASLFR_TitleText, (ULONG) GetLocString(MSGID_SAVE_LOG_ASLTITLE),
+			ASLFR_Window, (ULONG) win,
 			ASLFR_SleepWindow, TRUE,
 			TAG_END);
 
@@ -3155,23 +3155,23 @@ static void ParseArguments(void)
 
 			tt = FindToolType(icon->do_ToolTypes, "PROXYUSER");
 			if (tt)
-				setstring(StringProxyUser, tt);
+				setstring(StringProxyUser, (ULONG) tt);
 
 			tt = FindToolType(icon->do_ToolTypes, "PROXY");
 			if (tt)
-				setstring(StringProxyAddr, tt);
+				setstring(StringProxyAddr, (ULONG) tt);
 
 			tt = FindToolType(icon->do_ToolTypes, "PROXYPASSWORD");
 			if (tt)
-				setstring(StringProxyPwd, tt);
+				setstring(StringProxyPwd, (ULONG) tt);
 
 			tt = FindToolType(icon->do_ToolTypes, "SCALOSHTTP");
 			if (tt)
-				setstring(StringScalosWebSite, tt);
+				setstring(StringScalosWebSite, (ULONG) tt);
 
 			tt = FindToolType(icon->do_ToolTypes, "TEMPFILEPATH");
 			if (tt)
-				setstring(PopAslTempPath, tt);
+				setstring(PopAslTempPath, (ULONG) tt);
 
 			//TODO:PROXYPORT
 
