@@ -537,6 +537,7 @@ int main(int argc, char *argv[])
 								//MUIA_CycleChain, TRUE,
 								MUIA_NListview_Horiz_ScrollBar, MUIV_NListview_HSB_FullAuto,
 								MUIA_NListview_NList, NListResults = NewObject(myFindResultsNListClass->mcc_Class, 0,
+									MUIA_CycleChain, TRUE,
 									MUIA_NList_Format, "BAR,BAR,",
 									MUIA_NList_ConstructHook2, &ResultsConstructHook,
 									MUIA_NList_DestructHook2, &ResultsDestructHook,
@@ -2096,6 +2097,7 @@ static void StartSearch(void)
 		if (++Searching > 1)
 			break;
 
+		set(ButtonSearch, MUIA_Disabled, TRUE);
 		set(ButtonStop, MUIA_Disabled, FALSE);
 		set(StringFilePattern, MUIA_Disabled, TRUE);
 		set(StringFileContents, MUIA_Disabled, TRUE);
