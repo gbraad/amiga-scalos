@@ -8,7 +8,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	40
-#define	VERSION_MINOR	1
+#define	VERSION_MINOR	2
 
 #define	VERS_MAJOR	STR(VERSION_MAJOR)
 #define	VERS_MINOR	STR(VERSION_MINOR)
