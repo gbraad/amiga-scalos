@@ -224,6 +224,7 @@ int main(int argc, char *argv[])
 							GetLocString(MSGID_BUTTON_HIDE_SHORTHELP)),
 
 						Child, CycleActive = CycleObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Cycle_Entries, CycleActiveEntries,
 							End, //CycleObject
 
