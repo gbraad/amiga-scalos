@@ -131,9 +131,8 @@ MSGID_REGISTER_MAIN
 Principal
 ;Main
 ;
-;+++translateme+++
 MSGID_REGISTER_LOG
-Log
+Compte rendu
 ;Log
 ;
 MSGID_REGISTER_CONFIGURATION
@@ -272,9 +271,8 @@ temporaire \"%s\" pour mettre à jour \"%s\".
 ;Error: failed to open temporary\n\
 ;archive \"%s\" for updating \"%s\".
 ;
-;+++translateme+++
 MSGID_STRING_SCALOS_SERVER
-Scalos Update Server
+Scalos : Serveur de mise à jour
 ;Scalos Update Server
 ;
 ;+++translateme+++
@@ -282,41 +280,34 @@ MSGID_STRING_SCALOS_SERVER_SHORTHELP
 ...TBD...
 ;...TBD...
 ;
-;+++translateme+++
 MSGID_REQ_INSTALL_UPDATES_GADGETS
-_Update|_Abort
+_Mettre à jour|_Annuler
 ;_Update|_Abort
 ;
-;+++translateme+++
 MSGID_REQ_INSTALL_UPDATES
-Are you sure you want to install\n\
-%ld Scalos updates now?
+Etes-vous certain de vouloir instajjer\n\
+%ld les mises à jour de Scalos maintenant ?
 ;Are you sure you want to install\n\
 ;%ld Scalos updates now?
 ;
-;+++translateme+++
 MSGID_GROUP_LOG
-Update Log
+Mise à jour du compte rendu
 ;Update Log
 ;
-;+++translateme+++
 MSGID_POPASL_TEMPPATH
-Path for Temporary Files
+Chemin pour les fichiers temporarires
 ;Path for Temporary Files
 ;
-;+++translateme+++
 MSGID_GROUP_MISCELLANEOUS
-Miscellaneous
+Divers
 ;Miscellaneous
 ;
-;+++translateme+++
 MSGID_BUTTON_CLEAR_LOG
-Clear Log
+Vider le compte rendu
 ;Clear Log
 ;
-;+++translateme+++
 MSGID_BUTTON_CLEAR_LOG_SHORT
-C
+V
 ;C
 ;
 ;+++translateme+++
@@ -324,9 +315,8 @@ MSGID_BUTTON_CLEAR_LOG_SHORTHELP
 ...TBD..
 ;...TBD..
 ;
-;+++translateme+++
 MSGID_BUTTON_SAVE_LOG
-Save Log...
+Sauver le compte rendu...
 ;Save Log...
 ;
 ;+++translateme+++
@@ -339,9 +329,8 @@ MSGID_BUTTON_SAVE_LOG_SHORTHELP
 ...TBD..
 ;...TBD..
 ;
-;+++translateme+++
 MSGID_SAVE_LOG_ASLTITLE
-Save Update Log...
+Sauver la mise à jour du compte rendu...
 ;Save Update Log...
 ;
 ;-----------------------------------------------------------
@@ -402,14 +391,12 @@ Tout déselectionner
 ;
 ;-----------------------------------------------------------
 ;
-;+++translateme+++
 MSGID_LOG_READ_VERSIONINFO
-Reading version information from Scalos update server %s.\n
+Lecture d'information de la version depuis le serveur de mise à jour de Scalos %s.\n
 ;Reading version information from Scalos update server %s.\n
 ;
-;+++translateme+++
 MSGID_LOG_ERROR_READ_VERSIONINFO
-Failed to get version information from Scalos update server %s : %s.\n
+La recherche de l'information de la version a échouée depuis le serveur de mise à jour de Scalos %s : %s.\n
 ;Failed to get version information from Scalos update server %s : %s.\n
 ;
 ;+++translateme+++
