@@ -40,7 +40,7 @@ ifeq ($(MACHINE), ppc-amigaos)
 # AmigaOS4
 
 LFLAGS  +=      -nostartfiles \
-		-ljpeg \
+		-ljpeg7 \
 #
 
 
