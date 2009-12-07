@@ -240,7 +240,7 @@ extern void _STD_240_TerminateMemFunctions(void);
 
 DISPATCHER_PROTO(FileTypesPrefs);
 static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst);
-static void CreateSubWindows(struct FileTypesPrefsInst *inst);
+static Object **CreateSubWindows(Class *cl, Object *o);
 static Object *CreatePrefsImage(void);
 static void InitHooks(struct FileTypesPrefsInst *inst);
 
@@ -1666,11 +1666,13 @@ DISPATCHER(FileTypesPrefs)
 	ULONG n;
 	ULONG result = 0;
 
+	d1(kprintf("%s/%ld:  START obj=%08lx\n", __FUNC__, __LINE__, obj));
+
 	switch(msg->MethodID)
 		{
 	case OM_NEW:
 		obj = (Object *) DoSuperMethodA(cl, obj, msg);
-		d1(kprintf(__FILE__ "/%s/%ld: obj=%08lx\n", __FUNC__, __LINE__, obj));
+		d1(kprintf(__FILE__ "/%s/%ld: OM_NEW obj=%08lx\n", __FUNC__, __LINE__, obj));
 		if (obj)
 			{
 			Object *prefsobject;
@@ -1718,6 +1720,7 @@ DISPATCHER(FileTypesPrefs)
 		break;
 
 	case OM_DISPOSE:
+		d1(kprintf(__FILE__ "/%s/%ld: OM_DISPOSE obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 
 		if (inst->fpb_WBScreen)
@@ -1809,6 +1812,8 @@ DISPATCHER(FileTypesPrefs)
 		{
 		struct opGet *opg = (struct opGet *) msg;
 
+		d1(kprintf(__FILE__ "/%s/%ld: OM_GET obj=%08lx\n", __FUNC__, __LINE__, obj));
+
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		switch (opg->opg_AttrID)
 			{
@@ -1823,6 +1828,7 @@ DISPATCHER(FileTypesPrefs)
 		break;
 
 	case MUIM_ScalosPrefs_ParseToolTypes:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_ParseToolTypes obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		d1(kprintf(__FILE__ "/%s/%ld: before ParseToolTypes\n", __FUNC__, __LINE__));
 		ParseToolTypes(inst, (struct MUIP_ScalosPrefs_ParseToolTypes *) msg);
@@ -1830,6 +1836,7 @@ DISPATCHER(FileTypesPrefs)
 		 break;
 
 	case MUIM_ScalosPrefs_LoadConfig:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_LoadConfig obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		ReadPrefs(inst, ENV_FILETYPES_DIR, ENV_DEFICONS_PREFS);
 		inst->fpb_SaveFlags = FTWRITEFLAG_ONLY_SAVE_CHANGED | FTWRITEFLAG_CLEAR_CHANGE_FLAG;
@@ -1837,12 +1844,14 @@ DISPATCHER(FileTypesPrefs)
 		break;
 
 	case MUIM_ScalosPrefs_UseConfig:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_UseConfig obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		WritePrefs(inst, ENV_FILETYPES_DIR, ENV_DEFICONS_PREFS, inst->fpb_SaveFlags);
 		SetChangedFlag(inst, FALSE);
 		break;
 
 	case MUIM_ScalosPrefs_UseConfigIfChanged:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_UseConfigIfChanged obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		if (inst->fpb_Changed)
 			{
@@ -1852,6 +1861,7 @@ DISPATCHER(FileTypesPrefs)
 		break;
 
 	case MUIM_ScalosPrefs_SaveConfig:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_SaveConfig obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		WritePrefs(inst, ENV_FILETYPES_DIR, ENV_DEFICONS_PREFS, inst->fpb_SaveFlags & ~FTWRITEFLAG_CLEAR_CHANGE_FLAG);
 		WritePrefs(inst, ENVARC_FILETYPES_DIR, ENVARC_DEFICONS_PREFS, inst->fpb_SaveFlags);
@@ -1859,6 +1869,7 @@ DISPATCHER(FileTypesPrefs)
 		break;
 
 	case MUIM_ScalosPrefs_SaveConfigIfChanged:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_SaveConfigIfChanged obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		if (inst->fpb_Changed)
 			{
@@ -1887,16 +1898,19 @@ DISPATCHER(FileTypesPrefs)
 		break;
 
 	case MUIM_ScalosPrefs_OpenConfig:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_OpenConfig obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		DoMethod(obj, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_Open], 0);
 		break;
 
 	case MUIM_ScalosPrefs_SaveConfigAs:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_SaveConfigAs obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		DoMethod(obj, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_SaveAs], 0);
 		break;
 
 	case MUIM_ScalosPrefs_About:
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_About obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		DoMethod(obj, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_About], 0);
 		break;
@@ -1905,6 +1919,8 @@ DISPATCHER(FileTypesPrefs)
 		{
 		struct MUIP_ScalosPrefs_LoadNamedConfig *lnc = (struct MUIP_ScalosPrefs_LoadNamedConfig *) msg;
 
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_LoadNamedConfig obj=%08lx\n", __FUNC__, __LINE__, obj));
+
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 		ReadPrefs(inst, lnc->ConfigFileName, ENV_DEFICONS_PREFS);
 		inst->fpb_SaveFlags = FTWRITEFLAG_ONLY_SAVE_CHANGED | FTWRITEFLAG_CLEAR_CHANGE_FLAG;
@@ -1912,9 +1928,8 @@ DISPATCHER(FileTypesPrefs)
 		break;
 
 	case MUIM_ScalosPrefs_CreateSubWindows:
-		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
-		CreateSubWindows(inst);
-		result = (ULONG) inst->fpb_SubWindows;
+		d1(kprintf(__FILE__ "/%s/%ld: MUIM_ScalosPrefs_CreateSubWindows obj=%08lx\n", __FUNC__, __LINE__, obj));
+		result = (ULONG) CreateSubWindows(cl, obj);
 		break;
 
 	case MUIM_ScalosPrefs_PageActive:
@@ -1937,6 +1952,7 @@ DISPATCHER(FileTypesPrefs)
 		break;
 		}
 
+	d1(kprintf("%s/%ld:  END inst=%08lx\n", __FUNC__, __LINE__, inst));
 	return result;
 }
 DISPATCHER_END
@@ -2814,8 +2830,10 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 }
 
 
-static void CreateSubWindows(struct FileTypesPrefsInst *inst)
+static Object **CreateSubWindows(Class *cl, Object *o)
 {
+	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) INST_DATA(cl, o);
+
 	d1(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
 
 	inst->fpb_SubWindows[0] = inst->fpb_Objects[OBJNDX_WIN_EditAttribute] = WindowObject,
@@ -2973,6 +2991,8 @@ static void CreateSubWindows(struct FileTypesPrefsInst *inst)
 	// Doubleclick in "edit attribute" selection listview calls hook
 	DoMethod(inst->fpb_Objects[OBJNDX_Listview_AttributeSelectValue], MUIM_Notify, MUIA_Listview_DoubleClick, TRUE,
 		inst->fpb_Objects[OBJNDX_Pop_AttributeSelectValue], 2, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_SelectAttributeValue]);
+
+	return inst->fpb_SubWindows;
 }
 
 
@@ -5008,7 +5028,7 @@ static SAVEDS(APTR) INTERRUPT EditAttributeHookFunc(struct Hook *hook, Object *o
 	struct MUI_NListtree_TreeNode *tn;
 	struct AttrListEntry *Attr = NULL;
 
-	d1(KPrintF("%s/%ld: \n", __FUNC__, __LINE__));
+	d1(KPrintF("%s/%ld: START\n", __FUNC__, __LINE__));
 
 	tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
 		MUIM_NListtree_GetEntry, 
@@ -5164,13 +5184,15 @@ static SAVEDS(APTR) INTERRUPT EditAttributeHookFunc(struct Hook *hook, Object *o
 			DoMethod(inst->fpb_Objects[OBJNDX_WIN_EditAttribute], MUIM_Notify, MUIA_Window_Open, FALSE, 
 				inst->fpb_Objects[OBJNDX_WIN_Main], 3, MUIM_Set, MUIA_Window_Sleep, FALSE);
 
-			d1(KPrintF("%s/%ld: atd=%08lx\n", __FUNC__, __LINE__, atd));
+			d1(KPrintF("%s/%ld: atd=%08lx  OBJNDX_WIN_EditAttribute=%08lx\n", __FUNC__, __LINE__, atd, inst->fpb_Objects[OBJNDX_WIN_EditAttribute]));
 
 			set(inst->fpb_Objects[OBJNDX_WIN_EditAttribute], MUIA_Window_Open, TRUE);
 
 			d1(KPrintF("%s/%ld: atd=%08lx\n", __FUNC__, __LINE__, atd));
 			}
 		}
+
+	d1(KPrintF("%s/%ld: END\n", __FUNC__, __LINE__));
 
 	return NULL;
 }
