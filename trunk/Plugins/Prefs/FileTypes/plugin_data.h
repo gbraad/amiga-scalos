@@ -11,12 +11,12 @@
 #define PLUGIN_TYPE	PREFS
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	23
+#define	LIB_REVISION	24
 
 #define LIB_NAME        "FileTypes.prefsplugin"
 #define LIB_VERSTRING   "$VER: " LIB_NAME " " \
 			STR(LIB_VERSION) "." STR(LIB_REVISION)  \
-			" (11.05.2009)" \
+			" " __DATE__ \
 			COMPILER_STRING " ©2003" CURRENTYEAR \
 			" The Scalos Team"
 
