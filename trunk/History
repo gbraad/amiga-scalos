@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20091207	jl	- Bugfix: worked around a possible GCC bug that caused filetypes prefs to crash
+41.7	20090609	jl	- Upgraded libpng to 1.2.41 (68k).
+	20091207	jl	- Bugfix: worked around a possible GCC bug that caused filetypes prefs to crash
 				  on AmigaOS4 when trying to edit an attribute.
 	20091129	jl	- Bugfix: In pattern preferences, separate preview right of listview was broken.
 	20091128	jl	- Improvement: eliminated separate Rename.module for rename-in-place.
