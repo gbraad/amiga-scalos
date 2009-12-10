@@ -57,7 +57,7 @@ static void PM_Draw(struct PM_Window *pw, int x, int y)
 static void PM_DrawImage(struct PM_Window *pw, struct Image *img, int x, int y, struct DrawInfo *dri, ULONG state)
 {
 	d1(KPrintF("%s/%s/%ld: START  img=%08lx  x=%ld  y=%ld  state=%ld  dri=%08lx\n", __FILE__, __FUNC__, __LINE__, img, x, y, state, dri));
-	PM_RectFill(pw, x, y, x+20, y+20);
+//	  PM_RectFill(pw, x, y, x+20, y+20);
 	DrawImageState(pw->RPort, img, x, y, state, dri);
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
