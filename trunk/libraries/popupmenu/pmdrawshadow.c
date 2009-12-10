@@ -4,6 +4,9 @@
 // Copyright (C) 1996 - 2002 Henrik Isaksson
 // All Rights Reserved.
 //
+// $Date$
+// $Revision$
+//
 
 #include <graphics/view.h>
 #include <graphics/rastport.h>

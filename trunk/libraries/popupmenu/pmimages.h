@@ -1,3 +1,7 @@
+// pmimages.h
+//
+// $Date$
+// $Revision$
 
 enum {
 	PMIMG_SUBMENU,

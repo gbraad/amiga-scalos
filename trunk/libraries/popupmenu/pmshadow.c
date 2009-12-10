@@ -6,6 +6,9 @@
 // Copyright (C)2000 Henrik Isaksson <henrik@boing.nu>
 // All Rights Reserved.
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 #include "pmshadow.h"

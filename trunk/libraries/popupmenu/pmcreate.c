@@ -4,6 +4,9 @@
 //
 // Menu creation/disposal & id list functions
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 

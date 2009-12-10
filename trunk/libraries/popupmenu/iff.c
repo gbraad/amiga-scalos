@@ -1,4 +1,7 @@
-
+// iff.c
+//
+// $Date$
+// $Revision$
 
 /* Standard module for reading/writing simple IFF files */
 

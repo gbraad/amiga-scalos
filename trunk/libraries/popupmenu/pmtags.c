@@ -4,6 +4,9 @@
 //
 // Get/Set Attrs functions
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 

@@ -1,3 +1,8 @@
+// pmprefs.c
+//
+// $Date$
+// $Revision$
+
 #include <dos/dos.h>
 #include <proto/dos.h>
 #include <exec/exec.h>

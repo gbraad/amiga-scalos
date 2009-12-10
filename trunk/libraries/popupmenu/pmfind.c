@@ -4,6 +4,9 @@
 // Copyright ©1996 - 2002 Henrik Isaksson
 // All Rights Reserved.
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 

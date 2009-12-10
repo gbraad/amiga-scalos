@@ -2,6 +2,9 @@
 // Popup Menu Images
 // ©1996-1997 Henrik Isaksson
 //
+// $Date$
+// $Revision$
+//
 
 #include <exec/types.h>
 #include <intuition/intuition.h>
@@ -107,14 +110,22 @@ UWORD PM_Image_Draw(struct PM_Window *w, ULONG type, WORD l, struct DrawInfo *dr
 #endif /* !defined(__SASC) */
     	struct PM_Root *p = w->p;
 #endif
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
-	if(p->MenuImages[type]) {
+	if(p->MenuImages[type])
+		{
 		int y = item->Top + item->Height/2 - p->MenuImages[type]->Height/2;
 		if(l < 0)
 			l += item->Left + item->Width - p->MenuImages[type]->Width;
+
+		d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 		DrawImageState(w->RPort, p->MenuImages[type], l, y, state, dri);
+
+		d1(KPrintF("%s/%s/%ld: END(%ld)\n", __FILE__, __FUNC__, __LINE__, p->MenuImages[type]->Width));
 		return (UWORD) p->MenuImages[type]->Width;
-	}
+		}
+
+	d1(KPrintF("%s/%s/%ld: END(0)\n", __FILE__, __FUNC__, __LINE__));
 	return 0;
 }
 
