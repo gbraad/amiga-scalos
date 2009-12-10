@@ -6,6 +6,9 @@
 // Copyright ©2000 Henrik Isaksson <henrik@boing.nu>
 // All Rights Reserved.
 //
+// $Date$
+// $Revision$
+//
 
 #ifndef PM_TOPOGRAPHY_H
 #define PM_TOPOGRAPHY_H

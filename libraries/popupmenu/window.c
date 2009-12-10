@@ -2,6 +2,9 @@
 // Popup Menu Window funcs
 // ©1996-2002 Henrik Isaksson
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 
@@ -200,8 +203,10 @@ BOOL PM_OpenWindow(struct PM_Window *pw, int left, int top, int width, int heigh
 #endif /* WA_FrontWindow */
                 TAG_DONE);
 
-	if(pw->Wnd) {
+	if(pw->Wnd)
+		{
 		pw->RPort = pw->Wnd->RPort;
+		d1(KPrintF("%s/%s/%ld: pw=%08lx  RPort=%08lx\n", __FILE__, __FUNC__, __LINE__, pw, pw->RPort));
 
 		/* Transparency/background image */
 		PM_TransparencyBfr(pw);
@@ -210,10 +215,12 @@ BOOL PM_OpenWindow(struct PM_Window *pw, int left, int top, int width, int heigh
 		PM_OffScreenBfr(pw);
 
 		return TRUE;
-	} else {
+		}
+	else 	
+		{
         	DisplayBeep(NULL);
 		return FALSE;
-	}
+		}
 }
 
 //

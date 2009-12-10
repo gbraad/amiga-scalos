@@ -1,7 +1,11 @@
+// pmpriv.h
 //
 // Popup Menu
 // ©1996-2002 Henrik Isaksson
 // Private definitons
+//
+// $Date$
+// $Revision$
 //
 
 #ifndef PMPRIV_H

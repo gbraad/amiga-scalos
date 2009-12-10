@@ -3,6 +3,9 @@
 //
 // OS independent exec/types.h equivalent
 //
+// $Date$
+// $Revision$
+//
 
 #ifndef PM_TYPES_H
 #define PM_TYPES_H

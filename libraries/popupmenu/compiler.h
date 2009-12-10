@@ -5,6 +5,9 @@
 **
 **      (C) Copyright 1997-98 Andreas R. Kleinert
 **      All Rights Reserved.
+**
+** $Date$
+** $Revision$
 */
 
 #ifndef COMPILER_H

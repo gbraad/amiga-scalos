@@ -6,6 +6,9 @@
 // Copyright (C)1996-2001 Henrik Isaksson <henrik@boing.nu>
 // All Rights Reserved.
 //
+// $Date$
+// $Revision$
+//
 
 #ifdef _M68020
 #ifdef _M68030

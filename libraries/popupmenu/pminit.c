@@ -4,6 +4,9 @@
 //
 // Library init & cleanup
 //
+// $Date$
+// $Revision$
+//
 
 #define INIT 1
 

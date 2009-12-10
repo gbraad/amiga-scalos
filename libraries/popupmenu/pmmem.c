@@ -1,6 +1,9 @@
 //
 // pmmem.h
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 #include "pmmem.h"

@@ -1,4 +1,4 @@
-// IconObject-aos4.c
+// popupmenu-aos4.c
 // $Date$
 // $Revision$
 

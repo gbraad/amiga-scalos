@@ -3,6 +3,9 @@
 //
 // Operating System Independent Memory Management
 //
+// $Date$
+// $Revision$
+//
 
 #ifndef PM_MEM_H
 #define PM_MEM_H

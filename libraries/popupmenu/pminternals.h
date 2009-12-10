@@ -13,6 +13,9 @@
 //  *WARNING*
 //
 //  Everything in this file is subject to change.
+//
+// $Date$
+// $Revision$
 */
 
 #ifndef LIBRARIES_PMINTERNALS_H

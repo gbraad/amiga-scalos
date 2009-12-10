@@ -4,6 +4,9 @@
 //
 // Graphic rendering routines
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 
@@ -15,42 +18,48 @@ void PM_DrawBg(struct PM_Window *pw, int x, int y, int xb, int yb)
 {
 	int xa = x, ya = y;
 
-	if(pw->bg.BgArray) {
+	if(pw->bg.BgArray)
+		{
 		WritePixelArray(pw->bg.BgArray, x, y,
 			pw->Width*3, pw->RPort, xa, ya,
 			xb-xa, yb-ya, RECTFMT_RGB);
 
-	} else {
+		}
+	else
+		{
 		SetAPen(pw->RPort, BGPEN(pw->p));
 		SetDrMd(pw->RPort, JAM1);
 		RectFill(pw->RPort, xa, ya, xb, yb);
-	}
+		}
 }
 
 void PM_RectFill(struct PM_Window *pw, int xa, int ya, int xb, int yb)
 {
-    SetDrMd(pw->RPort, JAM1);
-    RectFill(pw->RPort, xa, ya, xb, yb);
+	SetDrMd(pw->RPort, JAM1);
+	RectFill(pw->RPort, xa, ya, xb, yb);
 }
 
-void PM_Move(struct PM_Window *pw, int x, int y)
+static void PM_Move(struct PM_Window *pw, int x, int y)
 {
-    Move(pw->RPort, x, y);
+	Move(pw->RPort, x, y);
 }
 
-void PM_Pixel(struct PM_Window *pw, int x, int y)
+static void PM_Pixel(struct PM_Window *pw, int x, int y)
 {
-    WritePixel(pw->RPort, x, y);
+	WritePixel(pw->RPort, x, y);
 }
 
-void PM_Draw(struct PM_Window *pw, int x, int y)
+static void PM_Draw(struct PM_Window *pw, int x, int y)
 {
-    Draw(pw->RPort, x, y);
+	Draw(pw->RPort, x, y);
 }
 
-void PM_DrawImage(struct PM_Window *pw, struct Image *img, int x, int y, struct DrawInfo *dri, ULONG state)
+static void PM_DrawImage(struct PM_Window *pw, struct Image *img, int x, int y, struct DrawInfo *dri, ULONG state)
 {
-    DrawImageState(pw->RPort, img, x, y, state, dri);
+	d1(KPrintF("%s/%s/%ld: START  img=%08lx  x=%ld  y=%ld  state=%ld  dri=%08lx\n", __FILE__, __FUNC__, __LINE__, img, x, y, state, dri));
+	PM_RectFill(pw, x, y, x+20, y+20);
+	DrawImageState(pw->RPort, img, x, y, state, dri);
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //
@@ -73,11 +82,14 @@ void PM_Ghost(struct PM_Window *w, int x, int y, int xb, int yb, int pen)
 
 void ColourBox(struct PM_Window *w, int xa, int ya, int xb, int yb, int pen, int shine, int shade, BOOL selected)
 {
-    if(selected) {
-        PM_DrawBox(w, xa, ya, xb, yb, shade, shine);
-    } else {
-        PM_DrawBox(w, xa, ya, xb, yb, shine, shade);
-    }
+	if(selected)
+		{
+		PM_DrawBox(w, xa, ya, xb, yb, shade, shine);
+		}
+	else
+		{
+		PM_DrawBox(w, xa, ya, xb, yb, shine, shade);
+		}
 
     SetAPen(w->RPort, pen);
     PM_RectFill(w, xa+1, ya+1, xb-1, yb-1);
@@ -162,28 +174,34 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 		PM_DrawBg(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height);
 		}
 
-	if(pm->Flags&NPM_GROUP) {
+	if(pm->Flags&NPM_GROUP)
+		{
 		struct PopupMenu *pmp=pm->SubGroup.Sub;
 
-		if(pmp) do {
+		if(pmp)
+			do {
 			PM_NewDrawItem(a, pmp, Selected, Disabled);
 			pmp=pmp->Next;
-		} while(pmp);
+			} while(pmp);
 		return 0;
-	}
+		}
 
 
-	if(pm->Flags&NPM_HBAR_BIT) {
+	if(pm->Flags&NPM_HBAR_BIT)
+		{
 		PM_ShortSeparator(a, pm);
 		return TRUE;
-	} else if(pm->Flags&NPM_WIDE_BAR_BIT) {
+		}
+	else if(pm->Flags&NPM_WIDE_BAR_BIT)
+		{
 		PM_WideSeparator(a, pm);
 		return TRUE;
-	}
+		}
 
-	if(!Selected) { // Use RastPort Pen
+	if(!Selected)
+		{ // Use RastPort Pen
 		PM_DI_SetTextPen(a, pm);
-	}
+		}
 
 	/* Text style and font */
 
@@ -200,155 +218,210 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 
         xoff=PM_RenderCheckMark(a, pm, Selected);
 
-	if(pm->Flags&NPM_COLOURBOX) {
-		if(pm->Flags&NPM_CHECKIT) {
-			if(pm->CommKey) {
+	if(pm->Flags&NPM_COLOURBOX)
+		{
+		if(pm->Flags&NPM_CHECKIT)
+			{
+			if(pm->CommKey)
+				{
 				int x1=(a->Width-3*a->RPort->Font->tf_XSize-PM_Prefs->pmp_XSpace-a->p->BorderWidth)-a->RPort->Font->tf_XSize;
 
 				x1-=a->RPort->Font->tf_XSize*3+PM_Prefs->pmp_Intermediate;
 
 				ColourBox(a, x1, pm->Top+PM_Prefs->pmp_YSpace+1, x1+3*a->RPort->Font->tf_XSize, pm->Top+pm->Height-PM_Prefs->pmp_YSpace-1, pm->CBox, SHINE(a->p), SHADOW(a->p), Selected);
-			} else {
+				}
+			else
+				{
 				int x1 = (pm->Width + pm->Left - 3*a->RPort->Font->tf_XSize - PM_Prefs->pmp_XSpace - a->p->BorderWidth);
 				ColourBox(a, x1, pm->Top + PM_Prefs->pmp_YSpace + 1,
 				x1 + 3*a->RPort->Font->tf_XSize, pm->Top + pm->Height - PM_Prefs->pmp_YSpace - 1,
 				pm->CBox, SHINE(a->p), SHADOW(a->p), Selected);
+				}
 			}
-		} else {
+		else
+			{
 			ColourBox(a, pm->Left+PM_Prefs->pmp_XSpace, pm->Top+PM_Prefs->pmp_YSpace+1, pm->Left+3*a->RPort->Font->tf_XSize, pm->Top+pm->Height-PM_Prefs->pmp_YSpace-1, pm->CBox, SHINE(a->p), SHADOW(a->p), Selected);
 			xoff+=PM_Prefs->pmp_XSpace+3*a->RPort->Font->tf_XSize;
+			}
 		}
-	}
 
-	if(!a->p->PullDown) {
-		if(pm->SubGroup.Sub) {
+	if(!a->p->PullDown)
+		{
+		if(pm->SubGroup.Sub)
+			{
 			PM_Image_Draw(a,
 				PMIMG_SUBMENU,
 				-PM_Prefs->pmp_XSpace,
 				a->p->DrawInfo,
 				Selected?IDS_NORMAL:IDS_INACTIVENORMAL,
 				pm);
+			}
 		}
-	}
 
-        if(Selected) {
-            if(pm->Flags&NPM_ISIMAGE) {
-		    if(pm->ImageUnion.Images[1]) {
-                    if(pm->Flags&NPM_CENTERED) {
-                    PM_DrawImage(a, pm->ImageUnion.Images[1],
-                        pm->Left+PM_Prefs->pmp_XSpace+ (pm->Width/2-pm->ImageUnion.Images[1]->Width/2)>xoff?pm->Width/2-pm->ImageUnion.Images[1]->Width/2:xoff,
-                        YPosImage_(a, pm, pm->ImageUnion.Images[1]), a->p->DrawInfo, IDS_SELECTED);
-                } else {
-                    PM_DrawImage(a, pm->ImageUnion.Images[1], pm->Left+PM_Prefs->pmp_XSpace+xoff+a->IconColumn, YPosImage_(a, pm, pm->ImageUnion.Images[1]), a->p->DrawInfo, IDS_SELECTED);
-                }
-            }
-        } else {
-            if(pm->ImageUnion.Images[1]) {
-                WORD ixoff;
-                ixoff=a->IconColumn/2-pm->ImageUnion.Images[1]->Width/2;
-                        PM_DrawImage(a, pm->ImageUnion.Images[1], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[1]), a->p->DrawInfo, IDS_SELECTED);
-            }
-        }
-        } else {
-            if(pm->Flags&NPM_ISIMAGE) {
-                    if(pm->ImageUnion.Images[0]) {
-                    if(pm->Flags&NPM_CENTERED) {
-                    PM_DrawImage(a, pm->ImageUnion.Images[0],
-                        pm->Left+PM_Prefs->pmp_XSpace+ (pm->Width/2-pm->ImageUnion.Images[0]->Width/2)>xoff?pm->Width/2-pm->ImageUnion.Images[0]->Width/2:xoff,
-                        YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_SELECTED);
-                } else {
-                    PM_DrawImage(a, pm->ImageUnion.Images[0], pm->Left+PM_Prefs->pmp_XSpace+xoff+a->IconColumn, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
-                }
-            }
-        } else {
-            if(pm->ImageUnion.Images[0]) {
-                WORD ixoff;
-                ixoff=a->IconColumn/2-pm->ImageUnion.Images[0]->Width/2;
-                PM_DrawImage(a, pm->ImageUnion.Images[0], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
-            }
-        }
-        }
+	if(Selected)
+		{
+		if(pm->Flags&NPM_ISIMAGE)
+			{
+			if(pm->ImageUnion.Images[1])
+				{
+				if(pm->Flags&NPM_CENTERED)
+					{
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+					PM_DrawImage(a, pm->ImageUnion.Images[1],
+						pm->Left+PM_Prefs->pmp_XSpace+ (pm->Width/2-pm->ImageUnion.Images[1]->Width/2)>xoff?pm->Width/2-pm->ImageUnion.Images[1]->Width/2:xoff,
+						YPosImage_(a, pm, pm->ImageUnion.Images[1]), a->p->DrawInfo, IDS_SELECTED);
+					}
+				else
+					{
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+					PM_DrawImage(a, pm->ImageUnion.Images[1], pm->Left+PM_Prefs->pmp_XSpace+xoff+a->IconColumn, YPosImage_(a, pm, pm->ImageUnion.Images[1]), a->p->DrawInfo, IDS_SELECTED);
+					}
+				}
+			}
+		else
+			{
+			if(pm->ImageUnion.Images[1])
+				{
+				WORD ixoff;
+				ixoff=a->IconColumn/2-pm->ImageUnion.Images[1]->Width/2;
+				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+				PM_DrawImage(a, pm->ImageUnion.Images[1], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[1]), a->p->DrawInfo, IDS_SELECTED);
+				}
+			}
+		}
+	else
+		{
+		if(pm->Flags&NPM_ISIMAGE)
+			{
+			if(pm->ImageUnion.Images[0])
+				{
+				if(pm->Flags&NPM_CENTERED)
+					{
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+					PM_DrawImage(a, pm->ImageUnion.Images[0],
+						pm->Left+PM_Prefs->pmp_XSpace+ (pm->Width/2-pm->ImageUnion.Images[0]->Width/2)>xoff?pm->Width/2-pm->ImageUnion.Images[0]->Width/2:xoff,
+						YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_SELECTED);
+					}
+				else
+					{
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+					PM_DrawImage(a, pm->ImageUnion.Images[0], pm->Left+PM_Prefs->pmp_XSpace+xoff+a->IconColumn, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
+					}
+				}
+			}
+		else
+			{
+			if(pm->ImageUnion.Images[0])
+				{
+				WORD ixoff;
+				ixoff=a->IconColumn/2-pm->ImageUnion.Images[0]->Width/2;
+				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+//				  PM_DrawImage(a, pm->ImageUnion.Images[0], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
+				PM_DrawImage(a, pm->ImageUnion.Images[1], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
+				}
+			}
+		}
 
-	if(a->IconColumn) {
+	if(a->IconColumn)
+		{
 		xoff+=a->IconColumn+PM_Prefs->pmp_Intermediate;
-	}
+		}
 
-        if(pm->Flags&NPM_CENTERED) {
+	if(pm->Flags&NPM_CENTERED)
+		{
                 int offs, tw;
 
                 tw=TextLength(a->RPort,pmtitle,strlen(pmtitle));
                 offs=pm->Width/2-tw/2;
 
                 if(xoff<offs) xoff=offs;
-        }
+		}
 
-    if((pm->Flags&NPM_DISABLED || Disabled) && !PM_Prefs->pmp_SeparatorBar) {
+	if((pm->Flags&NPM_DISABLED || Disabled) && !PM_Prefs->pmp_SeparatorBar)
+		{
                 SetAPen(a->RPort, BGSHINE(a->p));
                 PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
                 if(pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
-        } else if(pm->Flags&NPM_SHADOWED) {
+		}
+	else if(pm->Flags&NPM_SHADOWED)
+		{
                 SetAPen(a->RPort, TEXTSHADOW(a->p));
                 PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
                 if(pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
-        } else if(pm->Flags&NPM_OUTLINED) {
-        if(pmtitle) {
-                    SetAPen(a->RPort, TEXTOUTLINE(a->p));
-                    PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)-1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)-1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)+1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)+1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff+1, YPosText(a, pm));
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff-1, YPosText(a, pm));
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff, YPosText(a, pm)+1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff, YPosText(a, pm)-1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-        }
-        } else if(pm->Flags&NPM_EMBOSSED) {
-        if(pmtitle) {
-                    SetAPen(a->RPort, SHINE(a->p));
-                    PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)-1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff-1, YPosText(a, pm));
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff, YPosText(a, pm)-1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    SetAPen(a->RPort, SHADOW(a->p));
-                    PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff+1, YPosText(a, pm));
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-                    PM_Move(a, pm->Left+xoff, YPosText(a, pm)+1);
-                    Text(a->RPort, pmtitle, strlen(pmtitle));
-        }
-        }
+		}
+	else if(pm->Flags&NPM_OUTLINED)
+		{
+		if(pmtitle)
+			{
+			SetAPen(a->RPort, TEXTOUTLINE(a->p));
+			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)-1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)-1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)+1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)+1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff+1, YPosText(a, pm));
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm));
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff, YPosText(a, pm)+1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff, YPosText(a, pm)-1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			}
+		}
+	else if(pm->Flags&NPM_EMBOSSED)
+		{
+		if(pmtitle)
+			{
+			SetAPen(a->RPort, SHINE(a->p));
+			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)-1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm));
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff, YPosText(a, pm)-1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			SetAPen(a->RPort, SHADOW(a->p));
+			PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff+1, YPosText(a, pm));
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			PM_Move(a, pm->Left+xoff, YPosText(a, pm)+1);
+			Text(a->RPort, pmtitle, strlen(pmtitle));
+			}
+		}
 
-        if(!Selected) {
+	if(!Selected)
+		{
                 PM_DI_SetTextPen(a, pm);
-        } else {
-        SetAPen(a->RPort, FTPEN(a->p));
-        }
+		}
+	else
+		{
+		SetAPen(a->RPort, FTPEN(a->p));
+		}
 
-        if(pm->Flags&NPM_ISSELECTED) {
-                if(pm->Flags&NPM_CHECKIT) {
-                    if((!(pm->Flags&NPM_CHECKED) && pm->Flags&NPM_INITIAL_CHECKED) ||
-                       ((pm->Flags&NPM_CHECKED) && !(pm->Flags&NPM_INITIAL_CHECKED))) {
-                        SetAPen(a->RPort, HILITE(a->p));
-                    }
-                } else {
-                    SetAPen(a->RPort, HILITE(a->p));
-                }
-        }
+	if(pm->Flags&NPM_ISSELECTED)
+		{
+		if(pm->Flags&NPM_CHECKIT)
+			{
+			if((!(pm->Flags&NPM_CHECKED) && pm->Flags&NPM_INITIAL_CHECKED) ||
+				((pm->Flags&NPM_CHECKED) && !(pm->Flags&NPM_INITIAL_CHECKED)))
+				{
+				SetAPen(a->RPort, HILITE(a->p));
+				}
+			}
+		else
+			{
+			SetAPen(a->RPort, HILITE(a->p));
+			}
+		}
 
-        if(pm->CommKey) {
+	if(pm->CommKey)
+		{
                 char x[2];
 
 		PM_Image_Draw(a,
@@ -361,29 +434,34 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
                 x[0]=pm->CommKey;
                 PM_Move(a, XPosLastCol(a), YPosText(a,pm));
                 Text(a->RPort, x, 1);
-        }
+		}
 
         PM_Move(a, pm->Left+xoff, YPosText(a, pm));
 	if((pm->Flags&NPM_DISABLED || Disabled) && !PM_Prefs->pmp_SeparatorBar) SetAPen(a->RPort, BGSHADOW(a->p));   // Set text colour to 'bgminus' if disabled
         if(pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
 
-    if(PM_Prefs->pmp_SelItemBorder && Selected) {
-        if(PM_Prefs->pmp_MenuBorder==MAGIC_FRAME) {
-            if(PM_Prefs->pmp_SelItemBorder==1) /* Raised */
-                PM_DrawBoxMM2(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHINE(a->p), SHADOW(a->p), HALF(a->p));
-            else
-                PM_DrawBoxMM2(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p), SHINE(a->p), HALF(a->p));
-        } else {
-            if(PM_Prefs->pmp_SelItemBorder==1) /* Raised */
-                PM_DrawBox(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHINE(a->p), SHADOW(a->p));
-            else
-                PM_DrawBox(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p), SHINE(a->p));
-        }
-    }
+	if(PM_Prefs->pmp_SelItemBorder && Selected)
+		{
+		if(PM_Prefs->pmp_MenuBorder==MAGIC_FRAME)
+			{
+			if(PM_Prefs->pmp_SelItemBorder==1) /* Raised */
+				PM_DrawBoxMM2(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHINE(a->p), SHADOW(a->p), HALF(a->p));
+			else
+				PM_DrawBoxMM2(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p), SHINE(a->p), HALF(a->p));
+			}
+		else
+			{
+			if(PM_Prefs->pmp_SelItemBorder==1) /* Raised */
+				PM_DrawBox(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHINE(a->p), SHADOW(a->p));
+			else
+				PM_DrawBox(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p), SHINE(a->p));
+			}
+		}
 
-    if(pm->Flags&NPM_DISABLED && PM_Prefs->pmp_SeparatorBar) {
-        PM_Ghost(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p));
-    }
+	if(pm->Flags&NPM_DISABLED && PM_Prefs->pmp_SeparatorBar)
+		{
+		PM_Ghost(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p));
+		}
 
         return 0;
 }

@@ -4,6 +4,9 @@
 //
 // User Input & timer
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 #include "pminput.h"

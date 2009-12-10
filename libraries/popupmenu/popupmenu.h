@@ -7,6 +7,9 @@
 //	©1996-2000 Henrik Isaksson
 //	All Rights Reserved.
 //
+// $Date$
+// $Revision$
+//
 //	Changes:
 //
 //	9.00	New PopupMenu structure.

@@ -4,6 +4,9 @@
 //
 // Menu Item Layout
 //
+// $Date$
+// $Revision$
+//
 
 #include "pmpriv.h"
 
@@ -11,29 +14,46 @@ UWORD PM_ItemHeight(struct PM_Window *a, struct PopupMenu *pm)
 {
         UWORD r,fonty=a->p->MenuFont->tf_YSize;
 
-	if(pm->Flags&NPM_HBAR_BIT) {
+	if(pm->Flags&NPM_HBAR_BIT)
+		{
 		r=(UWORD)(PM_Prefs->pmp_YSpace*2+5);
 		pm->Flags|=NPM_FIXEDSIZE;
-	} else if(pm->Flags&NPM_WIDE_BAR_BIT) {
+		}
+	else if(pm->Flags&NPM_WIDE_BAR_BIT)
+		{
 		r=(UWORD)(PM_Prefs->pmp_YOffset*2+5);
 		pm->Flags|=NPM_FIXEDSIZE;
-	} else {
+		}
+	else
+		{
                 r=(UWORD)(fonty+1);
 
-		if(pm->ImageUnion.Images[0]) { if(pm->ImageUnion.Images[0]->Height>r) r=(UWORD)pm->ImageUnion.Images[0]->Height+1; }
-                if(pm->ImageUnion.Images[1]) { if(pm->ImageUnion.Images[1]->Height>r) r=(UWORD)pm->ImageUnion.Images[1]->Height+1; }
+		if (pm->ImageUnion.Images[0])
+			{
+			if (pm->ImageUnion.Images[0]->Height>r)
+				r=(UWORD)pm->ImageUnion.Images[0]->Height+1;
+			}
+		if (pm->ImageUnion.Images[1])
+			{
+			if(pm->ImageUnion.Images[1]->Height>r)
+				r=(UWORD)pm->ImageUnion.Images[1]->Height+1;
+			}
 
-		if(pm->SubGroup.Sub) {
+		if(pm->SubGroup.Sub)
+			{
 			UBYTE x=PM_Image_Height(a->p, PMIMG_SUBMENU, pm);
 			if(x>r) r=x;
-                } else if(pm->Flags&NPM_CHECKIT) {
+			}
+		else if(pm->Flags&NPM_CHECKIT)
+			{
 			UBYTE x=PM_Image_Height(a->p, pm->Exclude?PMIMG_EXCLUDE:PMIMG_CHECKMARK, pm);
 			if(x>r) r=x;
-                }
-		if(pm->CommKey!=0) {
+			}
+		if(pm->CommKey!=0)
+			{
 			UBYTE x=PM_Image_Height(a->p, PMIMG_AMIGAKEY, pm);
 			if(x>r) r=x;
-		}
+			}
 
 		r+=(UWORD)PM_Prefs->pmp_YSpace*2; // *2
 	}
@@ -50,65 +70,92 @@ UWORD PM_ItemWidth(struct PM_Window *a, struct PopupMenu *pm)
         CopyMem(a->p->RootWnd->RPort, &tmprp, sizeof(struct RastPort));
         tmprp.Font=a->p->MenuFont;
 
-	if(pm->TitleUnion.Title) {
-        if(GET_TXTMODE(pm)==NPX_TXTBOOPSI) {
-        } else {
-	    STRPTR title=pm->TitleUnion.Title;
+	if(pm->TitleUnion.Title)
+		{
+		if(GET_TXTMODE(pm)==NPX_TXTBOOPSI)
+			{
+			}
+		else
+			{
+			STRPTR title=pm->TitleUnion.Title;
 
-	    if(GET_TXTMODE(pm)==NPX_TXTLOCALE) title=(STRPTR)CallHook(a->p->LocaleHook, (Object *)pm, pm->TitleUnion.TitleID, 123);
+			if(GET_TXTMODE(pm)==NPX_TXTLOCALE)
+				title=(STRPTR)CallHook(a->p->LocaleHook, (Object *)pm, pm->TitleUnion.TitleID, 123);
 
-            if(title) tmp=TextLength(&tmprp,title,strlen(title));
-        }
-    }
+			if(title)
+				tmp=TextLength(&tmprp,title,strlen(title));
+			}
+		}
 
-        if(pm->Flags&NPM_CHECKIT) {
+	if(pm->Flags&NPM_CHECKIT)
+		{
 		tmp+=PM_Image_Width(a->p, pm->Exclude?PMIMG_EXCLUDE:PMIMG_CHECKMARK, pm);
 		tmp+=PM_Prefs->pmp_Intermediate;
-        } else if(pm->SubGroup.Sub && (a->p->PullDown==0) && (pm->Layout==0)) {
+		}
+	else if(pm->SubGroup.Sub && (a->p->PullDown==0) && (pm->Layout==0))
+		{
 		tmp+=PM_Image_Width(a->p, PMIMG_SUBMENU, pm);
 		tmp+=PM_Prefs->pmp_Intermediate;
-        }
+		}
 
-        if(pm->CommKey!=0) {
+	if(pm->CommKey!=0)
+		{
 		tmp+=PM_Image_Width(a->p, PMIMG_AMIGAKEY, pm);
 		tmp+=PM_Prefs->pmp_Intermediate+fontx*4;
-        }
+		}
 
-    if(pm->Flags&NPM_ISIMAGE) {
-            if(pm->ImageUnion.Images[0]) img=pm->ImageUnion.Images[0]->Width;
-            if(pm->ImageUnion.Images[1]) if(pm->ImageUnion.Images[1]->Width>img) img=pm->ImageUnion.Images[1]->Width;
+	if(pm->Flags&NPM_ISIMAGE)
+		{
+		if(pm->ImageUnion.Images[0])
+			img=pm->ImageUnion.Images[0]->Width;
+		if(pm->ImageUnion.Images[1])
+			if(pm->ImageUnion.Images[1]->Width>img)
+				img=pm->ImageUnion.Images[1]->Width;
 
-            if(img>tmp) tmp=img;
-    } else {
-        struct Image *img=pm->ImageUnion.Images[0];
+		if(img>tmp)
+			tmp=img;
+		}
+	else
+		{
+		struct Image *img=pm->ImageUnion.Images[0];
 
-        // Hitta den största
+		// Hitta den största
 
-        if(!img) { img=pm->ImageUnion.Images[1]; }
-        else if(pm->ImageUnion.Images[1]) {
-            if(img->Width<pm->ImageUnion.Images[1]->Width) img=pm->ImageUnion.Images[1];
-        }
-        if(img) {
-                    tmp+=PM_Prefs->pmp_Intermediate;
+		if(!img)
+			{
+			img=pm->ImageUnion.Images[1];
+			}
+		else if(pm->ImageUnion.Images[1])
+			{
+			if(img->Width<pm->ImageUnion.Images[1]->Width)
+				img=pm->ImageUnion.Images[1];
+			}
+		if(img)
+			{
+			tmp+=PM_Prefs->pmp_Intermediate;
 
-                    icn=img->Width+PM_Prefs->pmp_Intermediate;
+			icn=img->Width+PM_Prefs->pmp_Intermediate;
 
-                if(icn>a->IconColumn) a->IconColumn=icn;
-            }
-    }
+			if(icn>a->IconColumn)
+				a->IconColumn=icn;
+			}
+		}
 
-    if(pm->Flags&NPM_COLOURBOX) {
-        if(!tmp) {  // If there's no other stuff in the item, no intermediate spacing is req'd
-            tmp+=fontx*3;
-            tmp-=PM_Prefs->pmp_XSpace+2;    // Must be like this for some unknow reason...
-        } else {
-            tmp+=PM_Prefs->pmp_Intermediate+fontx*3;
-        }
-    }
+	if(pm->Flags&NPM_COLOURBOX)
+		{
+		if(!tmp)
+			{  // If there's no other stuff in the item, no intermediate spacing is req'd
+			tmp+=fontx*3;
+			tmp-=PM_Prefs->pmp_XSpace+2;    // Must be like this for some unknow reason...
+			}
+		else
+			{
+			tmp+=PM_Prefs->pmp_Intermediate+fontx*3;
+			}
+		}
 
-    tmp+=PM_Prefs->pmp_XSpace*2;    // "Horizontal spacing"
-
-    tmp+=2;             // Item border
+	tmp+=PM_Prefs->pmp_XSpace*2;    // "Horizontal spacing"
+	tmp+=2;             // Item border
 
         return (UWORD)(tmp);
 }

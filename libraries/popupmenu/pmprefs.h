@@ -1,5 +1,9 @@
+// pmprefs.h
 //
 // Menu Prefs
+//
+// $Date$
+// $Revision$
 //
 
 #ifndef PM_PREFS_H
