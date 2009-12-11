@@ -1156,7 +1156,7 @@ static void LeaveOutIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 
 		UndoAddEvent(UNDO_Leaveout,
 			UNDOTAG_UndoMultiStep, undoStep,
-			UNDOTAG_IconNode, in,
+			UNDOTAG_IconName, GetIconName(in),
 			UNDOTAG_IconDirLock, DirLock,
 			UNDOTAG_IconPosX, NO_ICON_POSITION_SHORT,
 			UNDOTAG_IconPosY, NO_ICON_POSITION_SHORT,
@@ -1216,7 +1216,7 @@ static void PutAwayIconNode(struct internalScaWindowTask *iwt, struct ScaIconNod
 
 			UndoAddEvent(UNDO_PutAway,
 				UNDOTAG_UndoMultiStep, undoStep,
-				UNDOTAG_IconNode, in,
+				UNDOTAG_IconName, IconName,
 				UNDOTAG_IconDirLock, iconDirLock,
 				TAG_END);
 

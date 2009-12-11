@@ -1045,7 +1045,8 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 
 				UndoAddEvent(UNDO_Leaveout,
 					UNDOTAG_UndoMultiStep, undoStep,
-					UNDOTAG_WbArg, arg,
+					UNDOTAG_IconDirLock, arg->scarg_lock,
+					UNDOTAG_IconName, arg->scarg_name,
 					UNDOTAG_IconPosX, DrInfo->drin_x + arg->scarg_xpos,
 					UNDOTAG_IconPosY, DrInfo->drin_y + arg->scarg_ypos,
 					TAG_END);
@@ -1349,7 +1350,8 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 				UndoAddEvent(UNDO_PutAway,
 					UNDOTAG_UndoMultiStep, undoStep,
-					UNDOTAG_WbArg, DrInfo->drin_Arg,
+					UNDOTAG_IconDirLock, DrInfo->drin_Arg->scarg_lock,
+					UNDOTAG_IconName, DrInfo->drin_Arg->scarg_name,
 					TAG_END);
 				
 				PutAwayIcon(iwtSrc,

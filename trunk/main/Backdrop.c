@@ -494,7 +494,7 @@ struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WOR
 	struct DevProc *devproc;
 	BOOL IconAlreadyPresent = FALSE;
 
-	d1(KPrintF("%s/%s/%ld: iconName=<%s>  x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, iconName, PosX, PosY));
+	d1(KPrintF("%s/%s/%ld: START iconName=<%s>  x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, iconName, PosX, PosY));
 	debugLock_d1(iconDirLock);
 
 
@@ -515,6 +515,8 @@ struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WOR
 
 	ScalosUnLockIconList(iwtMain);
 
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	// Abort here if we already have a backdrop icon with same lock and name
 	if (IconAlreadyPresent)
 		{
@@ -522,13 +524,16 @@ struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WOR
 		return NULL;
 		}
 
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	// !! PosX and PosY have to be concatenated from 2 WORD into 1 LONG parameter !!
 
-	// add icon to root window
+	// add icon to desktop window
 	inMain = (struct ScaIconNode *) DoMethod(iwtMain->iwt_WindowTask.mt_MainObject,
 		SCCM_IconWin_AddIcon, 
 		SCCM_ADDICON_MAKEXY(PosX, PosY),
-		iconDirLock, iconName);
+		iconDirLock,
+		iconName);
 
 	d1(kprintf("%s/%s/%ld: iconName=<%> PosX=%ld  PosY=%ld  pos=%08lx\n", __FILE__, __FUNC__, __LINE__, iconName, PosX, PosY, (((UWORD) PosX) << 16) | ((UWORD) PosY)));
 
@@ -612,6 +617,8 @@ struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WOR
 	ScalosUnLockIconList(iwtMain);
 
 	FreeDeviceProc(devproc);
+
+	d1(kprintf("%s/%s/%ld: END  inMain=%08lx\n", __FILE__, __FUNC__, __LINE__, inMain));
 
 	return inMain;
 }
@@ -750,7 +757,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 	BPTR rootLock = (BPTR)NULL;
 	char *lp, *DirName = NULL;
 
-	d1(KPrintF("%s/%s/%ld: Icon=<%s>  Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, IconName, DirLock));
+	d1(KPrintF("%s/%s/%ld: START Icon=<%s>  Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, IconName, DirLock));
 	debugLock_d1(DirLock);
 
 	InitBackDropList(&bdl);
@@ -819,6 +826,8 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 			AddBackdropIcon(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
 				IconName, x, y);
 
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 			// Special handling for "view all" textwindows.
 			// here both object and icon are separate entries, which must be removed both!
 			if (!IsIwtViewByIcon(iwt) &&
@@ -838,6 +847,8 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
                                                 IconInfoName);
 					}
 				}
+
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 			// remove icon from owning drawer window
 			DoMethod(iwt->iwt_WindowTask.mt_MainObject,
@@ -898,7 +909,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 	if (DirName)
 		FreePathBuffer(DirName);
 
-	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------
@@ -1143,6 +1154,11 @@ BOOL BackdropWait(BPTR dirLock)
 	if (NULL == iwtMain)
 		{
 		d1(kprintf("%s/%s/%ld: iwtMain=%08lx\n", __FILE__, __FUNC__, __LINE__, iwtMain));
+		return Found;
+		}
+	if (BNULL == dirLock)
+		{
+		d1(kprintf("%s/%s/%ld: dirLock=0\n", __FILE__, __FUNC__, __LINE__));
 		return Found;
 		}
 

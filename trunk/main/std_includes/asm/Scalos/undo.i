@@ -70,6 +70,7 @@ UNDOTAG_OldWindowVirtY	equ	UNDOTAG_TagBase+29	; LONG
 UNDOTAG_NewWindowVirtX	equ	UNDOTAG_TagBase+30	; LONG
 UNDOTAG_NewWindowVirtY	equ	UNDOTAG_TagBase+31	; LONG
 UNDOTAG_CreateIcon	equ	UNDOTAG_TagBase+32	; LONG
+UNDOTAG_IconName	equ	UNDOTAG_TagBase+33	; CONST_STRPTR
 
 ;enum ScalosUndoCleanupMode
 CLEANUP_Default		equ	0
