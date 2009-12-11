@@ -10,12 +10,6 @@
 **
 *************************************************************************
 **
-** @(#) $Id$
-*/
-
-#ifdef SQLITE_ENABLE_ATOMIC_WRITE
-
-/*
 ** This file implements a special kind of sqlite3_file object used
 ** by SQLite to create journal files if the atomic-write optimization
 ** is enabled.
@@ -30,7 +24,7 @@
 **      buffer, or
 **   2) The sqlite3JournalCreate() function is called.
 */
-
+#ifdef SQLITE_ENABLE_ATOMIC_WRITE
 #include "sqliteInt.h"
 
 

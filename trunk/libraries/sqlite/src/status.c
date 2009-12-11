@@ -12,8 +12,6 @@
 **
 ** This module implements the sqlite3_status() interface and related
 ** functionality.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 

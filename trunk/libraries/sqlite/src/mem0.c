@@ -15,8 +15,6 @@
 ** here always fail.  SQLite will not operate with these drivers.  These
 ** are merely placeholders.  Real drivers must be substituted using
 ** sqlite3_config() before SQLite will operate.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 

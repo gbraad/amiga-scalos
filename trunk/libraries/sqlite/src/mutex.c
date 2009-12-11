@@ -12,9 +12,6 @@
 ** This file contains the C functions that implement mutexes.
 **
 ** This file contains code that is common across all mutex implementations.
-
-**
-** $Id$
 */
 #include "sqliteInt.h"
 

@@ -11,8 +11,6 @@
 *************************************************************************
 **
 ** Memory allocation functions used throughout sqlite.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 #include <stdarg.h>

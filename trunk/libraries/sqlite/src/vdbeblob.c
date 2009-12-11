@@ -11,8 +11,6 @@
 *************************************************************************
 **
 ** This file contains code used to implement incremental BLOB I/O.
-**
-** $Id$
 */
 
 #include "sqliteInt.h"

@@ -22,8 +22,6 @@
 **
 ** This version of the memory allocation subsystem is included
 ** in the build only if SQLITE_ENABLE_MEMSYS3 is defined.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 

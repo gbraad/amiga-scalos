@@ -84,6 +84,7 @@ OBJS	+=	$(OBJDIR)/alter.o \
                 $(OBJDIR)/vdbeaux.o \
                 $(OBJDIR)/vdbeblob.o \
                 $(OBJDIR)/vdbemem.o \
+		$(OBJDIR)/vdbetrace.o \
 	 	$(OBJDIR)/vtab.o \
          	$(OBJDIR)/walker.o \
          	$(OBJDIR)/where.o \

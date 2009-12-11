@@ -10,8 +10,6 @@
 **
 *************************************************************************
 ** This file contains code used to help implement virtual tables.
-**
-** $Id$
 */
 #ifndef SQLITE_OMIT_VIRTUALTABLE
 #include "sqliteInt.h"

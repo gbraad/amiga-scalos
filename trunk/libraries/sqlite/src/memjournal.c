@@ -13,8 +13,6 @@
 ** This file contains code use to implement an in-memory rollback journal.
 ** The in-memory rollback journal is used to journal transactions for
 ** ":memory:" databases and when the journal_mode=MEMORY pragma is used.
-**
-** @(#) $Id$
 */
 #include "sqliteInt.h"
 

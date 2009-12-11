@@ -59,8 +59,6 @@
 **
 ** There is an added cost of O(N) when switching between TEST and
 ** SMALLEST primitives.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 
