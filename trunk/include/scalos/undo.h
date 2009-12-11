@@ -72,6 +72,7 @@ enum ScalosUndoTags
 	UNDOTAG_NewWindowVirtX,		// LONG
 	UNDOTAG_NewWindowVirtY,		// LONG
 	UNDOTAG_CreateIcon,		// LONG
+	UNDOTAG_IconName,		// CONST_STRPTR
 	};
 
 enum ScalosUndoCleanupMode
