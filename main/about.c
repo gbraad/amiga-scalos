@@ -647,12 +647,12 @@ static void ScaReboot(struct Window *win_Parent)
 			break;
 			}
 		}
-#endif /* __MORPHOS__ */
-
+#else /* __MORPHOS__ */
 	if (UseRequest(win_Parent, MSGID_SUREREBOOTNAME, MSGID_OKCANCELNAME, NULL))
 		{
 		ColdReboot();
 		}
+#endif /* __MORPHOS__ */
 }
 
 
