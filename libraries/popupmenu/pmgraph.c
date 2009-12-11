@@ -316,8 +316,7 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 				WORD ixoff;
 				ixoff=a->IconColumn/2-pm->ImageUnion.Images[0]->Width/2;
 				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-//				  PM_DrawImage(a, pm->ImageUnion.Images[0], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
-				PM_DrawImage(a, pm->ImageUnion.Images[1], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
+				PM_DrawImage(a, pm->ImageUnion.Images[0], pm->Left+PM_Prefs->pmp_XSpace+ixoff, YPosImage_(a, pm, pm->ImageUnion.Images[0]), a->p->DrawInfo, IDS_NORMAL);
 				}
 			}
 		}
