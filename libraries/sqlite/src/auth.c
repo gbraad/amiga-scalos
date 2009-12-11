@@ -13,8 +13,6 @@
 ** API.  This facility is an optional feature of the library.  Embedded
 ** systems that do not need this facility may omit it by recompiling
 ** the library with -DSQLITE_OMIT_AUTHORIZATION=1
-**
-** $Id$
 */
 #include "sqliteInt.h"
 

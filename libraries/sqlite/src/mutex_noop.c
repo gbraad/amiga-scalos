@@ -24,8 +24,6 @@
 ** If compiled with SQLITE_DEBUG, then additional logic is inserted
 ** that does error checking on mutexes to make sure they are being
 ** called correctly.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 

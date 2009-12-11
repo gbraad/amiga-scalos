@@ -10,8 +10,6 @@
 **
 *************************************************************************
 ** This file implements that page cache.
-**
-** @(#) $Id$
 */
 #include "sqliteInt.h"
 

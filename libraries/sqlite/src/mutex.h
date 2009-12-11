@@ -18,8 +18,6 @@
 ** NOTE:  source files should *not* #include this header file directly.
 ** Source files should #include the sqliteInt.h file and let that file
 ** include this one indirectly.
-**
-** $Id$
 */
 
 

@@ -10,8 +10,6 @@
 **
 *************************************************************************
 **
-** $Id$
-**
 ** This file contains code used to implement mutexes on Btree objects.
 ** This code really belongs in btree.c.  But btree.c is getting too
 ** big and we want to break it down some.  This packaged seemed like

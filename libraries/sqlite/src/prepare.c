@@ -12,8 +12,6 @@
 ** This file contains the implementation of the sqlite3_prepare()
 ** interface, and routines that contribute to loading the database schema
 ** from disk.
-**
-** $Id$
 */
 #include "sqliteInt.h"
 

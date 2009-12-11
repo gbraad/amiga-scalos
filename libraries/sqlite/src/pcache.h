@@ -11,8 +11,6 @@
 *************************************************************************
 ** This header file defines the interface that the sqlite page cache
 ** subsystem. 
-**
-** @(#) $Id$
 */
 
 #ifndef _PCACHE_H_

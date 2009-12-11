@@ -16,8 +16,6 @@
 **
 ** This file should be #included by the os_*.c files only.  It is not a
 ** general purpose header file.
-**
-** $Id$
 */
 #ifndef _OS_COMMON_H_
 #define _OS_COMMON_H_

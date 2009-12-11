@@ -21,8 +21,6 @@
 **     BEGIN TRANSACTION
 **     COMMIT
 **     ROLLBACK
-**
-** $Id$
 */
 #include "sqliteInt.h"
 
