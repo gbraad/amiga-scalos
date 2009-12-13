@@ -1400,3 +1400,150 @@ unknown
 ;
 ; ==============================================
 ;
+;+++translateme+++
+MSGID_UNDO_NOT_AVAILABLE
+%s (not available)
+;%s (not available)
+;
+;+++translateme+++
+MSGID_UNDO_UNDO
+Undo
+;Undo
+;
+;+++translateme+++
+MSGID_UNDO_REDO
+Redo
+;Redo
+;
+;+++translateme+++
+MSGID_UNDO_COPY_SINGLE
+%s: Copy %s
+;%s: Copy %s
+;
+;+++translateme+++
+MSGID_UNDO_COPY_MORE
+%s: Copy %ld items
+;%s: Copy %ld items
+;
+;+++translateme+++
+MSGID_UNDO_MOVE_SINGLE
+%s: Move %s
+;%s: Move %s
+;
+;+++translateme+++
+MSGID_UNDO_MOVE_MORE
+%s: Move %ld items
+;%s: Move %ld items
+;
+;+++translateme+++
+MSGID_UNDO_CREATELINK_SINGLE
+%s: Create Link %s
+;%s: Create Link %s
+;
+;+++translateme+++
+MSGID_UNDO_CREATELINK_MORE
+%s: Create %ld links
+;%s: Create %ld links
+;
+;+++translateme+++
+MSGID_UNDO_CHANGEICONPOS_SINGLE
+%s: Move %s icon
+;%s: Move %s icon
+;
+;+++translateme+++
+MSGID_UNDO_CHANGEICONPOS_MORE
+%s: Move %ld icons.
+;%s: Move %ld icons.
+;
+;+++translateme+++
+MSGID_UNDO_CLEANUP
+%s: Cleanup %s
+;%s: Cleanup %s
+;
+;+++translateme+++
+MSGID_UNDO_SNAPSHOT_SINGLE
+%s: Snapshot %s
+;%s: Snapshot %s
+;
+;+++translateme+++
+MSGID_UNDO_SNAPSHOT_MORE
+%s: Snapshot %ld items
+;%s: Snapshot %ld items
+;
+;+++translateme+++
+MSGID_UNDO_UNSNAPSHOT_SINGLE
+%s: Unsnapshot %s
+;%s: Unsnapshot %s
+;
+;+++translateme+++
+MSGID_UNDO_UNSNAPSHOT_MORE
+%s: Unsnapshot %ld items
+;%s: Unsnapshot %ld items
+;
+;+++translateme+++
+MSGID_UNDO_RENAME_SINGLE
+%s: Rename %s
+;%s: Rename %s
+;
+;+++translateme+++
+MSGID_UNDO_RENAME_MORE
+%s: Rename %ld items
+;%s: Rename %ld items
+;
+;+++translateme+++
+MSGID_UNDO_RELABEL_SINGLE
+%s: Relabel %s
+;%s: Relabel %s
+;
+;+++translateme+++
+MSGID_UNDO_RELABEL_MORE
+%s: Relabel %ld items
+;%s: Relabel %ld items
+;
+;+++translateme+++
+MSGID_UNDO_SIZEWINDOW
+%s: Resize %s window
+;%s: Resize %s window
+;
+;+++translateme+++
+MSGID_UNDO_DELETE_SINGLE
+%s: Delete %s
+;%s: Delete %s
+;
+;+++translateme+++
+MSGID_UNDO_DELETE_MORE
+%s: Delete %ld items
+;%s: Delete %ld items
+;
+;+++translateme+++
+MSGID_UNDO_NEWDRAWER_SINGLE
+%s: Create Drawer %s
+;%s: Create Drawer %s
+;
+;+++translateme+++
+MSGID_UNDO_NEWDRAWER_MORE
+%s: Create %ld Drawers
+;%s: Create %ld Drawers
+;
+;+++translateme+++
+MSGID_UNDO_LEAVEOUT_SINGLE
+%s: Leave out %s
+;%s: Leave out %s
+;
+;+++translateme+++
+MSGID_UNDO_LEAVEOUT_MORE
+%s: Leave out %ld items
+;%s: Leave out %ld items
+;
+;+++translateme+++
+MSGID_UNDO_PUTAWAY_SINGLE
+%s: Put away %s
+;%s: Put away %s
+;
+;+++translateme+++
+MSGID_UNDO_PUTAWAY_MORE
+%s: Put away %ld items
+;%s: Put away %ld items
+;
+; ==============================================
+;

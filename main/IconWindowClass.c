@@ -3406,9 +3406,10 @@ static ULONG IconWindowClass_StopPopOpenTimer(Class *cl, Object *o, Msg msg)
 
 static ULONG IconWindowClass_AddUndoEvent(Class *cl, Object *o, Msg msg)
 {
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct msg_AddUndoEvent *aue = (struct msg_AddUndoEvent *) msg;
 
-	return UndoAddEventTagList(aue->aue_Type, (struct TagItem *) aue->aue_TagList);
+	return UndoAddEventTagList(iwt, aue->aue_Type, (struct TagItem *) aue->aue_TagList);
 }
 
 //----------------------------------------------------------------------------
@@ -3422,9 +3423,10 @@ static ULONG IconWindowClass_BeginUndoStep(Class *cl, Object *o, Msg msg)
 
 static ULONG IconWindowClass_EndUndoStep(Class *cl, Object *o, Msg msg)
 {
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct msg_EndUndoStep *eus = (struct msg_EndUndoStep *) msg;
 
-	UndoEndStep(eus->eus_UndoStep);
+	UndoEndStep(iwt, eus->eus_UndoStep);
 
 	return 0;
 }

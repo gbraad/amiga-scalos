@@ -943,12 +943,15 @@ void ScaFormatStringArgs(char *Buffer, size_t BuffLength, const char *Format, AP
 // defined in Undo.c
 ///
 void UndoCleanup(void);
-BOOL UndoAddEvent(enum ScalosUndoType type, ULONG FirstTag, ...);
-BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList);
+BOOL UndoAddEvent(struct internalScaWindowTask *iwt, enum ScalosUndoType type, ULONG FirstTag, ...);
+BOOL UndoAddEventTagList(struct internalScaWindowTask *iwt, enum ScalosUndoType type, struct TagItem *TagList);
 APTR UndoBeginStep(void);
-void UndoEndStep(APTR event);
+void UndoEndStep(struct internalScaWindowTask *iwt, APTR event);
 BOOL Undo(struct internalScaWindowTask *iwt);
 BOOL Redo(struct internalScaWindowTask *iwt);
+CONST_STRPTR UndoGetDescription(void);
+CONST_STRPTR RedoGetDescription(void);
+void UndoWindowSignalClosing(struct internalScaWindowTask *iwt);
 ///
 /* ------------------------------------------------- */
 

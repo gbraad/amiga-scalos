@@ -32,7 +32,7 @@ UNDO_Delete		equ	9
 UNDO_Leaveout		equ	10
 UNDO_PutAway		equ	11
 UNDO_NewDrawer		equ	12
-UNDO_SizeToFit		equ	13
+UNDO_SizeWindow		 equ	 13
 
 ;enum ScalosUndoTags
 UNDOTAG_TagBase		equ     TAG_USER+1287
@@ -101,7 +101,8 @@ CLEANUP_ByType		equ	4
 	ULONG	ucd_CleanupMode		;enum ScalosUndoCleanupMode
 	APTR	ucd_Icons		;struct UndoCleanupIconEntry *
 	ULONG 	ucd_IconCount		;number of entries in ucd_Icons
-	APTR	ucd_WindowTask		;struct internalScaWindowTask *
+	APTR	ucd_WindowTask		;struct ScaWindowTask *
+	APTR 	ucd_WindowTitle		;STRPTR - a copy of the window title of ucd_WindowTask
 	LABEL	ucd_SIZEOF
 
   STRUCTURE 	UndoSnaphotIconData,0
@@ -112,7 +113,8 @@ CLEANUP_ByType		equ	4
 	LABEL	usid_SIZEOF
 
   STRUCTURE 	UndoSizeWindowData,0
-	APT	uswd_WindowTask		;struct internalScaWindowTask *
+	APTR	uswd_WindowTask		;struct ScaWindowTask *
+	APTR 	uswd_WindowTitle	;STRPTR - a copy of the window title of ucd_WindowTask
 	LONG 	uswd_OldLeft
 	LONG 	uswd_OldTop
 	ULONG 	uswd_OldWidth
@@ -174,6 +176,11 @@ uev_Data_SIZEOF	set     und_SIZEOF
 	STRUCT  uev_Data,uev_Data_SIZEOF
 
 	APTR	uev_UndoStep		;struct UndoStep *
+
+	ULONG	uev_DescrMsgIDSingle
+	ULONG 	uev_DescrMsgIDMultiple
+
+	APTR 	uev_DescrObjName	;STRPTR *
 
 	LABEL	uev_SIZEOF
 

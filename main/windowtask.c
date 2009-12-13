@@ -473,6 +473,8 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 		struct WindowHistoryEntry *whe;
 		ULONG n;
 
+		UndoWindowSignalClosing(iwt);
+
 		d1(kprintf("%s/%s/%ld: iwt_AsyncLayoutPending=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_AsyncLayoutPending));
 
 		InvalidateLastIwtUnderPointer(iwt);

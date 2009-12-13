@@ -217,7 +217,7 @@ static void MenuFunc_ShowAllFiles(struct internalScaWindowTask *iwt, struct Menu
 static void MenuFunc_ShowDefault(struct internalScaWindowTask *iwt, struct MenuInfo *mInfo);
 static ULONG MfOffMenu(struct Window *win, struct MenuInfo *mInfo);
 static ULONG MfOnMenu(struct Window *win, struct MenuInfo *mInfo);
-static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed);
+static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed, ULONG TextChanged);
 static void AddMenuImage(Object *img);
 static void CleanupMenuImages(void);
 
@@ -427,6 +427,7 @@ static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 	struct MenuInfo *mInfo, struct IconMenuSupports *MenuTable, ULONG MenuFlags)
 {
 	ULONG Changed = 0;
+	ULONG TextChanged = 0;
 
 	d1(KPrintF("\n" "%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
@@ -454,6 +455,21 @@ static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 					if (SCAMENUCMDTYPE_Command == mTree->MenuCombo.MenuCommand.mcom_type)
 						{
 						ULONG n;
+
+						if (0 == Stricmp("undo", mTree->MenuCombo.MenuCommand.mcom_name))
+							{
+							struct IntuiText *itx = mInfo->minf_item->ItemFill;
+							d1(kprintf("%s/%s/%ld: mTree=%08lx  ItemFill=%08lx  IText=%08lx\n", __FILE__, __FUNC__, __LINE__, mTree, itx, itx->IText));
+							itx->IText = (UBYTE *) UndoGetDescription();
+							TextChanged++;
+							}
+						if (0 == Stricmp("redo", mTree->MenuCombo.MenuCommand.mcom_name))
+							{
+							struct IntuiText *itx = mInfo->minf_item->ItemFill;
+							d1(kprintf("%s/%s/%ld: mTree=%08lx  ItemFill=%08lx  IText=%08lx\n", __FILE__, __FUNC__, __LINE__, mTree, itx, itx->IText));
+							itx->IText = (UBYTE *) RedoGetDescription();
+							TextChanged++;
+							}
 
 						for (n=0; MenuTable[n].ims_CommandName; n++)
 							{
@@ -493,7 +509,7 @@ static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 
 	d1(KPrintF("\n" "%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	SubMenusOnOff(iwt, Changed);
+	SubMenusOnOff(iwt, Changed, TextChanged);
 
 	d1(KPrintF("\n" "%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
@@ -837,6 +853,14 @@ static void GenerateMainMenu(struct ScalosMenuTree *mTree, struct NewMenu **nm, 
 
 					if (SCAMENUCMDTYPE_Command == mTreeChild->MenuCombo.MenuCommand.mcom_type)
 						{
+						if (CompareCommand(mTreeChild->MenuCombo.MenuCommand.mcom_name, "undo"))
+							{
+							(*nm)->nm_Label = (STRPTR) UndoGetDescription();
+							}
+						if (CompareCommand(mTreeChild->MenuCombo.MenuCommand.mcom_name, "redo"))
+							{
+							(*nm)->nm_Label = (STRPTR) RedoGetDescription();
+							}
 						if (CompareCommand(mTreeChild->MenuCombo.MenuCommand.mcom_name, "backdrop"))
 							{
 							Flags = MENUTOGGLE | CHECKIT;
@@ -1502,7 +1526,7 @@ static ULONG MfOnMenu(struct Window *win, struct MenuInfo *mInfo)
 
 
 // Disable MenuItem if it has SubItems and every SubItem is disabled.
-static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed)
+static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed, ULONG TextChanged)
 {
 	struct Menu *menu = MainMenu;
 
@@ -1549,7 +1573,15 @@ static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed)
 	if (Changed && iwt->iwt_WindowTask.wt_Window && (iwt->iwt_WindowTask.wt_Window->MenuStrip == MainMenu))
 		{
 		d1(KPrintF("%s/%s/%ld: calling ResetMenuStrip\n", __FILE__, __FUNC__, __LINE__));
-		ResetMenuStrip(iwt->iwt_WindowTask.wt_Window, MainMenu);
+		if (TextChanged)
+			{
+			ClearMenuStrip(iwt->iwt_WindowTask.wt_Window);
+			SetMenuStrip(iwt->iwt_WindowTask.wt_Window, MainMenu);
+			}
+		else
+			{
+			ResetMenuStrip(iwt->iwt_WindowTask.wt_Window, MainMenu);
+			}
 		}
 }
 
