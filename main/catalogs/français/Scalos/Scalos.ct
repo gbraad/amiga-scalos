@@ -1,6 +1,7 @@
 ;scalos.ct
 ; $Date$
 ; $Revision$
+; $Id$
 ;
 ## version $VER: scalos.catalog 41.6 (05 Jan 2009 23:43:19 )
 ## codeset 0
@@ -1401,149 +1402,120 @@ Inconnu
 ;
 ; ==============================================
 ;
-;+++translateme+++
 MSGID_UNDO_NOT_AVAILABLE
-%s (not available)
+%s (non disponible)
 ;%s (not available)
 ;
-;+++translateme+++
 MSGID_UNDO_UNDO
-Undo
+Précédent
 ;Undo
 ;
-;+++translateme+++
 MSGID_UNDO_REDO
-Redo
+Suivant
 ;Redo
 ;
-;+++translateme+++
 MSGID_UNDO_COPY_SINGLE
-%s: Copy %s
+%s: Copie %s
 ;%s: Copy %s
 ;
-;+++translateme+++
 MSGID_UNDO_COPY_MORE
-%s: Copy %ld items
+%s: Copie de %ld éléments
 ;%s: Copy %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_MOVE_SINGLE
-%s: Move %s
+%s: Déplacement %s
 ;%s: Move %s
 ;
-;+++translateme+++
 MSGID_UNDO_MOVE_MORE
-%s: Move %ld items
+%s: Déplacement de %ld éléments
 ;%s: Move %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_CREATELINK_SINGLE
-%s: Create Link %s
+%s: Creation d'un lien %s
 ;%s: Create Link %s
 ;
-;+++translateme+++
 MSGID_UNDO_CREATELINK_MORE
-%s: Create %ld links
+%s: Création de %ld liens
 ;%s: Create %ld links
 ;
-;+++translateme+++
 MSGID_UNDO_CHANGEICONPOS_SINGLE
-%s: Move %s icon
+%s: Déplacement de l'icône %s
 ;%s: Move %s icon
 ;
-;+++translateme+++
 MSGID_UNDO_CHANGEICONPOS_MORE
-%s: Move %ld icons.
+%s: Déplacement de %ld icônes.
 ;%s: Move %ld icons.
 ;
-;+++translateme+++
 MSGID_UNDO_CLEANUP
-%s: Cleanup %s
+%s: Néttoyage %s
 ;%s: Cleanup %s
 ;
-;+++translateme+++
 MSGID_UNDO_SNAPSHOT_SINGLE
-%s: Snapshot %s
+%s: Fixation %s
 ;%s: Snapshot %s
 ;
-;+++translateme+++
 MSGID_UNDO_SNAPSHOT_MORE
-%s: Snapshot %ld items
+%s: Fixation de %ld éléments
 ;%s: Snapshot %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_UNSNAPSHOT_SINGLE
-%s: Unsnapshot %s
+%s: Libération %s
 ;%s: Unsnapshot %s
 ;
-;+++translateme+++
 MSGID_UNDO_UNSNAPSHOT_MORE
-%s: Unsnapshot %ld items
+%s: Libération de %ld éléments
 ;%s: Unsnapshot %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_RENAME_SINGLE
-%s: Rename %s
+%s: Renommer %s
 ;%s: Rename %s
 ;
-;+++translateme+++
 MSGID_UNDO_RENAME_MORE
-%s: Rename %ld items
+%s: Renommer %ld éléments
 ;%s: Rename %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_RELABEL_SINGLE
-%s: Relabel %s
+%s: Renommer le volume %s
 ;%s: Relabel %s
 ;
-;+++translateme+++
 MSGID_UNDO_RELABEL_MORE
-%s: Relabel %ld items
+%s: Renommer %ld volumes
 ;%s: Relabel %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_SIZEWINDOW
-%s: Resize %s window
+%s: Redimensionner la fenêtre %s
 ;%s: Resize %s window
 ;
-;+++translateme+++
 MSGID_UNDO_DELETE_SINGLE
-%s: Delete %s
+%s: Effacer %s
 ;%s: Delete %s
 ;
-;+++translateme+++
 MSGID_UNDO_DELETE_MORE
-%s: Delete %ld items
+%s: Effacer %ld éléments
 ;%s: Delete %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_NEWDRAWER_SINGLE
-%s: Create Drawer %s
+%s: Création du répertoire %s
 ;%s: Create Drawer %s
 ;
-;+++translateme+++
 MSGID_UNDO_NEWDRAWER_MORE
-%s: Create %ld Drawers
+%s: Création de %ld répertoires
 ;%s: Create %ld Drawers
 ;
-;+++translateme+++
 MSGID_UNDO_LEAVEOUT_SINGLE
-%s: Leave out %s
+%s: Sortir %s
 ;%s: Leave out %s
 ;
-;+++translateme+++
 MSGID_UNDO_LEAVEOUT_MORE
-%s: Leave out %ld items
+%s: Sortir %ld éléments
 ;%s: Leave out %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_PUTAWAY_SINGLE
-%s: Put away %s
+%s: Ranger %s
 ;%s: Put away %s
 ;
-;+++translateme+++
 MSGID_UNDO_PUTAWAY_MORE
-%s: Put away %ld items
+%s: Ranger %ld éléments
 ;%s: Put away %ld items
 ;
 ; ==============================================
