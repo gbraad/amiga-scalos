@@ -92,9 +92,9 @@ static void DropStart(struct internalScaWindowTask *iwt, struct internalScaWindo
 	struct ScaIconNode *in);
 static ULONG Icon2IconDrop_Drawer(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, APTR undoStep);
 static ULONG Icon2IconDrop_File(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, APTR undoStep);
-static ULONG Icon2Icon_MoveDir(struct DropInfo *DrInfo, APTR undoStep);
-static ULONG Icon2Icon_CopyDir(struct DropInfo *DrInfo, CONST_STRPTR DestName, APTR undoStep);
-static ULONG Icon2Icon_CreateLink(struct DropInfo *DrInfo, APTR undoStep);
+static ULONG Icon2Icon_MoveDir(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, APTR undoStep);
+static ULONG Icon2Icon_CopyDir(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, CONST_STRPTR DestName, APTR undoStep);
+static ULONG Icon2Icon_CreateLink(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, APTR undoStep);
 static ULONG DropAddIcon(struct MsgPort *ReplyPort, struct ScaWindowStruct *wsDest,
 	BPTR DirLock, STRPTR IconName, WORD x, WORD y);
 static void DropRemoveIcon(struct ScaWindowStruct *wsDest, BPTR DirLock, CONST_STRPTR IconName);
@@ -692,7 +692,7 @@ static void Icon2IconDrop(struct ScalosArg **ArgList,
 				}
 			}
 
-		UndoEndStep(undoStep);
+		UndoEndStep(iwtSrc, undoStep);
 
 		d1(kprintf("%s/%s/%ld: ClassDragFinish_IconWin(ArgList=%08lx)\n", __FILE__, __FUNC__, __LINE__, ArgList));
 		ClassDragFinish_IconWin(ArgList);
@@ -737,7 +737,7 @@ static ULONG Icon2IconDrop_Drawer(struct internalScaWindowTask *iwtSrc, struct D
 
 	if (DrInfo->drin_Drops.drop_CreateLink)
 		{
-		return Icon2Icon_CreateLink(DrInfo, undoStep);
+		return Icon2Icon_CreateLink(iwtSrc, DrInfo, undoStep);
 		}
 	else if (DrInfo->drin_Drops.drop_Move)
 		{
@@ -768,11 +768,11 @@ static ULONG Icon2IconDrop_Drawer(struct internalScaWindowTask *iwtSrc, struct D
 		return RETURN_OK;
 
 	case LOCK_DIFFERENT:
-		Result = Icon2Icon_CopyDir(DrInfo, DestName, undoStep);
+		Result = Icon2Icon_CopyDir(iwtSrc, DrInfo, DestName, undoStep);
 		break;
 
 	case LOCK_SAME_VOLUME:
-		Result = Icon2Icon_MoveDir(DrInfo, undoStep);
+		Result = Icon2Icon_MoveDir(iwtSrc, DrInfo, undoStep);
 		break;
 		}
 
@@ -813,7 +813,7 @@ static ULONG Icon2IconDrop_File(struct internalScaWindowTask *iwtSrc, struct Dro
 
 	if (DrInfo->drin_Drops.drop_CreateLink)
 		{
-		return Icon2Icon_CreateLink(DrInfo, undoStep);
+		return Icon2Icon_CreateLink(iwtSrc, DrInfo, undoStep);
 		}
 	else if (DrInfo->drin_Drops.drop_Move)
 		{
@@ -843,7 +843,7 @@ static ULONG Icon2IconDrop_File(struct internalScaWindowTask *iwtSrc, struct Dro
 		return RETURN_OK;
 
 	case LOCK_DIFFERENT:
-		UndoAddEvent(UNDO_Copy,
+		UndoAddEvent(iwtSrc, UNDO_Copy,
 			UNDOTAG_UndoMultiStep, undoStep,
 			UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
 			UNDOTAG_CopyDestDirLock, DrInfo->drin_DestLock,
@@ -859,7 +859,7 @@ static ULONG Icon2IconDrop_File(struct internalScaWindowTask *iwtSrc, struct Dro
 		break;
 
 	case LOCK_SAME_VOLUME:
-		Result = Icon2Icon_MoveDir(DrInfo, undoStep);
+		Result = Icon2Icon_MoveDir(iwtSrc, DrInfo, undoStep);
 		break;
 		}
 
@@ -872,7 +872,7 @@ static ULONG Icon2IconDrop_File(struct internalScaWindowTask *iwtSrc, struct Dro
 }
 
 
-static ULONG Icon2Icon_MoveDir(struct DropInfo *DrInfo, APTR undoStep)
+static ULONG Icon2Icon_MoveDir(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, APTR undoStep)
 {
 	ULONG Result;
 	LONG xi = DrInfo->drin_x, yi = DrInfo->drin_y;
@@ -885,7 +885,7 @@ static ULONG Icon2Icon_MoveDir(struct DropInfo *DrInfo, APTR undoStep)
 		yi += DrInfo->drin_Arg->scarg_ypos;
 		}
 
-	UndoAddEvent(UNDO_Move,
+	UndoAddEvent(iwtSrc, UNDO_Move,
 		UNDOTAG_UndoMultiStep, undoStep,
 		UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
 		UNDOTAG_CopyDestDirLock, DrInfo->drin_DestLock,
@@ -904,7 +904,7 @@ static ULONG Icon2Icon_MoveDir(struct DropInfo *DrInfo, APTR undoStep)
 }
 
 
-static ULONG Icon2Icon_CopyDir(struct DropInfo *DrInfo, CONST_STRPTR DestName, APTR undoStep)
+static ULONG Icon2Icon_CopyDir(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, CONST_STRPTR DestName, APTR undoStep)
 {
 	ULONG Result;
 	LONG xi = DrInfo->drin_x, yi = DrInfo->drin_y;
@@ -915,7 +915,7 @@ static ULONG Icon2Icon_CopyDir(struct DropInfo *DrInfo, CONST_STRPTR DestName, A
 		yi += DrInfo->drin_Arg->scarg_ypos;
 		}
 
-	UndoAddEvent(UNDO_Copy,
+	UndoAddEvent(iwtSrc, UNDO_Copy,
 		UNDOTAG_UndoMultiStep, undoStep,
 		UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
 		UNDOTAG_CopyDestDirLock, DrInfo->drin_DestLock,
@@ -933,7 +933,7 @@ static ULONG Icon2Icon_CopyDir(struct DropInfo *DrInfo, CONST_STRPTR DestName, A
 }
 
 
-static ULONG Icon2Icon_CreateLink(struct DropInfo *DrInfo, APTR undoStep)
+static ULONG Icon2Icon_CreateLink(struct internalScaWindowTask *iwtSrc, struct DropInfo *DrInfo, APTR undoStep)
 {
 	ULONG Result;
 	LONG xi = DrInfo->drin_x, yi = DrInfo->drin_y;
@@ -944,7 +944,7 @@ static ULONG Icon2Icon_CreateLink(struct DropInfo *DrInfo, APTR undoStep)
 		yi += DrInfo->drin_Arg->scarg_ypos;
 		}
 
-	UndoAddEvent(UNDO_CreateLink,
+	UndoAddEvent(iwtSrc, UNDO_CreateLink,
 		UNDOTAG_UndoMultiStep, undoStep,
 		UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
 		UNDOTAG_CopyDestDirLock, DrInfo->drin_DestLock,
@@ -1043,7 +1043,7 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 				d1(KPrintF("%s/%s/%ld: drin_x=%ld  drin_y=%ld\n", __FILE__, __FUNC__, __LINE__, DrInfo->drin_x, DrInfo->drin_y));
 				d1(KPrintF("%s/%s/%ld: scarg_xpos=%ld  scarg_ypos=%ld\n", __FILE__, __FUNC__, __LINE__, arg->scarg_xpos, arg->scarg_ypos));
 
-				UndoAddEvent(UNDO_Leaveout,
+				UndoAddEvent(iwtSrc, UNDO_Leaveout,
 					UNDOTAG_UndoMultiStep, undoStep,
 					UNDOTAG_IconDirLock, arg->scarg_lock,
 					UNDOTAG_IconName, arg->scarg_name,
@@ -1135,7 +1135,7 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 				}
 			}
 
-		UndoEndStep(undoStep);
+		UndoEndStep(iwtSrc, undoStep);
 		} while (0);
 
 	if (replyPort)
@@ -1348,7 +1348,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 				// drop left-out icon back into its native window
 				DrInfo->drin_Drops.drop_PutAway = TRUE;
 
-				UndoAddEvent(UNDO_PutAway,
+				UndoAddEvent(iwtSrc, UNDO_PutAway,
 					UNDOTAG_UndoMultiStep, undoStep,
 					UNDOTAG_IconDirLock, DrInfo->drin_Arg->scarg_lock,
 					UNDOTAG_IconName, DrInfo->drin_Arg->scarg_name,
@@ -1415,7 +1415,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 				}
 			}
 
-		UndoEndStep(undoStep);
+		UndoEndStep(iwtSrc, undoStep);
 
 		DeleteMsgPort(replyPort);
 		replyPort = NULL;
@@ -1476,7 +1476,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 						if (DrInfo->drin_Drops.drop_CreateLink)
 							{
-							UndoAddEvent(UNDO_CreateLink,
+							UndoAddEvent(iwtSrc, UNDO_CreateLink,
 								UNDOTAG_UndoMultiStep, undoStep,
 								UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
 								UNDOTAG_CopyDestDirLock, DrInfo->drin_DestLock,
@@ -1493,7 +1493,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 							}
 						else
 							{
-							UndoAddEvent(UNDO_Copy,
+							UndoAddEvent(iwtSrc, UNDO_Copy,
 								UNDOTAG_UndoMultiStep, undoStep,
 								UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
 								UNDOTAG_CopyDestDirLock, DrInfo->drin_DestLock,
@@ -1521,7 +1521,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 				}
 			}
 
-		UndoEndStep(undoStep);
+		UndoEndStep(iwtSrc, undoStep);
 		ClassDragFinish_IconWin(ArgList);
 		} while (0);
 
@@ -1898,7 +1898,7 @@ static void SameWindow(struct internalScaWindowTask *iwt, struct internalScaWind
 			IconRect.MinY = y1 + gg->BoundsTopEdge;
 			IconRect.MaxY = IconRect.MinY + gg->BoundsHeight - 1;
 
-			UndoAddEvent(UNDO_ChangeIconPos,
+			UndoAddEvent(iwt, UNDO_ChangeIconPos,
 				UNDOTAG_UndoMultiStep, undoStep,
 				UNDOTAG_IconDirLock, in->in_Lock ?
 					in->in_Lock : iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
@@ -1920,7 +1920,7 @@ static void SameWindow(struct internalScaWindowTask *iwt, struct internalScaWind
 
 	d1(kprintf("%s/%s/%ld: IconsMoved=%ld\n", __FILE__, __FUNC__, __LINE__, fIconsMoved));
 
-	UndoEndStep(undoStep);
+	UndoEndStep(iwt, undoStep);
 
 	if (fIconsMoved)
 		{
@@ -1995,7 +1995,7 @@ static void SameWindow2(struct internalScaWindowTask *iwt, struct internalScaWin
 
 		if (!(dn->drgn_iconnode->in_Flags & INF_Sticky))
 			{
-			UndoAddEvent(UNDO_ChangeIconPos,
+			UndoAddEvent(iwt, UNDO_ChangeIconPos,
 				UNDOTAG_UndoMultiStep, undoStep,
 				UNDOTAG_IconDirLock, dn->drgn_iconnode->in_Lock ?
 					dn->drgn_iconnode->in_Lock : iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
@@ -2008,7 +2008,7 @@ static void SameWindow2(struct internalScaWindowTask *iwt, struct internalScaWin
 			}
 		}
 
-	UndoEndStep(undoStep);
+	UndoEndStep(iwt, undoStep);
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUp);
 

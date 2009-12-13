@@ -1426,3 +1426,149 @@ unbekannt
 ;
 ; ==============================================
 ;
+MSGID_UNDO_NOT_AVAILABLE
+%s (nicht verfügbar)
+;%s (not available)
+;
+;
+MSGID_UNDO_UNDO
+Rückgängig
+;Undo
+;
+;
+MSGID_UNDO_REDO
+Wiederholen
+;Redo
+;
+;
+MSGID_UNDO_COPY_SINGLE
+%s: Kopieren von %s
+;%s: Copy %s
+;
+;
+MSGID_UNDO_COPY_MORE
+%s: Kopieren von %ld Elementen
+;%s: Copy %ld items
+;
+;
+MSGID_UNDO_MOVE_SINGLE
+%s: Verschieben von %s
+;%s: Move %s
+;
+;
+MSGID_UNDO_MOVE_MORE
+%s: Verschieben von %ld Elementen
+;%s: Move %ld items
+;
+;
+MSGID_UNDO_CREATELINK_SINGLE
+%s: Erzeugen von Verknüpfung %s
+;%s: Create Link %s
+;
+;
+MSGID_UNDO_CREATELINK_MORE
+%s: Erzeugen von %ld Verknüpfungen
+;%s: Create %ld links
+;
+;
+MSGID_UNDO_CHANGEICONPOS_SINGLE
+%s: Bewegen des Piktogramms %s
+;%s: Move %s icon
+;
+;
+MSGID_UNDO_CHANGEICONPOS_MORE
+%s: Bewegen von %ld Piktogrammen
+;%s: Move %ld icons.
+;
+;
+MSGID_UNDO_CLEANUP
+%s: Aufräumen von %s
+;%s: Cleanup %s
+;
+;
+MSGID_UNDO_SNAPSHOT_SINGLE
+%s: Fixieren von %s
+;%s: Snapshot %s
+;
+;
+MSGID_UNDO_SNAPSHOT_MORE
+%s: Fixieren von %ld Piktogrammen
+;%s: Snapshot %ld items
+;
+;
+MSGID_UNDO_UNSNAPSHOT_SINGLE
+%s: Position von %s freigeben
+;%s: Unsnapshot %s
+;
+;
+MSGID_UNDO_UNSNAPSHOT_MORE
+%s: Position von %ld Piktogrammen freigeben
+;%s: Unsnapshot %ld items
+;
+;
+MSGID_UNDO_RENAME_SINGLE
+%s: Umbenennen von %s
+;%s: Rename %s
+;
+;
+MSGID_UNDO_RENAME_MORE
+%s: Umbenennen von %ld Elementen
+;%s: Rename %ld items
+;
+;
+MSGID_UNDO_RELABEL_SINGLE
+%s: Datenträger %s umbenennen
+;%s: Relabel %s
+;
+;
+MSGID_UNDO_RELABEL_MORE
+%s: %ld Datenträger umbenennen
+;%s: Relabel %ld items
+;
+;
+MSGID_UNDO_SIZEWINDOW
+%s: Fenstergröße von %s ändern
+;%s: Resize %s window
+;
+;
+MSGID_UNDO_DELETE_SINGLE
+%s: Löschen von %s
+;%s: Delete %s
+;
+;
+MSGID_UNDO_DELETE_MORE
+%s: Löschen von  %ld Elementen
+;%s: Delete %ld items
+;
+;
+MSGID_UNDO_NEWDRAWER_SINGLE
+%s: Neue Schublade %s erzeugen
+;%s: Create Drawer %s
+;
+;
+MSGID_UNDO_NEWDRAWER_MORE
+%s: %ld neue Schubladen erzeugen
+;%s: Create %ld Drawers
+;
+;
+MSGID_UNDO_LEAVEOUT_SINGLE
+%s: Auslagern von %s
+;%s: Leave out %s
+;
+;
+MSGID_UNDO_LEAVEOUT_MORE
+%s: Auslagern von %ld Piktogrammen
+;%s: Leave out %ld items
+;
+;
+MSGID_UNDO_PUTAWAY_SINGLE
+%s: Zurücklegen von %s
+;%s: Put away %s
+;
+;
+MSGID_UNDO_PUTAWAY_MORE
+%s: Zurücklegen von %ld Piktogrammen
+;%s: Put away %ld items
+;
+; ==============================================
+;

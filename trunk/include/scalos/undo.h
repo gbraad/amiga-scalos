@@ -34,7 +34,7 @@ enum ScalosUndoType
 	UNDO_Leaveout,
 	UNDO_PutAway,
 	UNDO_NewDrawer,
-	UNDO_SizeToFit,
+	UNDO_SizeWindow,
 	};
 
 enum ScalosUndoTags
@@ -135,7 +135,8 @@ struct UndoEvent
 			enum ScalosUndoCleanupMode ucd_CleanupMode;
 			struct UndoCleanupIconEntry *ucd_Icons;
 			ULONG ucd_IconCount;		// number of entries in ucd_Icons
-			struct internalScaWindowTask *ucd_WindowTask;
+			struct ScaWindowTask *ucd_WindowTask;
+			STRPTR ucd_WindowTitle;		// a copy of the window title of ucd_WindowTask
 			} uev_CleanupData;
 		struct UndoSnaphotIconData
 			{
@@ -146,7 +147,8 @@ struct UndoEvent
 			} uev_SnapshotData;
 		struct UndoSizeWindowData
 			{
-			struct internalScaWindowTask *uswd_WindowTask;
+			struct ScaWindowTask *uswd_WindowTask;
+			STRPTR uswd_WindowTitle;	// a copy of the window title of ucd_WindowTask
 			LONG uswd_OldLeft;
 			LONG uswd_OldTop;
 			ULONG uswd_OldWidth;
@@ -163,6 +165,10 @@ struct UndoEvent
 		} uev_Data;
 
 	struct UndoStep *uev_UndoStep;
+
+	ULONG uev_DescrMsgIDSingle;
+	ULONG uev_DescrMsgIDMultiple;
+	STRPTR *uev_DescrObjName;
 	};
 
 /*----------------------------------------------------------------------------------*/

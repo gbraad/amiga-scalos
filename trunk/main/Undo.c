@@ -40,6 +40,7 @@
 #include <DefIcons.h>
 
 #include "scalos_structures.h"
+#include "locale.h"
 #include "functions.h"
 #include "Variables.h"
 
@@ -51,7 +52,15 @@ struct UndoStep
 	{
 	struct Node ust_Node;
 	struct List ust_EventList;	// List of events in this step
+	ULONG ust_EventCount;
+	STRPTR ust_Description;
 	Object *ust_FileTransObj;	// valid during Undo and Redo processing
+	};
+
+struct UndoProcArg
+	{
+	struct UndoStep *upa_UndoStep;
+	struct internalScaWindowTask *upa_iwt;
 	};
 
 //----------------------------------------------------------------------------
@@ -64,8 +73,8 @@ static struct UndoEvent *UndoCreateEvent(void);
 static void UndoDisposeEvent(struct UndoEvent *uev);
 static SAVEDS(LONG) UndoDummyFunc(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static void RedoCleanup(void);
-static SAVEDS(ULONG) UndoTask(struct UndoStep **ust, struct SM_RunProcess *msg);
-static SAVEDS(ULONG) RedoTask(struct UndoStep **ust, struct SM_RunProcess *msg);
+static SAVEDS(ULONG) UndoTask(struct UndoProcArg *upa, struct SM_RunProcess *msg);
+static SAVEDS(ULONG) RedoTask(struct UndoProcArg *upa, struct SM_RunProcess *msg);
 static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList);
@@ -84,15 +93,16 @@ static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct U
 static BOOL MoveIconTo(CONST_STRPTR DirName, CONST_STRPTR IconName, LONG x, LONG y);
 static STRPTR UndoBuildIconName(CONST_STRPTR ObjName);
 static struct internalScaWindowTask *UndoFindWindowByDir(CONST_STRPTR DirName);
-static struct internalScaWindowTask *UndoFindWindowByWindowTask(const struct internalScaWindowTask *iwt);
+static struct internalScaWindowTask *UndoFindWindowByWindowTask(const struct ScaWindowTask *iwt);
 static struct ScaIconNode *UndoFindIconByName(struct internalScaWindowTask *iwt, CONST_STRPTR IconName);
 static BOOL UndoChangeIconPosEvent(struct UndoEvent *uev);
 static BOOL RedoChangeIconPosEvent(struct UndoEvent *uev);
-static SAVEDS(LONG) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, struct UndoEvent *uev);
-static SAVEDS(LONG) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, struct UndoEvent *uev);
-static SAVEDS(LONG) UndoDisposeIconData(struct Hook *hook, APTR object, struct UndoEvent *uev);
-static SAVEDS(LONG) UndoDisposeCleanupData(struct Hook *hook, APTR object, struct UndoEvent *uev);
-static SAVEDS(LONG) UndoDisposeSnapshotData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeIconData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeCleanupData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeSnapshotData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeSizeWindowData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoLeaveOutEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoLeaveOutEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -147,7 +157,7 @@ void UndoCleanup(void)
 
 //----------------------------------------------------------------------------
 
-BOOL UndoAddEvent(enum ScalosUndoType type, ULONG FirstTag, ...)
+BOOL UndoAddEvent(struct internalScaWindowTask *iwt, enum ScalosUndoType type, ULONG FirstTag, ...)
 {
 	BOOL Success;
 	struct TagItem *TagList;
@@ -157,7 +167,7 @@ BOOL UndoAddEvent(enum ScalosUndoType type, ULONG FirstTag, ...)
 	va_start(args, FirstTag);
 
 	TagList = ScalosVTagList(FirstTag, args);
-	Success = UndoAddEventTagList(type, TagList);
+	Success = UndoAddEventTagList(iwt, type, TagList);
 
 	va_end(args);
 
@@ -169,7 +179,7 @@ BOOL UndoAddEvent(enum ScalosUndoType type, ULONG FirstTag, ...)
 
 //----------------------------------------------------------------------------
 
-BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
+BOOL UndoAddEventTagList(struct internalScaWindowTask *iwt, enum ScalosUndoType type, struct TagItem *TagList)
 {
 	if (TagList)
 		{
@@ -229,7 +239,7 @@ BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
 				case UNDO_Relabel:
 					Success = AddRelabelEvent(uev, TagList);
 					break;
-				case UNDO_SizeToFit:
+				case UNDO_SizeWindow:
 					Success = AddSizeWindowEvent(uev, TagList);
 					break;
 				case UNDO_Delete:
@@ -253,13 +263,14 @@ BOOL UndoAddEventTagList(enum ScalosUndoType type, struct TagItem *TagList)
 				if (Success)
 					{
 					uev->uev_UndoStep = ust;
+					ust->ust_EventCount++;
 
 					AddTail(&ust->ust_EventList, &uev->uev_Node);
 					uev = NULL;
 
 					if (NULL == ustMulti)
 						{
-						UndoEndStep((APTR) ust);
+						UndoEndStep(iwt, (APTR) ust);
 						}
 					}
 				}
@@ -289,7 +300,7 @@ APTR UndoBeginStep(void)
 
 //----------------------------------------------------------------------------
 
-void UndoEndStep(APTR event)
+void UndoEndStep(struct internalScaWindowTask *iwt, APTR event)
 {
 	struct UndoStep *ust = (struct UndoStep *) event;
 
@@ -314,11 +325,12 @@ void UndoEndStep(APTR event)
 			}
 
 		ScalosReleaseSemaphore(&UndoListListSemaphore);
-
 		} while (0);
 
 	if (ust)
 		UndoDisposeStep(ust);
+
+	SetMenuOnOff(iwt);
 }
 
 //----------------------------------------------------------------------------
@@ -333,6 +345,8 @@ static struct UndoStep *UndoCreateStep(void)
 			break;
 
 		NewList(&ust->ust_EventList);
+		ust->ust_EventCount = 0;
+		ust->ust_Description = NULL;
 		} while (0);
 
 	return ust;
@@ -348,7 +362,14 @@ static void UndoDisposeStep(struct UndoStep *ust)
 
 		while ((uev = (struct UndoEvent *) RemHead(&ust->ust_EventList)))
 			{
+			ust->ust_EventCount--;
 			UndoDisposeEvent(uev);
+			}
+
+		if (ust->ust_Description)
+			{
+			FreeCopyString(ust->ust_Description);
+			ust->ust_Description = NULL;
 			}
 
 		ScalosFreeVecPooled(ust);
@@ -422,20 +443,22 @@ static void RedoCleanup(void)
 
 BOOL Undo(struct internalScaWindowTask *iwt)
 {
-	struct UndoStep *ust;
+	struct UndoProcArg upa;
 	BOOL Success = FALSE;
 
+	upa.upa_iwt = iwt;
+
 	ScalosObtainSemaphore(&UndoListListSemaphore);
-	ust = (struct UndoStep *) RemTail(&globalUndoList);
+	upa.upa_UndoStep = (struct UndoStep *) RemTail(&globalUndoList);
 	UndoCount--;
 	ScalosReleaseSemaphore(&UndoListListSemaphore);
 
-	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, upa.upa_UndoStep));
 
-	if (ust)
+	if (upa.upa_UndoStep)
 		{
 		Success = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_RunProcess, UndoTask,
-			&ust, sizeof(ust), iInfos.xii_iinfos.ii_MainMsgPort);
+			&upa, sizeof(upa), iInfos.xii_iinfos.ii_MainMsgPort);
 		}
 
 	return Success;
@@ -445,19 +468,21 @@ BOOL Undo(struct internalScaWindowTask *iwt)
 
 BOOL Redo(struct internalScaWindowTask *iwt)
 {
-	struct UndoStep *ust;
+	struct UndoProcArg upa;
 	BOOL Success = FALSE;
 
+	upa.upa_iwt = iwt;
+
 	ScalosObtainSemaphore(&RedoListListSemaphore);
-	ust = (struct UndoStep *) RemTail(&globalRedoList);
+	upa.upa_UndoStep = (struct UndoStep *) RemTail(&globalRedoList);
 	ScalosReleaseSemaphore(&RedoListListSemaphore);
 
-	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, upa.upa_UndoStep));
 
-	if (ust)
+	if (upa.upa_UndoStep)
 		{
 		Success = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_RunProcess, RedoTask,
-			&ust, sizeof(ust), iInfos.xii_iinfos.ii_MainMsgPort);
+			&upa, sizeof(upa), iInfos.xii_iinfos.ii_MainMsgPort);
 		}
 
 	return Success;
@@ -465,7 +490,103 @@ BOOL Redo(struct internalScaWindowTask *iwt)
 
 //----------------------------------------------------------------------------
 
-static SAVEDS(ULONG) UndoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
+CONST_STRPTR UndoGetDescription(void)
+{
+	static char buffer[200];
+
+	ScalosObtainSemaphore(&UndoListListSemaphore);
+
+	if (IsListEmpty(&globalUndoList))
+		{
+		snprintf(buffer, sizeof(buffer),
+			GetLocString(MSGID_UNDO_NOT_AVAILABLE),
+			GetLocString(MSGID_UNDO_UNDO));
+		}
+	else
+		{
+		struct UndoStep *ust = (struct UndoStep *) globalUndoList.lh_TailPred;
+
+		stccpy(buffer, GetLocString(MSGID_UNDO_UNDO), sizeof(buffer));
+
+		d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+
+		if (!IsListEmpty(&ust->ust_EventList))
+			{
+			struct UndoEvent *uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
+
+			if (ust->ust_EventCount > 1)
+				{
+				snprintf(buffer, sizeof(buffer),
+					GetLocString(uev->uev_DescrMsgIDMultiple),
+					GetLocString(MSGID_UNDO_UNDO),
+					ust->ust_EventCount);
+				}
+			else if (uev->uev_DescrObjName && *uev->uev_DescrObjName)
+				{
+				snprintf(buffer, sizeof(buffer),
+					GetLocString(uev->uev_DescrMsgIDSingle),
+					GetLocString(MSGID_UNDO_UNDO),
+					*uev->uev_DescrObjName);
+				}
+			}
+		}
+
+	ScalosReleaseSemaphore(&UndoListListSemaphore);
+
+	return buffer;
+}
+
+//----------------------------------------------------------------------------
+
+CONST_STRPTR RedoGetDescription(void)
+{
+	static char buffer[200];
+
+	ScalosObtainSemaphore(&RedoListListSemaphore);
+
+	if (IsListEmpty(&globalRedoList))
+		{
+		snprintf(buffer, sizeof(buffer),
+			GetLocString(MSGID_UNDO_NOT_AVAILABLE),
+			GetLocString(MSGID_UNDO_REDO));
+		}
+	else
+		{
+		struct UndoStep *ust = (struct UndoStep *) globalRedoList.lh_TailPred;
+
+		stccpy(buffer, GetLocString(MSGID_UNDO_REDO), sizeof(buffer));
+
+		d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+		
+		if (!IsListEmpty(&ust->ust_EventList))
+			{
+			struct UndoEvent *uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
+
+			if (ust->ust_EventCount > 1)
+				{
+				snprintf(buffer, sizeof(buffer),
+					GetLocString(uev->uev_DescrMsgIDMultiple),
+					GetLocString(MSGID_UNDO_REDO),
+					ust->ust_EventCount);
+				}
+			else if (uev->uev_DescrObjName && *uev->uev_DescrObjName)
+				{
+				snprintf(buffer, sizeof(buffer),
+					GetLocString(uev->uev_DescrMsgIDSingle),
+					GetLocString(MSGID_UNDO_REDO),
+					*uev->uev_DescrObjName);
+				}
+			}
+		}
+
+	ScalosReleaseSemaphore(&RedoListListSemaphore);
+
+	return buffer;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(ULONG) UndoTask(struct UndoProcArg *upa, struct SM_RunProcess *msg)
 {
 	static CONST_STRPTR ProgTaskName = "Scalos_UndoTask";
 	APTR prWindowPtr;
@@ -473,7 +594,7 @@ static SAVEDS(ULONG) UndoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
 
 	(void) msg;
 
-	d1(kprintf("%s/%s/%ld: START  *ust=%08lx\n", __FILE__, __FUNC__, __LINE__, *ust));
+	d1(kprintf("%s/%s/%ld: START  ust=%08lx\n", __FILE__, __FUNC__, __LINE__, upa->upa_UndoStep));
 
 	prWindowPtr = myProc->pr_WindowPtr;
 	myProc->pr_WindowPtr = (APTR) ~0;    // suppress error requesters
@@ -481,36 +602,37 @@ static SAVEDS(ULONG) UndoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
 	myProc->pr_Task.tc_Node.ln_Name = (STRPTR) ProgTaskName;
 	SetProgramName(ProgTaskName);
 
-	(*ust)->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
+	upa->upa_UndoStep->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
 		SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 		SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
 		TAG_END);
 
-	if ((*ust)->ust_FileTransObj)
+	if (upa->upa_UndoStep->ust_FileTransObj)
 		{
 		struct UndoEvent *uev;
 
-		for (uev = (struct UndoEvent *) (*ust)->ust_EventList.lh_Head;
-			uev != (struct UndoEvent *) &(*ust)->ust_EventList.lh_Tail;
+		for (uev = (struct UndoEvent *) upa->upa_UndoStep->ust_EventList.lh_Head;
+			uev != (struct UndoEvent *) &upa->upa_UndoStep->ust_EventList.lh_Tail;
 			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
 			{
 			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
 			if (uev->uev_UndoHook)
 				CallHookPkt(uev->uev_UndoHook, NULL, uev);
 			}
-
 		// Move undo step to redo list
 		ScalosObtainSemaphore(&RedoListListSemaphore);
-		AddTail(&globalRedoList, &(*ust)->ust_Node);
+		AddTail(&globalRedoList, &upa->upa_UndoStep->ust_Node);
 		ScalosReleaseSemaphore(&RedoListListSemaphore);
 
-		SCA_DisposeScalosObject((*ust)->ust_FileTransObj);
-		(*ust)->ust_FileTransObj = NULL;
+		SCA_DisposeScalosObject(upa->upa_UndoStep->ust_FileTransObj);
+		upa->upa_UndoStep->ust_FileTransObj = NULL;
 		}
 	else
 		{
-		UndoDisposeStep(*ust);
+		UndoDisposeStep(upa->upa_UndoStep);
 		}
+
+	SetMenuOnOff(upa->upa_iwt);
 
 	// restore pr_WindowPtr
 	myProc->pr_WindowPtr = prWindowPtr;
@@ -522,7 +644,7 @@ static SAVEDS(ULONG) UndoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
 
 //----------------------------------------------------------------------------
 
-static SAVEDS(ULONG) RedoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
+static SAVEDS(ULONG) RedoTask(struct UndoProcArg *upa, struct SM_RunProcess *msg)
 {
 	static CONST_STRPTR ProgTaskName = "Scalos_RedoTask";
 	APTR prWindowPtr;
@@ -530,7 +652,7 @@ static SAVEDS(ULONG) RedoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
 
 	(void) msg;
 
-	d1(kprintf("%s/%s/%ld: START  *ust=%08lx\n", __FILE__, __FUNC__, __LINE__, *ust));
+	d1(kprintf("%s/%s/%ld: START  ust=%08lx\n", __FILE__, __FUNC__, __LINE__, upa->upa_UndoStep));
 
 	prWindowPtr = myProc->pr_WindowPtr;
 	myProc->pr_WindowPtr = (APTR) ~0;    // suppress error requesters
@@ -538,17 +660,17 @@ static SAVEDS(ULONG) RedoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
 	myProc->pr_Task.tc_Node.ln_Name = (STRPTR) ProgTaskName;
 	SetProgramName(ProgTaskName);
 
-	(*ust)->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
+	upa->upa_UndoStep->ust_FileTransObj = SCA_NewScalosObjectTags((STRPTR) "FileTransfer.sca",
 		SCCA_FileTrans_Screen, (ULONG) iInfos.xii_iinfos.ii_Screen,
 		SCCA_FileTrans_ReplaceMode, SCCV_ReplaceMode_Ask,
 		TAG_END);
 
-	if ((*ust)->ust_FileTransObj)
+	if (upa->upa_UndoStep->ust_FileTransObj)
 		{
 		struct UndoEvent *uev;
 
-		for (uev = (struct UndoEvent *) (*ust)->ust_EventList.lh_Head;
-			uev != (struct UndoEvent *) &(*ust)->ust_EventList.lh_Tail;
+		for (uev = (struct UndoEvent *) upa->upa_UndoStep->ust_EventList.lh_Head;
+			uev != (struct UndoEvent *) &upa->upa_UndoStep->ust_EventList.lh_Tail;
 			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
 			{
 			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_RedoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_RedoHook));
@@ -558,17 +680,19 @@ static SAVEDS(ULONG) RedoTask(struct UndoStep **ust, struct SM_RunProcess *msg)
 
 		// Move redo step to undo list
 		ScalosObtainSemaphore(&UndoListListSemaphore);
-		AddTail(&globalUndoList, &(*ust)->ust_Node);
+		AddTail(&globalUndoList, &upa->upa_UndoStep->ust_Node);
 		UndoCount++;
 		ScalosReleaseSemaphore(&UndoListListSemaphore);
 
-		SCA_DisposeScalosObject((*ust)->ust_FileTransObj);
-		(*ust)->ust_FileTransObj = NULL;
+		SCA_DisposeScalosObject(upa->upa_UndoStep->ust_FileTransObj);
+		upa->upa_UndoStep->ust_FileTransObj = NULL;
 		}
 	else
 		{
-		UndoDisposeStep(*ust);
+		UndoDisposeStep(upa->upa_UndoStep);
 		}
+
+	SetMenuOnOff(upa->upa_iwt);
 
 	// restore pr_WindowPtr
 	myProc->pr_WindowPtr = prWindowPtr;
@@ -586,6 +710,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	do	{
 		BPTR dirLock;
 		CONST_STRPTR fName;
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		static struct Hook UndoDisposeCopyMoveDataHook =
 			{
 			{ NULL, NULL },
@@ -628,31 +753,29 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (UNDO_Copy == uev->uev_Type)
 			{
 			uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoCopyEventHook, TagList);
+			uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoCopyEventHook, TagList);
+			uev->uev_DescrMsgIDSingle = MSGID_UNDO_COPY_SINGLE;
+			uev->uev_DescrMsgIDMultiple = MSGID_UNDO_COPY_MORE;
 			}
 		else if (UNDO_Move == uev->uev_Type)
 			{
 			uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoMoveEventHook, TagList);
+			uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoMoveEventHook, TagList);
+			uev->uev_DescrMsgIDSingle = MSGID_UNDO_MOVE_SINGLE;
+			uev->uev_DescrMsgIDMultiple = MSGID_UNDO_MOVE_MORE;
 			}
 		else if (UNDO_CreateLink == uev->uev_Type)
 			{
 			uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoCopyEventHook, TagList);
-			}
-
-		if (UNDO_Copy == uev->uev_Type)
-			{
-			uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoCopyEventHook, TagList);
-			}
-		else if (UNDO_Move == uev->uev_Type)
-			{
-			uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoMoveEventHook, TagList);
-			}
-		else if (UNDO_CreateLink == uev->uev_Type)
-			{
 			uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoCreateLinkEventHook, TagList);
+			uev->uev_DescrMsgIDSingle = MSGID_UNDO_CREATELINK_SINGLE;
+			uev->uev_DescrMsgIDMultiple = MSGID_UNDO_CREATELINK_MORE;
 			}
 
 		uev->uev_OldPosX = GetTagData(UNDOTAG_OldIconPosX, NO_ICON_POSITION_SHORT, TagList);
 		uev->uev_OldPosY = GetTagData(UNDOTAG_OldIconPosY, NO_ICON_POSITION_SHORT, TagList);
+
+		uev->uev_DescrObjName = &ucmed->ucmed_srcName;
 
 		name = AllocPathBuffer();
 		if (NULL == name)
@@ -667,8 +790,8 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
+		ucmed->ucmed_srcDirName = AllocCopyString(name);
+		if (NULL == ucmed->ucmed_srcDirName)
 			break;
 
 		dirLock = (BPTR) GetTagData(UNDOTAG_CopyDestDirLock, BNULL, TagList);
@@ -680,8 +803,8 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_destDirName = AllocCopyString(name);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destDirName)
+		ucmed->ucmed_destDirName = AllocCopyString(name);
+		if (NULL == ucmed->ucmed_destDirName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
@@ -690,18 +813,18 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
+		ucmed->ucmed_srcName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_srcName)
 			break;
 	
-		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) uev->uev_Data.uev_CopyMoveData.ucmed_srcName, TagList);
+		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) ucmed->ucmed_srcName, TagList);
 		if (NULL == fName)
-			fName = uev->uev_Data.uev_CopyMoveData.ucmed_srcName;
+			fName = ucmed->ucmed_srcName;
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
+		ucmed->ucmed_destName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_destName)
 			break;
 
 		if ((NO_ICON_POSITION_SHORT == uev->uev_OldPosX) || (NO_ICON_POSITION_SHORT == uev->uev_OldPosY))
@@ -712,11 +835,11 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			do	{
 				struct ExtGadget *gg;
 
-				iwt = UndoFindWindowByDir(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName);
+				iwt = UndoFindWindowByDir(ucmed->ucmed_srcDirName);
 				if (NULL == iwt)
 					break;
 
-				in = UndoFindIconByName(iwt, uev->uev_Data.uev_CopyMoveData.ucmed_srcName);
+				in = UndoFindIconByName(iwt, ucmed->ucmed_srcName);
 				if (NULL == in)
 					break;
 
@@ -777,6 +900,11 @@ static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoChangeIconPosEventHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoChangeIconPosEventHook, TagList);
 
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_CHANGEICONPOS_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_CHANGEICONPOS_MORE;
+
+		uev->uev_DescrObjName = &uev->uev_Data.uev_IconData.uid_IconName;
+
 		name = AllocPathBuffer();
 		if (NULL == name)
 			break;
@@ -834,6 +962,7 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		BPTR dirLock;
 		struct ScaIconNode *in;
 		const struct ExtGadget *gg;
+		struct UndoSnaphotIconData *usid = &uev->uev_Data.uev_SnapshotData;
 		static struct Hook DisposeIconDataHook =
 			{
 			{ NULL, NULL },
@@ -857,6 +986,11 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoSnapshotEventHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoSnapshotPosEventHook, TagList);
 
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_SNAPSHOT_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_SNAPSHOT_MORE;
+
+		uev->uev_DescrObjName = &usid->usid_IconName;
+
 		name = AllocPathBuffer();
 		if (NULL == name)
 			break;
@@ -870,13 +1004,13 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
-		uev->uev_Data.uev_SnapshotData.usid_DirName = AllocCopyString(name);
-		if (NULL == uev->uev_Data.uev_SnapshotData.usid_DirName)
+		usid->usid_DirName = AllocCopyString(name);
+		if (NULL == usid->usid_DirName)
 			break;
 
-		uev->uev_Data.uev_SnapshotData.usid_SaveIcon = GetTagData(UNDOTAG_SaveIcon, FALSE, TagList);
+		usid->usid_SaveIcon = GetTagData(UNDOTAG_SaveIcon, FALSE, TagList);
 
-		d1(kprintf("%s/%s/%ld: UNDOTAG_SaveIcon=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_SaveIcon));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_SaveIcon=%ld\n", __FILE__, __FUNC__, __LINE__, usid->usid_SaveIcon));
 
 		in  = (struct ScaIconNode *) GetTagData(UNDOTAG_IconNode, (ULONG) NULL, TagList);
 		if (NULL == in)
@@ -884,24 +1018,24 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_IconNode=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
-		uev->uev_Data.uev_SnapshotData.usid_IconName = AllocCopyString(GetIconName(in));
-		if (NULL == uev->uev_Data.uev_SnapshotData.usid_IconName)
+		usid->usid_IconName = AllocCopyString(GetIconName(in));
+		if (NULL == usid->usid_IconName)
 			break;
 
 		oldDir = CurrentDir(dirLock);
 
-		uev->uev_Data.uev_SnapshotData.usid_IconObj = (Object *) NewIconObjectTags(uev->uev_Data.uev_SnapshotData.usid_IconName,
+		usid->usid_IconObj = (Object *) NewIconObjectTags(usid->usid_IconName,
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-			IDTA_Text, (ULONG) uev->uev_Data.uev_SnapshotData.usid_IconName,
-			DTA_Name, (ULONG) uev->uev_Data.uev_SnapshotData.usid_IconName,
+			IDTA_Text, (ULONG) usid->usid_IconName,
+			DTA_Name, (ULONG) usid->usid_IconName,
 			TAG_END);
 
 		CurrentDir(oldDir);
 
-		d1(kprintf("%s/%s/%ld: usid_IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconObj));
+		d1(kprintf("%s/%s/%ld: usid_IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, usid->usid_IconObj));
 
-		if (NULL == uev->uev_Data.uev_SnapshotData.usid_IconObj)
+		if (NULL == usid->usid_IconObj)
 			break;
 
 		gg = (const struct ExtGadget *) in->in_Icon;
@@ -931,6 +1065,7 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCleanupData *ucd = &uev->uev_Data.uev_CleanupData;
 		const struct ScaIconNode *IconList;
 		const struct ScaIconNode *in;
 		struct UndoCleanupIconEntry *ucie;
@@ -957,15 +1092,25 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoCleanupEventHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoCleanupEventHook, TagList);
 
-		uev->uev_Data.uev_CleanupData.ucd_CleanupMode = GetTagData(UNDOTag_CleanupMode, CLEANUP_Default, TagList);
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_CLEANUP;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_CLEANUP;
 
-		d1(kprintf("%s/%s/%ld: UNDOTag_CleanupMode=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_CleanupMode));
+		ucd->ucd_CleanupMode = GetTagData(UNDOTag_CleanupMode, CLEANUP_Default, TagList);
 
-		uev->uev_Data.uev_CleanupData.ucd_WindowTask = (struct internalScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
-		if (NULL == uev->uev_Data.uev_CleanupData.ucd_WindowTask)
+		d1(kprintf("%s/%s/%ld: UNDOTag_CleanupMode=%ld\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_CleanupMode));
+
+		ucd->ucd_WindowTask = (struct ScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
+		if (NULL == ucd->ucd_WindowTask)
 			break;
 
-		d1(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
+		ucd->ucd_WindowTitle = AllocCopyString(((struct internalScaWindowTask *) ucd->ucd_WindowTask)->iwt_WinTitle);
+		if (NULL == ucd->ucd_WindowTitle)
+			break;
+
+		uev->uev_DescrObjName = &ucd->ucd_WindowTitle;
+
+		d1(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_WindowTask));
+		d1(kprintf("%s/%s/%ld: ucd_WindowTitle=<%s>\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_WindowTitle));
 
 		IconList = (struct ScaIconNode *) GetTagData(UNDOTAG_IconList, (ULONG) NULL, TagList);
 		if (NULL == IconList)
@@ -973,23 +1118,23 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_IconList=%08lx\n", __FILE__, __FUNC__, __LINE__, IconList));
 
-		ScalosLockIconListShared(uev->uev_Data.uev_CleanupData.ucd_WindowTask);
+		ScalosLockIconListShared((struct internalScaWindowTask *) ucd->ucd_WindowTask);
 
 		// count number of icons
 		for (in = IconList; in; in = (const struct ScaIconNode *) in->in_Node.mln_Succ)
 			{
-			uev->uev_Data.uev_CleanupData.ucd_IconCount++;
+			ucd->ucd_IconCount++;
 			}
 
-		d1(kprintf("%s/%s/%ld: ucd_IconCount=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_IconCount));
+		d1(kprintf("%s/%s/%ld: ucd_IconCount=%lu\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_IconCount));
 
 		// create array to store icon positions
-		uev->uev_Data.uev_CleanupData.ucd_Icons = ScalosAllocVecPooled(uev->uev_Data.uev_CleanupData.ucd_IconCount * sizeof(struct UndoCleanupIconEntry));
-		if (NULL == uev->uev_Data.uev_CleanupData.ucd_Icons)
+		ucd->ucd_Icons = ScalosAllocVecPooled(ucd->ucd_IconCount * sizeof(struct UndoCleanupIconEntry));
+		if (NULL == ucd->ucd_Icons)
 			break;
 
 		// store icon positions in array
-		for (ucie = uev->uev_Data.uev_CleanupData.ucd_Icons, in = IconList;
+		for (ucie = ucd->ucd_Icons, in = IconList;
 			in; in = (const struct ScaIconNode *) in->in_Node.mln_Succ, ucie++)
 			{
 			const struct ExtGadget *gg = (const struct ExtGadget *) in->in_Icon;
@@ -1003,9 +1148,9 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 				ucie->ucin_Left, ucie->ucin_Top));
 			}
 
-		ScalosUnLockIconList(uev->uev_Data.uev_CleanupData.ucd_WindowTask);
+		ScalosUnLockIconList((struct internalScaWindowTask *) ucd->ucd_WindowTask);
 
-		d1(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
+		d1(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_WindowTask));
 
 		Success = TRUE;
 		} while (0);
@@ -1027,6 +1172,7 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	do	{
 		BPTR dirLock;
 		CONST_STRPTR fName;
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		static struct Hook UndoDisposeCopyMoveDataHook =
 			{
 			{ NULL, NULL },
@@ -1051,6 +1197,11 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoRenameHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoRenameHook, TagList);
 
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_RENAME_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_RENAME_MORE;
+
+		uev->uev_DescrObjName = &ucmed->ucmed_srcName;
+
 		name = AllocPathBuffer();
 		if (NULL == name)
 			break;
@@ -1067,8 +1218,8 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
+		ucmed->ucmed_srcDirName = AllocCopyString(name);
+		if (NULL == ucmed->ucmed_srcDirName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
@@ -1077,8 +1228,8 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
+		ucmed->ucmed_srcName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_srcName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) NULL, TagList);
@@ -1086,8 +1237,8 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			break;
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
+		ucmed->ucmed_destName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_destName)
 			break;
 
 		Success = TRUE;
@@ -1112,6 +1263,7 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 	do	{
 		CONST_STRPTR fName;
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		static struct Hook UndoDisposeCopyMoveDataHook =
 			{
 			{ NULL, NULL },
@@ -1136,14 +1288,19 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoRelabelHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoRelabelHook, TagList);
 
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_RELABEL_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_RELABEL_MORE;
+
+		uev->uev_DescrObjName = &ucmed->ucmed_srcName;
+
 		name = AllocPathBuffer();
 		if (NULL == name)
 			break;
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
+		ucmed->ucmed_srcDirName = AllocCopyString(name);
+		if (NULL == ucmed->ucmed_srcDirName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
@@ -1153,8 +1310,8 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		// i.e. "Data1old:"
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
+		ucmed->ucmed_srcName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_srcName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) NULL, TagList);
@@ -1164,8 +1321,8 @@ static BOOL AddRelabelEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		// i.e. "Data1new"
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
+		ucmed->ucmed_destName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_destName)
 			break;
 
 		Success = TRUE;
@@ -1191,6 +1348,7 @@ static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	do	{
 		BPTR dirLock;
 		CONST_STRPTR fName;
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		static struct Hook UndoDisposeCopyMoveDataHook =
 			{
 			{ NULL, NULL },
@@ -1215,6 +1373,11 @@ static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoDeleteHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoDeleteHook, TagList);
 
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_DELETE_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_DELETE_MORE;
+
+		uev->uev_DescrObjName = &ucmed->ucmed_srcName;
+
 		name = AllocPathBuffer();
 		if (NULL == name)
 			break;
@@ -1231,8 +1394,8 @@ static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = AllocCopyString(name);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
+		ucmed->ucmed_srcDirName = AllocCopyString(name);
+		if (NULL == ucmed->ucmed_srcDirName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
@@ -1241,8 +1404,8 @@ static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_srcName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
+		ucmed->ucmed_srcName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_srcName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) "SYS:Trashcan", TagList);
@@ -1250,8 +1413,8 @@ static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			break;
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopyDestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_CopyMoveData.ucmed_destName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_CopyMoveData.ucmed_destName)
+		ucmed->ucmed_destName = AllocCopyString(fName);
+		if (NULL == ucmed->ucmed_destName)
 			break;
 
 		Success = TRUE;
@@ -1274,6 +1437,13 @@ static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoSizeWindowData *uswd = &uev->uev_Data.uev_SizeWindowData;
+		static struct Hook DisposeSizeWindowDataHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoDisposeSizeWindowData),   // h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
 		static struct Hook UndoSizeWindowHook =
 			{
 			{ NULL, NULL },
@@ -1287,41 +1457,51 @@ static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList)
 			NULL,					// h_Data
 			};
 
+		uev->uev_DisposeHook = (struct Hook *) GetTagData(UNDOTAG_DisposeHook, (ULONG) &DisposeSizeWindowDataHook, TagList);
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoSizeWindowHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoSizeWindowHook, TagList);
 
-		uev->uev_Data.uev_SizeWindowData.uswd_WindowTask = (struct internalScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
-		if (NULL == uev->uev_Data.uev_SizeWindowData.uswd_WindowTask)
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_SIZEWINDOW;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_SIZEWINDOW;
+
+		uswd->uswd_WindowTask = (struct ScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
+		if (NULL == uswd->uswd_WindowTask)
 			break;
 
-		d1(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_WindowTask));
+		uswd->uswd_WindowTitle = AllocCopyString(((struct internalScaWindowTask *) uswd->uswd_WindowTask)->iwt_WinTitle);
+		if (NULL == uswd->uswd_WindowTitle)
+			break;
 
-		uev->uev_Data.uev_SizeWindowData.uswd_OldLeft = GetTagData(UNDOTAG_OldWindowLeft, 0, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_OldTop = GetTagData(UNDOTAG_OldWindowTop, 0, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_OldWidth = GetTagData(UNDOTAG_OldWindowWidth, 0, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_OldHeight = GetTagData(UNDOTAG_OldWindowHeight, 0, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX = GetTagData(UNDOTAG_OldWindowVirtX, 0, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY = GetTagData(UNDOTAG_OldWindowVirtY, 0, TagList);
+		uev->uev_DescrObjName = &uswd->uswd_WindowTitle;
 
-		uev->uev_Data.uev_SizeWindowData.uswd_NewLeft = GetTagData(UNDOTAG_NewWindowLeft, uev->uev_Data.uev_SizeWindowData.uswd_OldLeft, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_NewTop = GetTagData(UNDOTAG_NewWindowTop, uev->uev_Data.uev_SizeWindowData.uswd_OldTop, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_NewWidth = GetTagData(UNDOTAG_NewWindowWidth, uev->uev_Data.uev_SizeWindowData.uswd_OldWidth, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_NewHeight = GetTagData(UNDOTAG_NewWindowHeight, uev->uev_Data.uev_SizeWindowData.uswd_OldHeight, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_NewVirtX = GetTagData(UNDOTAG_NewWindowVirtX, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX, TagList);
-		uev->uev_Data.uev_SizeWindowData.uswd_NewVirtY = GetTagData(UNDOTAG_NewWindowVirtY, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY, TagList);
+		d1(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_WindowTask));
 
-		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowLeft=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldLeft));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowTop=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldTop));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowWidth=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldWidth));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowHeight=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldHeight));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowVirtX=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowVirtY=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowLeft=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewLeft));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowTop=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewTop));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowWidth=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewWidth));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowHeight=%lu\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewHeight));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowVirtX=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewVirtX));
-		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowVirtY=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SizeWindowData.uswd_NewVirtY));
+		uswd->uswd_OldLeft = GetTagData(UNDOTAG_OldWindowLeft, 0, TagList);
+		uswd->uswd_OldTop = GetTagData(UNDOTAG_OldWindowTop, 0, TagList);
+		uswd->uswd_OldWidth = GetTagData(UNDOTAG_OldWindowWidth, 0, TagList);
+		uswd->uswd_OldHeight = GetTagData(UNDOTAG_OldWindowHeight, 0, TagList);
+		uswd->uswd_OldVirtX = GetTagData(UNDOTAG_OldWindowVirtX, 0, TagList);
+		uswd->uswd_OldVirtY = GetTagData(UNDOTAG_OldWindowVirtY, 0, TagList);
+
+		uswd->uswd_NewLeft = GetTagData(UNDOTAG_NewWindowLeft, uswd->uswd_OldLeft, TagList);
+		uswd->uswd_NewTop = GetTagData(UNDOTAG_NewWindowTop, uswd->uswd_OldTop, TagList);
+		uswd->uswd_NewWidth = GetTagData(UNDOTAG_NewWindowWidth, uswd->uswd_OldWidth, TagList);
+		uswd->uswd_NewHeight = GetTagData(UNDOTAG_NewWindowHeight, uswd->uswd_OldHeight, TagList);
+		uswd->uswd_NewVirtX = GetTagData(UNDOTAG_NewWindowVirtX, uswd->uswd_OldVirtX, TagList);
+		uswd->uswd_NewVirtY = GetTagData(UNDOTAG_NewWindowVirtY, uswd->uswd_OldVirtY, TagList);
+
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowLeft=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_OldLeft));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowTop=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_OldTop));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowWidth=%lu\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_OldWidth));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowHeight=%lu\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_OldHeight));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowVirtX=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_OldVirtX));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldWindowVirtY=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_OldVirtY));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowLeft=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_NewLeft));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowTop=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_NewTop));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowWidth=%lu\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_NewWidth));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowHeight=%lu\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_NewHeight));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowVirtX=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_NewVirtX));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewWindowVirtY=%ld\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_NewVirtY));
 
 		Success = TRUE;
 		} while (0);
@@ -1343,6 +1523,7 @@ static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	do	{
 		BPTR dirLock;
 		CONST_STRPTR fName;
+		struct UndoNewDrawerData *und = &uev->uev_Data.uev_NewDrawerData;
 		static struct Hook UndoDisposeNewDrawerHook =
 			{
 			{ NULL, NULL },
@@ -1383,8 +1564,8 @@ static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
-		uev->uev_Data.uev_NewDrawerData.und_DirName = AllocCopyString(name);
-		if (NULL == uev->uev_Data.uev_NewDrawerData.und_DirName)
+		und->und_DirName = AllocCopyString(name);
+		if (NULL == und->und_DirName)
 			break;
 
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
@@ -1393,13 +1574,13 @@ static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
-		uev->uev_Data.uev_NewDrawerData.und_srcName = AllocCopyString(fName);
-		if (NULL == uev->uev_Data.uev_NewDrawerData.und_srcName)
+		und->und_srcName = AllocCopyString(fName);
+		if (NULL == und->und_srcName)
 			break;
 
-		uev->uev_Data.uev_NewDrawerData.und_CreateIcon = GetTagData(UNDOTAG_CreateIcon, TRUE, TagList);
+		und->und_CreateIcon = GetTagData(UNDOTAG_CreateIcon, TRUE, TagList);
 
-		d1(kprintf("%s/%s/%ld: UNDOTAG_CreateIcon=%ld\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_NewDrawerData.und_CreateIcon));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CreateIcon=%ld\n", __FILE__, __FUNC__, __LINE__, und->und_CreateIcon));
 
 		Success = TRUE;
 		} while (0);
@@ -1450,12 +1631,18 @@ static BOOL AddLeaveOutPutAwayEvent(struct UndoEvent *uev, struct TagItem *TagLi
 			{
 			uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &RedoLeaveOutHook, TagList);
 			uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &UndoLeaveOutHook, TagList);
+			uev->uev_DescrMsgIDSingle = MSGID_UNDO_PUTAWAY_SINGLE;
+			uev->uev_DescrMsgIDMultiple = MSGID_UNDO_PUTAWAY_MORE;
 			}
 		else
 			{
 			uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoLeaveOutHook, TagList);
 			uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoLeaveOutHook, TagList);
+			uev->uev_DescrMsgIDSingle = MSGID_UNDO_LEAVEOUT_SINGLE;
+			uev->uev_DescrMsgIDMultiple = MSGID_UNDO_LEAVEOUT_MORE;
 			}
+
+		uev->uev_DescrObjName = &usid->usid_IconName;
 
 		name = AllocPathBuffer();
 		if (NULL == name)
@@ -1512,20 +1699,21 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		STRPTR destName;
 		BPTR oldDir;
 		LONG Result;
 		LONG IconResult;
 		struct ScaUpdateIcon_IW upd;
 
-		destDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName, ACCESS_READ);
-		d1(kprintf("%s/%s/%ld: destDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, destDirLock, uev->uev_Data.uev_CopyMoveData.ucmed_destDirName));
+		destDirLock = Lock(ucmed->ucmed_destDirName, ACCESS_READ);
+		d1(kprintf("%s/%s/%ld: destDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, destDirLock, ucmed->ucmed_destDirName));
 		if (BNULL == destDirLock)
 			break;
 
-		destName = uev->uev_Data.uev_CopyMoveData.ucmed_destName;
+		destName = ucmed->ucmed_destName;
 		if (0 == strlen(destName))
-			destName = uev->uev_Data.uev_CopyMoveData.ucmed_srcName;
+			destName = ucmed->ucmed_srcName;
 
 		upd.ui_iw_Lock = destDirLock;
 		upd.ui_iw_Name = destName;
@@ -1576,20 +1764,21 @@ static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		ULONG Result;
 
-		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
+		srcDirLock = Lock(ucmed->ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
-		destDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName, ACCESS_READ);
+		destDirLock = Lock(ucmed->ucmed_destDirName, ACCESS_READ);
 		if (BNULL == destDirLock)
 			break;
 
 		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_Copy,
 			srcDirLock, destDirLock,
-			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
-			uev->uev_Data.uev_CopyMoveData.ucmed_destName,
+			ucmed->ucmed_srcName,
+			ucmed->ucmed_destName,
 			uev->uev_NewPosX, uev->uev_NewPosY);
 		if (RETURN_OK != Result)
 			break;
@@ -1622,29 +1811,30 @@ static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		ULONG Result;
 
-		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_srcDirName));
 
-		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
+		srcDirLock = Lock(ucmed->ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
 		debugLock_d1(srcDirLock);
 
-		d1(kprintf("%s/%s/%ld: ucmed_destDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_destDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_destDirName));
 
-		destDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName, ACCESS_READ);
+		destDirLock = Lock(ucmed->ucmed_destDirName, ACCESS_READ);
 		if (BNULL == destDirLock)
 			break;
 
 		debugLock_d1(destDirLock);
 
-		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
+		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_srcName));
 
 		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_Move,
 			destDirLock, srcDirLock,
-			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
+			ucmed->ucmed_srcName,
 			uev->uev_OldPosX, uev->uev_OldPosY);
 		if (RETURN_OK != Result)
 			break;
@@ -1681,19 +1871,20 @@ static SAVEDS(LONG) RedoMoveEvent(struct Hook *hook, APTR object, struct UndoEve
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		ULONG Result;
 
-		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
+		srcDirLock = Lock(ucmed->ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
-		destDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName, ACCESS_READ);
+		destDirLock = Lock(ucmed->ucmed_destDirName, ACCESS_READ);
 		if (BNULL == destDirLock)
 			break;
 
 		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_Move,
 			srcDirLock, destDirLock,
-			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
+			ucmed->ucmed_srcName,
 			uev->uev_NewPosX, uev->uev_NewPosY);
 		if (RETURN_OK != Result)
 			break;
@@ -1723,19 +1914,20 @@ static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct U
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		ULONG Result;
 
-		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
+		srcDirLock = Lock(ucmed->ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
-		destDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName, ACCESS_READ);
+		destDirLock = Lock(ucmed->ucmed_destDirName, ACCESS_READ);
 		if (BNULL == destDirLock)
 			break;
 
 		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_CreateLink,
 			srcDirLock, destDirLock,
-			uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
+			ucmed->ucmed_srcName,
 			uev->uev_NewPosX, uev->uev_NewPosY);
 		if (RETURN_OK != Result)
 			break;
@@ -1861,7 +2053,7 @@ static struct internalScaWindowTask *UndoFindWindowByDir(CONST_STRPTR DirName)
 
 //----------------------------------------------------------------------------
 
-static struct internalScaWindowTask *UndoFindWindowByWindowTask(const struct internalScaWindowTask *iwt)
+static struct internalScaWindowTask *UndoFindWindowByWindowTask(const struct ScaWindowTask *wt)
 {
 	struct ScaWindowStruct *ws;
 
@@ -1872,9 +2064,9 @@ static struct internalScaWindowTask *UndoFindWindowByWindowTask(const struct int
 
 	for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 		{
-		if (iwt == (struct internalScaWindowTask *) ws->ws_WindowTask)
+		if (wt == ws->ws_WindowTask)
 			{
-			d1(KPrintF("%s/%s/%ld: Found  iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+			d1(KPrintF("%s/%s/%ld: Found  iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, wt, wt->iwt_WinTitle));
 			return (struct internalScaWindowTask *) ws->ws_WindowTask;
 			}
 		}
@@ -1939,7 +2131,7 @@ static BOOL RedoChangeIconPosEvent(struct UndoEvent *uev)
 
 //----------------------------------------------------------------------------
 
-static SAVEDS(LONG) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+static SAVEDS(void) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	(void) hook;
 	(void) object;
@@ -1947,35 +2139,35 @@ static SAVEDS(LONG) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, stru
 	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
-		if (uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName)
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
+
+		if (ucmed->ucmed_srcDirName)
 			{
-			FreeCopyString(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName);
-			uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName = NULL;
+			FreeCopyString(ucmed->ucmed_srcDirName);
+			ucmed->ucmed_srcDirName = NULL;
 			}
-		if (uev->uev_Data.uev_CopyMoveData.ucmed_destDirName)
+		if (ucmed->ucmed_destDirName)
 			{
-			FreeCopyString(uev->uev_Data.uev_CopyMoveData.ucmed_destDirName);
-			uev->uev_Data.uev_CopyMoveData.ucmed_destDirName = NULL;
+			FreeCopyString(ucmed->ucmed_destDirName);
+			ucmed->ucmed_destDirName = NULL;
 			}
-		if (uev->uev_Data.uev_CopyMoveData.ucmed_srcName)
+		if (ucmed->ucmed_srcName)
 			{
-			FreeCopyString(uev->uev_Data.uev_CopyMoveData.ucmed_srcName);
-			uev->uev_Data.uev_CopyMoveData.ucmed_srcName = NULL;
+			FreeCopyString(ucmed->ucmed_srcName);
+			ucmed->ucmed_srcName = NULL;
 			}
-		if (uev->uev_Data.uev_CopyMoveData.ucmed_destName)
+		if (ucmed->ucmed_destName)
 			{
-			FreeCopyString(uev->uev_Data.uev_CopyMoveData.ucmed_destName);
-			uev->uev_Data.uev_CopyMoveData.ucmed_destName = NULL;
+			FreeCopyString(ucmed->ucmed_destName);
+			ucmed->ucmed_destName = NULL;
 			}
 		}
 	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
-
-	return 0;
 }
 
 //----------------------------------------------------------------------------
 
-static SAVEDS(LONG) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+static SAVEDS(void) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	(void) hook;
 	(void) object;
@@ -1983,24 +2175,24 @@ static SAVEDS(LONG) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, str
 	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
-		if (uev->uev_Data.uev_NewDrawerData.und_DirName)
+		struct UndoNewDrawerData *und = &uev->uev_Data.uev_NewDrawerData;
+
+		if (und->und_DirName)
 			{
-			FreeCopyString(uev->uev_Data.uev_NewDrawerData.und_DirName);
-			uev->uev_Data.uev_NewDrawerData.und_DirName = NULL;
+			FreeCopyString(und->und_DirName);
+			und->und_DirName = NULL;
 			}
-		if (uev->uev_Data.uev_NewDrawerData.und_srcName)
+		if (und->und_srcName)
 			{
-			FreeCopyString(uev->uev_Data.uev_NewDrawerData.und_srcName);
-			uev->uev_Data.uev_NewDrawerData.und_srcName = NULL;
+			FreeCopyString(und->und_srcName);
+			und->und_srcName = NULL;
 			}
 		}
 	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
-
-	return 0;
 }
 //----------------------------------------------------------------------------
 
-static SAVEDS(LONG) UndoDisposeIconData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+static SAVEDS(void) UndoDisposeIconData(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	(void) hook;
 	(void) object;
@@ -2020,13 +2212,11 @@ static SAVEDS(LONG) UndoDisposeIconData(struct Hook *hook, APTR object, struct U
 			}
 		}
 	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
-
-	return 0;
 }
 
 //----------------------------------------------------------------------------
 
-static SAVEDS(LONG) UndoDisposeCleanupData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+static SAVEDS(void) UndoDisposeCleanupData(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	(void) hook;
 	(void) object;
@@ -2034,20 +2224,25 @@ static SAVEDS(LONG) UndoDisposeCleanupData(struct Hook *hook, APTR object, struc
 	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
-		if (uev->uev_Data.uev_CleanupData.ucd_Icons)
+		struct UndoCleanupData *ucd = &uev->uev_Data.uev_CleanupData;
+
+		if (ucd->ucd_WindowTitle)
 			{
-			ScalosFreeVecPooled(uev->uev_Data.uev_CleanupData.ucd_Icons);
-			uev->uev_Data.uev_CleanupData.ucd_Icons = NULL;
+			FreeCopyString(ucd->ucd_WindowTitle);
+			ucd->ucd_WindowTitle = NULL;
+			}
+		if (ucd->ucd_Icons)
+			{
+			ScalosFreeVecPooled(ucd->ucd_Icons);
+			ucd->ucd_Icons = NULL;
 			}
 		}
 	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
-
-	return 0;
 }
 
 //----------------------------------------------------------------------------
 
-static SAVEDS(LONG) UndoDisposeSnapshotData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+static SAVEDS(void) UndoDisposeSnapshotData(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	(void) hook;
 	(void) object;
@@ -2055,26 +2250,48 @@ static SAVEDS(LONG) UndoDisposeSnapshotData(struct Hook *hook, APTR object, stru
 	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 	if (uev)
 		{
-		if (uev->uev_Data.uev_SnapshotData.usid_DirName)
+		struct UndoSnaphotIconData *usid = &uev->uev_Data.uev_SnapshotData;
+
+		if (usid->usid_DirName)
 			{
-			FreeCopyString(uev->uev_Data.uev_SnapshotData.usid_DirName);
-			uev->uev_Data.uev_SnapshotData.usid_DirName = NULL;
+			FreeCopyString(usid->usid_DirName);
+			usid->usid_DirName = NULL;
 			}
-		if (uev->uev_Data.uev_SnapshotData.usid_IconName)
+		if (usid->usid_IconName)
 			{
-			FreeCopyString(uev->uev_Data.uev_SnapshotData.usid_IconName);
-			uev->uev_Data.uev_SnapshotData.usid_IconName = NULL;
+			FreeCopyString(usid->usid_IconName);
+			usid->usid_IconName = NULL;
 			}
-		if (uev->uev_Data.uev_SnapshotData.usid_IconObj)
+		if (usid->usid_IconObj)
 			{
-			DisposeIconObject(uev->uev_Data.uev_SnapshotData.usid_IconObj);
-			uev->uev_Data.uev_SnapshotData.usid_IconObj = NULL;
+			DisposeIconObject(usid->usid_IconObj);
+			usid->usid_IconObj = NULL;
 			}
 		}
 	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
-
-	return 0;
 }
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) UndoDisposeSizeWindowData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	(void) hook;
+	(void) object;
+
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	if (uev)
+		{
+		struct UndoSizeWindowData *uswd = &uev->uev_Data.uev_SizeWindowData;
+
+		if (uswd->uswd_WindowTitle)
+			{
+			FreeCopyString(uswd->uswd_WindowTitle);
+			uswd->uswd_WindowTitle = NULL;
+			}
+		}
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+}
+
 //----------------------------------------------------------------------------
 
 static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
@@ -2326,19 +2543,20 @@ static SAVEDS(LONG) UndoSnapshotEvent(struct Hook *hook, APTR object, struct Und
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoSnaphotIconData *usid = &uev->uev_Data.uev_SnapshotData;
 		const struct IBox *pWinRect;
 		ULONG IconViewMode;
 		ULONG ddFlags;
 		LONG WinCurrentX, WinCurrentY;
 
-		iwt = UndoFindWindowByDir(uev->uev_Data.uev_SnapshotData.usid_DirName);
+		iwt = UndoFindWindowByDir(usid->usid_DirName);
 		if (NULL == iwt)
 			break;
 
 		d1(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
-		d1(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconName));
+		d1(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, usid->usid_IconName));
 
-		in = UndoFindIconByName(iwt, uev->uev_Data.uev_SnapshotData.usid_IconName);
+		in = UndoFindIconByName(iwt, usid->usid_IconName);
 		if (NULL == in)
 			break;
 
@@ -2347,17 +2565,17 @@ static SAVEDS(LONG) UndoSnapshotEvent(struct Hook *hook, APTR object, struct Und
 
 		if (uev->uev_OldPosX != uev->uev_NewPosX || uev->uev_OldPosY != uev->uev_NewPosY)
 			{
-			if (!MoveIconTo(uev->uev_Data.uev_SnapshotData.usid_DirName,
-				uev->uev_Data.uev_SnapshotData.usid_IconName,
+			if (!MoveIconTo(usid->usid_DirName,
+				usid->usid_IconName,
 				uev->uev_OldPosX, uev->uev_OldPosY))
 				break;
 			}
 
-		GetAttr(IDTA_ViewModes, uev->uev_Data.uev_SnapshotData.usid_IconObj, &IconViewMode);
-		GetAttr(IDTA_Flags, uev->uev_Data.uev_SnapshotData.usid_IconObj, &ddFlags);
-		GetAttr(IDTA_WindowRect, uev->uev_Data.uev_SnapshotData.usid_IconObj, (ULONG *) &pWinRect);
-		GetAttr(IDTA_WinCurrentX, uev->uev_Data.uev_SnapshotData.usid_IconObj, (ULONG *) &WinCurrentX);
-		GetAttr(IDTA_WinCurrentY, uev->uev_Data.uev_SnapshotData.usid_IconObj, (ULONG *) &WinCurrentY);
+		GetAttr(IDTA_ViewModes, usid->usid_IconObj, &IconViewMode);
+		GetAttr(IDTA_Flags, usid->usid_IconObj, &ddFlags);
+		GetAttr(IDTA_WindowRect, usid->usid_IconObj, (ULONG *) &pWinRect);
+		GetAttr(IDTA_WinCurrentX, usid->usid_IconObj, (ULONG *) &WinCurrentX);
+		GetAttr(IDTA_WinCurrentY, usid->usid_IconObj, (ULONG *) &WinCurrentY);
 
 		SetAttrs(in->in_Icon,
 			IDTA_ViewModes, IconViewMode,
@@ -2367,13 +2585,13 @@ static SAVEDS(LONG) UndoSnapshotEvent(struct Hook *hook, APTR object, struct Und
 			IDTA_WinCurrentX, WinCurrentX,
 			TAG_END);
 
-		if (uev->uev_Data.uev_SnapshotData.usid_SaveIcon)
+		if (usid->usid_SaveIcon)
 			{
 			ULONG Result;
 
-			Result = SaveIconObject(uev->uev_Data.uev_SnapshotData.usid_IconObj,
+			Result = SaveIconObject(usid->usid_IconObj,
 				iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
-				uev->uev_Data.uev_SnapshotData.usid_IconName,
+				usid->usid_IconName,
 				FALSE,
 				NULL);
 
@@ -2407,21 +2625,23 @@ static SAVEDS(LONG) RedoSnapshotPosEvent(struct Hook *hook, APTR object, struct 
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
-		iwt = UndoFindWindowByDir(uev->uev_Data.uev_SnapshotData.usid_DirName);
+		struct UndoSnaphotIconData *usid = &uev->uev_Data.uev_SnapshotData;
+
+		iwt = UndoFindWindowByDir(usid->usid_DirName);
 		if (NULL == iwt)
 			break;
 
 		d1(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
-		d1(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_SnapshotData.usid_IconName));
+		d1(kprintf("%s/%s/%ld: usid_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, usid->usid_IconName));
 
-		in = UndoFindIconByName(iwt, uev->uev_Data.uev_SnapshotData.usid_IconName);
+		in = UndoFindIconByName(iwt, usid->usid_IconName);
 		if (NULL == in)
 			break;
 
 		if (uev->uev_OldPosX != uev->uev_NewPosX || uev->uev_OldPosY != uev->uev_NewPosY)
 			{
-			if (!MoveIconTo(uev->uev_Data.uev_SnapshotData.usid_DirName,
-				uev->uev_Data.uev_SnapshotData.usid_IconName,
+			if (!MoveIconTo(usid->usid_DirName,
+				usid->usid_IconName,
 				uev->uev_NewPosX, uev->uev_NewPosY))
 				break;
 			}
@@ -2438,7 +2658,7 @@ static SAVEDS(LONG) RedoSnapshotPosEvent(struct Hook *hook, APTR object, struct 
 
 			RemoveIcons(iwt, &IconList);	   // visibly remove icon from window
 
-			Success = UndoUnsnapshotIcon(iwt, in, uev->uev_Data.uev_SnapshotData.usid_SaveIcon);
+			Success = UndoUnsnapshotIcon(iwt, in, usid->usid_SaveIcon);
 
 			SCA_MoveIconNode(&IconList, &iwt->iwt_WindowTask.wt_LateIconList, in);
 
@@ -2654,30 +2874,31 @@ static SAVEDS(LONG) UndoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		BPTR oldDir;
 
-		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_srcDirName));
 
-		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
+		srcDirLock = Lock(ucmed->ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
 		debugLock_d1(srcDirLock);
 
-		destIconName = UndoBuildIconName(uev->uev_Data.uev_CopyMoveData.ucmed_destName);
+		destIconName = UndoBuildIconName(ucmed->ucmed_destName);
 		if (NULL == destIconName)
 			break;
 
-		srcIconName = UndoBuildIconName(uev->uev_Data.uev_CopyMoveData.ucmed_srcName);
+		srcIconName = UndoBuildIconName(ucmed->ucmed_srcName);
 		if (NULL == srcIconName)
 			break;
 
-		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
-		d1(kprintf("%s/%s/%ld: .ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destName));
+		d1(kprintf("%s/%s/%ld: ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_srcName));
+		d1(kprintf("%s/%s/%ld: ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_destName));
 
 		oldDir = CurrentDir(srcDirLock);
 
-		Success = Rename(uev->uev_Data.uev_CopyMoveData.ucmed_destName, uev->uev_Data.uev_CopyMoveData.ucmed_srcName);
+		Success = Rename(ucmed->ucmed_destName, ucmed->ucmed_srcName);
 
 		CurrentDir(oldDir);
 
@@ -2721,30 +2942,31 @@ static SAVEDS(LONG) RedoRenameEvent(struct Hook *hook, APTR object, struct UndoE
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		BPTR oldDir;
 
-		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName));
+		d1(kprintf("%s/%s/%ld: ucmed_srcDirName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_srcDirName));
 
-		srcDirLock = Lock(uev->uev_Data.uev_CopyMoveData.ucmed_srcDirName, ACCESS_READ);
+		srcDirLock = Lock(ucmed->ucmed_srcDirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
 		debugLock_d1(srcDirLock);
 
-		destIconName = UndoBuildIconName(uev->uev_Data.uev_CopyMoveData.ucmed_destName);
+		destIconName = UndoBuildIconName(ucmed->ucmed_destName);
 		if (NULL == destIconName)
 			break;
 
-		srcIconName = UndoBuildIconName(uev->uev_Data.uev_CopyMoveData.ucmed_srcName);
+		srcIconName = UndoBuildIconName(ucmed->ucmed_srcName);
 		if (NULL == srcIconName)
 			break;
 
-		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_srcName));
-		d1(kprintf("%s/%s/%ld: .ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CopyMoveData.ucmed_destName));
+		d1(kprintf("%s/%s/%ld: .ucmed_srcName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_srcName));
+		d1(kprintf("%s/%s/%ld: .ucmed_destName=<%s>\n", __FILE__, __FUNC__, __LINE__, ucmed->ucmed_destName));
 
 		oldDir = CurrentDir(srcDirLock);
 
-		Success = Rename(uev->uev_Data.uev_CopyMoveData.ucmed_srcName, uev->uev_Data.uev_CopyMoveData.ucmed_destName);
+		Success = Rename(ucmed->ucmed_srcName, ucmed->ucmed_destName);
 
 		CurrentDir(oldDir);
 
@@ -2787,6 +3009,8 @@ static SAVEDS(LONG) UndoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
+
 		driveName = AllocPathBuffer();
 		if (NULL == driveName)
 			break;
@@ -2795,10 +3019,10 @@ static SAVEDS(LONG) UndoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 		if (NULL == newName)
 			break;
 
-		stccpy(driveName, uev->uev_Data.uev_CopyMoveData.ucmed_destName, Max_PathLen);
+		stccpy(driveName, ucmed->ucmed_destName, Max_PathLen);
 		SafeStrCat(driveName, ":", Max_PathLen);
 
-		stccpy(newName, uev->uev_Data.uev_CopyMoveData.ucmed_srcName, Max_PathLen);
+		stccpy(newName, ucmed->ucmed_srcName, Max_PathLen);
 		StripTrailingColon(newName);
 
 		Success = Relabel(driveName, newName);
@@ -2826,8 +3050,9 @@ static SAVEDS(LONG) RedoRelabelEvent(struct Hook *hook, APTR object, struct Undo
 	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	do	{
-		Success	= Relabel(uev->uev_Data.uev_CopyMoveData.ucmed_srcName,
-			 uev->uev_Data.uev_CopyMoveData.ucmed_destName);
+		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
+
+		Success	= Relabel(ucmed->ucmed_srcName, ucmed->ucmed_destName);
 		} while (0);
 
 	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
@@ -2848,9 +3073,11 @@ static SAVEDS(LONG) UndoSizeWindowEvent(struct Hook *hook, APTR object, struct U
 	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	do	{
+		struct UndoSizeWindowData *uswd = &uev->uev_Data.uev_SizeWindowData;
+
 		d1(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
 
-		iwt = UndoFindWindowByWindowTask(uev->uev_Data.uev_SizeWindowData.uswd_WindowTask);
+		iwt = UndoFindWindowByWindowTask(uswd->uswd_WindowTask);
 		if (NULL == iwt)
 			break;
 
@@ -2860,20 +3087,20 @@ static SAVEDS(LONG) UndoSizeWindowEvent(struct Hook *hook, APTR object, struct U
 			iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
 
 		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_DeltaMove,
-			uev->uev_Data.uev_SizeWindowData.uswd_OldVirtX - iwt->iwt_WindowTask.wt_XOffset,
-			uev->uev_Data.uev_SizeWindowData.uswd_OldVirtY - iwt->iwt_WindowTask.wt_YOffset);
+			uswd->uswd_OldVirtX - iwt->iwt_WindowTask.wt_XOffset,
+			uswd->uswd_OldVirtY - iwt->iwt_WindowTask.wt_YOffset);
 
 		d1(KPrintF("%s/%s/%ld: Left=%ld  Top=%ld  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, \
-			uev->uev_Data.uev_SizeWindowData.uswd_OldLeft, uev->uev_Data.uev_SizeWindowData.uswd_OldTop, \
-			uev->uev_Data.uev_SizeWindowData.uswd_OldWidth, uev->uev_Data.uev_SizeWindowData.uswd_OldHeight));
+			uswd->uswd_OldLeft, uswd->uswd_OldTop, \
+			uswd->uswd_OldWidth, uswd->uswd_OldHeight));
 
 		if (iwt->iwt_WindowTask.wt_Window)
 			{
 			ChangeWindowBox(iwt->iwt_WindowTask.wt_Window,
-				uev->uev_Data.uev_SizeWindowData.uswd_OldLeft,
-				uev->uev_Data.uev_SizeWindowData.uswd_OldTop,
-				uev->uev_Data.uev_SizeWindowData.uswd_OldWidth,
-				uev->uev_Data.uev_SizeWindowData.uswd_OldHeight);
+				uswd->uswd_OldLeft,
+				uswd->uswd_OldTop,
+				uswd->uswd_OldWidth,
+				uswd->uswd_OldHeight);
 			}
 
 		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
@@ -2902,9 +3129,11 @@ static SAVEDS(LONG) RedoSizeWindowEvent(struct Hook *hook, APTR object, struct U
 	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 
 	do	{
+		struct UndoSizeWindowData *uswd = &uev->uev_Data.uev_SizeWindowData;
+
 		d1(kprintf("%s/%s/%ld: ucd_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uev->uev_Data.uev_CleanupData.ucd_WindowTask));
 
-		iwt = UndoFindWindowByWindowTask(uev->uev_Data.uev_SizeWindowData.uswd_WindowTask);
+		iwt = UndoFindWindowByWindowTask(uswd->uswd_WindowTask);
 		if (NULL == iwt)
 			break;
 
@@ -2914,20 +3143,20 @@ static SAVEDS(LONG) RedoSizeWindowEvent(struct Hook *hook, APTR object, struct U
 			iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
 
 		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_DeltaMove,
-			uev->uev_Data.uev_SizeWindowData.uswd_NewVirtX - iwt->iwt_WindowTask.wt_XOffset,
-			uev->uev_Data.uev_SizeWindowData.uswd_NewVirtY - iwt->iwt_WindowTask.wt_YOffset);
+			uswd->uswd_NewVirtX - iwt->iwt_WindowTask.wt_XOffset,
+			uswd->uswd_NewVirtY - iwt->iwt_WindowTask.wt_YOffset);
 
 		d1(KPrintF("%s/%s/%ld: Left=%ld  Top=%ld  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, \
-			uev->uev_Data.uev_SizeWindowData.uswd_NewLeft, uev->uev_Data.uev_SizeWindowData.uswd_NewTop, \
-			uev->uev_Data.uev_SizeWindowData.uswd_NewWidth, uev->uev_Data.uev_SizeWindowData.uswd_NewHeight));
+			uswd->uswd_NewLeft, uswd->uswd_NewTop, \
+			uswd->uswd_NewWidth, uswd->uswd_NewHeight));
 
 		if (iwt->iwt_WindowTask.wt_Window)
 			{
 			ChangeWindowBox(iwt->iwt_WindowTask.wt_Window,
-				uev->uev_Data.uev_SizeWindowData.uswd_NewLeft,
-				uev->uev_Data.uev_SizeWindowData.uswd_NewTop,
-				uev->uev_Data.uev_SizeWindowData.uswd_NewWidth,
-				uev->uev_Data.uev_SizeWindowData.uswd_NewHeight);
+				uswd->uswd_NewLeft,
+				uswd->uswd_NewTop,
+				uswd->uswd_NewWidth,
+				uswd->uswd_NewHeight);
 			}
 
 		ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_WindowSemaphore);
@@ -2957,29 +3186,30 @@ static SAVEDS(LONG) UndoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
+		struct UndoNewDrawerData *und = &uev->uev_Data.uev_NewDrawerData;
 		BPTR oldDir;
 		LONG Result;
 
-		srcDirLock = Lock(uev->uev_Data.uev_NewDrawerData.und_DirName, ACCESS_READ);
-		d1(kprintf("%s/%s/%ld: srcDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, srcDirLock, uev->uev_Data.uev_NewDrawerData.und_DirName));
+		srcDirLock = Lock(und->und_DirName, ACCESS_READ);
+		d1(kprintf("%s/%s/%ld: srcDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, srcDirLock, und->und_DirName));
 		if (BNULL == srcDirLock)
 			break;
 
-		if (0 == strlen(uev->uev_Data.uev_NewDrawerData.und_srcName))
+		if (0 == strlen(und->und_srcName))
 			break;
 
 		oldDir = CurrentDir(srcDirLock);
 
-		Result = DeleteFile(uev->uev_Data.uev_NewDrawerData.und_srcName);
+		Result = DeleteFile(und->und_srcName);
 		if (!Result)
 			break;
 
-		if (uev->uev_Data.uev_NewDrawerData.und_CreateIcon)
+		if (und->und_CreateIcon)
 			{
 			// Remove associated icon
 			struct ScaUpdateIcon_IW upd;
 
-			IconName = UndoBuildIconName(uev->uev_Data.uev_NewDrawerData.und_srcName);
+			IconName = UndoBuildIconName(und->und_srcName);
 			if (NULL == IconName)
 				break;
 
@@ -2988,7 +3218,7 @@ static SAVEDS(LONG) UndoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 				break;
 
 			upd.ui_iw_Lock = srcDirLock;
-			upd.ui_iw_Name = uev->uev_Data.uev_NewDrawerData.und_srcName;
+			upd.ui_iw_Name = und->und_srcName;
 
 			SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
 			}
@@ -3025,18 +3255,20 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
-		srcDirLock = Lock(uev->uev_Data.uev_NewDrawerData.und_DirName, ACCESS_READ);
+		struct UndoNewDrawerData *und = &uev->uev_Data.uev_NewDrawerData;
+
+		srcDirLock = Lock(und->und_DirName, ACCESS_READ);
 		if (BNULL == srcDirLock)
 			break;
 
 		oldDir = CurrentDir(srcDirLock);
 
-		newDirLock = CreateDir(uev->uev_Data.uev_NewDrawerData.und_srcName);
+		newDirLock = CreateDir(und->und_srcName);
 		debugLock_d1(newDirLock);
 		if (BNULL == newDirLock)
 			break;
 
-		if (uev->uev_Data.uev_NewDrawerData.und_CreateIcon)
+		if (und->und_CreateIcon)
 			{
 			struct ScaUpdateIcon_IW upd;
 
@@ -3048,9 +3280,9 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 				break;
 
 			upd.ui_iw_Lock = srcDirLock;
-			upd.ui_iw_Name = uev->uev_Data.uev_NewDrawerData.und_srcName;
+			upd.ui_iw_Name = und->und_srcName;
 
-			PutIconObjectTags(IconObj, uev->uev_Data.uev_NewDrawerData.und_srcName,
+			PutIconObjectTags(IconObj, und->und_srcName,
 				TAG_END);
 
 			SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
@@ -3074,4 +3306,112 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 }
 
 //----------------------------------------------------------------------------
+
+// If window <iwt> is about to close, walk through Undo/Redo lists
+// and remove all entries which refer to the disappearing window
+void UndoWindowSignalClosing(struct internalScaWindowTask *iwt)
+{
+	struct UndoStep *ust;
+
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	ScalosObtainSemaphore(&UndoListListSemaphore);
+
+	for (ust = (struct UndoStep *) globalUndoList.lh_Head;
+		ust != (struct UndoStep *) &globalUndoList.lh_Tail; )
+		{
+		struct UndoStep *ustNext = (struct UndoStep *) ust->ust_Node.ln_Succ;
+		BOOL Found = FALSE;
+		struct UndoEvent *uev;
+
+		d1(kprintf("%s/%s/%ld: ust=%08lx  \n", __FILE__, __FUNC__, __LINE__, ust));
+
+		for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
+			uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
+			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+			{
+			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
+			if (UNDO_Cleanup == uev->uev_Type)
+				{
+				if (uev->uev_Data.uev_CleanupData.ucd_WindowTask == &iwt->iwt_WindowTask)
+					{
+					Found = TRUE;
+					break;
+					}
+				}
+			else if (UNDO_SizeWindow == uev->uev_Type)
+				{
+				if (uev->uev_Data.uev_SizeWindowData.uswd_WindowTask == &iwt->iwt_WindowTask)
+					{
+					Found = TRUE;
+					break;
+					}
+				}
+			}
+
+		if (Found)
+			{
+			UndoCount--;
+			Remove(&ust->ust_Node);
+			UndoDisposeStep(ust);
+			}
+
+		ust = ustNext;
+		d1(kprintf("%s/%s/%ld: ust=%08lx  \n", __FILE__, __FUNC__, __LINE__, ust));
+		}
+
+	ScalosReleaseSemaphore(&UndoListListSemaphore);
+
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+	ScalosObtainSemaphore(&RedoListListSemaphore);
+
+	for (ust = (struct UndoStep *) globalRedoList.lh_Head;
+		ust != (struct UndoStep *) &globalRedoList.lh_Tail; )
+		{
+		struct UndoStep *ustNext = (struct UndoStep *) ust->ust_Node.ln_Succ;
+		BOOL Found = FALSE;
+		struct UndoEvent *uev;
+
+		d1(kprintf("%s/%s/%ld: ust=%08lx  \n", __FILE__, __FUNC__, __LINE__, ust));
+
+		for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
+			uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
+			uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+			{
+			d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
+			if (UNDO_Cleanup == uev->uev_Type)
+				{
+				if (uev->uev_Data.uev_CleanupData.ucd_WindowTask == &iwt->iwt_WindowTask)
+					{
+					Found = TRUE;
+					break;
+					}
+				}
+			else if (UNDO_SizeWindow == uev->uev_Type)
+				{
+				if (uev->uev_Data.uev_SizeWindowData.uswd_WindowTask == &iwt->iwt_WindowTask)
+					{
+					Found = TRUE;
+					break;
+					}
+				}
+			}
+
+		if (Found)
+			{
+			Remove(&ust->ust_Node);
+			UndoDisposeStep(ust);
+			}
+
+		ust = ustNext;
+		d1(kprintf("%s/%s/%ld: ust=%08lx  \n", __FILE__, __FUNC__, __LINE__, ust));
+		}
+
+	ScalosReleaseSemaphore(&RedoListListSemaphore);
+
+	SetMenuOnOff(iwt);
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+}
 

@@ -1101,3 +1101,120 @@ unknown
 ;
 ; ==============================================
 ;
+MSGID_UNDO_NOT_AVAILABLE (10700//)
+%s (not available)
+;
+;
+MSGID_UNDO_UNDO (//)
+Undo
+;
+;
+MSGID_UNDO_REDO (//)
+Redo
+;
+;
+MSGID_UNDO_COPY_SINGLE (//)
+%s: Copy %s
+;
+;
+MSGID_UNDO_COPY_MORE (//)
+%s: Copy %ld items
+;
+;
+MSGID_UNDO_MOVE_SINGLE (//)
+%s: Move %s
+;
+;
+MSGID_UNDO_MOVE_MORE (//)
+%s: Move %ld items
+;
+;
+MSGID_UNDO_CREATELINK_SINGLE (//)
+%s: Create Link %s
+;
+;
+MSGID_UNDO_CREATELINK_MORE (//)
+%s: Create %ld links
+;
+;
+MSGID_UNDO_CHANGEICONPOS_SINGLE (//)
+%s: Move %s icon
+;
+;
+MSGID_UNDO_CHANGEICONPOS_MORE (//)
+%s: Move %ld icons.
+;
+;
+MSGID_UNDO_CLEANUP (//)
+%s: Cleanup %s
+;
+;
+MSGID_UNDO_SNAPSHOT_SINGLE (//)
+%s: Snapshot %s
+;
+;
+MSGID_UNDO_SNAPSHOT_MORE (//)
+%s: Snapshot %ld items
+;
+;
+MSGID_UNDO_UNSNAPSHOT_SINGLE (//)
+%s: Unsnapshot %s
+;
+;
+MSGID_UNDO_UNSNAPSHOT_MORE (//)
+%s: Unsnapshot %ld items
+;
+;
+MSGID_UNDO_RENAME_SINGLE (//)
+%s: Rename %s
+;
+;
+MSGID_UNDO_RENAME_MORE (//)
+%s: Rename %ld items
+;
+;
+MSGID_UNDO_RELABEL_SINGLE (//)
+%s: Relabel %s
+;
+;
+MSGID_UNDO_RELABEL_MORE (//)
+%s: Relabel %ld items
+;
+;
+MSGID_UNDO_SIZEWINDOW (//)
+%s: Resize %s window
+;
+;
+MSGID_UNDO_DELETE_SINGLE (//)
+%s: Delete %s
+;
+;
+MSGID_UNDO_DELETE_MORE (//)
+%s: Delete %ld items
+;
+;
+MSGID_UNDO_NEWDRAWER_SINGLE (//)
+%s: Create Drawer %s
+;
+;
+MSGID_UNDO_NEWDRAWER_MORE (//)
+%s: Create %ld Drawers
+;
+;
+MSGID_UNDO_LEAVEOUT_SINGLE (//)
+%s: Leave out %s
+;
+;
+MSGID_UNDO_LEAVEOUT_MORE (//)
+%s: Leave out %ld items
+;
+;
+MSGID_UNDO_PUTAWAY_SINGLE (//)
+%s: Put away %s
+;
+;
+MSGID_UNDO_PUTAWAY_MORE (//)
+%s: Put away %ld items
+;
+; ==============================================
+;
