@@ -5151,14 +5151,18 @@ static Object *GetIconObjectFromScalos(BPTR DirLock, CONST_STRPTR IconName,
 
 						CloneTags[0].ti_Tag = TAG_END;
 
-						IconObj = (Object *) DoMethod(in->in_Icon,
-							IDTM_CloneIconObject, CloneTags);
-						d1(KPrintF(__FILE__ "/%s/%ld: IconObj=%08lx\n", __FUNC__, __LINE__, IconObj));
-
-						if (IconObj && (SCAV_ViewModes_Icon != ws->ws_Viewmodes))
+						if (SCAV_ViewModes_Icon != ws->ws_Viewmodes)
 							{
-							GetAttr(TIDTA_IconObject, IconObj, (ULONG *) &IconObj);
+							//GetAttr(TIDTA_IconObject, in->in_Icon, (ULONG *) &IconObj);
+							IconObj = NULL;
 							}
+						else
+							{
+							IconObj = (Object *) DoMethod(in->in_Icon,
+								IDTM_CloneIconObject, CloneTags);
+							}
+
+						d1(KPrintF(__FILE__ "/%s/%ld: IconObj=%08lx\n", __FUNC__, __LINE__, IconObj));
 
 						if (IconObj)
 							{
