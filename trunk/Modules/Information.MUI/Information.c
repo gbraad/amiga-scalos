@@ -73,7 +73,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	40
-#define	VERSION_MINOR	11
+#define	VERSION_MINOR	12
 
 
 #define	VERS_MAJOR	STR(VERSION_MAJOR)
@@ -330,6 +330,7 @@ static void GetIconFileType(struct ScaWindowTask *wt, struct ScaIconNode *in,
 	STRPTR FileTypeName, size_t FileTypeNameSize);
 static struct InfoData *AllocInfoData(void);
 static void FreeInfoData(struct InfoData *pId);
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
 
 //----------------------------------------------------------------------------
 
@@ -3102,15 +3103,47 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 
 		if (FibValid && 0 != strcmp(NewName, fib->fib_FileName))
 			{
+			struct ScaWindowStruct *ws;
+			BPTR dirLock = CurrentDir((BPTR) NULL);
+
+			CurrentDir(dirLock);
+
+			ws = FindScalosWindow(dirLock);
+
 			// Name has changed
 			if (WBDISK == IconType)
 				{
+				if (ws)
+					{
+					DoMethod(ws->ws_WindowTask->mt_MainObject,
+						SCCM_IconWin_AddUndoEvent,
+						UNDO_Relabel,
+						UNDOTAG_CopySrcDirLock, dirLock,
+						UNDOTAG_CopySrcName, fib->fib_FileName,
+						UNDOTAG_CopyDestName, NewName,
+						TAG_END
+						);
+					}
 				RenameDevice(fib->fib_FileName, NewName);
 				}
 			else
 				{
+				if (ws)
+					{
+					DoMethod(ws->ws_WindowTask->mt_MainObject,
+						SCCM_IconWin_AddUndoEvent,
+						UNDO_Rename,
+						UNDOTAG_CopySrcDirLock, dirLock,
+						UNDOTAG_CopySrcName, fib->fib_FileName,
+						UNDOTAG_CopyDestName, NewName,
+						TAG_END
+						);
+					}
 				RenameObject(fib->fib_FileName, NewName);
 				}
+
+			if (ws)
+				SCA_UnLockWindowList();
 			}
 
 		if (FibValid && 0 != strcmp(Comment, fib->fib_Comment))
@@ -5307,4 +5340,31 @@ static void FreeInfoData(struct InfoData *pId)
 
 // ----------------------------------------------------------
 
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START \n", __FUNC__, __LINE__));
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	if (wl)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			if (((BPTR) NULL == dirLock && (BPTR) NULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
+				{
+				return ws;
+				}
+			}
+		SCA_UnLockWindowList();
+		}
+
+	return NULL;
+}
+
+//----------------------------------------------------------------------------
 
