@@ -75,7 +75,7 @@ static void SetPopupMenuAfterIconSupportFlags(struct internalScaWindowTask *iwt,
 static void SetPopupMenuAfterWindowFlags(struct PopupMenu *pm, struct internalScaWindowTask *iwt);
 static void SetPopupMenuCommandAttributes(struct internalScaWindowTask *iwt,
 	const struct ScalosMenuTree *mTree, struct PopupMenu *pm,
-	const struct IconMenuSupports *CmdTable, ULONG Flags);
+	struct ScaIconNode *in, const struct IconMenuSupports *CmdTable, ULONG Flags);
 static SAVEDS(CONST_STRPTR) PMGetStringFunc(struct Hook *theHook, ULONG dummy, ULONG *args);
 static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_ShowPopupMenu *mpm);
 static void ShowWindowPopupMenu(struct internalScaWindowTask *iwt, struct msg_ShowPopupMenu *mpm);
@@ -317,7 +317,7 @@ static void SetPopupMenuAfterIconSupportFlags(struct internalScaWindowTask *iwt,
 			d1(kprintf("%s/%s/%ld: mTree=%08lx  Type=%ld\n", __FILE__, __FUNC__, __LINE__, mTree, mTree->mtre_type));
 
 			if (SCAMENUTYPE_Command == mTree->mtre_type)
-				SetPopupMenuCommandAttributes(iwt, mTree, pm, IconSupportTable, in->in_SupportFlags);
+				SetPopupMenuCommandAttributes(iwt, mTree, pm, in, IconSupportTable, in->in_SupportFlags);
 			}
 
 		PM_GetItemAttrs(pm,
@@ -349,7 +349,7 @@ static void SetPopupMenuAfterWindowFlags(struct PopupMenu *pm, struct internalSc
 			d1(kprintf("%s/%s/%ld: mTree=%08lx  Type=%ld\n", __FILE__, __FUNC__, __LINE__, mTree, mTree->mtre_type));
 
 			if (SCAMENUTYPE_Command == mTree->mtre_type)
-				SetPopupMenuCommandAttributes(iwt, mTree, pm, WindowMenuTable, WindowFlags);
+				SetPopupMenuCommandAttributes(iwt, mTree, pm, NULL, WindowMenuTable, WindowFlags);
 			}
 
 		PM_GetItemAttrs(pm,
@@ -364,7 +364,7 @@ static void SetPopupMenuAfterWindowFlags(struct PopupMenu *pm, struct internalSc
 
 
 static void SetPopupMenuCommandAttributes(struct internalScaWindowTask *iwt,
-	const struct ScalosMenuTree *mTree, struct PopupMenu *pm,
+	const struct ScalosMenuTree *mTree, struct PopupMenu *pm, struct ScaIconNode *in,
 	const struct IconMenuSupports *CmdTable, ULONG Flags)
 {
 	if (SCAMENUTYPE_Command == mTree->mtre_type)
@@ -376,7 +376,7 @@ static void SetPopupMenuCommandAttributes(struct internalScaWindowTask *iwt,
 
 		if (SCAMENUCMDTYPE_Command == mTree->MenuCombo.MenuCommand.mcom_type)
 			{
-			ULONG Disabled = CheckPopupMenu(iwt, NULL, mTree, &Checkit, &Checked);
+			ULONG Disabled = CheckPopupMenu(iwt, in, mTree, &Checkit, &Checked);
 			ULONG n;
 
 			if (0 == Stricmp("undo", mTree->MenuCombo.MenuCommand.mcom_name))
@@ -401,7 +401,7 @@ static void SetPopupMenuCommandAttributes(struct internalScaWindowTask *iwt,
 					d1(kprintf("%s/%s/%ld: Flags=%08lx  FlagMask=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 						Flags, CmdTable[n].ims_FlagMask));
 
-					Disabled = CmdTable[n].ims_FlagMask != (Flags & CmdTable[n].ims_FlagMask);
+					Disabled = Disabled || (CmdTable[n].ims_FlagMask != (Flags & CmdTable[n].ims_FlagMask));
 					break;
 					}
 				}
@@ -747,6 +747,8 @@ static ULONG CheckPopupMenu(struct internalScaWindowTask *iwt, struct ScaIconNod
 
 			if (mpi->smcom_Enable)
 				Disabled = !(*mpi->smcom_Enable)(iwt, in);
+
+			d1(KPrintF("%s/%s/%ld: mpi->smcom_CommandName=<%s>  Disabled=%ld\n", __FILE__, __FUNC__, __LINE__, mpi->smcom_CommandName, Disabled));
 			break;
 			}
 		}
