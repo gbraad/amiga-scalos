@@ -35,6 +35,9 @@ enum ScalosUndoType
 	UNDO_PutAway,
 	UNDO_NewDrawer,
 	UNDO_SizeWindow,
+	UNDO_SetProtection,
+	UNDO_SetComment,
+	UNDO_SetToolTypes,
 	};
 
 enum ScalosUndoTags
@@ -73,6 +76,12 @@ enum ScalosUndoTags
 	UNDOTAG_NewWindowVirtY,		// LONG
 	UNDOTAG_CreateIcon,		// LONG
 	UNDOTAG_IconName,		// CONST_STRPTR
+	UNDOTAG_OldProtection,		// ULONG
+	UNDOTAG_NewProtection,		// ULONG
+	UNDOTAG_OldComment,		// CONST_STRPTR
+	UNDOTAG_NewComment,		// CONST_STRPTR
+	UNDOTAG_OldToolTypes,		// const STRPTR *
+	UNDOTAG_NewToolTypes,		// const STRPTR *
 	};
 
 enum ScalosUndoCleanupMode
@@ -162,6 +171,27 @@ struct UndoEvent
 			LONG uswd_NewVirtX;
 			LONG uswd_NewVirtY;
 			} uev_SizeWindowData;
+		struct UndoSetProtectionData
+			{
+			STRPTR uspd_DirName;
+			STRPTR uspd_IconName;
+			ULONG uspd_OldProtection;
+			ULONG uspd_NewProtection;
+			} uev_SetProtectionData;
+		struct UndoSetCommentData
+			{
+			STRPTR uscd_DirName;
+			STRPTR uscd_IconName;
+			STRPTR uscd_OldComment;
+			STRPTR uscd_NewComment;
+			} uev_SetCommentData;
+		struct UndoSetToolTypesData
+			{
+			STRPTR ustd_DirName;
+			STRPTR ustd_IconName;
+			STRPTR *ustd_OldToolTypes;
+			STRPTR *ustd_NewToolTypes;
+			} uev_SetToolTypesData;
 		} uev_Data;
 
 	struct UndoStep *uev_UndoStep;

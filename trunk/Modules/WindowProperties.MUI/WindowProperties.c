@@ -70,7 +70,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	40
-#define	VERSION_MINOR	7
+#define	VERSION_MINOR	8
 
 //----------------------------------------------------------------------------
 
@@ -1459,6 +1459,17 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 		ULONG ThumbnailLifetime = THUMBNAIL_LIFETIME_NOTSET;
 		ULONG NewActiveWindowTransparencyDefault;
 		ULONG NewInactiveWindowTransparencyDefault;
+		APTR UndoStep = NULL;
+		CONST_STRPTR *ToolTypesArray;
+		STRPTR *OldToolTypesArray;
+
+		if (ws)
+			{
+			UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_BeginUndoStep);
+			}
+
+		GetAttr(IDTA_ToolTypes, IconObj, (APTR) &ToolTypesArray);
+		OldToolTypesArray = CloneToolTypeArray(ToolTypesArray, 0);
 
 		get(CycleMarkNoStatusBar, MUIA_Cycle_Active, &HideStatusBar);
 		if (HideStatusBar)
@@ -1624,6 +1635,35 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 			SetAttrs(ws->ws_WindowTask->mt_MainObject,
 				SCCA_IconWin_InactiveTransparency, InactiveWindowTransparency,
 				TAG_END);
+			}
+
+		if (ws)
+			{
+			CONST_STRPTR *NewToolTypeArray = NULL;
+			STRPTR iconName;
+			BPTR dirLock = CurrentDir((BPTR) NULL);
+
+			CurrentDir(dirLock);
+
+			GetAttr(IDTA_ToolTypes, IconObj, (APTR) &NewToolTypeArray);
+			get(IconObj, DTA_Name, (APTR)&iconName);
+
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_AddUndoEvent,
+				UNDO_SetToolTypes,
+				UNDOTAG_IconDirLock, dirLock,
+				UNDOTAG_IconName, (ULONG) iconName,
+				UNDOTAG_OldToolTypes, (ULONG) OldToolTypesArray,
+				UNDOTAG_NewToolTypes, (ULONG) NewToolTypeArray,
+				TAG_END
+				);
+
+			DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_EndUndoStep, UndoStep);
+			SCA_UnLockWindowList();
+			}
+		if (OldToolTypesArray)
+			{
+			free(OldToolTypesArray);
 			}
 		}
 }

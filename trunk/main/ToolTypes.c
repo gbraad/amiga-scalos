@@ -1,6 +1,6 @@
 // ToolTypes.c
-// 12 Sep 2004 14:30:27
-
+// $Date$
+// $Revision$
 
 #include <exec/types.h>
 #include <graphics/gels.h>
@@ -50,7 +50,6 @@
 
 static size_t CountToolTypeEntries(CONST_STRPTR *ToolTypeArray);
 static size_t GetToolTypeLength(CONST_STRPTR *ToolTypeArray);
-static STRPTR *CloneToolTypeArray(CONST_STRPTR *ToolTypeArray, ULONG AdditionalEntries);
 static STRPTR *scaFindToolType(STRPTR *ToolTypeArray, CONST_STRPTR typeName);
 
 //----------------------------------------------------------------------------
@@ -134,6 +133,7 @@ LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTy
 	return Result;
 }
 
+//----------------------------------------------------------------------------
 
 LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName)
 {
@@ -199,6 +199,7 @@ LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName)
 	return Result;
 }
 
+//----------------------------------------------------------------------------
 
 static size_t CountToolTypeEntries(CONST_STRPTR *ToolTypeArray)
 {
@@ -209,6 +210,7 @@ static size_t CountToolTypeEntries(CONST_STRPTR *ToolTypeArray)
 	return ttCount;
 }
 
+//----------------------------------------------------------------------------
 
 static size_t GetToolTypeLength(CONST_STRPTR *ToolTypeArray)
 {
@@ -223,8 +225,9 @@ static size_t GetToolTypeLength(CONST_STRPTR *ToolTypeArray)
 	return Length;
 }
 
+//----------------------------------------------------------------------------
 
-static STRPTR *CloneToolTypeArray(CONST_STRPTR *ToolTypeArray, ULONG AdditionalEntries)
+STRPTR *CloneToolTypeArray(CONST_STRPTR *ToolTypeArray, ULONG AdditionalEntries)
 {
 	size_t ttLength;
 	STRPTR *newTT, *newTTalloc;
@@ -265,6 +268,7 @@ static STRPTR *CloneToolTypeArray(CONST_STRPTR *ToolTypeArray, ULONG AdditionalE
 	return newTTalloc;
 }
 
+//----------------------------------------------------------------------------
 
 static STRPTR *scaFindToolType(STRPTR *ToolTypeArray, CONST_STRPTR typeName)
 {
@@ -306,4 +310,7 @@ static STRPTR *scaFindToolType(STRPTR *ToolTypeArray, CONST_STRPTR typeName)
 
 	return NULL;
 }
+
+//----------------------------------------------------------------------------
+
 
