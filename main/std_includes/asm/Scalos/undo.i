@@ -32,7 +32,10 @@ UNDO_Delete		equ	9
 UNDO_Leaveout		equ	10
 UNDO_PutAway		equ	11
 UNDO_NewDrawer		equ	12
-UNDO_SizeWindow		 equ	 13
+UNDO_SizeWindow		equ     13
+UNDO_SetProtection	equ	14
+UNDO_SetComment		equ	15
+UNDO_SetToolTypes	equ	16
 
 ;enum ScalosUndoTags
 UNDOTAG_TagBase		equ     TAG_USER+1287
@@ -71,6 +74,12 @@ UNDOTAG_NewWindowVirtX	equ	UNDOTAG_TagBase+30	; LONG
 UNDOTAG_NewWindowVirtY	equ	UNDOTAG_TagBase+31	; LONG
 UNDOTAG_CreateIcon	equ	UNDOTAG_TagBase+32	; LONG
 UNDOTAG_IconName	equ	UNDOTAG_TagBase+33	; CONST_STRPTR
+UNDOTAG_OldProtection	equ	UNDOTAG_TagBase+34	; ULONG
+UNDOTAG_NewProtection	equ	UNDOTAG_TagBase+35	; ULONG
+UNDOTAG_OldComment	equ	UNDOTAG_TagBase+36	; CONST_STRPTR
+UNDOTAG_NewComment	equ	UNDOTAG_TagBase+37	; CONST_STRPTR
+UNDOTAG_OldToolTypes	equ	UNDOTAG_TagBase+38	; const STRPTR *
+UNDOTAG_NewToolTypes	equ	UNDOTAG_TagBase+39	; const STRPTR *
 
 ;enum ScalosUndoCleanupMode
 CLEANUP_Default		equ	0
@@ -135,6 +144,27 @@ CLEANUP_ByType		equ	4
 	ULONG	und_CreateIcon
 	LABEL 	und_SIZEOF
 
+  STRUCTURE 	UndoSetProtectionData
+	APTR 	uspd_DirName		; STRPTR
+	APTR 	uspd_IconName		; STRPTR
+	ULONG 	uspd_OldProtection
+	ULONG 	uspd_NewProtection
+	LABEL	uspd_SIZEOF
+
+  STRUCTURE 	UndoSetCommentData
+	APTR 	uscd_DirName		; STRPTR
+	APTR 	uscd_IconName		; STRPTR
+	APTR	uscd_OldComment		; STRPTR
+	APTR	uscd_NewComment		; STRPTR
+	LABEL	uscd_SIZEOF
+
+  STRUCTURE 	UndoSetToolTypesData
+	APTR 	ustd_DirName		; STRPTR
+	APTR 	ustd_IconName		; STRPTR
+	APTR	ustd_OldToolTypes	; STRPTR *
+	APTR	ustd_NewToolTypes	; STRPTR *
+	LABEL	ustd_SIZEOF
+
 ; uev_Data_SIZEOF is the largest of all sizes of the sub-structures
 ; UndoCopyMoveEventData, UndoIconEventData, UndoCleanupData, and UndoSnaphotIconData
 
@@ -156,6 +186,15 @@ uev_Data_SIZEOF	set     uswd_SIZEOF
 	ENDIF
 	IFGT    und_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     und_SIZEOF
+	ENDIF
+	IFGT    uspd_SIZEOF-uev_Data_SIZEOF
+uev_Data_SIZEOF	set     uspd_SIZEOF
+	ENDIF
+	IFGT    uscd_SIZEOF-uev_Data_SIZEOF
+uev_Data_SIZEOF	set     uscd_SIZEOF
+	ENDIF
+	IFGT    ustd_SIZEOF-uev_Data_SIZEOF
+uev_Data_SIZEOF	set     ustd_SIZEOF
 	ENDIF
 
   STRUCTURE	UndoEvent,0

@@ -1545,5 +1545,35 @@ MSGID_UNDO_PUTAWAY_MORE
 %s: Put away %ld items
 ;%s: Put away %ld items
 ;
+;+++translateme+++
+MSGID_UNDO_SETPROTECTION_SINGLE
+%s: Change Protection on %s
+;%s: Change Protection on %s
+;
+;+++translateme+++
+MSGID_UNDO_SETPROTECTION_MORE
+%s: Change Protection %ld icons
+;%s: Change Protection %ld icons
+;
+;+++translateme+++
+MSGID_UNDO_SETCOMMENT_SINGLE
+%s: Change Comment on %s
+;%s: Change Comment on %s
+;
+;+++translateme+++
+MSGID_UNDO_SETCOMMENT_MORE
+%s: Change Comment on %ld icons
+;%s: Change Comment on %ld icons
+;
+;+++translateme+++
+MSGID_UNDO_SETTOOLTYPES_SINGLE
+%s: Change Tooltypes on %s
+;%s: Change Tooltypes on %s
+;
+;+++translateme+++
+MSGID_UNDO_SETTOOLTYPES_MORE
+%s: Change Tooltypes on %ld icons
+;%s: Change Tooltypes on %ld icons
+;
 ; ==============================================
 ;

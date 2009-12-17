@@ -1216,5 +1216,29 @@ MSGID_UNDO_PUTAWAY_SINGLE (//)
 MSGID_UNDO_PUTAWAY_MORE (//)
 %s: Put away %ld items
 ;
+;
+MSGID_UNDO_SETPROTECTION_SINGLE (//)
+%s: Change Protection on %s
+;
+;
+MSGID_UNDO_SETPROTECTION_MORE (//)
+%s: Change Protection %ld icons
+;
+;
+MSGID_UNDO_SETCOMMENT_SINGLE (//)
+%s: Change Comment on %s
+;
+;
+MSGID_UNDO_SETCOMMENT_MORE (//)
+%s: Change Comment on %ld icons
+;
+;
+MSGID_UNDO_SETTOOLTYPES_SINGLE (//)
+%s: Change Tooltypes on %s
+;
+;
+MSGID_UNDO_SETTOOLTYPES_MORE (//)
+%s: Change Tooltypes on %ld icons
+;
 ; ==============================================
 ;

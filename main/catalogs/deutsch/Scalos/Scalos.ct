@@ -1570,5 +1570,35 @@ MSGID_UNDO_PUTAWAY_MORE
 %s: Zurücklegen von %ld Piktogrammen
 ;%s: Put away %ld items
 ;
+;
+MSGID_UNDO_SETPROTECTION_SINGLE
+%s: Schutz ändern bei %s
+;%s: Change Protection on %s
+;
+;
+MSGID_UNDO_SETPROTECTION_MORE
+%s: Schutz ändern für %ld Piktogramme
+;%s: Change Protection %ld icons
+;
+;
+MSGID_UNDO_SETCOMMENT_SINGLE
+%s: Kommentar ändern bei %s
+;%s: Change Comment on %s
+;
+;
+MSGID_UNDO_SETCOMMENT_MORE
+%s: Kommentar ändern bei %ld Piktogrammen
+;%s: Change Comment on %ld icons
+;
+;
+MSGID_UNDO_SETTOOLTYPES_SINGLE
+%s: Merkmale ändern bei %s
+;%s: Change Tooltypes on %s
+;
+;
+MSGID_UNDO_SETTOOLTYPES_MORE
+%s: Merkmale ändern bei %ld Piktogrammen
+;%s: Change Tooltypes on %ld icons
+;
 ; ==============================================
 ;

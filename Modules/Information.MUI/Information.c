@@ -1,7 +1,6 @@
 // Information.c
 // $Date$
 // $Revision$
-// $Id$
 
 
 #include <stdlib.h>
@@ -2747,7 +2746,11 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 		ULONG IconType;
 		LONG ToolPri;
 		char ToolPriString[15];
+		struct ScaWindowStruct *ws;
+		CONST_STRPTR *ToolTypesArray;
+		STRPTR *OldToolTypesArray;
 		enum StartFromType StartFrom = STARTFROM_Workbench;
+		APTR UndoStep = NULL;
 		STRPTR Comment = "";
 		STRPTR DefaultTool = "";
 		ULONG Selected;
@@ -2757,9 +2760,23 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 		char GetName[128];
 		char VolumeName[128];
 		ULONG Pos2;
+		BPTR dirLock = CurrentDir((BPTR) NULL);
+
+		CurrentDir(dirLock);
+		ws = FindScalosWindow(dirLock);
+
+		if (ws)
+			{
+			UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_BeginUndoStep);
+			}
 
 		GetAttr(IDTA_Type, IconObj, &IconType);
 		GetAttr(MUIA_String_Contents, StringName, (APTR)&NewName);
+
+		GetAttr(IDTA_ToolTypes, IconObj, (APTR) &ToolTypesArray);
+		OldToolTypesArray = CloneToolTypeArray(ToolTypesArray, 0);
+
+		Protection = fib->fib_Protection & ~(FIBF_READ | FIBF_WRITE | FIBF_ARCHIVE | FIBF_DELETE | FIBF_EXECUTE | FIBF_SCRIPT);
 
 		switch (IconType)
 			{
@@ -3082,6 +3099,27 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 			*((char *) Pos2) = '\0';
 			}
 
+		if (ws)
+			{
+			CONST_STRPTR *NewToolTypeArray = NULL;
+
+			GetAttr(IDTA_ToolTypes, IconObj, (APTR) &NewToolTypeArray);
+
+			if (0 != CmpToolTypeArrays(NewToolTypeArray, OldToolTypesArray))
+				{
+				DoMethod(ws->ws_WindowTask->mt_MainObject,
+					SCCM_IconWin_AddUndoEvent,
+					UNDO_SetToolTypes,
+					UNDOTAG_UndoMultiStep, UndoStep,
+					UNDOTAG_IconDirLock, dirLock,
+					UNDOTAG_IconName, (ULONG) fib->fib_FileName,
+					UNDOTAG_OldToolTypes, (ULONG) OldToolTypesArray,
+					UNDOTAG_NewToolTypes, (ULONG) NewToolTypeArray,
+					TAG_END
+					);
+				}
+			}
+
 		d1(KPrintF(__FILE__ "/%s/%ld: IconObj=%08lx  IconName=<%s>\n", __FUNC__, __LINE__, IconObj, IconName));
 
 		PutIconObjectTags(IconObj, GetName,
@@ -3096,6 +3134,19 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 			if (FibValid && Protection != fib->fib_Protection)
 				{
 				// Protection has changed
+				if (ws)
+					{
+					DoMethod(ws->ws_WindowTask->mt_MainObject,
+						SCCM_IconWin_AddUndoEvent,
+						UNDO_SetProtection,
+						UNDOTAG_UndoMultiStep, UndoStep,
+						UNDOTAG_IconDirLock, dirLock,
+						UNDOTAG_IconName, (ULONG) fib->fib_FileName,
+						UNDOTAG_OldProtection, fib->fib_Protection,
+						UNDOTAG_NewProtection, Protection,
+						TAG_END
+						);
+					}
 				if (!SetProtection(IconName, Protection))
 					ReportError(MSGID_ERROR_SETPROTECTION);
 				}
@@ -3103,13 +3154,6 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 
 		if (FibValid && 0 != strcmp(NewName, fib->fib_FileName))
 			{
-			struct ScaWindowStruct *ws;
-			BPTR dirLock = CurrentDir((BPTR) NULL);
-
-			CurrentDir(dirLock);
-
-			ws = FindScalosWindow(dirLock);
-
 			// Name has changed
 			if (WBDISK == IconType)
 				{
@@ -3118,6 +3162,7 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 					DoMethod(ws->ws_WindowTask->mt_MainObject,
 						SCCM_IconWin_AddUndoEvent,
 						UNDO_Relabel,
+						UNDOTAG_UndoMultiStep, UndoStep,
 						UNDOTAG_CopySrcDirLock, dirLock,
 						UNDOTAG_CopySrcName, fib->fib_FileName,
 						UNDOTAG_CopyDestName, NewName,
@@ -3133,6 +3178,7 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 					DoMethod(ws->ws_WindowTask->mt_MainObject,
 						SCCM_IconWin_AddUndoEvent,
 						UNDO_Rename,
+						UNDOTAG_UndoMultiStep, UndoStep,
 						UNDOTAG_CopySrcDirLock, dirLock,
 						UNDOTAG_CopySrcName, fib->fib_FileName,
 						UNDOTAG_CopyDestName, NewName,
@@ -3155,8 +3201,31 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 				strcat(VolumeName,":");
 				IconName = VolumeName;
 				}
+			if (ws)
+				{
+				DoMethod(ws->ws_WindowTask->mt_MainObject,
+					SCCM_IconWin_AddUndoEvent,
+					UNDO_SetComment,
+					UNDOTAG_UndoMultiStep, UndoStep,
+					UNDOTAG_IconDirLock, dirLock,
+					UNDOTAG_IconName, (ULONG) fib->fib_FileName,
+					UNDOTAG_OldComment, (ULONG) fib->fib_Comment,
+					UNDOTAG_NewComment, (ULONG) Comment,
+					TAG_END
+					);
+				}
 			if (!SetComment(IconName, Comment))
 				ReportError(MSGID_ERROR_SETCOMMENT);
+			}
+
+		if (ws)
+			{
+			DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_EndUndoStep, UndoStep);
+			SCA_UnLockWindowList();
+			}
+		if (OldToolTypesArray)
+			{
+			free(OldToolTypesArray);
 			}
 		}
 

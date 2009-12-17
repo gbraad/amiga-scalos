@@ -3,7 +3,7 @@
 // $Revision$
 // $Id$
 
-// NOTE: Replaced "VSpace(0)" by "RetangleObject" before
+// NOTE: Replaced "VSpace(0)" by "RectangleObject" before
 // "IconobjectMCCObject" and after "CheckMarkNoDrag ImageObject" and,
 // removed VSpace(0) between groupframe and "Group_Buttons2 = HGroup",
 // to show entirely the window's title.
@@ -62,7 +62,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	40
-#define	VERSION_MINOR	7
+#define	VERSION_MINOR	8
 
 #define	VERS_MAJOR	STR(VERSION_MAJOR)
 #define	VERS_MINOR	STR(VERSION_MINOR)
@@ -128,6 +128,8 @@ static CONST_STRPTR GetPrefsConfigString(APTR prefsHandle, ULONG Id, CONST_STRPT
 static void StripTrailingChar(STRPTR String, char CharToRemove);
 static void BuildDefVolumeNameNoSpace(STRPTR Buffer, CONST_STRPTR VolumeName, size_t MaxLength);
 static void  ReplaceIcon(Object *NewIconObj, Object **OldIconObj);
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock);
+
 
 static struct Hook AppMessageHook = {{ NULL, NULL }, HOOKFUNC_DEF(AppMessageHookFunc), NULL };
 static struct Hook DefaultIconHook = {{ NULL, NULL }, HOOKFUNC_DEF(DefaultIconHookFunc), NULL };
@@ -998,6 +1000,19 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 		ULONG Checked;
 		char CheckName[256];
 		ULONG Pos;
+		APTR UndoStep = NULL;
+		struct ScaWindowStruct *ws;
+		CONST_STRPTR *ToolTypesArray;
+		STRPTR *OldToolTypesArray;
+		BPTR dirLock = CurrentDir((BPTR) NULL);
+
+		CurrentDir(dirLock);
+		ws = FindScalosWindow(dirLock);
+
+		if (ws)
+			{
+			UndoStep = (APTR) DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_BeginUndoStep);
+			}
 
 		stccpy(CheckName, IconName, sizeof(CheckName));
 		Pos = IsIconName(CheckName);
@@ -1009,6 +1024,9 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 			IconName = CheckName;
 			IconObj = NewIconObject(IconName, NULL);
 			}
+
+		GetAttr(IDTA_ToolTypes, IconObj, (APTR) &ToolTypesArray);
+		OldToolTypesArray = CloneToolTypeArray(ToolTypesArray, 0);
 
 		GetAttr(IDTA_Type, IconObj, &IconType);
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: IconType=%ld\n", __LINE__, IconType));
@@ -1044,10 +1062,36 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 		else
 			RemoveToolType(IconObj, "SCALOS_BROWSERMODE");
 
+		if (ws)
+			{
+			CONST_STRPTR *NewToolTypeArray = NULL;
+
+			GetAttr(IDTA_ToolTypes, IconObj, (APTR) &NewToolTypeArray);
+
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_AddUndoEvent,
+				UNDO_SetToolTypes,
+				UNDOTAG_IconDirLock, dirLock,
+				UNDOTAG_IconName, (ULONG) IconName,
+				UNDOTAG_OldToolTypes, (ULONG) OldToolTypesArray,
+				UNDOTAG_NewToolTypes, (ULONG) NewToolTypeArray,
+				TAG_END
+				);
+			}
 
 		PutIconObjectTags(IconObj, IconName,
 			ICONA_NoNewImage, TRUE,
 			TAG_END);
+
+		if (ws)
+			{
+			DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_EndUndoStep, UndoStep);
+			SCA_UnLockWindowList();
+			}
+		if (OldToolTypesArray)
+			{
+			free(OldToolTypesArray);
+			}
 		}
 }
 
@@ -1400,6 +1444,34 @@ static void BuildDefVolumeNameNoSpace(STRPTR Buffer, CONST_STRPTR VolumeName, si
 		VolumeName++;
 		}
 	*dlp = '\0';
+}
+
+// ----------------------------------------------------------
+
+static struct ScaWindowStruct *FindScalosWindow(BPTR dirLock)
+{
+	struct ScaWindowList *wl;
+	BOOL Found = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: START \n", __FUNC__, __LINE__));
+
+	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	if (wl)
+		{
+		struct ScaWindowStruct *ws;
+
+		for (ws = wl->wl_WindowStruct; !Found && ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			{
+			if (((BPTR) NULL == dirLock && (BPTR) NULL == ws->ws_Lock) || (LOCK_SAME == SameLock(dirLock, ws->ws_Lock)))
+				{
+				return ws;
+				}
+			}
+		SCA_UnLockWindowList();
+		}
+
+	return NULL;
 }
 
 //----------------------------------------------------------------------------

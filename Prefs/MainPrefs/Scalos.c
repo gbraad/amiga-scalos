@@ -6323,20 +6323,20 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 							MUIA_Popph_StringMaxLen, 600,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_WINDOWTITLES_DIRECTORYWINDOW_SHORTHELP),
 						End, //Popplaceholder
-					End, //ColGroup
 
-					Child, HGroup,
 						Child, Label2((ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH)),
-						Child, app->Obj[SLIDER_WINTITLEREFRESH] = SliderObject,
-							MUIA_CycleChain, TRUE,
-							MUIA_Numeric_Min, 1,
-							MUIA_Numeric_Max, 10,
-							MUIA_Slider_Horiz, TRUE,
-							MUIA_Numeric_Value, 5,
-						End, //Slider
-						Child, Label((ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH_SECONDS)),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH_SHORTHELP),
-					End, //HGroup
+						Child, HGroup,
+							Child, app->Obj[SLIDER_WINTITLEREFRESH] = SliderObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Numeric_Min, 1,
+								MUIA_Numeric_Max, 10,
+								MUIA_Slider_Horiz, TRUE,
+								MUIA_Numeric_Value, 5,
+							End, //Slider
+							Child, Label((ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH_SECONDS)),
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_WINTITLEBAR_REFRESH_SHORTHELP),
+						End, //HGroup
+					End, //ColGroup
 
 					Child, HGroup,
 						Child, HVSpace,
