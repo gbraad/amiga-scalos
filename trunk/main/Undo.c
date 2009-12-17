@@ -1713,7 +1713,7 @@ static BOOL AddSetProtectionEvent(struct UndoEvent *uev, struct TagItem *TagList
 	BOOL Success = FALSE;
 	STRPTR name;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetProtectionData *uspd = &uev->uev_Data.uev_SetProtectionData;
@@ -1751,17 +1751,17 @@ static BOOL AddSetProtectionEvent(struct UndoEvent *uev, struct TagItem *TagList
 		if (NULL == name)
 			break;
 
-		d2(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
 		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uspd->uspd_DirName = AllocCopyString(name);
 		if (NULL == uspd->uspd_DirName)
@@ -1775,13 +1775,13 @@ static BOOL AddSetProtectionEvent(struct UndoEvent *uev, struct TagItem *TagList
 		if (NULL == uspd->uspd_IconName)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uspd->uspd_IconName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uspd->uspd_IconName));
 
 		uspd->uspd_OldProtection = GetTagData(UNDOTAG_OldProtection, 0, TagList);
 		uspd->uspd_NewProtection = GetTagData(UNDOTAG_NewProtection, uspd->uspd_OldProtection, TagList);
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_OldProtection=%08lx\n", __FILE__, __FUNC__, __LINE__, uspd->uspd_OldProtection));
-		d2(kprintf("%s/%s/%ld: UNDOTAG_NewProtection=%08lx\n", __FILE__, __FUNC__, __LINE__, uspd->uspd_NewProtection));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldProtection=%08lx\n", __FILE__, __FUNC__, __LINE__, uspd->uspd_OldProtection));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewProtection=%08lx\n", __FILE__, __FUNC__, __LINE__, uspd->uspd_NewProtection));
 
 		Success = TRUE;
 		} while (0);
@@ -1789,7 +1789,7 @@ static BOOL AddSetProtectionEvent(struct UndoEvent *uev, struct TagItem *TagList
 	if (name)
 		FreePathBuffer(name);
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1801,7 +1801,7 @@ static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	BOOL Success = FALSE;
 	STRPTR name;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetCommentData *uscd = &uev->uev_Data.uev_SetCommentData;
@@ -1840,17 +1840,17 @@ static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == name)
 			break;
 
-		d2(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
 		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		uscd->uscd_DirName = AllocCopyString(name);
 		if (NULL == uscd->uscd_DirName)
@@ -1864,7 +1864,7 @@ static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == uscd->uscd_IconName)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uscd->uscd_IconName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uscd->uscd_IconName));
 
 		Comment = (CONST_STRPTR) GetTagData(UNDOTAG_OldComment, (ULONG) NULL, TagList);
 		if (NULL == Comment)
@@ -1874,7 +1874,7 @@ static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == uscd->uscd_OldComment)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_OldComment=<%s>\n", __FILE__, __FUNC__, __LINE__, uscd->uscd_OldComment));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldComment=<%s>\n", __FILE__, __FUNC__, __LINE__, uscd->uscd_OldComment));
 
 		Comment = (CONST_STRPTR) GetTagData(UNDOTAG_NewComment, (ULONG) NULL, TagList);
 		if (NULL == Comment)
@@ -1884,7 +1884,7 @@ static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == uscd->uscd_NewComment)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_NewComment=<%s>\n", __FILE__, __FUNC__, __LINE__, uscd->uscd_NewComment));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewComment=<%s>\n", __FILE__, __FUNC__, __LINE__, uscd->uscd_NewComment));
 
 		Success = TRUE;
 		} while (0);
@@ -1892,7 +1892,7 @@ static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	if (name)
 		FreePathBuffer(name);
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -1904,7 +1904,7 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	BOOL Success = FALSE;
 	STRPTR name;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetToolTypesData *ustd = &uev->uev_Data.uev_SetToolTypesData;
@@ -1943,17 +1943,17 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == name)
 			break;
 
-		d2(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
 		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		ustd->ustd_DirName = AllocCopyString(name);
 		if (NULL == ustd->ustd_DirName)
@@ -1967,7 +1967,7 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == ustd->ustd_IconName)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, ustd->ustd_IconName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, ustd->ustd_IconName));
 
 		ToolTypes = (CONST_STRPTR *) GetTagData(UNDOTAG_OldToolTypes, (ULONG) NULL, TagList);
 		if (NULL == ToolTypes)
@@ -1977,7 +1977,7 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == ustd->ustd_OldToolTypes)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_OldToolTypes=%08lx\n", __FILE__, __FUNC__, __LINE__, ustd->ustd_OldToolTypes));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_OldToolTypes=%08lx\n", __FILE__, __FUNC__, __LINE__, ustd->ustd_OldToolTypes));
 
 		ToolTypes = (CONST_STRPTR *) GetTagData(UNDOTAG_NewToolTypes, (ULONG) NULL, TagList);
 		if (NULL == ToolTypes)
@@ -1987,7 +1987,7 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == ustd->ustd_NewToolTypes)
 			break;
 
-		d2(kprintf("%s/%s/%ld: UNDOTAG_NewToolTypes=%08lx\n", __FILE__, __FUNC__, __LINE__, ustd->ustd_NewToolTypes));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_NewToolTypes=%08lx\n", __FILE__, __FUNC__, __LINE__, ustd->ustd_NewToolTypes));
 
 		Success = TRUE;
 		} while (0);
@@ -1995,7 +1995,7 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	if (name)
 		FreePathBuffer(name);
 
-	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -3731,14 +3731,14 @@ static SAVEDS(LONG) UndoSetProtectionEvent(struct Hook *hook, APTR object, struc
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetProtectionData *uspd = &uev->uev_Data.uev_SetProtectionData;
 		struct ScaUpdateIcon_IW upd;
 
 		dirLock = Lock(uspd->uspd_DirName, ACCESS_READ);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
@@ -3758,7 +3758,7 @@ static SAVEDS(LONG) UndoSetProtectionEvent(struct Hook *hook, APTR object, struc
 	if (BNULL != dirLock)
 		UnLock(dirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -3774,14 +3774,14 @@ static SAVEDS(LONG) RedoSetProtectionEvent(struct Hook *hook, APTR object, struc
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetProtectionData *uspd = &uev->uev_Data.uev_SetProtectionData;
 		struct ScaUpdateIcon_IW upd;
 
 		dirLock = Lock(uspd->uspd_DirName, ACCESS_READ);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
@@ -3801,7 +3801,7 @@ static SAVEDS(LONG) RedoSetProtectionEvent(struct Hook *hook, APTR object, struc
 	if (BNULL != dirLock)
 		UnLock(dirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -3817,14 +3817,14 @@ static SAVEDS(LONG) UndoSetCommentEvent(struct Hook *hook, APTR object, struct U
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetCommentData *uscd = &uev->uev_Data.uev_SetCommentData;
 		struct ScaUpdateIcon_IW upd;
 
 		dirLock = Lock(uscd->uscd_DirName, ACCESS_READ);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
@@ -3844,7 +3844,7 @@ static SAVEDS(LONG) UndoSetCommentEvent(struct Hook *hook, APTR object, struct U
 	if (BNULL != dirLock)
 		UnLock(dirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -3860,14 +3860,14 @@ static SAVEDS(LONG) RedoSetCommentEvent(struct Hook *hook, APTR object, struct U
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetCommentData *uscd = &uev->uev_Data.uev_SetCommentData;
 		struct ScaUpdateIcon_IW upd;
 
 		dirLock = Lock(uscd->uscd_DirName, ACCESS_READ);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
@@ -3887,7 +3887,7 @@ static SAVEDS(LONG) RedoSetCommentEvent(struct Hook *hook, APTR object, struct U
 	if (BNULL != dirLock)
 		UnLock(dirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -3905,14 +3905,14 @@ static SAVEDS(LONG) UndoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetToolTypesData *ustd = &uev->uev_Data.uev_SetToolTypesData;
 		struct ScaUpdateIcon_IW upd;
 
 		dirLock = Lock(ustd->ustd_DirName, ACCESS_READ);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
@@ -3953,7 +3953,7 @@ static SAVEDS(LONG) UndoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 	if (BNULL != dirLock)
 		UnLock(dirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -3971,14 +3971,14 @@ static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 	(void) hook;
 	(void) object;
 
-	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
 		struct UndoSetToolTypesData *ustd = &uev->uev_Data.uev_SetToolTypesData;
 		struct ScaUpdateIcon_IW upd;
 
 		dirLock = Lock(ustd->ustd_DirName, ACCESS_READ);
-		debugLock_d2(dirLock);
+		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
 
@@ -4019,7 +4019,7 @@ static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 	if (BNULL != dirLock)
 		UnLock(dirLock);
 
-	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }

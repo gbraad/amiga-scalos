@@ -3685,6 +3685,8 @@ static BOOL MustHaveLockMenuEnable(struct internalScaWindowTask *iwt, struct Sca
 
 static BOOL IconsSelectedAndWriteableMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
 {
+	d1(KPrintF("%s/%s/%ld: in=%08lx  IconActive=%ld\n", __FILE__, __FUNC__, __LINE__, in, IconActive));
+
 	if (NULL == in && 0 == IconActive)
 		return FALSE;
 	if (iwt->iwt_ReadOnly)
