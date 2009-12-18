@@ -3105,7 +3105,7 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 
 			GetAttr(IDTA_ToolTypes, IconObj, (APTR) &NewToolTypeArray);
 
-			if (0 != CmpToolTypeArrays(NewToolTypeArray, OldToolTypesArray))
+			if (0 != CmpToolTypeArrays(NewToolTypeArray, (CONST_STRPTR *) OldToolTypesArray))
 				{
 				DoMethod(ws->ws_WindowTask->mt_MainObject,
 					SCCM_IconWin_AddUndoEvent,
