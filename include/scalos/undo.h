@@ -54,8 +54,8 @@ enum ScalosUndoTags
 	UNDOTAG_IconPosY,		// LONG
 	UNDOTAG_OldIconPosX,		// LONG
 	UNDOTAG_OldIconPosY,		// LONG
-	UNDOTag_WindowTask,		// struct internalScaWindowTask *
-	UNDOTag_CleanupMode,		// ULONG
+	UNDOTAG_WindowTask,		// struct internalScaWindowTask *
+	UNDOTAG_CleanupMode,		// ULONG
 	UNDOTAG_UndoHook,		// struct Hook *
 	UNDOTAG_RedoHook,		// struct Hook *
 	UNDOTAG_DisposeHook,		// struct Hook *

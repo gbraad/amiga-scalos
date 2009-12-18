@@ -603,7 +603,7 @@ static void SizeToFitProg(struct internalScaWindowTask *iwt, const struct MenuCm
 		}
 
 	UndoAddEvent(iwt, UNDO_SizeWindow,
-		UNDOTag_WindowTask, iwt,
+		UNDOTAG_WindowTask, iwt,
 		UNDOTAG_OldWindowLeft, iwt->iwt_WindowTask.wt_Window->LeftEdge,
 		UNDOTAG_OldWindowTop, iwt->iwt_WindowTask.wt_Window->TopEdge,
 		UNDOTAG_OldWindowWidth, iwt->iwt_WindowTask.wt_Window->Width,
@@ -2169,8 +2169,8 @@ static void CleanupProg(struct internalScaWindowTask *iwt, const struct MenuCmdA
 
 	UndoAddEvent(iwt, UNDO_Cleanup,
 		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
-		UNDOTag_WindowTask, iwt,
-		UNDOTag_CleanupMode, CLEANUP_Default,
+		UNDOTAG_WindowTask, iwt,
+		UNDOTAG_CleanupMode, CLEANUP_Default,
 		TAG_END);
 
 	for (in=iwt->iwt_WindowTask.wt_LateIconList; in; in=inNext)
@@ -2224,8 +2224,8 @@ static void CleanupByNameProg(struct internalScaWindowTask *iwt, const struct Me
 {
 	UndoAddEvent(iwt, UNDO_Cleanup,
 		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
-		UNDOTag_WindowTask, iwt,
-		UNDOTag_CleanupMode, CLEANUP_ByName,
+		UNDOTAG_WindowTask, iwt,
+		UNDOTAG_CleanupMode, CLEANUP_ByName,
 		TAG_END);
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpByName);
@@ -2237,8 +2237,8 @@ static void CleanupByDateProg(struct internalScaWindowTask *iwt, const struct Me
 {
 	UndoAddEvent(iwt, UNDO_Cleanup,
 		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
-		UNDOTag_WindowTask, iwt,
-		UNDOTag_CleanupMode, CLEANUP_ByDate,
+		UNDOTAG_WindowTask, iwt,
+		UNDOTAG_CleanupMode, CLEANUP_ByDate,
 		TAG_END);
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpByDate);
@@ -2250,8 +2250,8 @@ static void CleanupBySizeProg(struct internalScaWindowTask *iwt, const struct Me
 {
 	UndoAddEvent(iwt, UNDO_Cleanup,
 		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
-		UNDOTag_WindowTask, iwt,
-		UNDOTag_CleanupMode, CLEANUP_BySize,
+		UNDOTAG_WindowTask, iwt,
+		UNDOTAG_CleanupMode, CLEANUP_BySize,
 		TAG_END);
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpBySize);
@@ -2263,8 +2263,8 @@ static void CleanupByTypeProg(struct internalScaWindowTask *iwt, const struct Me
 {
 	UndoAddEvent(iwt, UNDO_Cleanup,
 		UNDOTAG_IconList, iwt->iwt_WindowTask.wt_IconList,
-		UNDOTag_WindowTask, iwt,
-		UNDOTag_CleanupMode, CLEANUP_ByType,
+		UNDOTAG_WindowTask, iwt,
+		UNDOTAG_CleanupMode, CLEANUP_ByType,
 		TAG_END);
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUpByType);

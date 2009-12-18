@@ -1116,11 +1116,11 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_DescrMsgIDSingle = MSGID_UNDO_CLEANUP;
 		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_CLEANUP;
 
-		ucd->ucd_CleanupMode = GetTagData(UNDOTag_CleanupMode, CLEANUP_Default, TagList);
+		ucd->ucd_CleanupMode = GetTagData(UNDOTAG_CleanupMode, CLEANUP_Default, TagList);
 
-		d1(kprintf("%s/%s/%ld: UNDOTag_CleanupMode=%ld\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_CleanupMode));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_CleanupMode=%ld\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_CleanupMode));
 
-		ucd->ucd_WindowTask = (struct ScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
+		ucd->ucd_WindowTask = (struct ScaWindowTask *) GetTagData(UNDOTAG_WindowTask, (ULONG) NULL, TagList);
 		if (NULL == ucd->ucd_WindowTask)
 			break;
 
@@ -1130,7 +1130,7 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		uev->uev_DescrObjName = &ucd->ucd_WindowTitle;
 
-		d1(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_WindowTask));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_WindowTask));
 		d1(kprintf("%s/%s/%ld: ucd_WindowTitle=<%s>\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_WindowTitle));
 
 		IconList = (struct ScaIconNode *) GetTagData(UNDOTAG_IconList, (ULONG) NULL, TagList);
@@ -1485,7 +1485,7 @@ static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_DescrMsgIDSingle = MSGID_UNDO_SIZEWINDOW;
 		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_SIZEWINDOW;
 
-		uswd->uswd_WindowTask = (struct ScaWindowTask *) GetTagData(UNDOTag_WindowTask, (ULONG) NULL, TagList);
+		uswd->uswd_WindowTask = (struct ScaWindowTask *) GetTagData(UNDOTAG_WindowTask, (ULONG) NULL, TagList);
 		if (NULL == uswd->uswd_WindowTask)
 			break;
 
@@ -1495,7 +1495,7 @@ static BOOL AddSizeWindowEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		uev->uev_DescrObjName = &uswd->uswd_WindowTitle;
 
-		d1(kprintf("%s/%s/%ld: UNDOTag_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_WindowTask));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_WindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, uswd->uswd_WindowTask));
 
 		uswd->uswd_OldLeft = GetTagData(UNDOTAG_OldWindowLeft, 0, TagList);
 		uswd->uswd_OldTop = GetTagData(UNDOTAG_OldWindowTop, 0, TagList);
