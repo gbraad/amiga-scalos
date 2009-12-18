@@ -52,8 +52,8 @@ UNDOTAG_IconPosX	equ	UNDOTAG_TagBase+8	; LONG
 UNDOTAG_IconPosY	equ	UNDOTAG_TagBase+9	; LONG
 UNDOTAG_OldIconPosX	equ	UNDOTAG_TagBase+10	; LONG
 UNDOTAG_OldIconPosY	equ	UNDOTAG_TagBase+11	; LONG
-UNDOTag_WindowTask	equ	UNDOTAG_TagBase+12	; struct internalScaWindowTask *
-UNDOTag_CleanupMode	equ	UNDOTAG_TagBase+13	; ULONG
+UNDOTAG_WindowTask	equ	UNDOTAG_TagBase+12	; struct internalScaWindowTask *
+UNDOTAG_CleanupMode	equ	UNDOTAG_TagBase+13	; ULONG
 UNDOTAG_UndoHook	equ	UNDOTAG_TagBase+14	; struct Hook *
 UNDOTAG_RedoHook	equ	UNDOTAG_TagBase+15	; struct Hook *
 UNDOTAG_DisposeHook	equ	UNDOTAG_TagBase+16	; struct Hook *
