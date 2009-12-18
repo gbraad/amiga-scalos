@@ -471,6 +471,9 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 
 	d1(KPrintF("%s/%s/%ld: pm=%08lx  mpm_Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, mpm->mpm_PopupMenu, mpm->mpm_Flags));
 
+	if (mpm->mpm_IconNode)
+		SelectedIconCount++;
+
 	CreateSelectedIconList(&SelectedIconList, &LockedWindowList, mpm->mpm_IconNode);
 
 	for (sli = (struct SelectedIcon *) SelectedIconList.lh_Head;
@@ -583,6 +586,8 @@ static void ShowIconPopupMenu(struct internalScaWindowTask *iwt, struct msg_Show
 
 	if (mtr)
 		{
+		d1(kprintf("%s/%s/%ld: ApplyToAllSelectedIcons=%ld  SelectedIconCount=%ld\n", __FILE__, __FUNC__, __LINE__, ApplyToAllSelectedIcons, SelectedIconCount));
+
 		if (ApplyToAllSelectedIcons && (SelectedIconCount > 1))
 			RunMenuCommandExt(iwt, iwt, mtr, NULL, 0);
 		else
