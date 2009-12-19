@@ -912,6 +912,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 					Child,	HGroup,
 						Child, Label(GetLocString(MSGID_DITHERMODENAME)),
 						Child, inst->ppb_Objects[OBJNDX_CycleDitherMode] = CycleObject,
+							MUIA_CycleChain, TRUE,
 							MUIA_Cycle_Entries, dithermodecont,
 							MUIA_ShortHelp, GetLocString(MSGID_CYCLEDITHERMODEBUBBLE),
 							End,
