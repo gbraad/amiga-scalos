@@ -194,7 +194,7 @@ void AppMenu_DisposeAppMenuInfo(struct AppMenuInfo *ami)
 		if (ami->ami_NewMenu.nm_Label && NM_BARLABEL != ami->ami_NewMenu.nm_Label)
 			FreeCopyString(ami->ami_NewMenu.nm_Label);
 
-		ScalosFreeVecPooled(ami);
+		ScalosFree(ami);
 		}
 }
 
@@ -223,7 +223,7 @@ void AppMenu_CreateMenu(void)
 	if (nmArray)
 		{
 		MainMenu = CreateMenusA(nmArray, NULL);
-		ScalosFreeVecPooled(nmArray);
+		ScalosFree(nmArray);
 		}
 	else
 		{
@@ -352,7 +352,7 @@ static struct NewMenu *CreateNewMenuArray(void)
 
 	d1(kprintf("%s/%s/%ld: ToolMenuItems=%lu\n", __FILE__, __FUNC__, __LINE__, ToolMenuItems));
 
-	nmArray = ScalosAllocVecPooled((1 + StdMenuItems + ToolMenuItems) * sizeof(struct NewMenu));
+	nmArray = ScalosAlloc((1 + StdMenuItems + ToolMenuItems) * sizeof(struct NewMenu));
 
 	d1(kprintf("%s/%s/%ld: nmArray=%08lx\n", __FILE__, __FUNC__, __LINE__, nmArray));
 

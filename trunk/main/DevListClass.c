@@ -318,9 +318,9 @@ static ULONG DevListClass_FreeDevNode(Class *cl, Object *o, Msg msg)
 		mfd->mfd_DevIcon->di_DiskIconName = NULL;
 		}
 	if (mfd->mfd_DevIcon->di_Volume)
-		ScalosFreeVecPooled(mfd->mfd_DevIcon->di_Volume);
+		ScalosFree(mfd->mfd_DevIcon->di_Volume);
 	if (mfd->mfd_DevIcon->di_Device)
-		ScalosFreeVecPooled(mfd->mfd_DevIcon->di_Device);
+		ScalosFree(mfd->mfd_DevIcon->di_Device);
 
 	return 0;
 }
@@ -362,7 +362,7 @@ static STRPTR AllocCopyBString(BPTR bString)
 	size_t Len = *Src;
 	STRPTR Name, lp;
 
-	Name = lp = ScalosAllocVecPooled(Len + 3);
+	Name = lp = ScalosAlloc(Len + 3);
 	if (NULL == Name)
 		return NULL;
 
@@ -388,7 +388,7 @@ static STRPTR AllocCopyAString(CONST_STRPTR Src)
 
 	Len = strlen(Src);
 
-	Name = ScalosAllocVecPooled(1 + Len);
+	Name = ScalosAlloc(1 + Len);
 	if (NULL == Name)
 		return NULL;
 
@@ -417,13 +417,13 @@ static void CheckAddDosListEntry(struct DevListClassInstance *inst, struct DosLi
 					{
 				case DLT_VOLUME:
 					if (dle->dle_VolumeName)
-						ScalosFreeVecPooled(dle->dle_VolumeName);
+						ScalosFree(dle->dle_VolumeName);
 
 					dle->dle_VolumeName = AllocCopyBString(dlist->dol_Name);
 					break;
 				case DLT_DEVICE:
 					if (dle->dle_DeviceName)
-						ScalosFreeVecPooled(dle->dle_DeviceName);
+						ScalosFree(dle->dle_DeviceName);
 
 					dle->dle_DeviceName = AllocCopyBString(dlist->dol_Name);
 					break;
@@ -484,7 +484,7 @@ static struct DevListEntry *CreateDevListEntry(const struct DosList *dlist)
 {
 	struct DevListEntry *dle;
 
-	dle = ScalosAllocVecPooled(sizeof(struct DevListEntry));
+	dle = ScalosAlloc(sizeof(struct DevListEntry));
 	if (dle)
 		{
 		dle->dle_Type = dlist->dol_Type;
@@ -528,12 +528,12 @@ static void DeleteDevListEntry(struct DevListEntry *dle)
 		ScalosFreeInfoData( &dle->dle_InfoData );
 		if (dle->dle_DeviceName)
 			{
-			ScalosFreeVecPooled(dle->dle_DeviceName);
+			ScalosFree(dle->dle_DeviceName);
 			dle->dle_DeviceName = NULL;
 			}
 		if (dle->dle_VolumeName)
 			{
-			ScalosFreeVecPooled(dle->dle_VolumeName);
+			ScalosFree(dle->dle_VolumeName);
 			dle->dle_VolumeName = NULL;
 			}
 		if (dle->dle_DosPacket)
@@ -542,7 +542,7 @@ static void DeleteDevListEntry(struct DevListEntry *dle)
 			dle->dle_DosPacket = NULL;
 			}
 
-		ScalosFreeVecPooled(dle);
+		ScalosFree(dle);
 		}
 }
 
@@ -630,7 +630,7 @@ static struct ScaDeviceIcon *CreateIconFromDle(struct DevListEntry *dle, struct 
 					{
 					// Update volume name from DosList entry pointed to by InfoData
 					if (dle->dle_VolumeName)
-						ScalosFreeVecPooled(dle->dle_VolumeName);
+						ScalosFree(dle->dle_VolumeName);
 
 					dle->dle_VolumeName = AllocCopyBString(dlist->dol_Name);
 					}

@@ -581,7 +581,7 @@ static void AddFTOp(struct FileTransClassInstance *inst,
 
 	inst->ftci_CurrentOperation = opType;
 
-	fto = ScalosAllocVecPooled(sizeof(struct FileTransOp));
+	fto = ScalosAlloc(sizeof(struct FileTransOp));
 	d1(kprintf("%s/%s/%ld: fto=%08lx\n", __FILE__, __FUNC__, __LINE__, fto));
 	if (fto)
 		{
@@ -1139,7 +1139,7 @@ static void FreeFTO(struct FileTransOp *fto)
 			fto->fto_DestName = NULL;
 			}
 
-		ScalosFreeVecPooled(fto);
+		ScalosFree(fto);
 		}
 }
 

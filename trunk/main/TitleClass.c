@@ -329,7 +329,7 @@ static ULONG TitleClass_New(Class *cl, Object *o, Msg msg)
 
 		d1(kprintf("%s/%s/%ld: tci_TitleFormat=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->tci_TitleFormat));
 
-		inst->tci_Buffer = ScalosAllocVecPooled(inst->tci_BufferSize);
+		inst->tci_Buffer = ScalosAlloc(inst->tci_BufferSize);
 
 		d1(kprintf("%s/%s/%ld: tci_Buffer=%08lx  Size=%lu\n", __FILE__, __FUNC__, __LINE__, inst->tci_Buffer, inst->tci_BufferSize));
 		if (NULL == inst->tci_Buffer)
@@ -352,7 +352,7 @@ static ULONG TitleClass_Dispose(Class *cl, Object *o, Msg msg)
 
 	if (inst->tci_Buffer)
 		{
-		ScalosFreeVecPooled(inst->tci_Buffer);
+		ScalosFree(inst->tci_Buffer);
 		inst->tci_Buffer = NULL;
 		}
 

@@ -107,13 +107,13 @@ BPTR DupLockFromFH_Debug(BPTR fh,
 
 #ifdef DEBUG_MEMORY
 
-APTR ScalosAllocVecPooled_Debug(ULONG Size, CONST_STRPTR CallingFile, 
+APTR ScalosAlloc_Debug(ULONG Size, CONST_STRPTR CallingFile, 
 	CONST_STRPTR CallingFunc, ULONG CallingLine);
-void ScalosFreeVecPooled_Debug(APTR mem, CONST_STRPTR CallingFile, 
+void ScalosFree_Debug(APTR mem, CONST_STRPTR CallingFile,
 	CONST_STRPTR CallingFunc, ULONG CallingLine);
 
-#define	ScalosAllocVecPooled(size) ScalosAllocVecPooled_Debug(size, __FILE__, __FUNC__, __LINE__)
-#define	ScalosFreeVecPooled(mem) ScalosFreeVecPooled_Debug(mem, __FILE__, __FUNC__, __LINE__)
+#define	ScalosAlloc(size) ScalosAlloc_Debug(size, __FILE__, __FUNC__, __LINE__)
+#define	ScalosFree(mem) ScalosFree_Debug(mem, __FILE__, __FUNC__, __LINE__)
 
 #endif /* DEBUG_MEMORY */
 

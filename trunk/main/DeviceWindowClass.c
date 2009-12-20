@@ -1360,7 +1360,7 @@ static void FreeBackdropIcon(struct ScaBackdropIcon *bdi)
 		{
 		ScalosEndNotify(bdi->sbi_NotifyReq);
 
-		ScalosFreeVecPooled(bdi->sbi_NotifyReq);
+		ScalosFree(bdi->sbi_NotifyReq);
 		bdi->sbi_NotifyReq = NULL;
 		}
 	if (bdi->sbi_DrawerName)
@@ -1460,7 +1460,7 @@ static BOOL CreateSbi(struct ScaIconNode *DevIn, struct ScaIconNode *in)
 
 		bdi->sbi_Icon = in->in_Icon;
 
-		bdi->sbi_NotifyReq = ScalosAllocVecPooled(sizeof(struct NotifyRequest));
+		bdi->sbi_NotifyReq = ScalosAlloc(sizeof(struct NotifyRequest));
 		if (NULL == bdi->sbi_NotifyReq)
 			break;
 
@@ -1501,7 +1501,7 @@ static BOOL CreateSbi(struct ScaIconNode *DevIn, struct ScaIconNode *in)
 			{
 			if (bdi->sbi_NotifyReq)
 				{
-				ScalosFreeVecPooled(bdi->sbi_NotifyReq);
+				ScalosFree(bdi->sbi_NotifyReq);
 				bdi->sbi_NotifyReq = NULL;
 				}
 			}
@@ -1519,7 +1519,7 @@ static BOOL CreateSbi(struct ScaIconNode *DevIn, struct ScaIconNode *in)
 				}
 			if (bdi->sbi_NotifyReq)
 				{
-				ScalosFreeVecPooled(bdi->sbi_NotifyReq);
+				ScalosFree(bdi->sbi_NotifyReq);
 				bdi->sbi_NotifyReq = NULL;
 				}
 
@@ -1840,7 +1840,7 @@ static void ReadShortcutPrefs(CONST_STRPTR FileName)
 					ssc.ssc_Top = sct;
 					break;
 				default:
-					ScalosFreeVecPooled(sct);
+					ScalosFree(sct);
 					break;
 					}
 				}
@@ -1878,11 +1878,11 @@ static void ReadShortcutPrefs(CONST_STRPTR FileName)
 				}
 
 			if (ssc.ssc_Name)
-				ScalosFreeVecPooled(ssc.ssc_Name);
+				ScalosFree(ssc.ssc_Name);
 			if (ssc.ssc_Left)
-				ScalosFreeVecPooled(ssc.ssc_Left);
+				ScalosFree(ssc.ssc_Left);
 			if (ssc.ssc_Top)
-				ScalosFreeVecPooled(ssc.ssc_Top);
+				ScalosFree(ssc.ssc_Top);
 			}
 		} while (0);
 
@@ -1919,7 +1919,7 @@ static struct SctPrefsField *ReadSctField(BPTR fh)
 
 		d1(KPrintF("%s/%s/%ld:  FieldDataSize=%ld\n", __FILE__, __FUNC__, __LINE__, FieldDataSize));
 
-		sct = ScalosAllocVecPooled(sizeof(struct SctPrefsField) + FieldDataSize);
+		sct = ScalosAlloc(sizeof(struct SctPrefsField) + FieldDataSize);
 		d1(kprintf("%s/%s/%ld:  sct=%08lx\n", __FILE__, __FUNC__, __LINE__, sct));
 		if (NULL == sct)
 			break;
@@ -1937,7 +1937,7 @@ static struct SctPrefsField *ReadSctField(BPTR fh)
 
 	if (sct && !Success)
 		{
-		ScalosFreeVecPooled(sct);
+		ScalosFree(sct);
 		sct = NULL;
 		}
 

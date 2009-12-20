@@ -819,7 +819,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 		if (NULL == inputPort)
 			break;
 
-		sData = ScalosAllocVecPooled(sizeof(struct ToolTipSignalData));
+		sData = ScalosAlloc(sizeof(struct ToolTipSignalData));
 		if (NULL == sData)
 			break;
 
@@ -938,7 +938,7 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 	if (tti.tti_BackgroundBitMap)
 		FreeBitMap(tti.tti_BackgroundBitMap);
 	if (sData)
-		ScalosFreeVecPooled(sData);
+		ScalosFree(sData);
 	if (inputRequest)
 		DeleteExtIO((struct IORequest *) inputRequest);
 	if (inputPort)
@@ -1602,7 +1602,7 @@ static STRPTR Tooltip_VersionString(struct ScaToolTipInfoHookData *ttshd, CONST_
 		BOOL Finished = FALSE;
 		BOOL Found = FALSE;
 
-		Buffer = ScalosAllocVecPooled(BuffLength);
+		Buffer = ScalosAlloc(BuffLength);
 		if (NULL == Buffer)
 			break;
 
@@ -1671,7 +1671,7 @@ static STRPTR Tooltip_VersionString(struct ScaToolTipInfoHookData *ttshd, CONST_
 	*VersionString = '\0';
 
 	if (Buffer)
-		ScalosFreeVecPooled(Buffer);
+		ScalosFree(Buffer);
 	if (fh)
 		Close(fh);
 
@@ -2393,7 +2393,7 @@ static struct ttDef *CloneToolTipDef(const struct ttDef *ttdOrig)
 		case TTTYPE_TextHook:
 			if (ttdOrig->ttd_Contents.ttc_Text)
 				{
-				ttd->ttd_Contents.ttc_Text = ScalosAllocVecPooled(1 + strlen(ttdOrig->ttd_Contents.ttc_Text));
+				ttd->ttd_Contents.ttc_Text = ScalosAlloc(1 + strlen(ttdOrig->ttd_Contents.ttc_Text));
 				d1(kprintf("%s/%s/%ld: ALLOC ttc_Text=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_Contents.ttc_Text));
 				if (ttd->ttd_Contents.ttc_Text)
 					strcpy(ttd->ttd_Contents.ttc_Text, ttdOrig->ttd_Contents.ttc_Text);
@@ -2402,7 +2402,7 @@ static struct ttDef *CloneToolTipDef(const struct ttDef *ttdOrig)
 		case TTTYPE_DTImage:
 			if (ttdOrig->ttd_Contents.ttc_Image)
 				{
-				ttd->ttd_Contents.ttc_Image = ScalosAllocVecPooled(sizeof(struct DatatypesImage));
+				ttd->ttd_Contents.ttc_Image = ScalosAlloc(sizeof(struct DatatypesImage));
 				d1(kprintf("%s/%s/%ld: ALLOC ttc_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_Contents.ttc_Image));
 
 				if (ttd->ttd_Contents.ttc_Image)
@@ -2418,7 +2418,7 @@ static struct ttDef *CloneToolTipDef(const struct ttDef *ttdOrig)
 
 		if (ttdOrig->ttd_HiddenHookText)
 			{
-			ttd->ttd_HiddenHookText = ScalosAllocVecPooled(1 + strlen(ttdOrig->ttd_HiddenHookText));
+			ttd->ttd_HiddenHookText = ScalosAlloc(1 + strlen(ttdOrig->ttd_HiddenHookText));
 			d1(kprintf("%s/%s/%ld: ALLOC ttd_HiddenHookText=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_HiddenHookText));
 			if (ttd->ttd_HiddenHookText)
 				strcpy(ttd->ttd_HiddenHookText, ttdOrig->ttd_HiddenHookText);

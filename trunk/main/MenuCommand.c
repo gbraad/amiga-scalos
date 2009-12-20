@@ -465,7 +465,7 @@ static void DoForAllIconsExclusive(struct internalScaWindowTask *iwt,
 		{
 		struct ScaIconNode **IconArray;
 
-		IconArray = ScalosAllocVecPooled(IconCount * sizeof(struct ScaIconNode *));
+		IconArray = ScalosAlloc(IconCount * sizeof(struct ScaIconNode *));
 		if (IconArray)
 			{
 			ULONG n;
@@ -491,7 +491,7 @@ static void DoForAllIconsExclusive(struct internalScaWindowTask *iwt,
 					}
 				}
 
-			ScalosFreeVecPooled(IconArray);
+			ScalosFree(IconArray);
 			}
 		}
 
@@ -948,7 +948,7 @@ void AsyncRenameProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 
 		d1(KPrintF("%s/%s/%ld: NumberOfWbArgs=%lu\n", __FILE__, __FUNC__, __LINE__, NumberOfWbArgs));
 
-		wbArg = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		d1(KPrintF("%s/%s/%ld: wbArg=%08lx\n", __FILE__, __FUNC__, __LINE__, wbArg));
 		if (NULL == wbArg)
 			return;
@@ -1039,7 +1039,7 @@ void AsyncRenameProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 		if (wbArg[0].wa_Lock)
 			UnLock(wbArg[0].wa_Lock);
 
-		ScalosFreeVecPooled(wbArg);
+		ScalosFree(wbArg);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END", __FILE__, __FUNC__, __LINE__));
@@ -1061,7 +1061,7 @@ void AsyncDeleteProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 		else
 			NumberOfWbArgs += SCA_CountWBArgs(mcArg->mca_IconNode);
 
-		wbArg = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		if (NULL == wbArg)
 			return;
 
@@ -1122,7 +1122,7 @@ void AsyncDeleteProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 		if (wbArg[0].wa_Lock)
 			UnLock(wbArg[0].wa_Lock);
 
-		ScalosFreeVecPooled(wbArg);
+		ScalosFree(wbArg);
 		}
 }
 
@@ -1718,7 +1718,7 @@ static void CloneProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg
 		else
 			NumberOfWbArgs += SCA_CountWBArgs(mcArg->mca_IconNode);
 
-		wbArg = wbArgAlloc = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = wbArgAlloc = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		if (NULL == wbArgAlloc)
 			return;
 
@@ -1772,7 +1772,7 @@ static void CloneProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg
 		if (ArgCount > 0)
 			SCA_FreeWBArgs(wbArgAlloc, ArgCount, SCAF_FreeNames | SCAF_FreeLocks);
 
-		ScalosFreeVecPooled(wbArgAlloc);
+		ScalosFree(wbArgAlloc);
 		}
 }
 
@@ -1925,7 +1925,7 @@ static SAVEDS(ULONG) CloneFilesStart(APTR aptr, struct SM_RunProcess *msg)
 		} while (0);
 
 	SCA_FreeWBArgs(arg->cla_wbArg, arg->cla_NumArgs, SCAF_FreeNames | SCAF_FreeLocks);
-	ScalosFreeVecPooled(arg->cla_wbArg);
+	ScalosFree(arg->cla_wbArg);
 
 	if (undoStep)
 		UndoEndStep((struct internalScaWindowTask *) msg->WindowTask, undoStep);
@@ -1983,7 +1983,7 @@ static void FindProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 		else
 			NumberOfWbArgs += SCA_CountWBArgs(mcArg->mca_IconNode);
 
-		wbArg = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		if (NULL == wbArg)
 			return;
 
@@ -2026,7 +2026,7 @@ static void FindProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 		if (wbArg[0].wa_Lock)
 			UnLock(wbArg[0].wa_Lock);
 
-		ScalosFreeVecPooled(wbArg);
+		ScalosFree(wbArg);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  iwt_WinTitle=<%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
@@ -2050,7 +2050,7 @@ static void FormatDiskProg(struct internalScaWindowTask *iwt, const struct MenuC
 		else
 			NumberOfWbArgs += SCA_CountWBArgs(mcArg->mca_IconNode);
 
-		wbArg = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		if (NULL == wbArg)
 			return;
 
@@ -2098,7 +2098,7 @@ static void FormatDiskProg(struct internalScaWindowTask *iwt, const struct MenuC
 		if (wbArg[0].wa_Lock)
 			UnLock(wbArg[0].wa_Lock);
 
-		ScalosFreeVecPooled(wbArg);
+		ScalosFree(wbArg);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  iwt_WinTitle=<%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
@@ -2520,7 +2520,7 @@ static void AsyncResetScalosProg(struct internalScaWindowTask *iwt, const struct
 		d1(kprintf("%s/%s/%ld: ws=%08lx\n", __FILE__, __FUNC__, __LINE__, ws));
 
 		FreeBackFill(&((struct internalScaWindowTask *) ws->ws_WindowTask)->iwt_WindowTask.wt_PatternInfo);
-		ScalosFreeVecPooled(ws->ws_WindowTask);
+		ScalosFree(ws->ws_WindowTask);
 
 		SCA_FreeNode((struct ScalosNodeList *)(APTR) &WinList, &ws->ws_Node);
 		}
@@ -2985,7 +2985,7 @@ static void EmptyTrashProg(struct internalScaWindowTask *iwt, const struct MenuC
 		else
 			NumberOfWbArgs += SCA_CountWBArgs(mcArg->mca_IconNode);
 
-		wbArg = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		if (NULL == wbArg)
 			return;
 
@@ -3090,7 +3090,7 @@ static void EmptyTrashProg(struct internalScaWindowTask *iwt, const struct MenuC
 		if (wbArg[0].wa_Lock)
 			UnLock(wbArg[0].wa_Lock);
 
-		ScalosFreeVecPooled(wbArg);
+		ScalosFree(wbArg);
 		}
 }
 
@@ -3521,7 +3521,7 @@ static void AsyncPasteProg(struct internalScaWindowTask *iwt, const struct MenuC
 				fta->ftarg_Arg.wa_Lock = (BPTR)NULL;
 				}
 
-			ScalosFreeVecPooled(fta);
+			ScalosFree(fta);
 
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			}
@@ -4124,7 +4124,7 @@ static void CopyToProg(struct internalScaWindowTask *iwt, const struct MenuCmdAr
 		else
 			NumberOfWbArgs += SCA_CountWBArgs(mcArg->mca_IconNode);
 
-		wbArg = wbArgAlloc = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = wbArgAlloc = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		if (NULL == wbArgAlloc)
 			return;
 
@@ -4172,7 +4172,7 @@ static void CopyToProg(struct internalScaWindowTask *iwt, const struct MenuCmdAr
 		if (ArgCount > 0)
 			SCA_FreeWBArgs(wbArgAlloc, ArgCount, SCAF_FreeNames | SCAF_FreeLocks);
 
-		ScalosFreeVecPooled(wbArgAlloc);
+		ScalosFree(wbArgAlloc);
 		}
 }
 
@@ -4318,7 +4318,7 @@ static SAVEDS(ULONG) CopyToStart(APTR aptr, struct SM_RunProcess *msg)
 	UndoEndStep((struct internalScaWindowTask *) msg->WindowTask, undoStep);
 
 	SCA_FreeWBArgs(arg->cla_wbArg, arg->cla_NumArgs, SCAF_FreeNames | SCAF_FreeLocks);
-	ScalosFreeVecPooled(arg->cla_wbArg);
+	ScalosFree(arg->cla_wbArg);
 
 	if (fileTransObj)
 		SCA_DisposeScalosObject(fileTransObj);
@@ -4429,7 +4429,7 @@ static void MoveToProg(struct internalScaWindowTask *iwt, const struct MenuCmdAr
 		else
 			NumberOfWbArgs += SCA_CountWBArgs(mcArg->mca_IconNode);
 
-		wbArg = wbArgAlloc = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		wbArg = wbArgAlloc = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		if (NULL == wbArgAlloc)
 			return;
 
@@ -4477,7 +4477,7 @@ static void MoveToProg(struct internalScaWindowTask *iwt, const struct MenuCmdAr
 		if (ArgCount > 0)
 			SCA_FreeWBArgs(wbArgAlloc, ArgCount, SCAF_FreeNames | SCAF_FreeLocks);
 
-		ScalosFreeVecPooled(wbArgAlloc);
+		ScalosFree(wbArgAlloc);
 		}
 }
 
@@ -4659,7 +4659,7 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 	UndoEndStep((struct internalScaWindowTask *) msg->WindowTask, undoStep);
 
 	SCA_FreeWBArgs(arg->cla_wbArg, arg->cla_NumArgs, SCAF_FreeNames | SCAF_FreeLocks);
-	ScalosFreeVecPooled(arg->cla_wbArg);
+	ScalosFree(arg->cla_wbArg);
 
 	if (fileTransObj)
 		SCA_DisposeScalosObject(fileTransObj);

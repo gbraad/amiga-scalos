@@ -914,13 +914,13 @@ static png_voidp PngAllocMem(png_structp png_ptr, png_size_t size)
 {
 	(void) png_ptr;
 
-	return ScalosAllocVecPooled(size);
+	return ScalosAlloc(size);
 }
 
 static void PngFreeMem(png_structp png_ptr, png_voidp ptr)
 {
 	(void) png_ptr;
-	ScalosFreeVecPooled(ptr);
+	ScalosFree(ptr);
 }
 
 

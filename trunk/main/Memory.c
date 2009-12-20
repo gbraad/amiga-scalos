@@ -135,7 +135,7 @@ void MemoryCleanup(void)
 #undef	ReleaseSemaphore
 #endif /* __GNUC__ */
 
-APTR ScalosAllocVecPooled(ULONG Size)
+APTR ScalosAlloc(ULONG Size)
 {
 #if DLMALLOC
 	APTR ptr;
@@ -181,7 +181,7 @@ APTR ScalosAllocVecPooled(ULONG Size)
 }
 
 
-void ScalosFreeVecPooled(APTR mem)
+void ScalosFree(APTR mem)
 {
 #if DLMALLOC
 	d1(KPrintF("%s/%s/%ld: START OldMem=%08lx\n", __FILE__, __FUNC__, __LINE__, mem));
@@ -202,10 +202,10 @@ void ScalosFreeVecPooled(APTR mem)
 }
 
 
-void *ScalosReallocVecPooled(APTR OldMem, ULONG NewSize)
+APTR ScalosRealloc(APTR OldMem, ULONG NewSize)
 {
 #if DLMALLOC
-	void *ptr;
+	APTR ptr;
 
 	d1(KPrintF("%s/%s/%ld: START OldMem=%08lx  NewSize=%lu\n", __FILE__, __FUNC__, __LINE__, OldMem, NewSize));
 	ptr = dlrealloc(OldMem, NewSize);
@@ -223,7 +223,7 @@ void *ScalosReallocVecPooled(APTR OldMem, ULONG NewSize)
 
 		if (0 == NewSize)
 			{
-			ScalosFreeVecPooled(OldMem);
+			ScalosFree(OldMem);
 			return NULL;
 			}
 
@@ -233,12 +233,12 @@ void *ScalosReallocVecPooled(APTR OldMem, ULONG NewSize)
 		if (OldSize >= NewSize)
 			return OldMem;
 
-		NewMem = ScalosAllocVecPooled(NewSize);
+		NewMem = ScalosAlloc(NewSize);
 
 		if (NewMem && OldMem)
 			{
 			memcpy(NewMem, OldMem, OldSize);
-			ScalosFreeVecPooled(OldMem);
+			ScalosFree(OldMem);
 			}
 
 		d1(KPrintF("%s/%s/%ld: NewMem=%08lx\n", __FILE__, __FUNC__, __LINE__, NewMem));
@@ -255,7 +255,7 @@ void *ScalosReallocVecPooled(APTR OldMem, ULONG NewSize)
 //#if defined(DEBUG_MEMORY) && !defined(__GNUC__)
 #if defined(DEBUG_MEMORY)
 
-APTR ScalosAllocVecPooled_Debug(ULONG Size, CONST_STRPTR CallingFile,
+APTR ScalosAlloc_Debug(ULONG Size, CONST_STRPTR CallingFile,
 	CONST_STRPTR CallingFunc, ULONG CallingLine)
 {
 #if DLMALLOC
@@ -307,7 +307,7 @@ APTR ScalosAllocVecPooled_Debug(ULONG Size, CONST_STRPTR CallingFile,
 }
 
 
-void ScalosFreeVecPooled_Debug(APTR mem, CONST_STRPTR CallingFile,
+void ScalosFree_Debug(APTR mem, CONST_STRPTR CallingFile,
 	CONST_STRPTR CallingFunc, ULONG CallingLine)
 {
 #if DLMALLOC
@@ -325,7 +325,7 @@ void ScalosFreeVecPooled_Debug(APTR mem, CONST_STRPTR CallingFile,
 
 		if (ptr->amp_Magic != SCALOS_MEM_START_MAGIC)
 			{
-			kprintf("ScalosFreeVecPooled: %08lx START_MAGIC not found, called from %s/%s/%ld\n",
+			kprintf("ScalosFree: %08lx START_MAGIC not found, called from %s/%s/%ld\n",
 				mem, CallingFile, CallingFunc, CallingLine);
 			return;
 			}
@@ -337,7 +337,7 @@ void ScalosFreeVecPooled_Debug(APTR mem, CONST_STRPTR CallingFile,
 			{
 			if (*((ULONG *) &ptr->amp_UserData[OrigSize + n * sizeof(ULONG)]) != SCALOS_MEM_END_MAGIC)
 				{
-				kprintf("ScalosFreeVecPooled: %08lx trailer damaged, called from %s/%s/%ld\n",
+				kprintf("ScalosFree: %08lx trailer damaged, called from %s/%s/%ld\n",
 					mem, CallingFile, CallingFunc, CallingLine);
 				kprintf("               original Length=%lu, allocated from %s/%s/%ld\n",
 					OrigSize, ptr->amp_File, ptr->amp_Function, ptr->amp_Line);
@@ -537,7 +537,7 @@ struct AnchorPath *ScalosAllocAnchorPath(ULONG Flags, size_t MaxPathLen)
 	struct AnchorPath *ap;
 
 #ifndef __amigaos4__
-	ap = ScalosAllocVecPooled(sizeof(struct AnchorPath) + Max_PathLen);
+	ap = ScalosAlloc(sizeof(struct AnchorPath) + Max_PathLen);
 	d1(KPrintF("%s/%s/%ld: ap=%08lx\n", __FILE__, __FUNC__, __LINE__, ap));
 	if (ap)
 		{
@@ -564,7 +564,7 @@ void ScalosFreeAnchorPath(struct AnchorPath *ap)
 	if (ap)
 		{
 #ifndef __amigaos4__
-		ScalosFreeVecPooled(ap);
+		ScalosFree(ap);
 #else /* __amigaos4__ */
 		FreeDosObject(DOS_ANCHORPATH, ap);
 #endif /* __amigaos4__ */

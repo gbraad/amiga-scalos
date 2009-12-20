@@ -237,7 +237,7 @@ static void FreeDatatypesImage(struct DatatypesImage *dti)
 
 		if (dti->dti_ARGB)
 			{
-			ScalosFreeVecPooled(dti->dti_ARGB);
+			ScalosFree(dti->dti_ARGB);
 			dti->dti_ARGB = NULL;
 			}
 		if (dti->dti_Filename)
@@ -253,7 +253,7 @@ static void FreeDatatypesImage(struct DatatypesImage *dti)
 			}
 		}
 
-	ScalosFreeVecPooled(dti);
+	ScalosFree(dti);
 }
 
 
@@ -269,7 +269,7 @@ static struct DatatypesImage *NewDatatypesImage(CONST_STRPTR ImageName, ULONG Fl
 
 		d1(KPrintF("%s/%s/%ld: START  ImageName=<%s>\n", __FILE__, __FUNC__, __LINE__, ImageName));
 
-		dti = ScalosAllocVecPooled(sizeof(struct DatatypesImage));
+		dti = ScalosAlloc(sizeof(struct DatatypesImage));
 		if (NULL == dti)
 			{
 			d1(KPrintF("%s/%s/%ld: dti=%08lx\n", __FILE__, __FUNC__, __LINE__, dti));
@@ -469,7 +469,7 @@ static LONG CreateTempFile(CONST_STRPTR TempFileName, CONST_STRPTR DtFileName)
 			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
-		CopyBuffer = ScalosAllocVecPooled(BuffSize);
+		CopyBuffer = ScalosAlloc(BuffSize);
 		if (NULL == CopyBuffer)
 			{
 			Result = ERROR_NO_FREE_STORE;
@@ -502,7 +502,7 @@ static LONG CreateTempFile(CONST_STRPTR TempFileName, CONST_STRPTR DtFileName)
 		} while (0);
 
 	if (CopyBuffer)
-		ScalosFreeVecPooled(CopyBuffer);
+		ScalosFree(CopyBuffer);
 	if (fdOrig)
 		Close(fdOrig);
 	if (fdCopy)
@@ -535,7 +535,7 @@ static void DtImageNotify(struct internalScaWindowTask *iwt, struct NotifyMessag
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		dtiNew = ScalosAllocVecPooled(sizeof(struct DatatypesImage));
+		dtiNew = ScalosAlloc(sizeof(struct DatatypesImage));
 		if (NULL == dtiNew)
 			break;
 
@@ -695,7 +695,7 @@ static BOOL DtImageCreateAlpha(struct DatatypesImage *dti)
 		if (mskHasAlpha != dti->dti_BitMapHeader->bmh_Masking)
 			break;
 
-		dti->dti_ARGB = ScalosAllocVecPooled(BytesPerPixel * dti->dti_BitMapHeader->bmh_Height);
+		dti->dti_ARGB = ScalosAlloc(BytesPerPixel * dti->dti_BitMapHeader->bmh_Height);
 		if (NULL == dti->dti_ARGB)
 			break;
 

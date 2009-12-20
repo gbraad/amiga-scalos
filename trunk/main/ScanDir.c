@@ -1700,7 +1700,7 @@ static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *ril
 {
 	struct IconScanEntry *ise;
 
-	ise = ScalosAllocVecPooled(sizeof(struct IconScanEntry));
+	ise = ScalosAlloc(sizeof(struct IconScanEntry));
 	if (ise)
 		{
 		ise->ise_IconObj = NULL;
@@ -1813,7 +1813,7 @@ static void DisposeIconScanEntry(struct IconScanEntry *ise)
 			ise->ise_IconObj = NULL;
 			}
 
-		ScalosFreeVecPooled(ise);
+		ScalosFree(ise);
 		}
 }
 

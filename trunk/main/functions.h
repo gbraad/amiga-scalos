@@ -514,9 +514,9 @@ void RemFromMainNotifyList(struct NotifyNode *non);
 BOOL MemoryInit(void);
 void MemoryCleanup(void);
 #ifndef DEBUG_MEMORY
-APTR ScalosAllocVecPooled(ULONG Size);
-void *ScalosReallocVecPooled(APTR OldMem, ULONG NewSize);
-void ScalosFreeVecPooled(APTR mem);
+APTR ScalosAlloc(ULONG Size);
+APTR ScalosRealloc(APTR OldMem, ULONG NewSize);
+void ScalosFree(APTR mem);
 #endif /* DEBUG_MEMORY */
 STRPTR AllocCopyString(CONST_STRPTR clp);
 void FreeCopyString(STRPTR lp);

@@ -1220,7 +1220,7 @@ static ULONG IconWindowClass_Dispose(Class *cl, Object *o, Msg msg)
 		{
 		ScalosEndNotify(inst->ici_NotifyReq);
 
-		ScalosFreeVecPooled(inst->ici_NotifyReq);
+		ScalosFree(inst->ici_NotifyReq);
 		inst->ici_NotifyReq = NULL;
 		}
 	if (inst->ici_DrawerName)
@@ -2535,7 +2535,7 @@ static ULONG IconWindowClass_ShowPopupMenu(Class *cl, Object *o, Msg msg)
 		else
 			{
 			// Window activation pending, delay popup menu until window has been made active
-			iwt->iwt_PopupMenuPending = ScalosAllocVecPooled(sizeof(struct msg_ShowPopupMenu));
+			iwt->iwt_PopupMenuPending = ScalosAlloc(sizeof(struct msg_ShowPopupMenu));
 
 			if (iwt->iwt_PopupMenuPending)
 				*iwt->iwt_PopupMenuPending = *mpm;
@@ -3304,7 +3304,7 @@ static ULONG IconWindowClass_StartNotify(Class *cl, Object *o, Msg msg)
 			if (inst->ici_NotifyReq)
 				ScalosEndNotify(inst->ici_NotifyReq);	// cancel old notification
 			else
-				inst->ici_NotifyReq = ScalosAllocVecPooled(sizeof(struct NotifyRequest));
+				inst->ici_NotifyReq = ScalosAlloc(sizeof(struct NotifyRequest));
 			if (NULL == inst->ici_NotifyReq)
 				break;
 
@@ -3338,7 +3338,7 @@ static ULONG IconWindowClass_StartNotify(Class *cl, Object *o, Msg msg)
 					FreePathBuffer(inst->ici_DrawerName);
 					inst->ici_DrawerName = NULL;
 					}
-				ScalosFreeVecPooled(inst->ici_NotifyReq);
+				ScalosFree(inst->ici_NotifyReq);
 				inst->ici_NotifyReq = NULL;
 				}
 			}

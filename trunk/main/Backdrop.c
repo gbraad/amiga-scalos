@@ -100,7 +100,7 @@ LONG LoadBackdropFile(struct BackDropList *bdl)
 		return Result;
 		}
 
-	Line = ScalosAllocVecPooled(LineSize);
+	Line = ScalosAlloc(LineSize);
 	if (NULL == Line)
 		{
 		Close(fh);
@@ -127,7 +127,7 @@ LONG LoadBackdropFile(struct BackDropList *bdl)
 			}
 		}
 
-	ScalosFreeVecPooled(Line);
+	ScalosFree(Line);
 
 	if (!Close(fh))
 		return IoErr();
@@ -250,7 +250,7 @@ static BOOL BackdropRemoveLine(struct BackDropList *bdl, BPTR iconLock)
 
 static struct ChainedLine *BackdropAllocChainedLine(CONST_STRPTR TextLine)
 {
-	struct ChainedLine *cnl = ScalosAllocVecPooled(sizeof(struct ChainedLine));
+	struct ChainedLine *cnl = ScalosAlloc(sizeof(struct ChainedLine));
 
 	if (NULL == cnl)
 		return NULL;
@@ -266,7 +266,7 @@ static void BackdropFreeChainedLine(struct ChainedLine *cnl)
 	if (cnl->cnl_Line)
 		FreeCopyString(cnl->cnl_Line);		// allocated by AllocCopyString()
 
-	ScalosFreeVecPooled(cnl);
+	ScalosFree(cnl);
 }
 
 
@@ -833,7 +833,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 			if (!IsIwtViewByIcon(iwt) &&
 				IsShowAll(iwt->iwt_WindowTask.mt_WindowStruct))
 				{
-				STRPTR IconInfoName = ScalosAllocVecPooled(1 + strlen(IconName) + strlen(".info"));
+				STRPTR IconInfoName = ScalosAlloc(1 + strlen(IconName) + strlen(".info"));
 
 				if (IconInfoName)
 					{

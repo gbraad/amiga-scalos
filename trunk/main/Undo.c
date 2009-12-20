@@ -361,7 +361,7 @@ static struct UndoStep *UndoCreateStep(void)
 	struct UndoStep *ust;
 
 	do	{
-		ust = ScalosAllocVecPooled(sizeof(struct UndoStep));
+		ust = ScalosAlloc(sizeof(struct UndoStep));
 		if (NULL == ust)
 			break;
 
@@ -393,7 +393,7 @@ static void UndoDisposeStep(struct UndoStep *ust)
 			ust->ust_Description = NULL;
 			}
 
-		ScalosFreeVecPooled(ust);
+		ScalosFree(ust);
 		}
 }
 
@@ -411,7 +411,7 @@ static struct UndoEvent *UndoCreateEvent(void)
 			NULL,				// h_Data
 			};
 
-		uev = ScalosAllocVecPooled(sizeof(struct UndoEvent));
+		uev = ScalosAlloc(sizeof(struct UndoEvent));
 		if (NULL == uev)
 			break;
 
@@ -430,7 +430,7 @@ static void UndoDisposeEvent(struct UndoEvent *uev)
 		{
 		if (uev->uev_DisposeHook)
 			CallHookPkt(uev->uev_DisposeHook, NULL, uev);  // cleanup type-specific data
-		ScalosFreeVecPooled(uev);
+		ScalosFree(uev);
 		}
 }
 
@@ -1150,7 +1150,7 @@ static BOOL AddCleanupEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		d1(kprintf("%s/%s/%ld: ucd_IconCount=%lu\n", __FILE__, __FUNC__, __LINE__, ucd->ucd_IconCount));
 
 		// create array to store icon positions
-		ucd->ucd_Icons = ScalosAllocVecPooled(ucd->ucd_IconCount * sizeof(struct UndoCleanupIconEntry));
+		ucd->ucd_Icons = ScalosAlloc(ucd->ucd_IconCount * sizeof(struct UndoCleanupIconEntry));
 		if (NULL == ucd->ucd_Icons)
 			break;
 
@@ -2548,7 +2548,7 @@ static SAVEDS(void) UndoDisposeCleanupData(struct Hook *hook, APTR object, struc
 			}
 		if (ucd->ucd_Icons)
 			{
-			ScalosFreeVecPooled(ucd->ucd_Icons);
+			ScalosFree(ucd->ucd_Icons);
 			ucd->ucd_Icons = NULL;
 			}
 		}
@@ -2693,12 +2693,12 @@ static SAVEDS(void) UndoDisposeSetToolTypesData(struct Hook *hook, APTR object, 
 			}
 		if (ustd->ustd_OldToolTypes)
 			{
-			ScalosFreeVecPooled(ustd->ustd_OldToolTypes);
+			ScalosFree(ustd->ustd_OldToolTypes);
 			ustd->ustd_OldToolTypes = NULL;
 			}
 		if (ustd->ustd_NewToolTypes)
 			{
-			ScalosFreeVecPooled(ustd->ustd_NewToolTypes);
+			ScalosFree(ustd->ustd_NewToolTypes);
 			ustd->ustd_NewToolTypes = NULL;
 			}
 		}

@@ -1071,7 +1071,7 @@ static ULONG TextWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 
 			if (IsShowAll(iwt->iwt_WindowTask.mt_WindowStruct))
 				{
-				STRPTR IconName = ScalosAllocVecPooled(1 + strlen(mri->mri_Name) + strlen(".info"));
+				STRPTR IconName = ScalosAlloc(1 + strlen(mri->mri_Name) + strlen(".info"));
 
 				if (IconName)
 					{
@@ -1079,7 +1079,7 @@ static ULONG TextWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 					strcat(IconName, ".info");
 
 					ScheduleRealUpdateIcon(iwt, mri->mri_Lock, IconName);
-					ScalosFreeVecPooled(IconName);
+					ScalosFree(IconName);
 					}
 				}
 			}

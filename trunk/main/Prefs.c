@@ -545,7 +545,7 @@ ULONG ReadPalettePrefs(void)
 				{
 				LONG Actual;
 
-				PalettePrefs.pal_ScreenColorList = ScalosAllocVecPooled(cn->cn_Size + 16);
+				PalettePrefs.pal_ScreenColorList = ScalosAlloc(cn->cn_Size + 16);
 				d1(KPrintF("%s/%s/%ld: ScreenColorList=%08lx\n", __FILE__, __FUNC__, __LINE__, PalettePrefs.pal_ScreenColorList));
 				if (NULL == PalettePrefs.pal_ScreenColorList)
 					continue;
@@ -557,7 +557,7 @@ ULONG ReadPalettePrefs(void)
 					{
 					Result = IoErr();
 
-					ScalosFreeVecPooled(PalettePrefs.pal_ScreenColorList);
+					ScalosFree(PalettePrefs.pal_ScreenColorList);
 					PalettePrefs.pal_ScreenColorList = NULL;
 					break;
 					}
@@ -594,7 +594,7 @@ void FreePalettePrefs(void)
 
 	if (PalettePrefs.pal_ScreenColorList)
 		{
-		ScalosFreeVecPooled(PalettePrefs.pal_ScreenColorList);
+		ScalosFree(PalettePrefs.pal_ScreenColorList);
 		PalettePrefs.pal_ScreenColorList = NULL;
 		}
 }
@@ -657,7 +657,7 @@ void ReadFontPrefs(void)
 
 			d1(KPrintF("%s/%s/%ld: CurrentChunk=%08lx  Size=%lu\n", __FILE__, __FUNC__, __LINE__, cn, cn->cn_Size));
 
-			FontChunk = ScalosAllocVecPooled(cn->cn_Size);
+			FontChunk = ScalosAlloc(cn->cn_Size);
 			d1(KPrintF("%s/%s/%ld: FontChunk=%08lx\n", __FILE__, __FUNC__, __LINE__, FontChunk));
 			if (NULL == FontChunk)
 				break;
@@ -677,10 +677,10 @@ void ReadFontPrefs(void)
 					__FILE__, __FUNC__, __LINE__, FontChunk->fp_FrontPen, FontChunk->fp_BackPen, FontChunk->fp_DrawMode));
 
 				if (FontPrefs.fprf_AllocName)
-					ScalosFreeVecPooled(FontPrefs.fprf_AllocName);
+					ScalosFree(FontPrefs.fprf_AllocName);
 
 				FontPrefs.fprf_TextAttr = FontChunk->fp_TextAttr;
-				FontPrefs.fprf_AllocName = ScalosAllocVecPooled(1 + strlen(FontChunk->fp_Name));
+				FontPrefs.fprf_AllocName = ScalosAlloc(1 + strlen(FontChunk->fp_Name));
 				if (FontPrefs.fprf_AllocName)
 					{
 					strcpy(FontPrefs.fprf_AllocName, FontChunk->fp_Name);
@@ -698,13 +698,13 @@ void ReadFontPrefs(void)
 
 			d1(KPrintF("%s/%s/%ld: FontAttr.ta_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, FontPrefs.fprf_TextAttr.ta_Name));
 
-			ScalosFreeVecPooled(FontChunk);
+			ScalosFree(FontChunk);
 			FontChunk = NULL;
 			}
 		} while (0);
 
 	if (FontChunk)
-		ScalosFreeVecPooled(FontChunk);
+		ScalosFree(FontChunk);
 	if (iff)
 		{
 		if (IffOpened)
@@ -946,7 +946,7 @@ BOOL ReadScalosPrefs(void)
 		LONG Entry;
 		CONST_STRPTR MainPrefsFileName = "ENV:Scalos/Scalos.prefs";
 
-		NewPrefs = ScalosAllocVecPooled(sizeof(struct ScalosPrefs));
+		NewPrefs = ScalosAlloc(sizeof(struct ScalosPrefs));
 		d1(KPrintF("%s/%s/%ld: NewPrefs=%08lx\n", __FILE__, __FUNC__, __LINE__, NewPrefs));
 		if (NULL == NewPrefs)
 			break;
@@ -1215,7 +1215,7 @@ BOOL ReadScalosPrefs(void)
 		}
 
 	if (NewPrefs)
-		ScalosFreeVecPooled(NewPrefs);
+		ScalosFree(NewPrefs);
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__, Success));
 
@@ -1248,13 +1248,13 @@ static void InternalFreeScalosPrefs(struct ScalosPrefs *Prefs)
 
 	if (Prefs->pref_TextModeTextAttr.sta_AllocName)
 		{
-		ScalosFreeVecPooled(Prefs->pref_TextModeTextAttr.sta_AllocName);
+		ScalosFree(Prefs->pref_TextModeTextAttr.sta_AllocName);
 		Prefs->pref_TextModeTextAttr.sta_AllocName = NULL;
 		Prefs->pref_TextModeTextAttr.sta_TextAttr.ta_Name = (STRPTR) "topaz.font";
 		}
 	if (Prefs->pref_IconFontAttr.sta_AllocName)
 		{
-		ScalosFreeVecPooled(Prefs->pref_IconFontAttr.sta_AllocName);
+		ScalosFree(Prefs->pref_IconFontAttr.sta_AllocName);
 		Prefs->pref_IconFontAttr.sta_AllocName = NULL;
 		Prefs->pref_IconFontAttr.sta_TextAttr.ta_Name = (STRPTR) "topaz.font";
 		}
@@ -1429,7 +1429,7 @@ static void CreatePatternNode(struct IFFHandle *iff, const struct ContextNode *c
 	struct PatternNode *patNode = NULL;
 
 	do	{
-		pPrefs = ScalosAllocVecPooled(cn->cn_Size);
+		pPrefs = ScalosAlloc(cn->cn_Size);
 		if (NULL == pPrefs)
 			break;
 
@@ -1467,7 +1467,7 @@ static void CreatePatternNode(struct IFFHandle *iff, const struct ContextNode *c
 	if (patNode)
 		SCA_FreeNode((struct ScalosNodeList *)(APTR) &PatternNodes, &patNode->ptn_Node);
 	if (pPrefs)
-		ScalosFreeVecPooled(pPrefs);
+		ScalosFree(pPrefs);
 }
 
 
@@ -2050,14 +2050,14 @@ static void SetTextAttr(struct ScalosTextAttr *sta, struct PrefsStruct *ps)
 
 	if (sta->sta_AllocName)
 		{
-		ScalosFreeVecPooled(sta->sta_AllocName);
+		ScalosFree(sta->sta_AllocName);
 		sta->sta_AllocName = NULL;
 		}
 
 	for (fp=fontName, fnLen=0; *fp && '/' != *fp; fnLen++)
 		fp++;
 
-	sta->sta_TextAttr.ta_Name = sta->sta_AllocName = ScalosAllocVecPooled(fnLen + 5 + 1);
+	sta->sta_TextAttr.ta_Name = sta->sta_AllocName = ScalosAlloc(fnLen + 5 + 1);
 	if (sta->sta_TextAttr.ta_Name)
 		{
 		stccpy(sta->sta_TextAttr.ta_Name, fontName, 1 + fnLen);
@@ -2144,7 +2144,7 @@ static void CleanupControlBarGadgetsList(struct List *CbGadgetsList)
 			FreeCopyString(cgy->cgy_HelpText);
 			cgy->cgy_HelpText = NULL;
 			}
-		ScalosFreeVecPooled(cgy);
+		ScalosFree(cgy);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
@@ -2174,7 +2174,7 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 		size = sizeof(struct SCP_GadgetStringEntry) + gseTemp.gse_Length;
 		d1(KPrintF("%s/%s/%ld: gse_Length=%lu  size=%lu\n", __FILE__, __FUNC__, __LINE__, gseTemp.gse_Length, size));
 
-		gse = ScalosAllocVecPooled(size);
+		gse = ScalosAlloc(size);
 		d1(KPrintF("%s/%s/%ld: gse=%08lx\n", __FILE__, __FUNC__, __LINE__, gse));
 		if (NULL == gse)
 			break;
@@ -2193,7 +2193,7 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 			d1(KPrintF("%s/%s/%ld: sgy_NormalImageIndex=%lu  sgy_SelectedImageIndex=%lu\n", __FILE__, __FUNC__, __LINE__, sgy.sgy_NormalImageIndex, sgy.sgy_SelectedImageIndex));
 			d1(KPrintF("%s/%s/%ld: sgy_DisabledImageIndex=%lu  sgy_HelpTextIndex=%lu\n", __FILE__, __FUNC__, __LINE__, sgy.sgy_DisabledImageIndex, sgy.sgy_HelpTextIndex));
 
-			cgy = ScalosAllocVecPooled(sizeof(struct ControlBarGadgetEntry));
+			cgy = ScalosAlloc(sizeof(struct ControlBarGadgetEntry));
 			d1(KPrintF("%s/%s/%ld: cgy=%08lx  Entry=%ld  sgy_GadgetType=%ld\n", __FILE__, __FUNC__, __LINE__, cgy, Entry, sgy.sgy_GadgetType));
 			if (NULL == cgy)
 				break;
@@ -2214,7 +2214,7 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 		} while (0);
 
 	if (gse)
-		ScalosFreeVecPooled(gse);
+		ScalosFree(gse);
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }

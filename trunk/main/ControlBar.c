@@ -479,7 +479,7 @@ static struct ControlBarMember *ControlBarCreateViewByCycle(struct internalScaWi
 		}
 
 	do	{
-		Member = ScalosAllocVecPooled(sizeof(struct ControlBarMember));
+		Member = ScalosAlloc(sizeof(struct ControlBarMember));
 		if (NULL == Member)
 			break;
 
@@ -539,7 +539,7 @@ static struct ControlBarMember *ControlBarCreateShowModeCycle(struct internalSca
 		}
 
 	do	{
-		Member = ScalosAllocVecPooled(sizeof(struct ControlBarMember));
+		Member = ScalosAlloc(sizeof(struct ControlBarMember));
 		if (NULL == Member)
 			break;
 
@@ -584,7 +584,7 @@ static struct ControlBarMember *ControlBarCreateSeparator(const struct ControlBa
 	BOOL Success = FALSE;
 
 	do	{
-		Member = ScalosAllocVecPooled(sizeof(struct ControlBarMember));
+		Member = ScalosAlloc(sizeof(struct ControlBarMember));
 		if (NULL == Member)
 			break;
 
@@ -642,7 +642,7 @@ static struct ControlBarMember *ControlBarCreateActionButton(const struct Contro
 		if (NULL == smcom)
 			break;		// unknown command string
 
-		Member = ScalosAllocVecPooled(sizeof(struct ControlBarMember));
+		Member = ScalosAlloc(sizeof(struct ControlBarMember));
 		d1(KPrintF("%s/%s/%ld: Member=%08lx\n", __FILE__, __FUNC__, __LINE__, Member));
 		if (NULL == Member)
 			break;
@@ -748,7 +748,7 @@ static struct ControlBarMember *ControlBarCreateButton(CONST_STRPTR NormalImgNam
 		if (NULL == ImageNameDisabled)
 			break;
 
-		Member = ScalosAllocVecPooled(sizeof(struct ControlBarMember));
+		Member = ScalosAlloc(sizeof(struct ControlBarMember));
 		if (NULL == Member)
 			break;
 
@@ -825,7 +825,7 @@ static struct ControlBarMember *ControlBarCreateHistoryGadget(struct internalSca
 	BOOL Success = FALSE;
 
 	do	{
-		Member = ScalosAllocVecPooled(sizeof(struct ControlBarMember));
+		Member = ScalosAlloc(sizeof(struct ControlBarMember));
 		if (NULL == Member)
 			break;
 
@@ -950,7 +950,7 @@ static void FreeControlBarMember(struct ControlBarMember *Member)
 		FreeCopyString(Member->cbm_Entry.cgy_DisabledImage);
 		FreeCopyString(Member->cbm_Entry.cgy_HelpText);
 
-		ScalosFreeVecPooled(Member);
+		ScalosFree(Member);
 		}
 }
 

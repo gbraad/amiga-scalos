@@ -136,7 +136,7 @@ LONG UseRequestArgs(struct Window *parentWin,
 
 	va_start(args, NumArgs);
 
-	ArgList = ScalosAllocVecPooled(1 + NumArgs * sizeof(ULONG));
+	ArgList = ScalosAlloc(1 + NumArgs * sizeof(ULONG));
 	if (ArgList)
 		{
 		ULONG *pArg = ArgList;
@@ -145,7 +145,7 @@ LONG UseRequestArgs(struct Window *parentWin,
 			*pArg++ = va_arg(args, ULONG);
 
 		Result = UseRequest(parentWin, BodyTextNum, GadgetsTextNum, ArgList);
-		ScalosFreeVecPooled(ArgList);
+		ScalosFree(ArgList);
 		}
 
 	va_end(args);

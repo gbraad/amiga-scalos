@@ -96,7 +96,7 @@ struct ttDef *TT_CreateItemA(struct TagItem *TagList)
 	struct ttDef *ttd;
 	CONST_STRPTR Text;
 
-	ttd = ScalosAllocVecPooled(sizeof(struct ttDef));
+	ttd = ScalosAlloc(sizeof(struct ttDef));
 	d1(kprintf("%s/%s/%ld: ALLOC ttd=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd));
 	if (NULL == ttd)
 		return NULL;
@@ -140,7 +140,7 @@ struct ttDef *TT_CreateItemA(struct TagItem *TagList)
 			{
 		case TT_Title:
 			Text = (CONST_STRPTR) ti->ti_Data;
-			ttd->ttd_Contents.ttc_Text = ScalosAllocVecPooled(1 + strlen(Text));
+			ttd->ttd_Contents.ttc_Text = ScalosAlloc(1 + strlen(Text));
 			d1(kprintf("%s/%s/%ld: ALLOC ttc_Text=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_Contents.ttc_Text));
 			ttd->ttd_Type = TTTYPE_Text;
 			if (ttd->ttd_Contents.ttc_Text)
@@ -149,7 +149,7 @@ struct ttDef *TT_CreateItemA(struct TagItem *TagList)
 
 		case TT_TitleHook:
 			Text = (CONST_STRPTR) ti->ti_Data;
-			ttd->ttd_Contents.ttc_Text = ScalosAllocVecPooled(1 + strlen(Text));
+			ttd->ttd_Contents.ttc_Text = ScalosAlloc(1 + strlen(Text));
 			d1(kprintf("%s/%s/%ld: ALLOC ttc_Text=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_Contents.ttc_Text));
 			ttd->ttd_Type = TTTYPE_TextHook;
 			if (ttd->ttd_Contents.ttc_Text)
@@ -158,7 +158,7 @@ struct ttDef *TT_CreateItemA(struct TagItem *TagList)
 
 		case TT_TitleID:
 			Text = GetLocString(ti->ti_Data);
-			ttd->ttd_Contents.ttc_Text = ScalosAllocVecPooled(1 + strlen(Text));
+			ttd->ttd_Contents.ttc_Text = ScalosAlloc(1 + strlen(Text));
 			d1(kprintf("%s/%s/%ld: ALLOC ttc_Text=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_Contents.ttc_Text));
 			ttd->ttd_Type = TTTYPE_Text;
 			if (ttd->ttd_Contents.ttc_Text)
@@ -273,7 +273,7 @@ struct ttDef *TT_CreateItemA(struct TagItem *TagList)
 
 		case TT_HiddenHook:
 			Text = (CONST_STRPTR) ti->ti_Data;
-			ttd->ttd_HiddenHookText = ScalosAllocVecPooled(1 + strlen(Text));
+			ttd->ttd_HiddenHookText = ScalosAlloc(1 + strlen(Text));
 			d1(kprintf("%s/%s/%ld: ALLOC ttd_HiddenHookText=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_HiddenHookText));
 			if (ttd->ttd_HiddenHookText)
 				strcpy(ttd->ttd_HiddenHookText, Text);
@@ -331,7 +331,7 @@ void TTDisposeItem(struct ttDef *ttd)
 			if (ttd->ttd_Contents.ttc_Text)
 				{
 				d1(kprintf("%s/%s/%ld: FREE ttc_Text=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_Contents.ttc_Text));
-				ScalosFreeVecPooled(ttd->ttd_Contents.ttc_Text);
+				ScalosFree(ttd->ttd_Contents.ttc_Text);
 				ttd->ttd_Contents.ttc_Text = NULL;
 				}
 			break;
@@ -346,7 +346,7 @@ void TTDisposeItem(struct ttDef *ttd)
 		if (ttd->ttd_HiddenHookText)
 			{
 			d1(kprintf("%s/%s/%ld: FREE ttd->ttd_HiddenHookText=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd->ttd_HiddenHookText));
-			ScalosFreeVecPooled(ttd->ttd_HiddenHookText);
+			ScalosFree(ttd->ttd_HiddenHookText);
 			ttd->ttd_HiddenHookText = NULL;
 			}
 
@@ -364,7 +364,7 @@ void TTDisposeItem(struct ttDef *ttd)
 			}
 
 		d1(kprintf("%s/%s/%ld: FREE ttd=%08lx\n", __FILE__, __FUNC__, __LINE__, ttd));
-		ScalosFreeVecPooled(ttd);
+		ScalosFree(ttd);
 
 		ttd = nextDef;
 		}
@@ -472,13 +472,13 @@ static void TTLayoutItem(struct RastPort *rp, struct ttDef *ttd, struct IBox *la
 
 						if (userText)
 							{
-							STRPTR newText = ScalosAllocVecPooled(1 + strlen(userText));
+							STRPTR newText = ScalosAlloc(1 + strlen(userText));
 							d1(kprintf("%s/%s/%ld: ALLOC newText=%08lx\n", __FILE__, __FUNC__, __LINE__, newText));
 							if (newText)
 								{
 								strcpy(newText, userText);
 								d1(kprintf("%s/%s/%ld: FREE ttc_Text=%08lx\n", __FILE__, __FUNC__, __LINE__, xDef->ttd_Contents.ttc_Text));
-								ScalosFreeVecPooled(xDef->ttd_Contents.ttc_Text);
+								ScalosFree(xDef->ttd_Contents.ttc_Text);
 								xDef->ttd_Contents.ttc_Text = newText;
 								}
 							}

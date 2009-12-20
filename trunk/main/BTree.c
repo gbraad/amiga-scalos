@@ -36,7 +36,7 @@ struct BTree *BTreeCreate(void (*DisposeData)(void *),
 			   void (*DisposeKey)(void *),
 			   int (*Compare)(const void *, const void *))
 {
-	struct BTree *t = ScalosAllocVecPooled(sizeof(struct BTree));
+	struct BTree *t = ScalosAlloc(sizeof(struct BTree));
         t->btr_Root = NULL;
         t->btr_NodeCount = 0;
 	t->btr_DisposeData = DisposeData;
@@ -50,7 +50,7 @@ struct BTree *BTreeCreate(void (*DisposeData)(void *),
 void BTreeDispose(struct BTree *tree)
 {
 	BTreeInternalDisposeNode(tree, tree->btr_Root);
-	ScalosFreeVecPooled(tree);
+	ScalosFree(tree);
 }
 
 
@@ -100,7 +100,7 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 
 	if (!(*t))
 		{
-		node = ScalosAllocVecPooled(sizeof(struct BTAVLnode));
+		node = ScalosAlloc(sizeof(struct BTAVLnode));
 	        node->avln_Key = key;
 	        node->avln_Data = data;
 	        node->avln_Balance = BALANCED;
@@ -119,7 +119,7 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 			// Add to left subtree
 			if (!(*t)->avln_Left)
 				{
-				node = ScalosAllocVecPooled(sizeof(struct BTAVLnode));
+				node = ScalosAlloc(sizeof(struct BTAVLnode));
 		                node->avln_Key = key;
 		                node->avln_Data = data;
 		                node->avln_Balance = BALANCED;
@@ -158,7 +158,7 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 			/// try the right subtree
 			if (!(*t)->avln_Right)
 				{
-				node = ScalosAllocVecPooled(sizeof(struct BTAVLnode));
+				node = ScalosAlloc(sizeof(struct BTAVLnode));
 		                node->avln_Key = key;
 		                node->avln_Data = data;
 		                node->avln_Balance = BALANCED;
@@ -334,7 +334,7 @@ static void BTreeInternalDisposeNode(struct BTree *tree, struct BTAVLnode *t)
 	        if (tree->btr_DisposeData)
 			tree->btr_DisposeData(t->avln_Data);
 
-		ScalosFreeVecPooled(t);
+		ScalosFree(t);
 		}
 }
 

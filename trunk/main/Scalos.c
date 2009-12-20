@@ -432,7 +432,7 @@ STRPTR AllocPathBuffer(void)
 	d1(kprintf("%s/%s/%ld: Max_PathLen=%ld Task=%08lx\n", __FILE__, __FUNC__, __LINE__,
 		Max_PathLen, FindTask(NULL)));
 
-	Buffer = (STRPTR) ScalosAllocVecPooled(Max_PathLen);
+	Buffer = (STRPTR) ScalosAlloc(Max_PathLen);
 
 	d1(kprintf("%s/%s/%ld: String=%08lx\n", __FILE__, __FUNC__, __LINE__,
 		Buffer));
@@ -447,7 +447,7 @@ void FreePathBuffer(STRPTR Buffer)
 		Buffer));
 
 	if (Buffer)
-		ScalosFreeVecPooled(Buffer);
+		ScalosFree(Buffer);
 }
 
 
@@ -590,7 +590,7 @@ LONG ScalosTagListInit(struct ScalosTagList *tagList)
 	tagList->stl_Index = 0;
 	tagList->stl_MaxEntries = SCALOSTAGLIST_STEP;
 
-	tagList->stl_TagList = ScalosAllocVecPooled(sizeof(struct TagItem) * tagList->stl_MaxEntries);
+	tagList->stl_TagList = ScalosAlloc(sizeof(struct TagItem) * tagList->stl_MaxEntries);
 	d1(kprintf("%s/%s/%ld: ALLOC TagList=%08lx\n", __FILE__, __FUNC__, __LINE__, tagList->stl_TagList));
 	if (NULL == tagList->stl_TagList)
 		Result = ERROR_NO_FREE_STORE;
@@ -606,7 +606,7 @@ void ScalosTagListCleanup(struct ScalosTagList *tagList)
 		if (tagList->stl_TagList)
 			{
 			d1(kprintf("%s/%s/%ld: FREE TagList=%08lx\n", __FILE__, __FUNC__, __LINE__, tagList->stl_TagList));
-			ScalosFreeVecPooled(tagList->stl_TagList);
+			ScalosFree(tagList->stl_TagList);
 			tagList->stl_TagList = NULL;
 			}
 		tagList->stl_MaxEntries = 0;
@@ -629,7 +629,7 @@ LONG ScalosTagListNewEntry(struct ScalosTagList *tagList, ULONG tag, ULONG data)
 
 		tagList->stl_MaxEntries *= 2;
 
-		NewTagList = ScalosAllocVecPooled(sizeof(struct TagItem) * NewEntries);
+		NewTagList = ScalosAlloc(sizeof(struct TagItem) * NewEntries);
 		d1(kprintf("%s/%s/%ld: ALLOC TagList=%08lx\n", __FILE__, __FUNC__, __LINE__, NewTagList));
 		if (NULL == NewTagList)
 			return RETURN_ERROR;
@@ -637,7 +637,7 @@ LONG ScalosTagListNewEntry(struct ScalosTagList *tagList, ULONG tag, ULONG data)
 		memcpy(NewTagList, tagList->stl_TagList, sizeof(struct TagItem) * tagList->stl_MaxEntries);
 
 		d1(kprintf("%s/%s/%ld: FREE TagList=%08lx\n", __FILE__, __FUNC__, __LINE__, tagList->stl_TagList));
-		ScalosFreeVecPooled(tagList->stl_TagList);
+		ScalosFree(tagList->stl_TagList);
 
 		tagList->stl_TagList = NewTagList;
 		tagList->stl_MaxEntries = NewEntries;
@@ -967,7 +967,7 @@ struct InfoData *ScalosAllocInfoData(void)
 #ifdef __amigaos4__
 	return (struct InfoData *) AllocDosObject(DOS_INFODATA, NULL);
 #else // __amigaos4__
-	return (struct InfoData *) ScalosAllocVecPooled(sizeof(struct InfoData));
+	return (struct InfoData *) ScalosAlloc(sizeof(struct InfoData));
 #endif //__amigaos4__
 }
 
@@ -980,7 +980,7 @@ void ScalosFreeInfoData(struct InfoData **pId)
 #ifdef __amigaos4__
 		FreeDosObject(DOS_INFODATA, *pId);
 #else // __amigaos4__
-		ScalosFreeVecPooled(*pId);
+		ScalosFree(*pId);
 #endif //__amigaos4__
 		*pId = NULL;
 		}

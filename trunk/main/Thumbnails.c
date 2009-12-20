@@ -708,7 +708,7 @@ static struct ThumbnailIcon *AddThumbnailEntry(struct internalScaWindowTask *iwt
 	BOOL Success = FALSE;
 
 	do	{
-		tni = ScalosAllocVecPooled(sizeof(struct ThumbnailIcon));
+		tni = ScalosAlloc(sizeof(struct ThumbnailIcon));
 		if (NULL == tni)
 			break;
 
@@ -786,7 +786,7 @@ static void FreeThumbnailEntry(struct ThumbnailIcon *tni)
 			FreeCopyString(tni->tni_IconName);
 		tni->tni_DirLock = (BPTR)NULL;
 		tni->tni_IconName = NULL;
-		ScalosFreeVecPooled(tni);
+		ScalosFree(tni);
 		}
 }
 

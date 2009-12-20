@@ -554,7 +554,7 @@ static LONG FtBeginMember(struct FileTypeDef *ftd, LONG *ArgArray)
 
 	if (hideString && strlen(hideString) > 0)
 		{
-		memberTTi->ftti_HideHookString = ScalosAllocVecPooled(1 + strlen(hideString));
+		memberTTi->ftti_HideHookString = ScalosAlloc(1 + strlen(hideString));
 
 		if (NULL == memberTTi->ftti_HideHookString)
 			{
@@ -1278,7 +1278,7 @@ static LONG FtInternalCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 	if (NULL == ftmi)
 		return RETURN_ERROR;
 
-	mTree = ScalosAllocVecPooled(sizeof(struct ScalosMenuTree));
+	mTree = ScalosAlloc(sizeof(struct ScalosMenuTree));
 	if (mTree)
 		{
 		d1(KPrintF("%s/%s/%ld: ftmi_MenuTree=%08lx\n", __FILE__, __FUNC__, __LINE__, ftmi->ftmi_MenuTree));
@@ -1316,7 +1316,7 @@ static LONG FtWbCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 	if (NULL == ftmi)
 		return RETURN_ERROR;
 
-	mTree = ScalosAllocVecPooled(sizeof(struct ScalosMenuTree));
+	mTree = ScalosAlloc(sizeof(struct ScalosMenuTree));
 	if (mTree)
 		{
 		AppendToMenuTree(&ftmi->ftmi_MenuTree, mTree);
@@ -1360,7 +1360,7 @@ static LONG FtARexxCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 	if (NULL == ftmi)
 		return RETURN_ERROR;
 
-	mTree = ScalosAllocVecPooled(sizeof(struct ScalosMenuTree));
+	mTree = ScalosAlloc(sizeof(struct ScalosMenuTree));
 	if (mTree)
 		{
 		AppendToMenuTree(&ftmi->ftmi_MenuTree, mTree);
@@ -1404,7 +1404,7 @@ static LONG FtCliCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 	if (NULL == ftmi)
 		return RETURN_ERROR;
 
-	mTree = ScalosAllocVecPooled(sizeof(struct ScalosMenuTree));
+	mTree = ScalosAlloc(sizeof(struct ScalosMenuTree));
 	if (mTree)
 		{
 		AppendToMenuTree(&ftmi->ftmi_MenuTree, mTree);
@@ -1445,7 +1445,7 @@ static LONG FtPluginCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 	if (NULL == ftmi)
 		return RETURN_ERROR;
 
-	mTree = ScalosAllocVecPooled(sizeof(struct ScalosMenuTree));
+	mTree = ScalosAlloc(sizeof(struct ScalosMenuTree));
 	if (mTree)
 		{
 		AppendToMenuTree(&ftmi->ftmi_MenuTree, mTree);
@@ -1477,7 +1477,7 @@ static LONG FtIconWindowCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 	if (NULL == ftmi)
 		return RETURN_ERROR;
 
-	mTree = ScalosAllocVecPooled(sizeof(struct ScalosMenuTree));
+	mTree = ScalosAlloc(sizeof(struct ScalosMenuTree));
 	if (mTree)
 		{
 		AppendToMenuTree(&ftmi->ftmi_MenuTree, mTree);
@@ -1934,7 +1934,7 @@ static struct FileTypeDef *CreateFileTypeDef(void)
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	do	{
-		ftd = ScalosAllocVecPooled(sizeof(struct FileTypeDef));
+		ftd = ScalosAlloc(sizeof(struct FileTypeDef));
 		if (NULL == ftd)
 			break;
 
@@ -2070,7 +2070,7 @@ static void DisposeFileTypeDef(struct FileTypeDef *ftd)
 			ftd->ftd_Name = NULL;
 			}
 
-		ScalosFreeVecPooled(ftd);
+		ScalosFree(ftd);
 
 		Permit();
 		}
@@ -2126,7 +2126,7 @@ static struct FileTypeMenuItem *NewFileTypeMenuItem(void)
 {
 	struct FileTypeMenuItem *newFtmi;
 
-	newFtmi = ScalosAllocVecPooled(sizeof(struct FileTypeMenuItem));
+	newFtmi = ScalosAlloc(sizeof(struct FileTypeMenuItem));
 	if (NULL == newFtmi)
 		return NULL;
 
@@ -2135,7 +2135,7 @@ static struct FileTypeMenuItem *NewFileTypeMenuItem(void)
 
 	if (RETURN_OK != ScalosTagListInit(&newFtmi->ftmi_TagList))
 		{
-		ScalosFreeVecPooled(newFtmi);
+		ScalosFree(newFtmi);
 		return NULL;
 		}
 	newFtmi->ftmi_MenuName = NULL;
@@ -2170,7 +2170,7 @@ static void DisposeFileTypeMenuItem(const struct FileTypeDef *ParentFtd, struct 
 
 		ScalosTagListCleanup(&ftmi->ftmi_TagList);
 
-		ScalosFreeVecPooled(ftmi);
+		ScalosFree(ftmi);
 		}
 }
 
@@ -2179,7 +2179,7 @@ static struct FileTypeTTItem *NewFileTypeTTItem(enum TTItemTypes type)
 {
 	struct FileTypeTTItem *newTTi;
 
-	newTTi = ScalosAllocVecPooled(sizeof(struct FileTypeTTItem));
+	newTTi = ScalosAlloc(sizeof(struct FileTypeTTItem));
 	if (NULL == newTTi)
 		return NULL;
 
@@ -2188,7 +2188,7 @@ static struct FileTypeTTItem *NewFileTypeTTItem(enum TTItemTypes type)
 
 	if (RETURN_OK != ScalosTagListInit(&newTTi->ftti_TagList))
 		{
-		ScalosFreeVecPooled(newTTi);
+		ScalosFree(newTTi);
 		return NULL;
 		}
 
@@ -2208,11 +2208,11 @@ static void DisposeFileTypeTTItem(struct FileTypeTTItem *ftti)
 
 		if (ftti->ftti_HideHookString)
 			{
-			ScalosFreeVecPooled(ftti->ftti_HideHookString);
+			ScalosFree(ftti->ftti_HideHookString);
 			ftti->ftti_HideHookString = NULL;
 			}
 
-		ScalosFreeVecPooled(ftti);
+		ScalosFree(ftti);
 		}
 }
 
@@ -2261,7 +2261,7 @@ static void FreeMenuTree(const struct FileTypeDef *ParentFtd, struct ScalosMenuT
 			if (mTree->MenuCombo.MenuCommand.mcom_name)
 				FreeCopyString(mTree->MenuCombo.MenuCommand.mcom_name);
 
-			ScalosFreeVecPooled(mTree);
+			ScalosFree(mTree);
 			}
 
 		mTree = mTreeNext;
@@ -2382,7 +2382,7 @@ struct FileTypeFileInfo *NewFileTypeFileInfo(struct FileTypeDef *ftd, BPTR fh, C
 			break;
 			}
 
-		ffi = ScalosAllocVecPooled(sizeof(struct FileTypeFileInfo));
+		ffi = ScalosAlloc(sizeof(struct FileTypeFileInfo));
 		d1(kprintf("%s/%s/%ld:  ffi=%08lx\n", __FILE__, __FUNC__, __LINE__, ffi));
 		if (NULL == ffi)
 			break;
@@ -2469,7 +2469,7 @@ static void DisposeFileTypeFileInfo(struct FileTypeFileInfo *ffi)
 		ffi->ffi_Name = NULL;
 		}
 
-	ScalosFreeVecPooled(ffi);
+	ScalosFree(ffi);
 }
 
 

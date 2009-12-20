@@ -485,7 +485,7 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 		msgStart->ScalosMessage.sm_Message.mn_ReplyPort = ReplyPort;
 		msgStart->WindowStruct = wsNew;
 
-		wsNew->ws_WindowTaskName = ScalosAllocVecPooled(50 + strlen(wsNew->ws_Name));
+		wsNew->ws_WindowTaskName = ScalosAlloc(50 + strlen(wsNew->ws_Name));
 		if (wsNew->ws_WindowTaskName)
 			{
 			TaskName = wsNew->ws_WindowTaskName;

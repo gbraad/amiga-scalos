@@ -223,7 +223,7 @@ static void LassoCleanup(struct internalScaWindowTask *iwt)
 	while ((lwn = (struct LassoWindowNode *) RemTail((struct List *) &li->linf_WindowList)))
 		{
 		ScalosUnLockIconList(lwn->lwn_WindowTask);
-		ScalosFreeVecPooled(lwn);
+		ScalosFree(lwn);
 		}
 
 	IconActive = SelectedCount != 0;
@@ -248,7 +248,7 @@ static ULONG LassoCleanupIconList(struct internalScaWindowTask *iwt)
 		if (lin->lin_Region)
 			DisposeRegion(lin->lin_Region);
 
-		ScalosFreeVecPooled(lin);
+		ScalosFree(lin);
 		}
 
 	return SelectedCount;
@@ -571,7 +571,7 @@ static ULONG FillLassoIconList(struct internalScaWindowTask *iwt,
 					d1(kprintf("%s/%s/%ld: in=%08lx <%s>\n", \
 						__FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
-					lin = (struct LassoIconNode *) ScalosAllocVecPooled(sizeof(struct LassoIconNode));
+					lin = (struct LassoIconNode *) ScalosAlloc(sizeof(struct LassoIconNode));
 					if (lin)
 						{
 						IconsInWindow++;
@@ -631,7 +631,7 @@ static struct LassoWindowNode *LassoAddWindow(struct LassoInfo *li, struct inter
 {
 	struct LassoWindowNode *lwn;
 
-	lwn = (struct LassoWindowNode *) ScalosAllocVecPooled(sizeof(struct LassoWindowNode));
+	lwn = (struct LassoWindowNode *) ScalosAlloc(sizeof(struct LassoWindowNode));
 	if (lwn)
 		{
 		lwn->lwn_WindowTask = iwt;

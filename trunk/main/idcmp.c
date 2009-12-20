@@ -780,7 +780,7 @@ static ULONG IDCMPActiveWindow(struct internalScaWindowTask *iwt, struct IntuiMe
 			// Now show pending popup menu
 			DoMethodA(iwt->iwt_WindowTask.mt_MainObject, (Msg) iwt->iwt_PopupMenuPending);
 
-			ScalosFreeVecPooled(iwt->iwt_PopupMenuPending);
+			ScalosFree(iwt->iwt_PopupMenuPending);
 			iwt->iwt_PopupMenuPending = NULL;
 			}
 		}

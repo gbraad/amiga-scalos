@@ -580,7 +580,7 @@ ULONG ReadMenuPrefs(void)
 			if (MAKE_ID('M','E','N','U') != cn->cn_ID)
 				continue;
 
-			MenuChunk = ScalosAllocVecPooled(cn->cn_Size);
+			MenuChunk = ScalosAlloc(cn->cn_Size);
 			if (NULL == MenuChunk)
 				{
 				Error = ERROR_NO_FREE_STORE;
@@ -614,7 +614,7 @@ ULONG ReadMenuPrefs(void)
 					Entries = 200;
 
 				length = Entries * sizeof(struct NewMenu) + sizeof(ULONG);
-				MainNewMenu = nm = ScalosAllocVecPooled(length);
+				MainNewMenu = nm = ScalosAlloc(length);
 				if (NULL == nm)
 					{
 					Error = ERROR_NO_FREE_STORE;
@@ -719,7 +719,7 @@ ULONG ReadMenuPrefs(void)
 
 			if (MenuChunk)
 				{
-				ScalosFreeVecPooled(MenuChunk);
+				ScalosFree(MenuChunk);
 				MenuChunk = NULL;
 				}
 			}
@@ -727,7 +727,7 @@ ULONG ReadMenuPrefs(void)
 		} while (0);
 
 	if (MenuChunk)
-		ScalosFreeVecPooled(MenuChunk);
+		ScalosFree(MenuChunk);
 	if (iffHandle)
 		{
 		if (iffOpened)
@@ -756,19 +756,19 @@ void FreeMenuPrefs(void)
 
 	if (MainNewMenu)
 		{
-		ScalosFreeVecPooled(MainNewMenu);
+		ScalosFree(MainNewMenu);
 		MainNewMenu = NULL;
 		}
 	if (MainMenuBuffer)
 		{
-		ScalosFreeVecPooled(MainMenuBuffer);
+		ScalosFree(MainMenuBuffer);
 		MainMenuBuffer = NULL;
 		}
 	for (n=0; n<MAX_PopupMenu; n++)
 		{
 		if (PopupMenuBuffer[n])
 			{
-			ScalosFreeVecPooled(PopupMenuBuffer[n]);
+			ScalosFree(PopupMenuBuffer[n]);
 			PopupMenuBuffer[n] = NULL;
 			}
 		}
@@ -988,7 +988,7 @@ static struct PopupMenu *BuildPopupMenu(struct ScalosMenuTree *mTree, LONG Level
 	d1(KPrintF("%s/%s/%ld: mTree=%08lx  type=%ld  Level=%ld\n", __FILE__, __FUNC__, __LINE__, mTree, mTree->mtre_type, Level));
 
 	do	{
-		TagBuffer = tbAlloc = ScalosAllocVecPooled(MaxTagItem * sizeof(struct TagItem));
+		TagBuffer = tbAlloc = ScalosAlloc(MaxTagItem * sizeof(struct TagItem));
 		if (NULL == tbAlloc)
 			break;
 
@@ -1039,7 +1039,7 @@ static struct PopupMenu *BuildPopupMenu(struct ScalosMenuTree *mTree, LONG Level
 		} while (0);
 
 	if (tbAlloc)
-		ScalosFreeVecPooled(tbAlloc);
+		ScalosFree(tbAlloc);
 
 	return pm;
 }
@@ -1747,7 +1747,7 @@ static void AddMenuImage(Object *img)
 	if (NULL == MenuImageList.lh_Head)
 		NewList(&MenuImageList);
 
-	smi = ScalosAllocVecPooled(sizeof(struct ScalosMenuImage));
+	smi = ScalosAlloc(sizeof(struct ScalosMenuImage));
 	if (smi)
 		{
 		smi->smi_Image = img;
@@ -1771,7 +1771,7 @@ static void CleanupMenuImages(void)
 			DisposeObject(smi->smi_Image);
 			smi->smi_Image = NULL;
 			}
-		ScalosFreeVecPooled(smi);
+		ScalosFree(smi);
 		}
 }
 

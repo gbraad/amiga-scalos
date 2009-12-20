@@ -1194,7 +1194,7 @@ static void ScalosMain(LONG *ArgArray)
 
 		TRACE_AMITHLON(__LINE__);
 
-		MainWindowTask = ScalosAllocVecPooled(sizeof(struct MainTask));
+		MainWindowTask = ScalosAlloc(sizeof(struct MainTask));
 
 		d1(kprintf("%s/%s/%ld: MainWindowTask=%08lx\n", __FILE__, __FUNC__, __LINE__, MainWindowTask));
 		if (NULL == MainWindowTask)
@@ -1403,7 +1403,7 @@ static void ScalosMain(LONG *ArgArray)
 
 		TRACE_AMITHLON(__LINE__);
 
-		LastScreenTitleBuffer = ScalosAllocVecPooled(CurrentPrefs.pref_ScreenTitleSize);
+		LastScreenTitleBuffer = ScalosAlloc(CurrentPrefs.pref_ScreenTitleSize);
 		d1(KPrintF("%s/%s/%ld: LastScreenTitleBuffer=%08lx\n", __FILE__, __FUNC__, __LINE__, LastScreenTitleBuffer));
 
 		ScreenTitleObject = SCA_NewScalosObjectTags("Title.sca",
@@ -1867,7 +1867,7 @@ static void ScalosMain(LONG *ArgArray)
 
 	if (LastScreenTitleBuffer)
 		{
-		ScalosFreeVecPooled(LastScreenTitleBuffer);
+		ScalosFree(LastScreenTitleBuffer);
 		LastScreenTitleBuffer = NULL;
 		}
 
@@ -1893,7 +1893,7 @@ static void ScalosMain(LONG *ArgArray)
 			MainWindowTask->mwt.iwt_WindowTask.wt_IconSemaphore = NULL;
 			}
 
-		ScalosFreeVecPooled(MainWindowTask);
+		ScalosFree(MainWindowTask);
 		MainWindowTask = NULL;
 		}
 

@@ -190,7 +190,7 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 
 		va_start(args, NumArgs);
 
-		ArgList = ScalosAllocVecPooled(1 + NumArgs * sizeof(ULONG));
+		ArgList = ScalosAlloc(1 + NumArgs * sizeof(ULONG));
 		if (NULL == ArgList)
 			break;
 
@@ -214,7 +214,7 @@ void SplashDisplayProgress(const char *fmt, ULONG NumArgs, ...)
 		} while (0);
 
 	if (ArgList)
-		ScalosFreeVecPooled(ArgList);
+		ScalosFree(ArgList);
 	if (SemaLocked)
 		ScalosReleaseSemaphore(&inst->spli_SplashSema);
 ///
@@ -604,9 +604,9 @@ static void UpdateSplash(struct SplashInstance *inst, CONST_STRPTR text, BOOL Fo
 		SplashUpdateTextGadget(inst->spli_SplashWindow, inst->spli_TextGadget, text);
 
 		if (inst->spli_LastSplashText)
-			ScalosFreeVecPooled(inst->spli_LastSplashText);
+			ScalosFree(inst->spli_LastSplashText);
 
-		inst->spli_LastSplashText = ScalosAllocVecPooled(strlen(text) + 1);
+		inst->spli_LastSplashText = ScalosAlloc(strlen(text) + 1);
 		if (inst->spli_LastSplashText)
 			strcpy(inst->spli_LastSplashText, text);
 		}
@@ -707,7 +707,7 @@ static void CloseSplash(struct SplashInstance *inst)
 
 	if (inst->spli_LastSplashText)
 		{
-		ScalosFreeVecPooled(inst->spli_LastSplashText);
+		ScalosFree(inst->spli_LastSplashText);
 		inst->spli_LastSplashText = NULL;
 		}
 	if (inst->spli_VersionGadget)

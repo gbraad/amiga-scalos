@@ -905,7 +905,7 @@ static void FreeBobNode(struct ScalosNodeList *nodeList, struct ScaBob *bob)
 	if (bob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel
 		&& (bob->scbob_Flags & BOBFLAGF_FreeAlphaChannel))
 		{
-		ScalosFreeVecPooled((UBYTE *) bob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel);
+		ScalosFree((UBYTE *) bob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel);
 		bob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel = NULL;
 		bob->scbob_Flags &= ~BOBFLAGF_FreeAlphaChannel;
 		}
@@ -2201,18 +2201,18 @@ static void MergeBobsAlpha(struct RastPort *TempRp, struct DragHandle *dh,
 			}
 
 		AllocSize = NewBob->scbob_width * NewBob->scbob_height * sizeof(struct ARGB);
-		OldBobBuffer = ScalosAllocVecPooled(AllocSize);
+		OldBobBuffer = ScalosAlloc(AllocSize);
 		d1(kprintf("%s/%s/%ld: OldBobBuffer=%08lx\n", __FILE__, __FUNC__, __LINE__, OldBobBuffer));
 		if (NULL == OldBobBuffer)
 			break;
 
-		NewBobBuffer = ScalosAllocVecPooled(AllocSize);
+		NewBobBuffer = ScalosAlloc(AllocSize);
 		d1(kprintf("%s/%s/%ld: NewBobBuffer=%08lx\n", __FILE__, __FUNC__, __LINE__, NewBobBuffer));
 		if (NULL == NewBobBuffer)
 			break;
 
 		// Allocate Alpha channel for new bob
-		NewBob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel = NewAlphaChannel = ScalosAllocVecPooled(NewBob->scbob_width * NewBob->scbob_height);
+		NewBob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel = NewAlphaChannel = ScalosAlloc(NewBob->scbob_width * NewBob->scbob_height);
 		if (NULL == NewBob->scbob_Bob.scbob_Bob2.scbob2_AlphaChannel)
 			break;
 		NewBob->scbob_Flags |= BOBFLAGF_FreeAlphaChannel;
@@ -2355,9 +2355,9 @@ static void MergeBobsAlpha(struct RastPort *TempRp, struct DragHandle *dh,
 		} while (0);
 
 	if (NewBobBuffer)
-		ScalosFreeVecPooled(NewBobBuffer);
+		ScalosFree(NewBobBuffer);
 	if (OldBobBuffer)
-		ScalosFreeVecPooled(OldBobBuffer);
+		ScalosFree(OldBobBuffer);
 }
 
 
@@ -2591,7 +2591,7 @@ LIBFUNC_P2(void, sca_EndDrag,
 			SCA_UnlockDrag(dh);
 			}
 
-		ScalosFreeVecPooled(dh);
+		ScalosFree(dh);
 
 		ClosePopupWindows(dh, FALSE);
 		}
@@ -2616,7 +2616,7 @@ LIBFUNC_P2(struct DragHandle *, sca_InitDrag,
 
 		Depth = GetBitMapAttr(Scr->RastPort.BitMap, BMA_DEPTH);
 
-		dh = ScalosAllocVecPooled(sizeof(struct DragHandle));
+		dh = ScalosAlloc(sizeof(struct DragHandle));
 		if (NULL == dh)
 			return NULL;
 

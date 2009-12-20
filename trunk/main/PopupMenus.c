@@ -800,7 +800,7 @@ static void CreateSelectedIconList(struct List *SelectedIconList,
 					IconCount++;
 					TotalIconCount++;
 
-					sli = ScalosAllocVecPooled(sizeof(struct SelectedIcon));
+					sli = ScalosAlloc(sizeof(struct SelectedIcon));
 
 					if (sli)
 						{
@@ -816,7 +816,7 @@ static void CreateSelectedIconList(struct List *SelectedIconList,
 				{
 				struct LockedWindowEntry *lwe;
 
-				lwe = ScalosAllocVecPooled(sizeof(struct LockedWindowEntry));
+				lwe = ScalosAlloc(sizeof(struct LockedWindowEntry));
 				if (lwe)
 					{
 					lwe->lwe_WindowTask = iwtx;
@@ -849,12 +849,12 @@ static void CleanupSelectedIconList(struct List *SelectedIconList, struct List *
 
 	while ((sli = (struct SelectedIcon *) RemTail(SelectedIconList)))
 		{
-		ScalosFreeVecPooled(sli);
+		ScalosFree(sli);
 		}
 	while ((lwe = (struct LockedWindowEntry *) RemTail(LockedWindowList)))
 		{
 		ScalosUnLockIconList(lwe->lwe_WindowTask);
-		ScalosFreeVecPooled(lwe);
+		ScalosFree(lwe);
 		}
 
 	if (WindowListLocked)

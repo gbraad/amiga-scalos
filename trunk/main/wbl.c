@@ -498,7 +498,7 @@ static void AddWBProgram(struct WBStartup *wbStart)
 	ScalosObtainSemaphore(&WBStartListSema);
 
 	do	{
-		newNode = ScalosAllocVecPooled(sizeof(struct WBNode));
+		newNode = ScalosAlloc(sizeof(struct WBNode));
 		if (NULL == newNode)
 			break;
 
@@ -522,7 +522,7 @@ static void AddWBProgram(struct WBStartup *wbStart)
 		} while (0);
 
 	if (newNode)
-		ScalosFreeVecPooled(newNode);
+		ScalosFree(newNode);
 	if (ProgramPath)
 		FreePathBuffer(ProgramPath);
 
@@ -558,7 +558,7 @@ void RemWBProgram(struct WBStartup *wbStart)
 				wbNode->wbn_Node.ln_Name = NULL;
 				}
 
-			ScalosFreeVecPooled(wbNode);
+			ScalosFree(wbNode);
 
 			break;
 			}
