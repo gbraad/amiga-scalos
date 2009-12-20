@@ -393,7 +393,7 @@ static BOOL ThumbnailCacheFindEntry(sqlite3 *db, CONST_STRPTR FileName,
 
 		if (ctn->ctn_ThumbnailDataSize)
 			{
-			ctn->ctn_ThumbnailData = ScalosAllocVecPooled(ctn->ctn_ThumbnailDataSize);
+			ctn->ctn_ThumbnailData = ScalosAlloc(ctn->ctn_ThumbnailDataSize);
 			if (ctn->ctn_ThumbnailData)
 				memcpy(ctn->ctn_ThumbnailData, BlobData, ctn->ctn_ThumbnailDataSize);
 			else
@@ -570,7 +570,7 @@ void ThumbnailCacheAddARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		ImageDataSize = argbh->argb_Width * argbh->argb_Height * sizeof(struct ARGB);
 		BuffLength = sizeof(struct ARGBHeader) + ImageDataSize;
 
-		Buffer = ScalosAllocVecPooled(BuffLength);
+		Buffer = ScalosAlloc(BuffLength);
 		if (NULL == Buffer)
 			break;
 
@@ -583,7 +583,7 @@ void ThumbnailCacheAddARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		} while (0);
 
 	if (Buffer)
-		ScalosFreeVecPooled(Buffer);
+		ScalosFree(Buffer);
 	if (FileName)
 		FreePathBuffer(FileName);
 	if (fib)
@@ -633,7 +633,7 @@ void ThumbnailCacheAddRemapped(BPTR fLock, APTR ThumbnailCacheHandle,
 		BuffLength = sizeof(struct ScalosBitMapAndColor)
 			+ PixelArrayLength + ColorTableLength;
 
-		Buffer = ScalosAllocVecPooled(BuffLength);
+		Buffer = ScalosAlloc(BuffLength);
 		if (NULL == Buffer)
 			break;
 
@@ -669,7 +669,7 @@ void ThumbnailCacheAddRemapped(BPTR fLock, APTR ThumbnailCacheHandle,
 		TempRp.BitMap = NULL;
 		}
 	if (Buffer)
-		ScalosFreeVecPooled(Buffer);
+		ScalosFree(Buffer);
 	if (FileName)
 		FreePathBuffer(FileName);
 	if (fib)
@@ -774,7 +774,7 @@ BOOL ThumbnailCacheFindARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		ThumbnailCacheDeleteEntry(db, FileName);
 
 	if (ctn.ctn_ThumbnailData)
-		ScalosFreeVecPooled(ctn.ctn_ThumbnailData);
+		ScalosFree(ctn.ctn_ThumbnailData);
 	if (FileName)
 		FreePathBuffer(FileName);
 	if (fib)
@@ -927,7 +927,7 @@ struct ScalosBitMapAndColor *ThumbnailCacheFindRemapped(BPTR fLock,
 	if (TempRp.BitMap)
 		FreeBitMap(TempRp.BitMap);
 	if (ctn.ctn_ThumbnailData)
-		ScalosFreeVecPooled(ctn.ctn_ThumbnailData);
+		ScalosFree(ctn.ctn_ThumbnailData);
 	if (FileName)
 		FreePathBuffer(FileName);
 	if (fib)

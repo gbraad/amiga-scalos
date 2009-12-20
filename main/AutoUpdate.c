@@ -293,7 +293,7 @@ ULONG DeviceWindowCheckUpdate(struct internalScaWindowTask *iwt)
 					}
 				}
 
-			ScalosFreeVecPooled(cud);
+			ScalosFree(cud);
 			}
 
 		d1(KPrintF("%s/%s/%ld: cud=%08lx  ws_Viewmodes=%ld\n", \
@@ -627,7 +627,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 					cud->cud_FileName, NULL);
 				}
 
-			ScalosFreeVecPooled(cud);
+			ScalosFree(cud);
 			}
 
 		d1(KPrintF("%s/%s/%ld: ws_Viewmodes=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.mt_WindowStruct->ws_Viewmodes));
@@ -1071,7 +1071,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 					cud->cud_FileName, NULL);
 				}
 
-			ScalosFreeVecPooled(cud);
+			ScalosFree(cud);
 			}
 
 		d1(KPrintF("%s/%s/%ld: cud=%08lx  ws_Viewmodes=%ld\n", \
@@ -1114,7 +1114,7 @@ static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesL
 
 	for (in=iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 		{
-		struct CheckUpdateData *cud = ScalosAllocVecPooled(sizeof(struct CheckUpdateData));
+		struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
 
 		if (cud)
 			{
@@ -1145,7 +1145,7 @@ static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesL
 			{
 			if (in->in_Lock && LOCK_SAME == ScaSameLock(in->in_Lock, dirLock))
 				{
-				struct CheckUpdateData *cud = ScalosAllocVecPooled(sizeof(struct CheckUpdateData));
+				struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
 
 				if (cud)
 					{
@@ -1180,7 +1180,7 @@ static void DeviceWindowBuildCUDIconList(struct internalScaWindowTask *iwt, stru
 		{
 		if (in->in_Icon)
 			{
-			struct CheckUpdateData *cud = ScalosAllocVecPooled(sizeof(struct CheckUpdateData));
+			struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
 
 			if (cud)
 				{
@@ -1392,7 +1392,7 @@ static void AddToCheckUpdateFilesList(struct internalScaWindowTask *iwt,
 		{
 		d1(kprintf("%s/%s/%ld: FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, ise->ise_Fib.fib_FileName));
 
-		cud = ScalosAllocVecPooled(sizeof(struct CheckUpdateData));
+		cud = ScalosAlloc(sizeof(struct CheckUpdateData));
 		if (cud)
 			{
 			cud->cud_iwt = iwt;
@@ -1523,7 +1523,7 @@ static void CleanupCudFilesList(struct CudFilesList *cfl)
 
 		while ((cud = ((struct CheckUpdateData *) RemHead(&cfl->cfl_FilesList))))
 			{
-			ScalosFreeVecPooled(cud);
+			ScalosFree(cud);
 			}
 		}
 

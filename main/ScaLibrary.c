@@ -650,7 +650,7 @@ LIBFUNC_END
 
 static struct List *AllocList(void)
 {
-	struct List *pl = ScalosAllocVecPooled(sizeof(struct List));
+	struct List *pl = ScalosAlloc(sizeof(struct List));
 
 	if (pl)
 		{
@@ -674,10 +674,10 @@ static void FreeList(struct List *pl)
 		{
 		if (xNode->ln_Name)
 			{
-			ScalosFreeVecPooled(xNode->ln_Name);
+			ScalosFree(xNode->ln_Name);
 			xNode->ln_Name = NULL;
 			}
-		ScalosFreeVecPooled(xNode);
+		ScalosFree(xNode);
 		}
 
 	free(pl);
@@ -696,7 +696,7 @@ static struct List *GetProgramList(void)
 
 		for (wbNode = WBStartList.lh_Head; wbNode != (struct Node *) &WBStartList.lh_Tail; wbNode = wbNode->ln_Succ)
 			{
-			struct Node *newNode = ScalosAllocVecPooled(sizeof(struct Node));
+			struct Node *newNode = ScalosAlloc(sizeof(struct Node));
 
 			d1(kprintf("%s/%s/%ld: wbNode=%08lx  Name=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 				wbNode, wbNode->ln_Name));
@@ -704,7 +704,7 @@ static struct List *GetProgramList(void)
 			if (newNode)
 				{
 				newNode->ln_Type = NT_USER;
-				newNode->ln_Name = ScalosAllocVecPooled(strlen(wbNode->ln_Name) + 1);
+				newNode->ln_Name = ScalosAlloc(strlen(wbNode->ln_Name) + 1);
 				if (newNode->ln_Name)
 					strcpy(newNode->ln_Name, wbNode->ln_Name);
 
@@ -729,12 +729,12 @@ static struct List *GetMenuCommandList(void)
 
 		for (cmd = &MenuCommandTable[0]; cmd->smcom_CommandName; cmd++)
 			{
-			struct Node *newNode = ScalosAllocVecPooled(sizeof(struct Node));
+			struct Node *newNode = ScalosAlloc(sizeof(struct Node));
 
 			if (newNode)
 				{
 				newNode->ln_Type = NT_USER;
-				newNode->ln_Name = ScalosAllocVecPooled(strlen(cmd->smcom_CommandName) + 1);
+				newNode->ln_Name = ScalosAlloc(strlen(cmd->smcom_CommandName) + 1);
 				if (newNode->ln_Name)
 					strcpy(newNode->ln_Name, cmd->smcom_CommandName);
 
@@ -790,7 +790,7 @@ LIBFUNC_P6(struct AppObject *, sca_NewAddAppMenuItem,
 		appo->appo_id = ID;
 		appo->appo_userdata = UserData;
 		appo->appo_msgport = msgPort;
-		appo->appo_object.appoo_MenuInfo = ScalosAllocVecPooled(sizeof(struct AppMenuInfo));
+		appo->appo_object.appoo_MenuInfo = ScalosAlloc(sizeof(struct AppMenuInfo));
 		appo->appo_userdata2 = NULL;
 
 		if (NULL == appo->appo_object.appoo_MenuInfo)

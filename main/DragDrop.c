@@ -535,7 +535,7 @@ static void DropStart(struct internalScaWindowTask *iwt, struct internalScaWindo
 
 		d1(KPrintF("%s/%s/%ld: NumberOfWbArgs=%lu\n", __FILE__, __FUNC__, __LINE__, NumberOfWbArgs));
 
-		Buffer = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+		Buffer = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 		d1(KPrintF("%s/%s/%ld: Buffer=%08lx\n", __FILE__, __FUNC__, __LINE__, Buffer));
 		if (NULL == Buffer)
 			break;
@@ -563,7 +563,7 @@ static void DropStart(struct internalScaWindowTask *iwt, struct internalScaWindo
 	if (Buffer)
 		{
 		SCA_FreeWBArgs(Buffer, ArgCount, SCAF_FreeNames);
-		ScalosFreeVecPooled(Buffer);
+		ScalosFree(Buffer);
 		}
 	if (iwt->iwt_DragIconList)
 		RestoreDragIcons(iwt);
@@ -1119,7 +1119,7 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 				// here both object and icon are separate entries, which must be removed both!
 				if (!IsIwtViewByIcon(iwtSrc) && IsShowAll(wsSrc))
 					{
-					STRPTR IconInfoName = ScalosAllocVecPooled(1 + strlen(arg->scarg_name) + strlen(".info"));
+					STRPTR IconInfoName = ScalosAlloc(1 + strlen(arg->scarg_name) + strlen(".info"));
 
 					if (IconInfoName)
 						{
@@ -1129,7 +1129,7 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 						// remove associated ".info" icon from source window
 						DropRemoveIcon(wsSrc, arg->scarg_lock, IconInfoName);
 
-						ScalosFreeVecPooled(IconInfoName);
+						ScalosFree(IconInfoName);
 						}
 					}
 				}
@@ -1394,7 +1394,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 					// here both object and icon are separate entries, which must be added both!
 					if (!IsIwtViewByIcon(iwtDest) && IsShowAll(wsDest))
 						{
-						STRPTR IconInfoName = ScalosAllocVecPooled(1 + strlen(DrInfo->drin_Arg->scarg_name) + strlen(".info"));
+						STRPTR IconInfoName = ScalosAlloc(1 + strlen(DrInfo->drin_Arg->scarg_name) + strlen(".info"));
 
 						if (IconInfoName)
 							{
@@ -1408,7 +1408,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 								DrInfo->drin_x + DrInfo->drin_Arg->scarg_xpos,
 								DrInfo->drin_y + DrInfo->drin_Arg->scarg_ypos);
 
-							ScalosFreeVecPooled(IconInfoName);
+							ScalosFree(IconInfoName);
 							}
 						}
 					}

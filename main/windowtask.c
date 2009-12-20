@@ -88,7 +88,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 		BOOL Finished = FALSE;
 		ULONG ul;
 
-		iwt = ScalosAllocVecPooled(sizeof(struct internalScaWindowTask));
+		iwt = ScalosAlloc(sizeof(struct internalScaWindowTask));
 		if (NULL == iwt)
 			break;
 
@@ -382,7 +382,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 					if (iwt->iwt_PopupMenuPending->mpm_Flags & SHOWPOPUPFLGF_IconSemaLocked)
 						ScalosUnLockIconList(iwt);
 
-					ScalosFreeVecPooled(iwt->iwt_PopupMenuPending);
+					ScalosFree(iwt->iwt_PopupMenuPending);
 					}
 
 				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -517,7 +517,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 			DisposeDatatypesImage(&iwt->iwt_IconOverlays[n]);
 			}
 		if (iwt->iwt_PopupMenuPending)
-			ScalosFreeVecPooled(iwt->iwt_PopupMenuPending);
+			ScalosFree(iwt->iwt_PopupMenuPending);
 		if (iwt->iwt_myAppObj)
 			{
 			SCA_RemoveAppObject(iwt->iwt_myAppObj);
@@ -624,7 +624,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 
 		d1(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 
-		ScalosFreeVecPooled(iwt);
+		ScalosFree(iwt);
 		}
 
 	d1(KPrintF("%s/%s/%ld: wasMainWindow=%ld\n", __FILE__, __FUNC__, __LINE__, wasMainWindow));

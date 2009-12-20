@@ -563,7 +563,7 @@ static APTR CloneDOImage(const APTR origImage)
 		if (0 == TypeOfMem(OldImage->ImageData))
 			break;
 
-		NewImage = ScalosAllocVecPooled(sizeof(struct Image));
+		NewImage = ScalosAlloc(sizeof(struct Image));
 		if (NULL == NewImage)
 			break;
 
@@ -573,7 +573,7 @@ static APTR CloneDOImage(const APTR origImage)
 				* (OldImage->TopEdge + OldImage->Height) * OldImage->Depth;
 		ImgSize = (ImgSize + 3) & ~0x03;		// round to longaligned
 
-		NewImage->ImageData = ScalosAllocVecPooled(ImgSize);
+		NewImage->ImageData = ScalosAlloc(ImgSize);
 		if (NULL == NewImage->ImageData)
 			break;
 
@@ -583,7 +583,7 @@ static APTR CloneDOImage(const APTR origImage)
 
 	if (NewImage && NULL == NewImage->ImageData)
 		{
-		ScalosFreeVecPooled(NewImage);
+		ScalosFree(NewImage);
 		NewImage = NULL;
 		}
 
@@ -615,7 +615,7 @@ static STRPTR *CloneDOToolTypes(CONST_STRPTR *origToolTypes)
 
 	d1(kprintf("%s/%s/%ld: ttCount=%ld  ttLength=%ld\n", __FILE__, __FUNC__, __LINE__, ttCount, ttLength));
 
-	NewToolTypes = ScalosAllocVecPooled(ttLength);
+	NewToolTypes = ScalosAlloc(ttLength);
 
 	d1(kprintf("%s/%s/%ld: NewToolTypes=%08lx\n", __FILE__, __FUNC__, __LINE__, NewToolTypes));
 	if (NULL == NewToolTypes)
@@ -658,7 +658,7 @@ static struct DiskObject *CloneDiskObject(const struct DiskObject *origDiskObj)
 
 	ytt = CloneDOToolTypes(xTT);
 	if (ytt)
-		ScalosFreeVecPooled(ytt);
+		ScalosFree(ytt);
 	}
 #endif
 
@@ -726,9 +726,9 @@ static void ScaFreeDiskObject(struct DiskObject *DiskObj)
 			struct Image *img = (struct Image *) DiskObj->do_Gadget.GadgetRender;
 
 			if (img->ImageData)
-				ScalosFreeVecPooled(img->ImageData);
+				ScalosFree(img->ImageData);
 
-			ScalosFreeVecPooled(img);
+			ScalosFree(img);
 
 			DiskObj->do_Gadget.GadgetRender = NULL;
 			}
@@ -737,15 +737,15 @@ static void ScaFreeDiskObject(struct DiskObject *DiskObj)
 			struct Image *img = (struct Image *) DiskObj->do_Gadget.SelectRender;
 
 			if (img->ImageData)
-				ScalosFreeVecPooled(img->ImageData);
+				ScalosFree(img->ImageData);
 
-			ScalosFreeVecPooled(img);
+			ScalosFree(img);
 
 			DiskObj->do_Gadget.SelectRender = NULL;
 			}
 		if (DiskObj->do_ToolTypes)
 			{
-			ScalosFreeVecPooled(DiskObj->do_ToolTypes);
+			ScalosFree(DiskObj->do_ToolTypes);
 			DiskObj->do_ToolTypes = NULL;
 			}
 		}
@@ -1821,7 +1821,7 @@ LIBFUNC_P3(BPTR, sca_Open,
 		if (!ExamineFH(file, fib))
 			break;
 
-		doi = ScalosAllocVecPooled(sizeof(struct DosOpenInfo));
+		doi = ScalosAlloc(sizeof(struct DosOpenInfo));
 		d1(KPrintF("%s/%s/%ld: doi=%08lx\n", __FILE__, __FUNC__, __LINE__, doi));
 		if (NULL == doi)
 			break;
@@ -1991,7 +1991,7 @@ static void PatchOpenDisposeData(void *data)
 {
 	d1(KPrintF("%s/%s/%ld: doi=%08lx\n", __FILE__, __FUNC__, __LINE__, data));
 	DoiCount--;
-	ScalosFreeVecPooled(data);
+	ScalosFree(data);
 }
 
 

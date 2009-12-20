@@ -84,7 +84,7 @@ LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTy
 			kprintf("%s/%s/%ld: old ToolType=<%s>\n", __FILE__, __FUNC__, __LINE__, *ptt));
 
 		length = 1 + strlen(ToolTypeName) + 1 + strlen(ToolTypeValue);
-		newTT = (STRPTR) ScalosAllocVecPooled(length);
+		newTT = (STRPTR) ScalosAlloc(length);
 		if (NULL == newTT)
 			break;
 
@@ -126,9 +126,9 @@ LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTy
 		} while (0);
 
 	if (newTT)
-		ScalosFreeVecPooled(newTT);
+		ScalosFree(newTT);
 	if (ttClone)
-		ScalosFreeVecPooled(ttClone);
+		ScalosFree(ttClone);
 
 	return Result;
 }
@@ -194,7 +194,7 @@ LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName)
 		} while (0);
 
 	if (ttClone)
-		ScalosFreeVecPooled(ttClone);
+		ScalosFree(ttClone);
 
 	return Result;
 }
@@ -241,7 +241,7 @@ STRPTR *CloneToolTypeArray(CONST_STRPTR *ToolTypeArray, ULONG AdditionalEntries)
 
 	d1(kprintf("%s/%s/%ld: ttLength=%ld  ttCount=%ld\n", __FILE__, __FUNC__, __LINE__, ttLength, ttCount));
 
-	newTT = newTTalloc = ScalosAllocVecPooled(ttLength);
+	newTT = newTTalloc = ScalosAlloc(ttLength);
 	if (NULL == newTT)
 		return NULL;
 

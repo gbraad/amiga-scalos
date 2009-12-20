@@ -291,7 +291,7 @@ static ULONG GadgetBar_Dispose(Class *cl, Object *o, Msg msg)
 		{
 		DoMethod(Member->gbm_Object, OM_DISPOSE);
 
-		ScalosFreeVecPooled(Member);
+		ScalosFree(Member);
 		}
 
 	DisposeDatatypesImage(&inst->gbcl_Background);
@@ -787,7 +787,7 @@ static ULONG GadgetBar_AddMember(Class *cl, Object *o, Msg msg)
 	if (NULL == opam->opam_Object)
 		return 0;
 
-	Member = ScalosAllocVecPooled(sizeof(struct GadgetBarMember));
+	Member = ScalosAlloc(sizeof(struct GadgetBarMember));
 	if (NULL == Member)
 		return 0;
 
@@ -837,7 +837,7 @@ static ULONG GadgetBar_RemMember(Class *cl, Object *o, Msg msg)
 			DoMethod(Member->gbm_Object, DTM_REMOVEDTOBJECT, oprm->oprm_GInfo);
 
 			DisposeObject(Member->gbm_Object);
-			ScalosFreeVecPooled(Member);
+			ScalosFree(Member);
 
 			DoMethod(o, GM_LAYOUT, oprm->oprm_GInfo, FALSE);
 

@@ -531,7 +531,7 @@ static void RunMenuCmd_WBStart(struct internalScaWindowTask *iwt,
 
 	d1(KPrintF("%s/%s/%ld: NumberOfWbArgs=%ld\n", __FILE__, __FUNC__, __LINE__, NumberOfWbArgs));
 
-	args = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+	args = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 	if (NULL == args)
 		return;
 
@@ -577,7 +577,7 @@ static void RunMenuCmd_WBStart(struct internalScaWindowTask *iwt,
 	if (!Success)
 		UnLock(args[0].wa_Lock);
 
-	ScalosFreeVecPooled(args);
+	ScalosFree(args);
 }
 
 
@@ -597,7 +597,7 @@ static void RunMenuCmd_CLI(struct internalScaWindowTask *iwt,
 		STRPTR BuffPtr;
 		LONG Priority = 0;
 
-		Buffer = ScalosAllocVecPooled(CLIpathSize);
+		Buffer = ScalosAlloc(CLIpathSize);
 		if (NULL == Buffer)
 			return;
 
@@ -765,7 +765,7 @@ static void RunMenuCmd_CLI(struct internalScaWindowTask *iwt,
 	if (dirLock)
 		UnLock(dirLock);
 	if (Buffer)
-		ScalosFreeVecPooled(Buffer);
+		ScalosFree(Buffer);
 }
 
 
@@ -825,7 +825,7 @@ static SAVEDS(void) AsyncARexxMenuCmdStart(APTR xarg, struct SM_RunProcess *msg)
 		if (NULL == RxMsg)
 			break;
 
-		CmdString = BuffPtr = ScalosAllocVecPooled(CLIpathSize);
+		CmdString = BuffPtr = ScalosAlloc(CLIpathSize);
 		if (NULL == CmdString)
 			return;
 
@@ -920,7 +920,7 @@ static SAVEDS(void) AsyncARexxMenuCmdStart(APTR xarg, struct SM_RunProcess *msg)
 		}
 
 	if (CmdString)
-		ScalosFreeVecPooled(CmdString);
+		ScalosFree(CmdString);
 	if (ReplyPort)
 		DeleteMsgPort(ReplyPort);
 }
@@ -972,7 +972,7 @@ static STRPTR InsertCliArgDeviceName(struct internalScaWindowTask *iwt, STRPTR B
 
 	NumberOfWbArgs = 1 + SCA_CountWBArgs(in);
 
-	args = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+	args = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 	if (args)
 		{
 		d1(kprintf("%s/%s/%ld: Buffer=%08lx  BuffLen=%lu\n", __FILE__, __FUNC__, __LINE__, Buffer, *BuffLen));
@@ -1006,7 +1006,7 @@ static STRPTR InsertCliArgDeviceName(struct internalScaWindowTask *iwt, STRPTR B
 
 			SCA_FreeWBArgs(args, iArgCount, SCAF_FreeLocks | SCAF_FreeNames);
 			}
-		ScalosFreeVecPooled(args);
+		ScalosFree(args);
 		}
 
 	return Buffer;
@@ -1020,7 +1020,7 @@ static STRPTR InsertCliArgs(struct internalScaWindowTask *iwt, STRPTR Buffer,
 
 	NumberOfWbArgs = 1 + SCA_CountWBArgs(in);
 
-	args = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+	args = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 	if (args)
 		{
 		d1(kprintf("%s/%s/%ld: Buffer=%08lx  BuffLen=%lu\n", __FILE__, __FUNC__, __LINE__, Buffer, *BuffLen));
@@ -1054,7 +1054,7 @@ static STRPTR InsertCliArgs(struct internalScaWindowTask *iwt, STRPTR Buffer,
 
 			SCA_FreeWBArgs(args, iArgCount, SCAF_FreeLocks | SCAF_FreeNames);
 			}
-		ScalosFreeVecPooled(args);
+		ScalosFree(args);
 		}
 
 	return Buffer;
@@ -1074,7 +1074,7 @@ static STRPTR InsertARexxArgs(struct internalScaWindowTask *iwt, STRPTR Buffer,
 
 	NumberOfWbArgs = 1 + SCA_CountWBArgs(in);
 
-	args = ScalosAllocVecPooled(NumberOfWbArgs * sizeof(struct WBArg));
+	args = ScalosAlloc(NumberOfWbArgs * sizeof(struct WBArg));
 	if (args)
 		{
 		d1(kprintf("%s/%s/%ld: Buffer=%08lx  BuffLen=%lu\n", __FILE__, __FUNC__, __LINE__, Buffer, *BuffLen));
@@ -1128,7 +1128,7 @@ static STRPTR InsertARexxArgs(struct internalScaWindowTask *iwt, STRPTR Buffer,
 
 			SCA_FreeWBArgs(args, iArgCount, SCAF_FreeLocks | SCAF_FreeNames);
 			}
-		ScalosFreeVecPooled(args);
+		ScalosFree(args);
 		}
 
 	d1(kprintf("%s/%s/%ld: ArgCount=%lu\n", __FILE__, __FUNC__, __LINE__, *ArgCount));
@@ -1644,7 +1644,7 @@ ULONG DisposeScalosWindow(struct internalScaWindowTask *iwt, struct ScaWindowStr
 
 	if (ws->ws_WindowTaskName)
 		{
-		ScalosFreeVecPooled(ws->ws_WindowTaskName);
+		ScalosFree(ws->ws_WindowTaskName);
 		ws->ws_WindowTaskName = NULL;
 		}
 	if (ws->ws_Name)
@@ -1786,7 +1786,7 @@ struct ScalosMenuTree *CloneMenuTree(const struct ScalosMenuTree *mtr)
 
 		d1(KPrintF("%s/%s/%ld:  mtr=%08lx  Next=%08lx\n", __FILE__, __FUNC__, __LINE__, mtr, mtr->mtre_Next));
 
-		mtrNew = ScalosAllocVecPooled(sizeof(struct ScalosMenuTree));
+		mtrNew = ScalosAlloc(sizeof(struct ScalosMenuTree));
 		if (NULL == mtrNew)
 			{
 			DisposeMenuTree(newNodeList);
@@ -1838,7 +1838,7 @@ void DisposeMenuTree(struct ScalosMenuTree *mtr)
 				}
 			}
 
-		ScalosFreeVecPooled(mtr);
+		ScalosFree(mtr);
 
 		mtr = mtrNext;
 		}
@@ -2175,7 +2175,7 @@ struct WindowHistoryEntry *WindowAddHistoryEntry(struct internalScaWindowTask *i
 		if (!NameFromLock(wsLock, FullPath, Max_PathLen - 1))
 			break;
 
-		whe = ScalosAllocVecPooled(sizeof(struct WindowHistoryEntry) + strlen(FullPath));
+		whe = ScalosAlloc(sizeof(struct WindowHistoryEntry) + strlen(FullPath));
 		d1(KPrintF("%s/%s/%ld: whe=%08lx\n", __FILE__, __FUNC__, __LINE__, whe));
 		if (NULL == whe)
 			break;
@@ -2207,7 +2207,7 @@ void WindowHistoryEntryDispose(struct internalScaWindowTask *iwt, struct WindowH
 	if (whe)
 		{
 		FreeIconList(iwt, &whe->whe_IconList);
-		ScalosFreeVecPooled(whe);
+		ScalosFree(whe);
 		}
 }
 

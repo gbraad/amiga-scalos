@@ -428,7 +428,7 @@ static ULONG RootClass_AddToClipboard(Class *cl, Object *o, Msg msg)
 			destDirLock = acp->acb_iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
 		}
 
-	fta = ScalosAllocVecPooled(sizeof(struct FileTransArg));
+	fta = ScalosAlloc(sizeof(struct FileTransArg));
 	if (fta)
 		{
 		fta->ftarg_iwt = acp->acb_iwt;
@@ -449,7 +449,7 @@ static ULONG RootClass_AddToClipboard(Class *cl, Object *o, Msg msg)
 			ScalosReleaseSemaphore(&ClipboardSemaphore);
 			}
 		else
-			ScalosFreeVecPooled(fta);
+			ScalosFree(fta);
 		}
 
 	if (newLock)
@@ -487,7 +487,7 @@ static ULONG RootClass_ClearClipboard(Class *cl, Object *o, Msg msg)
 			fta->ftarg_Arg.wa_Lock = (BPTR)NULL;
 			}
 
-		ScalosFreeVecPooled(fta);
+		ScalosFree(fta);
 		}
 
 	return 0;
@@ -507,7 +507,7 @@ static struct EventListener *RootClass_AddListener(Class *cl, Object *o, Msg msg
 	const struct msg_AddListener *mal = (const struct msg_AddListener *) msg;
 	struct EventListener *el;
 
-	el = ScalosAllocVecPooled(sizeof(struct EventListener));
+	el = ScalosAlloc(sizeof(struct EventListener));
 	if (el)
 		{
 		el->el_Method = mal->mal_Method;
@@ -537,7 +537,7 @@ static ULONG RootClass_RemListener(Class *cl, Object *o, Msg msg)
 		if ((APTR) el == mrl->mrl_EventHandle)
 			{
 			Remove(&el->el_Node);
-			ScalosFreeVecPooled(el);
+			ScalosFree(el);
 			break;
 			}
 		}
@@ -743,7 +743,7 @@ static void GenerateEvents(Class *cl, Object *o, Msg msg)
 			if (1 == el->el_Count--)
 				{
 				Remove(&el->el_Node);
-				ScalosFreeVecPooled(el);
+				ScalosFree(el);
 				}
 			break;
 			}

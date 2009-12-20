@@ -69,7 +69,7 @@ void CleanupDropMarkInfoList(struct List *dmList)
 	while ((dmi = (struct DropMarkInfo *) RemHead(dmList)))
 		{
 		CleanupDropMarkInfo(dmi);
-		ScalosFreeVecPooled(dmi);
+		ScalosFree(dmi);
 		}
 }
 
@@ -154,7 +154,7 @@ void EraseIconDropMark(struct internalScaWindowTask *iwt, struct ScaIconNode *in
 		if (dmi)
 			{
 			RestoreFromDropMarkInfo(dmi, iwt->iwt_WindowTask.wt_Window->RPort);
-			ScalosFreeVecPooled(dmi);
+			ScalosFree(dmi);
 			}
 
 		in->in_Flags &= ~INF_DropMarkVisible;
@@ -184,7 +184,7 @@ void EraseGadgetClickMark(struct internalScaWindowTask *iwt, struct ExtGadget *g
 		origClipRegion = InstallClipRegion(iwt->iwt_WindowTask.wt_Window->RPort->Layer, NULL);
 
 		RestoreFromDropMarkInfo(dmi, iwt->iwt_WindowTask.wt_Window->RPort);
-		ScalosFreeVecPooled(dmi);
+		ScalosFree(dmi);
 
 		InstallClipRegion(iwt->iwt_WindowTask.wt_Window->RPort->Layer, origClipRegion);
 		}
@@ -299,7 +299,7 @@ static void DrawIconDropMark(struct internalScaWindowTask *iwt, struct ScaIconNo
 		{
 		Remove(&dmi->dmi_Node);
 		CleanupDropMarkInfo(dmi);
-		ScalosFreeVecPooled(dmi);
+		ScalosFree(dmi);
 		}
 }
 
@@ -361,7 +361,7 @@ static void DrawGadgetClickMark(struct internalScaWindowTask *iwt, struct ExtGad
 		{
 		Remove(&dmi->dmi_Node);
 		CleanupDropMarkInfo(dmi);
-		ScalosFreeVecPooled(dmi);
+		ScalosFree(dmi);
 		}
 }
 
@@ -497,7 +497,7 @@ static struct DropMarkInfo *NewIconDropMarkInfo(struct internalScaWindowTask *iw
 {
 	struct DropMarkInfo *dmi;
 
-	dmi = ScalosAllocVecPooled(sizeof(struct DropMarkInfo));
+	dmi = ScalosAlloc(sizeof(struct DropMarkInfo));
 	if (dmi)
 		{
 		memset(dmi, 0, sizeof(struct DropMarkInfo));

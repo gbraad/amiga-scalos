@@ -215,7 +215,7 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 		/* Try to allocate memory to hold ABoutInfo structure (which is where everything to
 		 * do with the about window is stored.
 		 */
-		abi = ScalosAllocVecPooled(sizeof(struct AboutInfo));
+		abi = ScalosAlloc(sizeof(struct AboutInfo));
 		if (NULL == abi)
 			break;
 
@@ -802,7 +802,7 @@ static struct AboutGadgetInfo *AboutCreateButton(const struct AboutGadgetDef *ag
 		if (NULL == ImageNameDisabled)
 			break;
 
-		agi = ScalosAllocVecPooled(sizeof(struct AboutGadgetInfo));
+		agi = ScalosAlloc(sizeof(struct AboutGadgetInfo));
 		if (NULL == agi)
 			break;
 
@@ -932,7 +932,7 @@ static void AboutFreeButton(struct AboutGadgetInfo *agi)
 				DisposeObject(agi->agi_Gadget);
 			agi->agi_Gadget	= NULL;
 			}
-		ScalosFreeVecPooled(agi);
+		ScalosFree(agi);
 		}
 }
 
@@ -1096,7 +1096,7 @@ static STRPTR ExpandText(CONST_STRPTR Text)
 			lp++;
 		}
 
-	TextCopy = ScalosAllocVecPooled(Length);
+	TextCopy = ScalosAlloc(Length);
 	if (NULL == TextCopy)
 		return NULL;
 
@@ -1148,13 +1148,13 @@ static STRPTR ExpandText(CONST_STRPTR Text)
 				{
 					STRPTR lpc;
 
-					lpc = ScalosAllocVecPooled(1024);
+					lpc = ScalosAlloc(1024);
 					if (lpc)
 						{
 						FillRegInfo(lpc, 1024);
 						strcpy(dlp, lpc);
 						dlp += strlen(dlp);
-						ScalosFreeVecPooled(lpc);
+						ScalosFree(lpc);
 						}
 					lp++;
 				}
@@ -1183,7 +1183,7 @@ static STRPTR ExpandText(CONST_STRPTR Text)
 static void FreeExpandedText(STRPTR Text)
 {
 	if (Text)
-		ScalosFreeVecPooled(Text);
+		ScalosFree(Text);
 }
 
 
@@ -1471,7 +1471,7 @@ static struct ttDef *CreateAboutText(struct AboutInfo *abi, ULONG MsgId)
 				for (lp2 = lp, Length = 0; *lp2 && '\n' != *lp2; lp2++, Length++)
 					;
 
-				lp3Start = lp3 = ScalosAllocVecPooled(1 + Length);
+				lp3Start = lp3 = ScalosAlloc(1 + Length);
 				if (NULL == lp3)
 					break;
 
@@ -1497,7 +1497,7 @@ static struct ttDef *CreateAboutText(struct AboutInfo *abi, ULONG MsgId)
 					TAG_END)
 					);
 
-				ScalosFreeVecPooled(lp3Start);
+				ScalosFree(lp3Start);
 				}
 
 			if (lSkipline)
@@ -1741,7 +1741,7 @@ static void AboutInfoCleanup(struct AboutInfo *abi)
 			Scalos_CloseFont(&abi->abi_Font, NULL);
 
 		/* Free memory allocated for AboutInfo structure */
-		ScalosFreeVecPooled((APTR)abi);
+		ScalosFree((APTR)abi);
 		}
 }
 

@@ -70,7 +70,7 @@ BOOL InitInputHandler(void)
 		if (NULL == inputPort)
 			break;
 
-		inputHandler = ScalosAllocVecPooled(sizeof(struct Interrupt));
+		inputHandler = ScalosAlloc(sizeof(struct Interrupt));
 		if (NULL == inputHandler)
 			break;
 

@@ -329,7 +329,7 @@ static struct TypeNode *AllocTypeNode(STRPTR *description)
 		}
 	}
 
-	if ((nd = ScalosAllocVecPooled(sizeof(struct TypeNode) + j * sizeof(struct Magic))))
+	if ((nd = ScalosAlloc(sizeof(struct TypeNode) + j * sizeof(struct Magic))))
 		{
 		nd->tn_RightBrother = nd->tn_FirstSon = nd->tn_Parent = NULL;
 		nd->tn_IconObject = NULL;
@@ -747,7 +747,7 @@ loop1:
 	ScalosReleaseSemaphore(&DefIconsSemaphore);
 
 	if (AllocatedDevName)
-		ScalosFreeVecPooled(AllocatedDevName);
+		ScalosFree(AllocatedDevName);
 	ScalosFreeInfoData(&infoData);
 
 	return type;
@@ -767,7 +767,7 @@ static struct TypeNode *DefIconsIdentifyProject(CONST_STRPTR Name, struct FileIn
 	while (tn && 0 != Stricmp(tn->tn_Name, "project"))
 		tn = tn->tn_RightBrother;
 
-	if (tn && (Buffer = ScalosAllocVecPooled(IOBUFFERLEN)) && (File = Open((STRPTR) Name,MODE_OLDFILE)))
+	if (tn && (Buffer = ScalosAlloc(IOBUFFERLEN)) && (File = Open((STRPTR) Name,MODE_OLDFILE)))
 		{
 		WORD Size;
 
@@ -924,7 +924,7 @@ loop1:
 				STRPTR desc;
 
 
-				if ((desc = ScalosAllocVecPooled(14)))
+				if ((desc = ScalosAlloc(14)))
 					{
 					STRPTR descp = desc;
 
@@ -944,7 +944,7 @@ loop1:
 						type = new;
 						}
 					else
-						ScalosFreeVecPooled(desc);
+						ScalosFree(desc);
 					}
 				}
 			}
@@ -955,7 +955,7 @@ loop1:
 	if (File)
 		Close(File);
 	if (Buffer)
-		ScalosFreeVecPooled(Buffer);
+		ScalosFree(Buffer);
 	return type;
 }
 
@@ -973,7 +973,7 @@ static void DeleteTypeNode(struct TypeNode *tn)
 			DisposeIconObject(tn->tn_IconObject);
 			tn->tn_IconObject = NULL;
 			}
-		ScalosFreeVecPooled(tn);
+		ScalosFree(tn);
 
 		tn = tnNext;
 		}
@@ -1277,7 +1277,7 @@ static STRPTR DefIconsGetDeviceName(CONST_STRPTR DosDevice, ULONG *DosType)
 			break;
 
 		Length = BDevName[0];
-		DevName = ScalosAllocVecPooled(1 + Length);
+		DevName = ScalosAlloc(1 + Length);
 		if (NULL == DevName)
 			break;
 
