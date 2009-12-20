@@ -187,6 +187,7 @@ struct KeyboardCommand
 //----------------------------------------------------------------------------
 
 #if defined(__SASC)
+#include <stdarg.h>
 int snprintf(char *, size_t, const char *, /*args*/ ...);
 int vsnprintf(char *, size_t, const char *, va_list ap);
 #endif /* __SASC */

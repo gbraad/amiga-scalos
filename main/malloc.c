@@ -526,6 +526,11 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 
 #include <proto/exec.h>
 
+#if defined(__SASC)
+#include <time.h>
+#endif //__SASC
+
+#define	LACKS_SYS_PARAM_H 1
 #define	NEED_GLOBAL_LOCK_INIT 1
 #define	USE_LOCKS 1
 #define	USE_DL_PREFIX 1
@@ -549,7 +554,9 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 static MLOCK_T malloc_global_mutex;
 static volatile long malloc_global_mutex_status = 0;
 
-static void init_malloc_global_mutex()
+static void init_malloc_global_mutex(void);
+
+static void init_malloc_global_mutex(void)
 {
 	while (1)
 		{
@@ -1389,7 +1396,8 @@ extern void*     sbrk(ptrdiff_t);
 
 /* Declarations for locking */
 #if USE_LOCKS
-#ifndef WIN32
+#ifdef AMIGA
+#elif !defined(WIN32)
 #include <pthread.h>
 #if defined (__SVR4) && defined (__sun)  /* solaris */
 #include <thread.h>
