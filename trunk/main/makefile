@@ -131,6 +131,7 @@ SRCS  =	about.c			\
 	Lasso.c			\
 	LocaleStrings.c		\
 	MainWait.c		\
+	malloc.c		\
 	Memory.c		\
 	Menu.c			\
 	MenuCommand.c		\
@@ -282,6 +283,7 @@ $(OBJDIR)/ScalosMcpGfx.o		: $(MCPGFX_DIR)/ScalosMcpGfx.c $(CHEADERS)
 $(OBJDIR)/Lasso.o			: Lasso.c $(CHEADERS)
 $(OBJDIR)/LocaleStrings.o		: LocaleStrings.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/MainWait.o			: MainWait.c $(CHEADERS)
+$(OBJDIR)/malloc.o			: malloc.c $(CHEADERS)
 $(OBJDIR)/Memory.o			: Memory.c $(CHEADERS)
 $(OBJDIR)/Menu.o			: Menu.c DtImageClass.h $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/MenuCommand.o			: MenuCommand.c ../include/DefIcons.h $(CHEADERS) $(LOCALE_HEADERS)
