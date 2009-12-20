@@ -73,7 +73,7 @@
 
 // local data structures
 
-#define	LINE_TRACE	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));\
+#define	LINE_TRACE	d1(KPrintF("%s/%s/%ld: tc_SigAlloc=%08lx\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL)->tc_SigAlloc));\
 			TRACE_AMITHLON(__LINE__);
 
 struct ScrColorList
@@ -250,6 +250,7 @@ struct SQLite3Interface *ISQLite3;
 
 // local Data
 
+static struct MsgPort *ioConsolePort;		// MsgPort for ioConsole
 static struct IOStdReq *ioConsole;		// IORequest to open console.device
 
 static struct Hook CompareRevPriHook =
@@ -352,6 +353,7 @@ static void InitDiskPlugins(void)
 				// Reading plugin data failed, remove it from list
 				SCA_FreeNode((struct ScalosNodeList *)(APTR) &ScalosPluginList, &plug->plug_Node);
 				}
+			LINE_TRACE;
 			}
 		}
 
@@ -505,7 +507,8 @@ static void SetupTheme(void)
 static BOOL OpenConsoleDevice(void)
 {
 ///
-	ioConsole = (struct IOStdReq *)CreateIORequest(CreateMsgPort(), sizeof(struct IOStdReq));
+	ioConsolePort = CreateMsgPort();
+	ioConsole = (struct IOStdReq *)CreateIORequest(ioConsolePort, sizeof(struct IOStdReq));
 	if (NULL == ioConsole)
 		return FALSE;
 
@@ -541,13 +544,13 @@ static void CloseConsoleDevice(void)
 		}
 	if (ioConsole)
 		{
-		struct MsgPort *ioPort = ioConsole->io_Message.mn_ReplyPort;
-
 		DeleteIORequest((struct IORequest *) ioConsole);
-		if (ioPort)
-			DeleteMsgPort(ioPort);
-
 		ioConsole = NULL;
+		}
+	if (ioConsolePort)
+		{
+		DeleteMsgPort(ioConsolePort);
+		ioConsolePort = NULL;
 		}
 ///
 }
@@ -1199,6 +1202,8 @@ static void ScalosMain(LONG *ArgArray)
 
 		TRACE_AMITHLON(__LINE__);
 
+		memset(MainWindowTask, 0, sizeof(struct MainTask));
+
 		MainTask = (struct Process *) FindTask(NULL);
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -1813,6 +1818,12 @@ static void ScalosMain(LONG *ArgArray)
 		RemPort(iInfos.xii_iinfos.ii_MainMsgPort);
 		DeleteMsgPort(iInfos.xii_iinfos.ii_MainMsgPort);
 		Permit();
+		}
+
+	if (wbPort)
+		{
+		DeleteMsgPort(wbPort);
+		wbPort = NULL;
 		}
 
 	LINE_TRACE;

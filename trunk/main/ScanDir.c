@@ -521,7 +521,9 @@ static enum ScanDirResult ScanDir_ExAll(struct internalScaWindowTask *iwt, struc
 
 	if (NULL == rilc->rilc_edNext)
 		{
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		WaitPort(rilc->rilc_replyPort);
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		replyPkt = (struct StandardPacket *) GetMsg(rilc->rilc_replyPort);
 
 		if (NULL == replyPkt)
@@ -699,7 +701,9 @@ static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, str
 
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 	WaitPort(rilc->rilc_replyPort);
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 	replyPkt = (struct StandardPacket *) GetMsg(rilc->rilc_replyPort);
 	if (NULL == replyPkt)
 		return SCANDIR_OK;
@@ -1589,7 +1593,9 @@ void RilcCleanup(struct ReadIconListControl *rilc)
 
 		rilc->rilc_PacketPending = FALSE;
 
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		WaitPort(rilc->rilc_replyPort);
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		GetMsg(rilc->rilc_replyPort);
 		}
 

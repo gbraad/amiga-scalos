@@ -45,21 +45,37 @@
 #define	PUDDLESIZE_NODES	8192
 #define	THRESHOLD_NODES		256
 
+#define	DLMALLOC		1
+#define DLMALLOC_CLEAR		1
+
+//----------------------------------------------------------------------------
+
+#if DLMALLOC
+void* dlmalloc(size_t);
+void  dlfree(void*);
+void* dlrealloc(void*, size_t);
+#endif //DLMALLOC
+
 //----------------------------------------------------------------------------
 
 // local Data
 
+#if DLMALLOC
+#else //DLMALLOC
 static SCALOSSEMAPHORE MainMemPoolSemaphore;		// main memory pool semaphore
 static SCALOSSEMAPHORE MsgMemPoolSemaphore;		// main memory pool semaphore
 static SCALOSSEMAPHORE NodeMemPoolSemaphore;		// main memory pool semaphore
 static void *MainMemPool = NULL;			// main memory pool
 static void *MsgMemPool = NULL;				// main memory pool
 static void *NodeMemPool = NULL;			// main memory pool
+#endif //DLMALLOC
 
 // ----------------------------------------------------------
 
 BOOL MemoryInit(void)
 {
+#if DLMALLOC
+#else //DLMALLOC
 	ScalosInitSemaphore(&MainMemPoolSemaphore);
 	ScalosInitSemaphore(&MsgMemPoolSemaphore);
 	ScalosInitSemaphore(&NodeMemPoolSemaphore);
@@ -78,6 +94,7 @@ BOOL MemoryInit(void)
 	d1(KPrintF("%s/%s/%ld: MainMemPool=%08lx\n", __FILE__, __FUNC__, __LINE__, NodeMemPool));
 	if (NULL == NodeMemPool)
 		return FALSE;
+#endif //DLMALLOC
 
 	return TRUE;
 }
@@ -86,6 +103,8 @@ BOOL MemoryInit(void)
 
 void MemoryCleanup(void)
 {
+#if DLMALLOC
+#else //DLMALLOC
 	d1(KPrintF("%s/%s/%ld: MainMemPool=%08lx\n", __FILE__, __FUNC__, __LINE__, MainMemPool));
 	if (MainMemPool)
 		{
@@ -104,6 +123,7 @@ void MemoryCleanup(void)
 		DeletePool(NodeMemPool);
 		NodeMemPool = NULL;
 		}
+#endif //DLMALLOC
 }
 
 // ----------------------------------------------------------
@@ -117,6 +137,21 @@ void MemoryCleanup(void)
 
 APTR ScalosAllocVecPooled(ULONG Size)
 {
+#if DLMALLOC
+	APTR ptr;
+
+	d1(kprintf("%s/%s/%ld: Size=%lu\n", __FILE__, __FUNC__, __LINE__, Size));
+
+	ptr = (APTR) dlmalloc(Size);
+
+#if DLMALLOC_CLEAR
+	if (ptr)
+		memset(ptr, 0, Size);
+#endif //DLMALLOC_CLEAR
+
+	d1(kprintf("%s/%s/%ld: END return %08lx\n", __FILE__, __FUNC__, __LINE__, ptr));
+	return ptr;
+#else //DLMALLOC
 	struct AllocatedMemFromPool *ptr;
 
 	d1(kprintf("%s/%s/%ld: Size=%lu  MemPool=%08lx\n", __FILE__, __FUNC__, __LINE__, Size, MemPool));
@@ -142,11 +177,17 @@ APTR ScalosAllocVecPooled(ULONG Size)
 	d1(kprintf("%s/%s/%ld: return NULL\n", __FILE__, __FUNC__, __LINE__));
 
 	return NULL;
+#endif //DLMALLOC
 }
 
 
 void ScalosFreeVecPooled(APTR mem)
 {
+#if DLMALLOC
+	d1(KPrintF("%s/%s/%ld: START OldMem=%08lx\n", __FILE__, __FUNC__, __LINE__, mem));
+	dlfree(mem);
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+#else //DLMALLOC
 	if (MainMemPool && mem)
 		{
 		struct AllocatedMemFromPool *ptr;
@@ -157,11 +198,21 @@ void ScalosFreeVecPooled(APTR mem)
 		FreePooled(MainMemPool, ptr, ptr->amp_Size);
 		ScalosReleaseSemaphore(&MainMemPoolSemaphore);
 		}
+#endif //DLMALLOC
 }
 
 
 void *ScalosReallocVecPooled(APTR OldMem, ULONG NewSize)
 {
+#if DLMALLOC
+	void *ptr;
+
+	d1(KPrintF("%s/%s/%ld: START OldMem=%08lx  NewSize=%lu\n", __FILE__, __FUNC__, __LINE__, OldMem, NewSize));
+	ptr = dlrealloc(OldMem, NewSize);
+	d1(kprintf("%s/%s/%ld: END return %08lx\n", __FILE__, __FUNC__, __LINE__, ptr));
+
+	return ptr;
+#else //DLMALLOC
 	APTR NewMem = NULL;
 
 	d1(KPrintF("%s/%s/%ld: OldMem=%08lx  NewSize=%lu\n", __FILE__, __FUNC__, __LINE__, OldMem, NewSize));
@@ -194,17 +245,33 @@ void *ScalosReallocVecPooled(APTR OldMem, ULONG NewSize)
 		}
 
 	return NewMem;
+#endif //DLMALLOC
 }
 
 #endif /* DEBUG_MEMORY */
 
 // ----------------------------------------------------------
 
-#if defined(DEBUG_MEMORY) && !defined(__GNUC__)
+//#if defined(DEBUG_MEMORY) && !defined(__GNUC__)
+#if defined(DEBUG_MEMORY)
 
 APTR ScalosAllocVecPooled_Debug(ULONG Size, CONST_STRPTR CallingFile,
 	CONST_STRPTR CallingFunc, ULONG CallingLine)
 {
+#if DLMALLOC
+	void *ptr;
+
+	d1(KPrintF("%s/%s/%ld: START Size=%lu\n", CallingFile, CallingFunc, CallingLine, Size));
+	ptr = dlmalloc(Size);
+	d1(kprintf("%s/%s/%ld: END return %08lx\n", __FILE__, __FUNC__, __LINE__, ptr));
+
+#if DLMALLOC_CLEAR
+	if (ptr)
+		memset(ptr, 0x00, Size);
+#endif //DLMALLOC_CLEAR
+
+	return ptr;
+#else //DLMALLOC
 	struct AllocatedMemFromPoolDebug *ptr;
 
 	if (MainMemPool)
@@ -236,12 +303,18 @@ APTR ScalosAllocVecPooled_Debug(ULONG Size, CONST_STRPTR CallingFile,
 		}
 
 	return NULL;
+#endif //DLMALLOC
 }
 
 
 void ScalosFreeVecPooled_Debug(APTR mem, CONST_STRPTR CallingFile,
 	CONST_STRPTR CallingFunc, ULONG CallingLine)
 {
+#if DLMALLOC
+	d1(KPrintF("%s/%s/%ld: START OldMem=%08lx\n", CallingFile, CallingFunc, CallingLine, mem));
+	dlfree(mem);
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+#else //DLMALLOC
 	if (MainMemPool && mem)
 		{
 		ULONG n;
@@ -275,6 +348,7 @@ void ScalosFreeVecPooled_Debug(APTR mem, CONST_STRPTR CallingFile,
 		FreePooled(MainMemPool, ptr, ptr->amp_Size);
 		ScalosReleaseSemaphore(&MainMemPoolSemaphore);
 		}
+#endif //DLMALLOC
 }
 
 #endif /* DEBUG_MEMORY */
@@ -285,14 +359,20 @@ STRPTR AllocCopyString(CONST_STRPTR clp)
 {
 	STRPTR lp;
 
+	d1(KPrintF("%s/%s/%ld: START clp=%08lx\n", __FILE__, __FUNC__, __LINE__, clp));
+
 	if (NULL == clp)
 		clp = "";
 
+#if DLMALLOC
+	lp = dlmalloc(1 + strlen(clp));
+#else //DLMALLOC
 	lp = AllocVec(1 + strlen(clp), MEMF_PUBLIC);
+#endif //DLMALLOC
 	if (lp)
 		strcpy(lp, clp);
 
-	d1(KPrintF("%s/%s/%ld: kp=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, lp, clp));
+	d1(KPrintF("%s/%s/%ld: END lp=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, lp, clp));
 
 	return lp;
 }
@@ -300,15 +380,35 @@ STRPTR AllocCopyString(CONST_STRPTR clp)
 
 void FreeCopyString(STRPTR lp)
 {
-	d1(KPrintF("%s/%s/%ld: lp=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, lp, lp));
+	d1(KPrintF("%s/%s/%ld: START lp=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, lp, lp));
+#if DLMALLOC
+	dlfree(lp);
+#else //DLMALLOC
 	if (lp)
 		FreeVec(lp);
+#endif //DLMALLOC
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 // ----------------------------------------------------------
 
 void *ScalosAllocNode(size_t Size)
 {
+#if DLMALLOC
+	APTR ptr;
+
+	d1(kprintf("%s/%s/%ld: START  Size=%lu\n", __FILE__, __FUNC__, __LINE__, Size));
+
+	ptr = (APTR) dlmalloc(Size);
+
+#if DLMALLOC_CLEAR
+	if (ptr)
+		memset(ptr, 0, Size);
+#endif //DLMALLOC_CLEAR
+
+	d1(KPrintF("%s/%s/%ld: END ptr=%08lx\n", __FILE__, __FUNC__, __LINE__, ptr));
+	return ptr;
+#else //DLMALLOC
 	struct AllocatedMemFromPool *ptr;
 
 	d1(KPrintF("%s/%s/%ld: Size=%lu  NodeMemPool=%08lx\n", __FILE__, __FUNC__, __LINE__, Size, NodeMemPool));
@@ -338,10 +438,15 @@ void *ScalosAllocNode(size_t Size)
 	d1(kprintf("%s/%s/%ld: return NULL\n", __FILE__, __FUNC__, __LINE__));
 
 	return NULL;
+#endif //DLMALLOC
 }
 
 void ScalosFreeNode(void *mem)
 {
+	d1(kprintf("%s/%s/%ld: START  mem=%08lx\n", __FILE__, __FUNC__, __LINE__, mem));
+#if DLMALLOC
+	dlfree(mem);
+#else //DLMALLOC
 	if (NodeMemPool && mem)
 		{
 		struct AllocatedMemFromPool *ptr;
@@ -352,12 +457,29 @@ void ScalosFreeNode(void *mem)
 		FreePooled(NodeMemPool, ptr, ptr->amp_Size);
 		ScalosReleaseSemaphore(&NodeMemPoolSemaphore);
 		}
+#endif //DLMALLOC
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 // ----------------------------------------------------------
 
 void *ScalosAllocMessage(size_t Size)
 {
+#if DLMALLOC
+	APTR ptr;
+
+	d1(kprintf("%s/%s/%ld: START  Size=%lu\n", __FILE__, __FUNC__, __LINE__, Size));
+
+	ptr = (APTR) dlmalloc(Size);
+
+#if DLMALLOC_CLEAR
+	if (ptr)
+		memset(ptr, 0, Size);
+#endif
+
+	d1(KPrintF("%s/%s/%ld: END ptr=%08lx\n", __FILE__, __FUNC__, __LINE__, ptr));
+	return ptr;
+#else //DLMALLOC
 	struct AllocatedMemFromPool *ptr;
 
 	d1(KPrintF("%s/%s/%ld: Size=%lu  MsgMemPool=%08lx\n", __FILE__, __FUNC__, __LINE__, Size, MsgMemPool));
@@ -385,10 +507,15 @@ void *ScalosAllocMessage(size_t Size)
 	d1(kprintf("%s/%s/%ld: return NULL\n", __FILE__, __FUNC__, __LINE__));
 
 	return NULL;
+#endif //DLMALLOC
 }
 
 void ScalosFreeMessage(void *mem)
 {
+	d1(kprintf("%s/%s/%ld: START  mem=%08lx\n", __FILE__, __FUNC__, __LINE__, mem));
+#if DLMALLOC
+	dlfree(mem);
+#else //DLMALLOC
 	if (MsgMemPool && mem)
 		{
 		struct AllocatedMemFromPool *ptr;
@@ -399,6 +526,8 @@ void ScalosFreeMessage(void *mem)
 		FreePooled(MsgMemPool, ptr, ptr->amp_Size);
 		ScalosReleaseSemaphore(&MsgMemPoolSemaphore);
 		}
+#endif //DLMALLOC
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 // ----------------------------------------------------------

@@ -440,8 +440,6 @@ LIBFUNC_P8(struct AppIcon *, sca_AddAppIconA,
 						{
 						struct WBArg *ArgArray = (struct WBArg *) &msg->Flags;
 
-						DeleteMsgPort(ReplyPort);
-
 						IconObj = (Object *) ArgArray->wa_Name;
 						d1(kprintf("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 
@@ -452,6 +450,8 @@ LIBFUNC_P8(struct AppIcon *, sca_AddAppIconA,
 						break;
 						}
 					} while (1);
+
+				DeleteMsgPort(ReplyPort);
 				}
 			}
 

@@ -66,6 +66,7 @@ static void ProcessWblMessage(struct MainTask *mainTask, struct WblMessage *wMsg
 static void ProcessRexxMessage(struct MainTask *mainTask, struct RexxMsg *RxMsg);
 static void ProcessPrefsChanges(struct MainTask *mainTask);
 static void UpdatePrefs(void);
+static void QuitScalos(struct ScaWindowTask *iwtMain, struct RexxMsg *msg);
 
 //----------------------------------------------------------------------------
 
@@ -78,6 +79,7 @@ static void UpdatePrefs(void);
 struct ARexxCmdEntry ARexxCommandTable[] =
 	{
 	{ "about", 	ACEFLAGF_RunFromMainTask, 	(AREXXFUNC) AboutProg	},
+	{ "quit",	ACEFLAGF_RunFromMainTask, 	(AREXXFUNC) QuitScalos 	},
 	{ NULL, 	0, 				NULL			},
 	};
 
@@ -413,7 +415,7 @@ static void ProcessRexxMessage(struct MainTask *mainTask, struct RexxMsg *RxMsg)
 
 	for (ace=ARexxCommandTable; !Found && ace->ace_CmdName; ace++)
 		{
-		if (0 == stricmp(ace->ace_CmdName, RxMsg->rm_Args[0]))
+		if (0 == Stricmp(ace->ace_CmdName, RxMsg->rm_Args[0]))
 			{
 			Found = TRUE;
 
@@ -634,4 +636,15 @@ void RemFromMainNotifyList(struct NotifyNode *nonOld)
 		ScalosReleaseSemaphore(&MainWindowTask->mwt_MainNotifyListSema);
 		}
 }
+
+
+static void QuitScalos(struct ScaWindowTask *wtMain, struct RexxMsg *msg)
+{
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) wtMain;
+
+	(void) msg;
+
+	iwtMain->iwt_CloseWindow = TRUE;
+}
+
 

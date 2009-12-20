@@ -331,6 +331,7 @@ static struct TypeNode *AllocTypeNode(STRPTR *description)
 
 	if ((nd = ScalosAllocVecPooled(sizeof(struct TypeNode) + j * sizeof(struct Magic))))
 		{
+		nd->tn_RightBrother = nd->tn_FirstSon = nd->tn_Parent = NULL;
 		nd->tn_IconObject = NULL;
 		nd->tn_Name = name;
 

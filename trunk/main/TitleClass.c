@@ -312,6 +312,8 @@ static ULONG TitleClass_New(Class *cl, Object *o, Msg msg)
 		struct TitleClassInstance *inst = INST_DATA(cl, o);
 		ULONG TitleType;
 
+		memset(inst, 0, sizeof(struct TitleClassInstance));
+
 		inst->tci_TitleFormat = (CONST_STRPTR) GetTagData(SCCA_Title_Format, 0, ops->ops_AttrList);
 
 		TitleType = GetTagData(SCCA_Title_Type, SCCV_Title_Type_Screen, ops->ops_AttrList);

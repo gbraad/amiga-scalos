@@ -60,6 +60,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/Lasso.o                   	\
 		$(OBJDIR)/LocaleStrings.o           	\
 		$(OBJDIR)/MainWait.o                	\
+		$(OBJDIR)/malloc.o               	\
 		$(OBJDIR)/Memory.o		    	\
 		$(OBJDIR)/Menu.o                    	\
 		$(OBJDIR)/MenuCommand.o             	\
