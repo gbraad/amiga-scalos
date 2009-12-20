@@ -1370,6 +1370,7 @@ int mspace_mallopt(int, int);
 #define __USE_GNU 1
 #include <sys/mman.h>    /* for mmap */
 #undef __USE_GNU
+#elif defined(AMIGA)
 #else
 #include <sys/mman.h>    /* for mmap */
 #endif /* linux */
