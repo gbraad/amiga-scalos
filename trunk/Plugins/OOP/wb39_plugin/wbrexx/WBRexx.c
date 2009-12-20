@@ -1228,14 +1228,6 @@ BOOL StartWBRexxProcess(void)
 	InitSemaphore(&MenuItemListSemaphore);
 	InitSemaphore(&KbdCommandListSemaphore);
 
-	HandshakeTask = FindTask(NULL);
-	HandshakeSignal = AllocSignal(-1);
-	if (-1 == HandshakeSignal)
-		{
-//		alarm("AllocSignal() failed");
-		return FALSE;
-		}
-
 	if (ScalosBase->scb_LibNode.lib_Version >= 40)
 		{
 		SCA_ScalosControl(NULL,
@@ -1246,6 +1238,15 @@ BOOL StartWBRexxProcess(void)
 	if (EmulationMode)
 		{
 		STATIC_PATCHFUNC(WBRexxProcess);
+
+		HandshakeTask = FindTask(NULL);
+
+		HandshakeSignal = AllocSignal(-1);
+		if (-1 == HandshakeSignal)
+			{
+//			alarm("AllocSignal() failed");
+			return FALSE;
+			}
 
 		WBRexxProc = CreateNewProcTags(NP_Name, (ULONG) "WB39 Rexx Handler",
 				NP_Priority, 0,
