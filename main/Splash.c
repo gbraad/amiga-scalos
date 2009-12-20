@@ -262,7 +262,9 @@ static BOOL SendSplashMsg(ULONG Command, CONST_STRPTR Text)
 			d1(KPrintF("%s/%s/%ld: Task=%08lx  SplashReplyPort=%08lx  msg=%08lx\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL), SplashReplyPort, msg));
 
 			// Wait for reply to make sure update is complete
+			d1(kprintf("%s/%s/%ld: before Wait()\n", __FILE__, __FUNC__, __LINE__));
 			SigsReceived = Wait(WaitMask);
+			d1(kprintf("%s/%s/%ld: after Wait()\n", __FILE__, __FUNC__, __LINE__));
 
 			if (SigsReceived & WaitMask)
 				{
@@ -301,10 +303,12 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 	memset(&CloseTimer, 0, sizeof(CloseTimer));
 
 	do	{
+		struct MsgPort *port;
 		BOOL Running = TRUE;
 		BOOL Closed = FALSE;
 		LONG UserCount = 0;
 		ULONG SplashMask, ioMask;
+		struct Message *smsg;
 
 		SetTaskPri(FindTask(NULL), SPLASH_PROCESS_TASK_PRI);
 
@@ -464,14 +468,21 @@ static ULONG SplashProcess(APTR Dummy, struct SM_RunProcess *msg)
 
 		ScalosObtainSemaphore(&inst->spli_SplashSema);
 
+		port = inst->spli_SplashPort;
+		inst->spli_SplashPort = NULL;
+
+		while ((smsg = GetMsg(port)))
+			{
+			ReplyMsg(smsg);
+			}
+
 		d1(KPrintF("%s/%s/%ld: after ScalosObtainSemaphore\n", __FILE__, __FUNC__, __LINE__));
 
 		CloseSplash(inst);
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		DeleteMsgPort(inst->spli_SplashPort);
-		inst->spli_SplashPort = NULL;
+		DeleteMsgPort(port);
 
 		ScalosReleaseSemaphore(&inst->spli_SplashSema);
 		} while (0);
@@ -678,10 +689,12 @@ static void CloseSplash(struct SplashInstance *inst)
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 	if (inst->spli_SplashWindow)
 		{
-		WindowFadeOut(inst->spli_SplashWindow);
-		inst->spli_SplashWindowMask = 0L;
-		LockedCloseWindow(inst->spli_SplashWindow);
+		struct Window *win = inst->spli_SplashWindow;
+
 		inst->spli_SplashWindow = NULL;
+		WindowFadeOut(win);
+		inst->spli_SplashWindowMask = 0L;
+		LockedCloseWindow(win);
 		}
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -964,6 +977,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 static void SplashUpdateTextGadget(struct Window *win, struct Gadget *gad, CONST_STRPTR NewText)
 {
 ///
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 	SetGadgetAttrs(gad, win, NULL,
 		GBTDTA_Text, (ULONG) NewText,
 		TAG_END);
@@ -972,6 +986,7 @@ static void SplashUpdateTextGadget(struct Window *win, struct Gadget *gad, CONST
 		gad->LeftEdge + gad->Width - 1,
 		gad->TopEdge + gad->Height -1);
 	RefreshGList(gad, win, NULL, 1);
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 ///
 }
 

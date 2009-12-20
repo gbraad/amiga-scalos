@@ -891,7 +891,6 @@ void ScalosEndNotify(struct NotifyRequest *nr)
 {
 	if (nr)
 		{
-		struct MsgPort *DummyPort = NULL;
 		struct MsgPort *NotifyPort = NULL;
 
 #if defined(__MORPHOS__)
@@ -903,7 +902,7 @@ void ScalosEndNotify(struct NotifyRequest *nr)
 
 			if (!IsListEmpty(&NotifyPort->mp_MsgList))
 				{
-				DummyPort = CreateMsgPort();
+				struct MsgPort *DummyPort = CreateMsgPort();
 
 				if (DummyPort)
 					{
@@ -927,6 +926,7 @@ void ScalosEndNotify(struct NotifyRequest *nr)
 							ReplyMsg((struct Message *) MsgNode);
 							}
 						}
+					DeleteMsgPort(DummyPort);
 					}
 				}
 			}
@@ -938,9 +938,6 @@ void ScalosEndNotify(struct NotifyRequest *nr)
 
 		if (NotifyPort)
 			nr->nr_stuff.nr_Msg.nr_Port = NotifyPort;
-
-		if (DummyPort)
-			DeleteMsgPort(DummyPort);
 		}
 }
 

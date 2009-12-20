@@ -55,6 +55,7 @@ static BOOL SendPopupMenuMsg(struct internalScaWindowTask *iwt, const struct Inp
 static BOOL inputOpen = FALSE;
 static BOOL handlerAdded = FALSE;
 static struct IOStdReq  *inputRequest = NULL;
+static struct MsgPort   *inputPort = NULL;
 static struct Interrupt *inputHandler = NULL;
 
 //----------------------------------------------------------------------------
@@ -62,7 +63,6 @@ static struct Interrupt *inputHandler = NULL;
 BOOL InitInputHandler(void)
 {
 ///
-	struct MsgPort   *inputPort;
 	STATIC_PATCHFUNC(ScalosInputHandler)
 
 	do	{
@@ -119,6 +119,16 @@ void CleanupInputHandler(void)
 			}
 
 		CloseDevice((struct IORequest *) inputRequest);
+		}
+	if (inputRequest)
+		{
+		DeleteExtIO((struct IORequest *) inputRequest);
+		inputRequest = NULL;
+		}
+	if (inputPort)
+		{
+		DeleteMsgPort(inputPort);
+		inputPort = NULL;
 		}
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));

@@ -95,6 +95,8 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 		d1(kprintf("%s/%s/%ld: iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 		d1(kprintf("%s/%s/%ld: MainMenu=%08lx\n", __FILE__, __FUNC__, __LINE__, MainMenu));
 
+		memset(iwt, 0, sizeof(struct internalScaWindowTask));
+
 		ScalosInitSemaphore(&iwt->iwt_ThumbnailIconSemaphore);
 		ScalosInitSemaphore(&iwt->iwt_ThumbGenerateSemaphore);
 

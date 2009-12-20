@@ -897,8 +897,10 @@ static SAVEDS(void) AsyncARexxMenuCmdStart(APTR xarg, struct SM_RunProcess *msg)
 
 		PutMsg(RexxPort, (struct Message *) RxMsg);
 
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		WaitPort(ReplyPort);
-		GetMsg(ReplyPort);
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		(void) GetMsg(ReplyPort);
 		} while (0);
 
 	if (RxMsg)
@@ -2049,15 +2051,19 @@ BOOL ScalosAttemptLockIconListShared(struct internalScaWindowTask *iwt)
 
 BOOL ScalosAttemptLockIconListExclusive(struct internalScaWindowTask *iwt)
 {
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
 	if (ScalosAttemptSemaphore(iwt->iwt_WindowTask.wt_IconSemaphore))
 		{
 		if (iwt->iwt_WindowProcess == (struct Process *) FindTask(NULL))
 			{
 			iwt->iwt_IconListLockedExclusive++;
 			}
+		d1(kprintf("%s/%s/%ld: END(TRUE)\n", __FILE__, __FUNC__, __LINE__));
 		return TRUE;
 		}
 
+	d1(kprintf("%s/%s/%ld: END(FALSE)\n", __FILE__, __FUNC__, __LINE__));
 	return FALSE;
 }
 

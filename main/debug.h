@@ -14,7 +14,7 @@
 /* ------------------------------------------------- */
 #define       DEBUG_SEMAPHORES
 //#define	DEBUG_LOCKS
-//#define	DEBUG_MEMORY
+//#define       DEBUG_MEMORY
 /* ------------------------------------------------- */
 
 #include "Semaphores.h"

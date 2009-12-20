@@ -571,6 +571,7 @@ ULONG ReadMenuPrefs(void)
 			struct ContextNode *cn;
 			struct NewMenu *nm;
 			ULONG Entries;
+			size_t length;
 
 			cn = CurrentChunk(iffHandle);
 			if (NULL == cn)
@@ -612,13 +613,14 @@ ULONG ReadMenuPrefs(void)
 				if (0 == Entries)
 					Entries = 200;
 
-				MainNewMenu = nm = ScalosAllocVecPooled(Entries * sizeof(struct NewMenu) + sizeof(ULONG));
+				length = Entries * sizeof(struct NewMenu) + sizeof(ULONG);
+				MainNewMenu = nm = ScalosAllocVecPooled(length);
 				if (NULL == nm)
 					{
 					Error = ERROR_NO_FREE_STORE;
 					break;
 					}
-
+				memset(MainNewMenu, 0, length);	      //###
 				GenerateMainMenu(MenuChunk->smch_Menu, &nm, 1);
 
 				if (GenerateList_ViewByIcon.smmx_NewMenu)
