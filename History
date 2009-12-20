@@ -2556,6 +2556,8 @@ Additions/changes:
 
 -------------------wbrexx.plugin--------------------------------------------
 
+ 39.22	20091220	jl	- Bugfix: in non-emulation mode, an allocated
+				  signal was never freed.
  39.21	20091101	jl	- Improvement: Added support for "HELP PROMPT".
  39.20	20081219	jl	- Bugfix: "menu invoke" always required a window, even
 				  for menu commands that do not work on
