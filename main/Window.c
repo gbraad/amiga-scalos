@@ -1793,6 +1793,8 @@ struct ScalosMenuTree *CloneMenuTree(const struct ScalosMenuTree *mtr)
 			return NULL;
 			}
 
+		mtrNew->mtre_Next = mtrNew->mtre_tree = NULL;
+
 		AppendToMenuTree(&newNodeList, mtrNew);
 		d1(KPrintF("%s/%s/%ld:  mtrNew=%08lx\n", __FILE__, __FUNC__, __LINE__, mtrNew));
 
@@ -2180,6 +2182,7 @@ struct WindowHistoryEntry *WindowAddHistoryEntry(struct internalScaWindowTask *i
 		if (NULL == whe)
 			break;
 
+		whe->whe_IconList = NULL;
 		whe->whe_Node.ln_Name = whe->whe_Path;
 		strcpy(whe->whe_Node.ln_Name, FullPath);
 

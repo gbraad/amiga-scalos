@@ -526,6 +526,10 @@ void *ScalosAllocMessage(size_t size);
 void ScalosFreeMessage(void *node);
 struct AnchorPath *ScalosAllocAnchorPath(ULONG Flags, size_t MaxPathLen);
 void ScalosFreeAnchorPath(struct AnchorPath *ap);
+struct InfoData *ScalosAllocInfoData(void);
+void ScalosFreeInfoData(struct InfoData **pId);
+STRPTR AllocPathBuffer(void);
+void FreePathBuffer(STRPTR Buffer);
 ///
 /* ------------------------------------------------- */
 
@@ -671,8 +675,6 @@ void FreeIconNode(struct internalScaWindowTask *iwt, struct ScaIconNode **IconLi
 BOOL TestRegionNotEmpty(const struct Region *region);
 void RefreshIconList(struct internalScaWindowTask *iwt, struct ScaIconNode *in, struct Region *DrawingRegion);
 void RefreshIcons(struct internalScaWindowTask *iwt, struct Region *DrawingRegion);
-STRPTR AllocPathBuffer(void);
-void FreePathBuffer(STRPTR Buffer);
 ULONG ChipMemAttr(void);
 LONG ScaSameLock(BPTR Lock1, BPTR Lock2);
 void DisplayScreenTitleError(struct internalScaWindowTask *iwt, ULONG MsgId);
@@ -691,8 +693,6 @@ BOOL IsShowAll(const struct ScaWindowStruct *ws);
 BOOL IsShowAllType(UWORD ShowType);
 void ScalosEndNotify(struct NotifyRequest *nr);
 void SubtractDateStamp(struct DateStamp *from, const struct DateStamp *to);
-struct InfoData *ScalosAllocInfoData(void);
-void ScalosFreeInfoData(struct InfoData **pId);
 
 #if !defined(__SASC) && !defined(__MORPHOS__)
 // SAS/C compatibility functions

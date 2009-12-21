@@ -495,7 +495,10 @@ static struct DevListEntry *CreateDevListEntry(const struct DosList *dlist)
 		dle->dle_WaitCount = 0;
 		dle->dle_InfoData = ScalosAllocInfoData();
 		dle->dle_InfoData->id_DiskType = ID_NO_DISK_PRESENT;
-
+		dle->dle_DosPacket = NULL;
+		dle->dle_DeviceName = NULL;
+		dle->dle_VolumeName = NULL;
+		
 		switch (dlist->dol_Type)
 			{
 		case DLT_VOLUME:

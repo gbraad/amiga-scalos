@@ -114,6 +114,7 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 		ULONG WindowFlags;
 		CONST_STRPTR clp;
 		BOOL Found;
+		size_t length;
 
 		ReturnWs = (struct ScaWindowStruct **) GetTagData(SCA_WindowStruct, (ULONG)NULL, TagList);
 		d1(KPrintF("%s/%s/%ld: ReturnWs=%08lx\n", __FILE__, __FUNC__, __LINE__, ReturnWs));
@@ -485,12 +486,14 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 		msgStart->ScalosMessage.sm_Message.mn_ReplyPort = ReplyPort;
 		msgStart->WindowStruct = wsNew;
 
-		wsNew->ws_WindowTaskName = ScalosAlloc(50 + strlen(wsNew->ws_Name));
+		length = 50 + strlen(wsNew->ws_Name);
+
+		wsNew->ws_WindowTaskName = ScalosAlloc(length);
 		if (wsNew->ws_WindowTaskName)
 			{
 			TaskName = wsNew->ws_WindowTaskName;
 
-			ScaFormatStringMaxLength(TaskName, 50 + strlen(wsNew->ws_Name),
+			ScaFormatStringMaxLength(TaskName, length,
 				"Scalos_Window_Task <%s>", (ULONG) wsNew->ws_Name);
 			}
 		else

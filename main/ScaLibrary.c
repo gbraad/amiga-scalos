@@ -797,6 +797,8 @@ LIBFUNC_P6(struct AppObject *, sca_NewAddAppMenuItem,
 			break;
 
 		memset(CommKey, 0, sizeof(CommKey));
+		memset(appo->appo_object.appoo_MenuInfo, 0, sizeof(struct AppMenuInfo));
+
 		CommKey[0] = CheckMenuCommandString(CmdString);
 
 		NewList(&appo->appo_object.appoo_MenuInfo->ami_ChildList);

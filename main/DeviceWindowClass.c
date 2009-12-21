@@ -1464,6 +1464,8 @@ static BOOL CreateSbi(struct ScaIconNode *DevIn, struct ScaIconNode *in)
 		if (NULL == bdi->sbi_NotifyReq)
 			break;
 
+		memset(bdi->sbi_NotifyReq, 0, sizeof(struct NotifyRequest));
+
 		d1(kprintf("%s/%s/%ld: bdi=%08lx  NotifyReq=%08lx\n", \
 				__FILE__, __FUNC__, __LINE__, bdi, bdi->sbi_NotifyReq));
 

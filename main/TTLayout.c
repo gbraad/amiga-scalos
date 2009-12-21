@@ -101,6 +101,8 @@ struct ttDef *TT_CreateItemA(struct TagItem *TagList)
 	if (NULL == ttd)
 		return NULL;
 
+	memset(ttd, 0, sizeof(struct ttDef));
+
 	ttd->ttd_Sub = ttd->ttd_Next = NULL;
 	ttd->ttd_FrameType = MF_FRAME_NONE;
 
@@ -113,8 +115,6 @@ struct ttDef *TT_CreateItemA(struct TagItem *TagList)
 	ttd->ttd_SpaceRight = 0;
 	ttd->ttd_SpaceTop = 0;
 	ttd->ttd_SpaceBottom = 0;
-
-	memset(&ttd->ttd_TTFont, 0, sizeof(ttd->ttd_TTFont));
 
 	if (FindTagItem(TT_TTFont, TagList))
 		{

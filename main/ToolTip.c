@@ -823,6 +823,8 @@ static SAVEDS(void) INTERRUPT IconToolTipProcess(struct ToolTipStart *startArg)
 		if (NULL == sData)
 			break;
 
+		memset(sData, 0, sizeof(struct ToolTipSignalData));
+
 		SetProgramName((STRPTR)TOOLTIP_PROCESSNAME);
 		sData->ttsd_Process = (struct Process *) FindTask(NULL);
 		sData->ttsd_Process->pr_Task.tc_Node.ln_Name = (STRPTR) TOOLTIP_PROCESSNAME;
@@ -2407,6 +2409,7 @@ static struct ttDef *CloneToolTipDef(const struct ttDef *ttdOrig)
 
 				if (ttd->ttd_Contents.ttc_Image)
 					{
+					memset(ttd->ttd_Contents.ttc_Image, 0, sizeof(struct DatatypesImage));
 					ttd->ttd_Contents.ttc_Image = CreateDatatypesImage(ttdOrig->ttd_Contents.ttc_Image->dti_Filename, 0);
 					}
 				}
