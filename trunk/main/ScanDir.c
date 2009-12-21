@@ -1704,6 +1704,8 @@ static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *ril
 	if (ise)
 		{
 		ise->ise_IconObj = NULL;
+		ise->ise_IconPtr = NULL;
+		ise->ise_ObjPtr = NULL;
 
 		d1(kprintf("%s/%s/%ld: <%s> comment=<%s>\n", __FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_Comment));
 

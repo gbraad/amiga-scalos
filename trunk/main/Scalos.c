@@ -425,32 +425,6 @@ ULONG ChipMemAttr(void)
 }
 
 
-STRPTR AllocPathBuffer(void)
-{
-	STRPTR Buffer;
-
-	d1(kprintf("%s/%s/%ld: Max_PathLen=%ld Task=%08lx\n", __FILE__, __FUNC__, __LINE__,
-		Max_PathLen, FindTask(NULL)));
-
-	Buffer = (STRPTR) ScalosAlloc(Max_PathLen);
-
-	d1(kprintf("%s/%s/%ld: String=%08lx\n", __FILE__, __FUNC__, __LINE__,
-		Buffer));
-
-	return Buffer;
-}
-
-
-void FreePathBuffer(STRPTR Buffer)
-{
-	d1(kprintf("%s/%s/%ld: Buffer=%08lx\n", __FILE__, __FUNC__, __LINE__,
-		Buffer));
-
-	if (Buffer)
-		ScalosFree(Buffer);
-}
-
-
 void FreeIconList(struct internalScaWindowTask *iwt, struct ScaIconNode **IconList)
 {
 	while (*IconList)
@@ -594,6 +568,8 @@ LONG ScalosTagListInit(struct ScalosTagList *tagList)
 	d1(kprintf("%s/%s/%ld: ALLOC TagList=%08lx\n", __FILE__, __FUNC__, __LINE__, tagList->stl_TagList));
 	if (NULL == tagList->stl_TagList)
 		Result = ERROR_NO_FREE_STORE;
+	else
+		tagList->stl_TagList[0].ti_Tag = TAG_END;
 
 	return Result;
 }
@@ -958,32 +934,6 @@ void SubtractDateStamp(struct DateStamp *from, const struct DateStamp *to)
 		from->ds_Minute += 60 * 24;
 		}
 	from->ds_Days -= to->ds_Days;
-}
-
-// ----------------------------------------------------------
-
-struct InfoData *ScalosAllocInfoData(void)
-{
-#ifdef __amigaos4__
-	return (struct InfoData *) AllocDosObject(DOS_INFODATA, NULL);
-#else // __amigaos4__
-	return (struct InfoData *) ScalosAlloc(sizeof(struct InfoData));
-#endif //__amigaos4__
-}
-
-// ----------------------------------------------------------
-
-void ScalosFreeInfoData(struct InfoData **pId)
-{
-	if (*pId)
-		{
-#ifdef __amigaos4__
-		FreeDosObject(DOS_INFODATA, *pId);
-#else // __amigaos4__
-		ScalosFree(*pId);
-#endif //__amigaos4__
-		*pId = NULL;
-		}
 }
 
 // ----------------------------------------------------------

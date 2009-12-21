@@ -573,4 +573,58 @@ void ScalosFreeAnchorPath(struct AnchorPath *ap)
 
 // ----------------------------------------------------------
 
+struct InfoData *ScalosAllocInfoData(void)
+{
+#ifdef __amigaos4__
+	return (struct InfoData *) AllocDosObject(DOS_INFODATA, NULL);
+#else // __amigaos4__
+	return (struct InfoData *) ScalosAlloc(sizeof(struct InfoData));
+#endif //__amigaos4__
+}
+
+// ----------------------------------------------------------
+
+void ScalosFreeInfoData(struct InfoData **pId)
+{
+	if (*pId)
+		{
+#ifdef __amigaos4__
+		FreeDosObject(DOS_INFODATA, *pId);
+#else // __amigaos4__
+		ScalosFree(*pId);
+#endif //__amigaos4__
+		*pId = NULL;
+		}
+}
+
+// ----------------------------------------------------------
+
+STRPTR AllocPathBuffer(void)
+{
+	STRPTR Buffer;
+
+	d1(kprintf("%s/%s/%ld: Max_PathLen=%ld Task=%08lx\n", __FILE__, __FUNC__, __LINE__,
+		Max_PathLen, FindTask(NULL)));
+
+	Buffer = (STRPTR) ScalosAlloc(Max_PathLen);
+
+	d1(kprintf("%s/%s/%ld: String=%08lx\n", __FILE__, __FUNC__, __LINE__,
+		Buffer));
+
+	return Buffer;
+}
+
+// ----------------------------------------------------------
+
+void FreePathBuffer(STRPTR Buffer)
+{
+	d1(kprintf("%s/%s/%ld: Buffer=%08lx\n", __FILE__, __FUNC__, __LINE__,
+		Buffer));
+
+	if (Buffer)
+		ScalosFree(Buffer);
+}
+
+// ----------------------------------------------------------
+
 

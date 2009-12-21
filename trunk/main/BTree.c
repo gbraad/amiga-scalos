@@ -37,6 +37,7 @@ struct BTree *BTreeCreate(void (*DisposeData)(void *),
 			   int (*Compare)(const void *, const void *))
 {
 	struct BTree *t = ScalosAlloc(sizeof(struct BTree));
+
         t->btr_Root = NULL;
         t->btr_NodeCount = 0;
 	t->btr_DisposeData = DisposeData;
@@ -105,8 +106,7 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 	        node->avln_Data = data;
 	        node->avln_Balance = BALANCED;
 	        node->avln_Hidden = 0;
-	        node->avln_Left = NULL;
-	        node->avln_Right = NULL;
+		node->avln_Left = node->avln_Right = NULL;
 	        *t = node;
 
 		return FALSE;
@@ -124,8 +124,7 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 		                node->avln_Data = data;
 		                node->avln_Balance = BALANCED;
 		                node->avln_Hidden = 0;
-		                node->avln_Left = NULL;
-		                node->avln_Right = NULL;
+				node->avln_Left = node->avln_Right = NULL;
 		                (*t)->avln_Left = node;
 				*balanced = FALSE;
 				}
@@ -163,8 +162,7 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 		                node->avln_Data = data;
 		                node->avln_Balance = BALANCED;
 		                node->avln_Hidden = 0;
-		                node->avln_Left = NULL;
-		                node->avln_Right = NULL;
+				node->avln_Left = node->avln_Right = NULL;
 		                (*t)->avln_Right = node;
 				*balanced = FALSE;
 				}

@@ -78,6 +78,7 @@ static void CudDisposeData(void *data);
 static void CudDisposeKey(void *key);
 static int CudCompare(const void *key1, const void *key2);
 static void RefreshTextWindow(struct internalScaWindowTask *iwt);
+static struct CheckUpdateData *CreateCheckUpdateData(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 
 //----------------------------------------------------------------------------
 
@@ -1114,22 +1115,10 @@ static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesL
 
 	for (in=iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 		{
-		struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
+		struct CheckUpdateData *cud = CreateCheckUpdateData(iwt, in);
 
 		if (cud)
 			{
-			ULONG SoloIcon = FALSE;
-
-			GetAttr(TIDTA_SoloIcon, in->in_Icon, &SoloIcon);
-
-			cud->cud_iwt = iwt;
-			cud->cud_iseIcon = NULL;
-			cud->cud_iseObject = NULL;
-			cud->cud_IconNode = in;
-			cud->cud_FileName = NULL;
-			cud->cud_IconName = GetIconName(in);
-			cud->cud_SoloIcon = SoloIcon;
-
 			AddTail(&cfl->cfl_FilesList, &cud->cud_Node);
 
 			BTreeInsert(cfl->cfl_FilesTree, cud->cud_IconName, cud);
@@ -1145,22 +1134,10 @@ static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesL
 			{
 			if (in->in_Lock && LOCK_SAME == ScaSameLock(in->in_Lock, dirLock))
 				{
-				struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
+				struct CheckUpdateData *cud = CreateCheckUpdateData(iwt, in);
 
 				if (cud)
 					{
-					ULONG SoloIcon = FALSE;
-
-					GetAttr(TIDTA_SoloIcon, in->in_Icon, &SoloIcon);
-
-					cud->cud_iwt = iwt;
-					cud->cud_iseIcon = NULL;
-					cud->cud_iseObject = NULL;
-					cud->cud_IconNode = in;
-					cud->cud_FileName = NULL;
-					cud->cud_IconName = GetIconName(in);
-					cud->cud_SoloIcon = SoloIcon;
-
 					AddTail(&cfl->cfl_FilesList, &cud->cud_Node);
 
 					BTreeInsert(cfl->cfl_FilesTree, cud->cud_IconName, cud);
@@ -1180,22 +1157,10 @@ static void DeviceWindowBuildCUDIconList(struct internalScaWindowTask *iwt, stru
 		{
 		if (in->in_Icon)
 			{
-			struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
+			struct CheckUpdateData *cud = CreateCheckUpdateData(iwt, in);
 
 			if (cud)
 				{
-				ULONG SoloIcon = FALSE;
-
-				GetAttr(TIDTA_SoloIcon, in->in_Icon, &SoloIcon);
-
-				cud->cud_iwt = iwt;
-				cud->cud_iseIcon = NULL;
-				cud->cud_iseObject = NULL;
-				cud->cud_IconNode = in;
-				cud->cud_FileName = NULL;
-				cud->cud_IconName = GetIconName(in);
-				cud->cud_SoloIcon = SoloIcon;
-
 				AddTail(&cfl->cfl_FilesList, &cud->cud_Node);
 
 				BTreeInsert(cfl->cfl_FilesTree, cud->cud_IconName, cud);
@@ -1392,12 +1357,9 @@ static void AddToCheckUpdateFilesList(struct internalScaWindowTask *iwt,
 		{
 		d1(kprintf("%s/%s/%ld: FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, ise->ise_Fib.fib_FileName));
 
-		cud = ScalosAlloc(sizeof(struct CheckUpdateData));
+		cud = CreateCheckUpdateData(iwt, NULL);
 		if (cud)
 			{
-			cud->cud_iwt = iwt;
-			cud->cud_IconNode = NULL;
-
 			AddTail(&cfl->cfl_FilesList, &cud->cud_Node);
 
 			BTreeInsert(cfl->cfl_FilesTree, ise->ise_Fib.fib_FileName, cud);
@@ -1792,4 +1754,27 @@ static void RefreshTextWindow(struct internalScaWindowTask *iwt)
 }
 
 
+static struct CheckUpdateData *CreateCheckUpdateData(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+{
+	struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
+
+	if (cud)
+		{
+		ULONG SoloIcon = FALSE;
+
+		cud->cud_iwt = iwt;
+		cud->cud_iseIcon = NULL;
+		cud->cud_iseObject = NULL;
+		cud->cud_IconNode = in;
+		cud->cud_FileName = NULL;
+		cud->cud_IconName = GetIconName(in);
+
+		if (in)
+			GetAttr(TIDTA_SoloIcon, in->in_Icon, &SoloIcon);
+
+		cud->cud_SoloIcon = SoloIcon;
+		}
+
+	return cud;
+}
 

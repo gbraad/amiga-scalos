@@ -1287,6 +1287,7 @@ static LONG FtInternalCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 
 		mTree->mtre_type = SCAMENUTYPE_Command;
 		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->MenuCombo.MenuCommand.mcom_type = SCAMENUCMDTYPE_Command;
 		mTree->MenuCombo.MenuCommand.mcom_name = AllocCopyString(cmdName);
@@ -1323,6 +1324,7 @@ static LONG FtWbCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 
 		mTree->mtre_type = SCAMENUTYPE_Command;
 		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->MenuCombo.MenuCommand.mcom_type = SCAMENUCMDTYPE_Workbench;
 		mTree->MenuCombo.MenuCommand.mcom_name = AllocCopyString(cmdName);
@@ -1367,6 +1369,7 @@ static LONG FtARexxCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 
 		mTree->mtre_type = SCAMENUTYPE_Command;
 		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->MenuCombo.MenuCommand.mcom_type = SCAMENUCMDTYPE_ARexx;
 		mTree->MenuCombo.MenuCommand.mcom_name = AllocCopyString(cmdName);
@@ -1411,6 +1414,7 @@ static LONG FtCliCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 
 		mTree->mtre_type = SCAMENUTYPE_Command;
 		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->MenuCombo.MenuCommand.mcom_type = SCAMENUCMDTYPE_AmigaDOS;
 		mTree->MenuCombo.MenuCommand.mcom_name = AllocCopyString(cmdName);
@@ -1452,6 +1456,7 @@ static LONG FtPluginCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 
 		mTree->mtre_type = SCAMENUTYPE_Command;
 		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->MenuCombo.MenuCommand.mcom_type = SCAMENUCMDTYPE_Plugin;
 		mTree->MenuCombo.MenuCommand.mcom_name = AllocCopyString(cmdName);
@@ -1484,6 +1489,7 @@ static LONG FtIconWindowCmd(struct FileTypeDef *ftd, LONG *ArgArray)
 
 		mTree->mtre_type = SCAMENUTYPE_Command;
 		mTree->mtre_Next = NULL;
+		mTree->mtre_tree = NULL;
 
 		mTree->MenuCombo.MenuCommand.mcom_type = SCAMENUCMDTYPE_IconWindow;
 		mTree->MenuCombo.MenuCommand.mcom_name = AllocCopyString(cmdName);
@@ -1938,6 +1944,8 @@ static struct FileTypeDef *CreateFileTypeDef(void)
 		if (NULL == ftd)
 			break;
 
+		memset(ftd, 0, sizeof(struct FileTypeDef));
+
 		ftd->ftd_CurrentMenuList = &ftd->ftd_MenuList;
 		NewList(ftd->ftd_CurrentMenuList);
 
@@ -2132,6 +2140,7 @@ static struct FileTypeMenuItem *NewFileTypeMenuItem(void)
 
 	NewList(&newFtmi->ftmi_SubItemList);
 	newFtmi->ftmi_MenuTree = NULL;
+	newFtmi->ftmi_Parent = NULL;
 
 	if (RETURN_OK != ScalosTagListInit(&newFtmi->ftmi_TagList))
 		{
@@ -2183,6 +2192,7 @@ static struct FileTypeTTItem *NewFileTypeTTItem(enum TTItemTypes type)
 	if (NULL == newTTi)
 		return NULL;
 
+	newTTi->ftti_Parent = NULL;
 	newTTi->ftti_HideHookString = NULL;
 	newTTi->ftti_Type = type;
 
@@ -2387,14 +2397,15 @@ struct FileTypeFileInfo *NewFileTypeFileInfo(struct FileTypeDef *ftd, BPTR fh, C
 		if (NULL == ffi)
 			break;
 
+		ffi->ffi_NotifyNode = NULL;
+
 		ffi->ffi_Name = AllocCopyString(Name);
 		if (NULL == ffi->ffi_Name)
 			break;
 
 		ffi->ffi_Node.ln_Name = ffi->ffi_Name;
 
-		if (NULL == ffi->ffi_Path)
-			ffi->ffi_Path = AllocPathBuffer();
+		ffi->ffi_Path = AllocPathBuffer();
 
 		d1(kprintf("%s/%s/%ld:  ffi->Path=%08lx\n", __FILE__, __FUNC__, __LINE__, ffi->ffi_Path));
 		if (NULL == ffi->ffi_Path)

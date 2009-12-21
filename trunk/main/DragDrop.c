@@ -540,6 +540,8 @@ static void DropStart(struct internalScaWindowTask *iwt, struct internalScaWindo
 		if (NULL == Buffer)
 			break;
 
+		memset(Buffer, 0, NumberOfWbArgs * sizeof(struct WBArg));
+
 		// Add destination as first argument
 		if (!DoMethod(iwtDest->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg, inDest, Buffer))
 			break;

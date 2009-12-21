@@ -1406,6 +1406,9 @@ static void ScalosMain(LONG *ArgArray)
 		LastScreenTitleBuffer = ScalosAlloc(CurrentPrefs.pref_ScreenTitleSize);
 		d1(KPrintF("%s/%s/%ld: LastScreenTitleBuffer=%08lx\n", __FILE__, __FUNC__, __LINE__, LastScreenTitleBuffer));
 
+		if (NULL == LastScreenTitleBuffer)
+			break;
+
 		ScreenTitleObject = SCA_NewScalosObjectTags("Title.sca",
 			SCCA_Title_Format, (ULONG) CurrentPrefs.pref_ScreenTitle,
 			TAG_END);

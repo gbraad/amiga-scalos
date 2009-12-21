@@ -604,11 +604,9 @@ static void UpdateSplash(struct SplashInstance *inst, CONST_STRPTR text, BOOL Fo
 		SplashUpdateTextGadget(inst->spli_SplashWindow, inst->spli_TextGadget, text);
 
 		if (inst->spli_LastSplashText)
-			ScalosFree(inst->spli_LastSplashText);
+			FreeCopyString(inst->spli_LastSplashText);
 
-		inst->spli_LastSplashText = ScalosAlloc(strlen(text) + 1);
-		if (inst->spli_LastSplashText)
-			strcpy(inst->spli_LastSplashText, text);
+		inst->spli_LastSplashText = AllocCopyString(text);
 		}
 ///
 }
@@ -707,7 +705,7 @@ static void CloseSplash(struct SplashInstance *inst)
 
 	if (inst->spli_LastSplashText)
 		{
-		ScalosFree(inst->spli_LastSplashText);
+		FreeCopyString(inst->spli_LastSplashText);
 		inst->spli_LastSplashText = NULL;
 		}
 	if (inst->spli_VersionGadget)

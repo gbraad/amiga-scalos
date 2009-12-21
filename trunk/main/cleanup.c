@@ -48,12 +48,11 @@ struct TilesInfo
 	{
 	ULONG tli_WindowWidth;		// Width of tile array, in window coordinates
 	ULONG tli_WindowHeight;         // Height of tile array, in window coordinates
-	UBYTE *tli_TileMemory;	       	// Array of allocated tiles, one bit per tile
 	ULONG tli_NumberOfRows;		// Total number of rows in tile array
 	ULONG tli_NumberOfColumns;      // Total number of columns in tile array
 	ULONG tli_BytesPerRow;		// Number of octets per row in tile array
-	size_t tli_AllocSize;		// Number of bytes allocated for tli_TileMemory
 	enum PlacementMode tli_Placement;
+	UBYTE tli_TileMemory[1];        // Array of allocated tiles, one bit per tile
 	};
 
 //----------------------------------------------------------------------------
@@ -293,6 +292,8 @@ static struct TilesInfo *CreateTilesInfo(const struct internalScaWindowTask *iwt
 	LONG TilesArrayWidth, TilesArrayHeight;
 	ULONG NumberOfColumns;
 	ULONG NumberOfRows;
+	size_t TilesLength;
+	ULONG BytesPerRow;
 
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
@@ -326,7 +327,10 @@ static struct TilesInfo *CreateTilesInfo(const struct internalScaWindowTask *iwt
 	if (0 == NumberOfColumns || 0 == NumberOfRows)
 		return NULL;
 
-	tli = ScalosAlloc(sizeof(struct TilesInfo));
+	BytesPerRow = (NumberOfColumns + CHAR_BIT - 1) / CHAR_BIT;	// round up to ceiling
+	TilesLength = NumberOfRows * BytesPerRow;
+
+	tli = ScalosAlloc(sizeof(struct TilesInfo) + TilesLength);
 	if (NULL == tli)
 		return NULL;
 
@@ -334,22 +338,14 @@ static struct TilesInfo *CreateTilesInfo(const struct internalScaWindowTask *iwt
 	tli->tli_NumberOfRows = NumberOfRows;
 	tli->tli_WindowWidth = TilesArrayWidth;
 	tli->tli_WindowHeight = TilesArrayHeight;
-	tli->tli_BytesPerRow = (NumberOfColumns + CHAR_BIT - 1) / CHAR_BIT;	// round up to ceiling
+	tli->tli_BytesPerRow = BytesPerRow;		// round up to ceiling
 	tli->tli_Placement = Placement;
-	tli->tli_AllocSize = tli->tli_NumberOfRows * tli->tli_BytesPerRow;
 
 	d1(KPrintF("%s/%s/%ld: NumberOfColumns=%lu  NumberOfRows=%lu  AllocSize=%lu  BytesPerRow=%lu\n", \
-		__FILE__, __FUNC__, __LINE__, NumberOfColumns, NumberOfRows, tli->tli_AllocSize, tli->tli_BytesPerRow));
-
-	tli->tli_TileMemory = ScalosAlloc(tli->tli_AllocSize);
-	if (NULL == tli->tli_TileMemory)
-		{
-		DisposeTilesInfo(tli);
-		return NULL;
-		}
+		__FILE__, __FUNC__, __LINE__, NumberOfColumns, NumberOfRows, tli->tli_BytesPerRow));
 
 	// mark all tiles as free
-	memset(tli->tli_TileMemory, 0, tli->tli_AllocSize);
+	memset(tli->tli_TileMemory, 0, TilesLength);
 
 	d1(KPrintF("%s/%s/%ld: END  tli=%08lx\n", __FILE__, __FUNC__, __LINE__, tli));
 
@@ -360,11 +356,6 @@ static struct TilesInfo *CreateTilesInfo(const struct internalScaWindowTask *iwt
 static void DisposeTilesInfo(struct TilesInfo *tli)
 {
 	d1(KPrintF("%s/%s/%ld: START  tli=%08lx\n", __FILE__, __FUNC__, __LINE__, tli));
-	if (tli->tli_TileMemory)
-		{
-		ScalosFree(tli->tli_TileMemory);
-		tli->tli_TileMemory = NULL;
-		}
 	ScalosFree(tli);
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }

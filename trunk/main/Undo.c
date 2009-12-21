@@ -368,6 +368,7 @@ static struct UndoStep *UndoCreateStep(void)
 		NewList(&ust->ust_EventList);
 		ust->ust_EventCount = 0;
 		ust->ust_Description = NULL;
+		ust->ust_FileTransObj = NULL;
 		} while (0);
 
 	return ust;
@@ -414,6 +415,8 @@ static struct UndoEvent *UndoCreateEvent(void)
 		uev = ScalosAlloc(sizeof(struct UndoEvent));
 		if (NULL == uev)
 			break;
+
+		memset(uev, 0, sizeof(struct UndoEvent));
 
 		uev->uev_UndoHook = &DummyHook;
 		uev->uev_RedoHook = &DummyHook;

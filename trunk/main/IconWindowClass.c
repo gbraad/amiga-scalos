@@ -3304,7 +3304,11 @@ static ULONG IconWindowClass_StartNotify(Class *cl, Object *o, Msg msg)
 			if (inst->ici_NotifyReq)
 				ScalosEndNotify(inst->ici_NotifyReq);	// cancel old notification
 			else
+				{
 				inst->ici_NotifyReq = ScalosAlloc(sizeof(struct NotifyRequest));
+				if (inst->ici_NotifyReq)
+					memset(inst->ici_NotifyReq, 0, sizeof(struct NotifyRequest));
+				}
 			if (NULL == inst->ici_NotifyReq)
 				break;
 

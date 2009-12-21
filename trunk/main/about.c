@@ -219,6 +219,8 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 		if (NULL == abi)
 			break;
 
+		memset(abi, 0, sizeof(struct AboutInfo));
+
 		NewList(&abi->abi_GadgetList);
 
 		d1(KPrintF("%s/%s/%ld: pref_UseScreenTTFont=%ld  FontDesc=<%s>\n", \

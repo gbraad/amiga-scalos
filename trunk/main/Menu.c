@@ -620,7 +620,7 @@ ULONG ReadMenuPrefs(void)
 					Error = ERROR_NO_FREE_STORE;
 					break;
 					}
-				memset(MainNewMenu, 0, length);	      //###
+				memset(MainNewMenu, 0, length);
 				GenerateMainMenu(MenuChunk->smch_Menu, &nm, 1);
 
 				if (GenerateList_ViewByIcon.smmx_NewMenu)

@@ -483,6 +483,11 @@ static struct ControlBarMember *ControlBarCreateViewByCycle(struct internalScaWi
 		if (NULL == Member)
 			break;
 
+		Member->cbm_NormalImage = NULL;
+		Member->cbm_SelectedImage = NULL;
+		Member->cbm_smcom = NULL;	// for action buttons, holds pointer to MenuCommandTable entry
+		Member->cbm_DisableFunc = NULL;
+
 		// Frame image is optional
 		Member->cbm_FrameImage = SCA_NewScalosObjectTags("FrameImage.sca",
 			FRAMEIMG_ImageName, (ULONG) "THEME:Window/ControlBar/ViewByCycleFrame",
@@ -542,6 +547,11 @@ static struct ControlBarMember *ControlBarCreateShowModeCycle(struct internalSca
 		Member = ScalosAlloc(sizeof(struct ControlBarMember));
 		if (NULL == Member)
 			break;
+
+		Member->cbm_NormalImage = NULL;
+		Member->cbm_SelectedImage = NULL;
+		Member->cbm_smcom = NULL;	// for action buttons, holds pointer to MenuCommandTable entry
+		Member->cbm_DisableFunc = NULL;
 
 		// Frame image is optional
 		Member->cbm_FrameImage = SCA_NewScalosObjectTags("FrameImage.sca",
