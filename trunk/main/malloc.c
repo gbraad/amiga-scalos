@@ -540,7 +540,6 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define SPIN_LOCKS_AVAILABLE 0
 
 #define MUNMAP_DEFAULT(a, s)  	(FreeVec((a)), 0)
-#define MMAP_PROT            	0
 #define MMAP_DEFAULT(s)       	AllocVec((s), MEMF_PUBLIC)
 #define	DIRECT_MMAP_DEFAULT(s)	AllocVec((s), MEMF_PUBLIC)
 
