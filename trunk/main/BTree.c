@@ -38,11 +38,14 @@ struct BTree *BTreeCreate(void (*DisposeData)(void *),
 {
 	struct BTree *t = ScalosAlloc(sizeof(struct BTree));
 
-        t->btr_Root = NULL;
-        t->btr_NodeCount = 0;
-	t->btr_DisposeData = DisposeData;
-	t->btr_DisposeKey = DisposeKey;
-	t->btr_Compare = Compare;
+	if (t)
+		{
+	        t->btr_Root = NULL;
+	        t->btr_NodeCount = 0;
+		t->btr_DisposeData = DisposeData;
+		t->btr_DisposeKey = DisposeKey;
+		t->btr_Compare = Compare;
+		}
         
         return t;
 }
@@ -102,12 +105,16 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 	if (!(*t))
 		{
 		node = ScalosAlloc(sizeof(struct BTAVLnode));
-	        node->avln_Key = key;
-	        node->avln_Data = data;
-	        node->avln_Balance = BALANCED;
-	        node->avln_Hidden = 0;
-		node->avln_Left = node->avln_Right = NULL;
-	        *t = node;
+
+		if (node)
+			{
+		        node->avln_Key = key;
+		        node->avln_Data = data;
+		        node->avln_Balance = BALANCED;
+		        node->avln_Hidden = 0;
+			node->avln_Left = node->avln_Right = NULL;
+		        *t = node;
+			}
 
 		return FALSE;
 		}
@@ -120,13 +127,17 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 			if (!(*t)->avln_Left)
 				{
 				node = ScalosAlloc(sizeof(struct BTAVLnode));
-		                node->avln_Key = key;
-		                node->avln_Data = data;
-		                node->avln_Balance = BALANCED;
-		                node->avln_Hidden = 0;
-				node->avln_Left = node->avln_Right = NULL;
-		                (*t)->avln_Left = node;
-				*balanced = FALSE;
+
+				if (node)
+					{
+			                node->avln_Key = key;
+			                node->avln_Data = data;
+			                node->avln_Balance = BALANCED;
+			                node->avln_Hidden = 0;
+					node->avln_Left = node->avln_Right = NULL;
+			                (*t)->avln_Left = node;
+					*balanced = FALSE;
+					}
 				}
 			else
 				{
@@ -158,13 +169,16 @@ static BOOL BTreeInternalInsert(struct BTree *tree, struct BTAVLnode **t, BOOL *
 			if (!(*t)->avln_Right)
 				{
 				node = ScalosAlloc(sizeof(struct BTAVLnode));
-		                node->avln_Key = key;
-		                node->avln_Data = data;
-		                node->avln_Balance = BALANCED;
-		                node->avln_Hidden = 0;
-				node->avln_Left = node->avln_Right = NULL;
-		                (*t)->avln_Right = node;
-				*balanced = FALSE;
+				if (node)
+					{
+					node->avln_Key = key;
+					node->avln_Data = data;
+					node->avln_Balance = BALANCED;
+					node->avln_Hidden = 0;
+					node->avln_Left = node->avln_Right = NULL;
+					(*t)->avln_Right = node;
+					*balanced = FALSE;
+					}
 				}
 			else
 				{
