@@ -1477,6 +1477,10 @@ static void ScalosMain(LONG *ArgArray)
 				break;
 			}
 
+#if defined(__MORPHOS__)
+		iInfos.xii_Layers3D = NULL != FindTask("« LayerInfoTask »");
+#endif //defined(__MORPHOS__)
+
 		d1(KPrintF("%s/%s/%ld: ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
 
 		LINE_TRACE;
