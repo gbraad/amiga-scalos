@@ -72,7 +72,7 @@ SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct 
 	msgCopy = *msg;
 
 #if defined(__MORPHOS__)
-	if (FindTask("« LayerInfoTask »"))
+	if (iInfos.xii_Layers3D)
 		{
 		LONG xOffset = iwt->iwt_WindowTask.wt_Window->LeftEdge % 16;
 

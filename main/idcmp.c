@@ -201,7 +201,7 @@ ULONG IDCMPRefreshWindow(struct internalScaWindowTask *iwt, struct IntuiMessage 
 		iwt->iwt_WindowTask.wt_Window->WLayer->Flags));
 
 #if defined(__MORPHOS__)
-	if (NULL == FindTask("« LayerInfoTask »"))
+	if (!iInfos.xii_Layers3D)
 		RefreshWindowFrame(iwt->iwt_WindowTask.wt_Window);
 #endif /* __MORPHOS__ */
 

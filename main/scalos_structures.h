@@ -1342,6 +1342,9 @@ struct extendedScaInternInfos
 	struct ScaInternInfos xii_iinfos;		// public part of ScaInternInfos
 	struct GlobalGadgetDef xii_GlobalGadgetUnderPointer;
 	struct DragHandle *xii_GlobalDragHandle;
+#if defined(__MORPHOS__)
+	BOOL xii_Layers3D;
+#endif //defined(__MORPHOS__)
 };
 
 //---------------------------------------------------------------
