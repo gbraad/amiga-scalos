@@ -3907,6 +3907,7 @@ static void add_segment(mstate m, char* tbase, size_t tsize, flag_t mmapped) {
       break;
   }
   assert(nfences >= 2);
+  (void) nfences;
 
   /* Insert the rest of old top into a bin as an ordinary free chunk */
   if (csp != old_top) {
@@ -4033,8 +4034,8 @@ static void* sys_alloc(mstate m, size_t nb) {
   if (HAVE_MORECORE && tbase == CMFAIL) { /* Try noncontiguous MORECORE */
     size_t asize = granularity_align(nb + SYS_ALLOC_PADDING);
     if (asize < HALF_MAX_SIZE_T) {
-      char* br = CMFAIL;
-      char* end = CMFAIL;
+      char* br /*= CMFAIL*/;
+      char* end /*= CMFAIL*/;
       ACQUIRE_MALLOC_GLOBAL_LOCK();
       br = (char*)(CALL_MORECORE(asize));
       end = (char*)(CALL_MORECORE(0));
@@ -4202,6 +4203,7 @@ static int sys_trim(mstate m, size_t pad) {
           }
         }
         else if (HAVE_MORECORE) {
+#if HAVE_MORECORE
           if (extra >= HALF_MAX_SIZE_T) /* Avoid wrapping negative */
             extra = (HALF_MAX_SIZE_T) + SIZE_T_ONE - unit;
           ACQUIRE_MALLOC_GLOBAL_LOCK();
@@ -4216,6 +4218,7 @@ static int sys_trim(mstate m, size_t pad) {
             }
           }
           RELEASE_MALLOC_GLOBAL_LOCK();
+#endif //HAVE_MORECORE
         }
       }
 
