@@ -1,7 +1,6 @@
 // ScanDir.c
 // $Date$
 // $Revision$
-// $Id$
 
 #include <exec/types.h>
 #include <intuition/classes.h>
@@ -1198,7 +1197,10 @@ static enum ScanDirResult GenerateIcons(struct internalScaWindowTask *iwt, struc
 	// build links between icons and objects
 	sdResult = LinkIconScanList(iwt, rilc);
 	if (SCANDIR_OK != sdResult)
+		{
+		d1(KPrintF("%s/%s/%ld: END  sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 		return sdResult;
+		}
 
 	if (Final)
 		{
@@ -1218,9 +1220,11 @@ static enum ScanDirResult GenerateIcons(struct internalScaWindowTask *iwt, struc
 		{
 		BOOL ShowEntry = TRUE;
 
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		if (ise->ise_Flags & ISEFLG_Used)
 			continue;
 
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		if (!Final && NULL == ise->ise_ObjPtr && NULL == ise->ise_IconPtr)
 			continue;
 
@@ -1238,7 +1242,7 @@ static enum ScanDirResult GenerateIcons(struct internalScaWindowTask *iwt, struc
 		if (ShowEntry && IsFileHidden(&ise->ise_Fib))
 			ShowEntry = FALSE;
 
-		d1(kprintf("%s/%s/%ld: ShowEntry=%ld\n", __FILE__, __FUNC__, __LINE__, ShowEntry));
+		d1(kprintf("%s/%s/%ld: <%s> ShowEntry=%ld\n", __FILE__, __FUNC__, __LINE__, ise->ise_Fib.fib_FileName, ShowEntry));
 
 		if (ShowEntry)
 			{
@@ -1384,7 +1388,7 @@ static enum ScanDirResult GenerateIcons(struct internalScaWindowTask *iwt, struc
 
 	FreeBackdropFile(&bdl);
 
-	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: END  sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 
 	return sdResult;
 }
@@ -1703,6 +1707,7 @@ static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *ril
 	ise = ScalosAlloc(sizeof(struct IconScanEntry));
 	if (ise)
 		{
+		ise->ise_Flags = 0;
 		ise->ise_IconObj = NULL;
 		ise->ise_IconPtr = NULL;
 		ise->ise_ObjPtr = NULL;
@@ -1904,7 +1909,9 @@ enum ScanDirResult GetFileList(struct internalScaWindowTask *iwt, struct ReadIco
 
 	rilc->rilc_ExAllBuffer = AllocVec(ExAllBuffer_SIZE, MEMF_PUBLIC | MEMF_CLEAR);
 	if (NULL == rilc->rilc_ExAllBuffer)
-		return 0;
+		{
+		return SCANDIR_FAIL_ABORT;
+		}
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -2046,7 +2053,7 @@ enum ScanDirResult GetFileList(struct internalScaWindowTask *iwt, struct ReadIco
 	CurrentDir(oldDir);
 	SetFileSysTask(oldFsTask);
 
-	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: END  sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 
 	return sdResult;
 }
