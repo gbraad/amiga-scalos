@@ -4677,12 +4677,23 @@ static SAVEDS(ULONG) MoveToStart(APTR aptr, struct SM_RunProcess *msg)
 
 static void CreateThumbnailStart(struct internalScaWindowTask *iwt, struct ScaIconNode *in, APTR undoStep)
 {
+	BPTR IconDirLock;
+	Object *OrigIconObj;
+
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, in, GetIconName(in)));
 
+	if (in->in_Lock)
+		IconDirLock = in->in_Lock;
+	else
+		IconDirLock = iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
+
+	OrigIconObj = CloneIconObject(in->in_Icon);
+
 	if (AddThumbnailIcon(iwt, in->in_Icon,
-		iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
+		IconDirLock,
 		GetIconName(in),
-                THUMBNAILICONF_SAVEICON | THUMBNAILICONF_NOICONPOSITION))
+		THUMBNAILICONF_SAVEICON | THUMBNAILICONF_NOICONPOSITION,
+		undoStep))
 		{
 		d1(KPrintF("%s/%s/%ld: AddThumbnailIcon succeeded\n", __FILE__, __FUNC__, __LINE__));
 
@@ -4703,6 +4714,10 @@ static void CreateThumbnailStart(struct internalScaWindowTask *iwt, struct ScaIc
 		// Start thumbnail generation process
 		GenerateThumbnails(iwt);
 		}
+
+	if (OrigIconObj)
+		DisposeIconObject(OrigIconObj);
+
 	d1(KPrintF("%s/%s/%ld: END iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 }
 

@@ -1600,5 +1600,15 @@ MSGID_UNDO_SETTOOLTYPES_MORE
 %s: Merkmale ändern bei %ld Piktogrammen
 ;%s: Change Tooltypes on %ld icons
 ;
+;
+MSGID_UNDO_CHANGEICON_SINGLE
+%s: Piktogramm %s verändern
+;%s: Change icon %s
+;
+;
+MSGID_UNDO_CHANGEICON_MORE
+%s: %ld Piktogramme verändern
+;%s: Change %ld icons
+;
 ; ==============================================
 ;

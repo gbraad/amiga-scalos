@@ -662,8 +662,8 @@ static LONG MakeNewDrawer(struct WBStartup *wbMsg)
 				SCCM_IconWin_AddUndoEvent,
 				UNDO_NewDrawer,
 				UNDOTAG_UndoMultiStep, UndoStep,
-				UNDOTAG_CopySrcDirLock, wbMsg->sm_ArgList[1].wa_Lock,
-				UNDOTAG_CopySrcName, NewObjName,
+				UNDOTAG_IconDirLock, wbMsg->sm_ArgList[1].wa_Lock,
+				UNDOTAG_IconName, NewObjName,
 				UNDOTAG_CreateIcon, CreateIcon,
 				TAG_END
 				);

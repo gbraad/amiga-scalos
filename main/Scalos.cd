@@ -1240,5 +1240,13 @@ MSGID_UNDO_SETTOOLTYPES_SINGLE (//)
 MSGID_UNDO_SETTOOLTYPES_MORE (//)
 %s: Change Tooltypes on %ld icons
 ;
+;
+MSGID_UNDO_CHANGEICON_SINGLE (//)
+%s: Change icon %s
+;
+;
+MSGID_UNDO_CHANGEICON_MORE (//)
+%s: Change %ld icons
+;
 ; ==============================================
 ;

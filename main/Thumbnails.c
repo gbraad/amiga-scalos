@@ -24,6 +24,7 @@
 #include <proto/datatypes.h>
 #include <proto/intuition.h>
 #include <proto/timer.h>
+#include <proto/iconobject.h>
 #include "debug.h"
 #include <proto/scalosgfx.h>
 #include <proto/scalospreviewplugin.h>
@@ -60,6 +61,7 @@ struct ThumbnailIcon
 	BPTR tni_DirLock;
 	STRPTR tni_IconName;
 	ULONG tni_Flags;
+	APTR tni_UndoStep;
 	};
 
 //-----------------------------------------------------------------------
@@ -77,7 +79,7 @@ static SAVEDS(ULONG) GenerateThumbnailProcess(struct SM_StartProg *sMsg,
 static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 	struct ThumbnailIcon *tni, APTR ThumbnailCacheHandle);
 static struct ThumbnailIcon *AddThumbnailEntry(struct internalScaWindowTask *iwt, 
-	Object *IconObj, BPTR DirLock, CONST_STRPTR Name, ULONG Flags);
+	Object *IconObj, BPTR DirLock, CONST_STRPTR Name, ULONG Flags, APTR UndoStep);
 static void FreeThumbnailEntry(struct ThumbnailIcon *tni);
 static struct ScaIconNode *FindIcon(struct internalScaWindowTask *iwt, const Object *IconObject);
 static BOOL IsIconObjectValid(struct internalScaWindowTask *iwt, const Object *IconObject);
@@ -93,7 +95,7 @@ static BOOL ThumbnailShouldBeCached(const struct BitMapHeader *bmhd);
 //-----------------------------------------------------------------------
 
 BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
-	BPTR DirLock, CONST_STRPTR Name, ULONG Flags)
+	BPTR DirLock, CONST_STRPTR Name, ULONG Flags, APTR UndoStep)
 {
 	BOOL Success = FALSE;
 	BPTR fLock = BNULL;
@@ -164,7 +166,7 @@ BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 				break;
 			}
 
-		tni = AddThumbnailEntry(iwt, IconObj, DirLock, Name, Flags);
+		tni = AddThumbnailEntry(iwt, IconObj, DirLock, Name, Flags, UndoStep);
 		if (NULL == tni)
 			break;
 
@@ -633,6 +635,7 @@ static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 		if (tni->tni_Flags & THUMBNAILICONF_SAVEICON)
 			{
 			struct TagItem *TagList = NULL;
+			Object *OldIconObj = LoadIconObject(tni->tni_DirLock, tni->tni_IconName, NULL);
 
 			if (tni->tni_Flags & THUMBNAILICONF_NOICONPOSITION)
 				{
@@ -649,6 +652,17 @@ static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 				tni->tni_DirLock, tni->tni_IconName,
 				TRUE,
 				TagList);
+
+			UndoAddEvent(iwt, UNDO_ChangeIconObject,
+				UNDOTAG_UndoMultiStep, tni->tni_UndoStep,
+				UNDOTAG_IconDirLock, tni->tni_DirLock,
+				UNDOTAG_IconName, tni->tni_IconName,
+				UNDOTAG_OldIconObject, OldIconObj,
+				UNDOTAG_NewIconObject, tni->tni_IconObj,
+				TAG_END);
+
+			if (OldIconObj)
+				DisposeIconObject(OldIconObj);
 			}
 		} while (0);
 
@@ -702,7 +716,7 @@ static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 
 
 static struct ThumbnailIcon *AddThumbnailEntry(struct internalScaWindowTask *iwt, Object *IconObj,
-	BPTR DirLock, CONST_STRPTR Name, ULONG Flags)
+	BPTR DirLock, CONST_STRPTR Name, ULONG Flags, APTR UndoStep)
 {
 	struct ThumbnailIcon *tni;
 	BOOL Success = FALSE;
@@ -715,6 +729,7 @@ static struct ThumbnailIcon *AddThumbnailEntry(struct internalScaWindowTask *iwt
 		tni->tni_Flags = Flags;
 		tni->tni_IconObj = IconObj;
 		tni->tni_DirLock = DupLock(DirLock);
+		tni->tni_UndoStep = UndoStep;
 		if ((BPTR)NULL == tni->tni_DirLock)
 			break;
 

@@ -36,6 +36,7 @@ UNDO_SizeWindow		equ     13
 UNDO_SetProtection	equ	14
 UNDO_SetComment		equ	15
 UNDO_SetToolTypes	equ	16
+UNDO_ChangeIconObject	equ	17
 
 ;enum ScalosUndoTags
 UNDOTAG_TagBase		equ     TAG_USER+1287
@@ -80,6 +81,8 @@ UNDOTAG_OldComment	equ	UNDOTAG_TagBase+36	; CONST_STRPTR
 UNDOTAG_NewComment	equ	UNDOTAG_TagBase+37	; CONST_STRPTR
 UNDOTAG_OldToolTypes	equ	UNDOTAG_TagBase+38	; const STRPTR *
 UNDOTAG_NewToolTypes	equ	UNDOTAG_TagBase+39	; const STRPTR *
+UNDOTAG_OldIconObject	equ	UNDOTAG_TagBase+40	; Object *
+UNDOTAG_NewIconObject	equ	UNDOTAG_TagBase+41	; Object *
 
 ;enum ScalosUndoCleanupMode
 CLEANUP_Default		equ	0
@@ -165,6 +168,13 @@ CLEANUP_ByType		equ	4
 	APTR	ustd_NewToolTypes	; STRPTR *
 	LABEL	ustd_SIZEOF
 
+  STRUCTURE 	UndoChangeIconObjectData
+	APTR	uciod_DirName		; STRPTR
+	APTR 	uciod_IconName		; STRPTR
+	APTR	uciod_OldIconObject     ; Object *
+	APT	uciod_NewIconObject	; Object *
+	LABEL	uciod_SIZEOF
+
 ; uev_Data_SIZEOF is the largest of all sizes of the sub-structures
 ; UndoCopyMoveEventData, UndoIconEventData, UndoCleanupData, and UndoSnaphotIconData
 
@@ -195,6 +205,9 @@ uev_Data_SIZEOF	set     uscd_SIZEOF
 	ENDIF
 	IFGT    ustd_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     ustd_SIZEOF
+	ENDIF
+	IFGT    uciod_SIZEOF-uev_Data_SIZEOF
+uev_Data_SIZEOF	set     uciod_SIZEOF
 	ENDIF
 
   STRUCTURE	UndoEvent,0

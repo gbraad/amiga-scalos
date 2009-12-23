@@ -53,7 +53,6 @@
 static void FreeDatatypesImage(struct DatatypesImage *dti);
 static struct DatatypesImage *NewDatatypesImage(CONST_STRPTR ImageName, ULONG Flags);
 static struct DatatypesImage *FindDatatypesImage(CONST_STRPTR ImageName, ULONG Flags);
-static BOOL TempName(STRPTR Buffer, size_t MaxLen);
 static LONG CreateTempFile(CONST_STRPTR TempFileName, CONST_STRPTR DtFileName);
 static void DtImageNotify(struct internalScaWindowTask *iwt, struct NotifyMessage *msg);
 static void CleanupTempFiles(void);
@@ -428,7 +427,7 @@ static struct DatatypesImage *FindDatatypesImage(CONST_STRPTR ImageName, ULONG F
 }
 
 
-static BOOL TempName(STRPTR Buffer, size_t MaxLen)
+BOOL TempName(STRPTR Buffer, size_t MaxLen)
 {
 	T_TIMEVAL tv;
 	char TimeBuffer[80];

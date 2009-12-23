@@ -329,6 +329,7 @@ void FillBackground(struct RastPort *rp, struct DatatypesImage *dtImage,
 	ULONG XStart, ULONG YStart);
 void DtImageDraw(struct DatatypesImage *dti, struct RastPort *rp,
 	LONG Left, LONG Top, LONG Width, LONG Height);
+BOOL TempName(STRPTR Buffer, size_t MaxLen);
 ///
 /* ------------------------------------------------- */
 
@@ -693,6 +694,7 @@ BOOL IsShowAll(const struct ScaWindowStruct *ws);
 BOOL IsShowAllType(UWORD ShowType);
 void ScalosEndNotify(struct NotifyRequest *nr);
 void SubtractDateStamp(struct DateStamp *from, const struct DateStamp *to);
+Object *CloneIconObject(Object *OrigIconObj);
 
 #if !defined(__SASC) && !defined(__MORPHOS__)
 // SAS/C compatibility functions
@@ -903,7 +905,7 @@ BOOL ThumbnailCacheFinish(APTR ThumbnailCacheHandle);
 // defined in Thumbnails.c
 ///
 BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
-	BPTR DirLock, CONST_STRPTR Name, ULONG Flags);
+	BPTR DirLock, CONST_STRPTR Name, ULONG Flags, APTR UndoStep);
 BOOL GenerateThumbnails(struct internalScaWindowTask *iwt);
 void RearrangeThumbnailList(struct internalScaWindowTask *iwt);
 void FlushThumbnailEntries(struct internalScaWindowTask *iwt);
@@ -986,6 +988,7 @@ void RunMenuCommand(struct internalScaWindowTask *iwt,
 void RunMenuCommandExt(struct internalScaWindowTask *iwt, struct internalScaWindowTask *iwtDest,
 	struct ScalosMenuTree *mtr, struct ScaIconNode *in, ULONG Flags);
 LONG ScalosPutIcon(struct ScaIconNode *in, BPTR destDirLock, BOOL NeedUpdateIcon);
+Object *LoadIconObject(BPTR DirLock, CONST_STRPTR IconName, struct TagItem *TagList);
 LONG SaveIconObject(Object *IconObj, BPTR DirLock,
 	CONST_STRPTR IconName, BOOL NeedUpdateIcon, 
 	struct TagItem *TagList);

@@ -33,6 +33,7 @@ struct DefIconInfo
 	CONST_STRPTR dii_IconName;
 	Object **dii_IconObjectFromDisk;
 	Object **dii_IconObjectFromScalos;
+	Object **dii_BackupIconObjectFromDisk;		// 2nd copy of dii_IconObjectFromDisk, for Undo
 	};
 
 #if defined(__SASC)
