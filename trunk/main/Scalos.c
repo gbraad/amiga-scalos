@@ -936,6 +936,59 @@ void SubtractDateStamp(struct DateStamp *from, const struct DateStamp *to)
 	from->ds_Days -= to->ds_Days;
 }
 
+//----------------------------------------------------------------------------
+
+Object *CloneIconObject(Object *OrigIconObj)
+{
+	Object *IconObjClone = NULL;
+	BPTR oldDir = BNULL;
+	BPTR TempDirLock;
+	STRPTR TempNameBuffer = NULL;
+
+	d2(kprintf("%s/%s/%ld: START  OrigIconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, OrigIconObj));
+
+	do	{
+		LONG rc;
+
+		TempDirLock = Lock("t:", ACCESS_READ);
+		if (BNULL == TempDirLock)
+			break;
+
+		oldDir = CurrentDir(TempDirLock);
+
+		TempNameBuffer = AllocPathBuffer();
+		d2(kprintf("%s/%s/%ld: TempNameBuffer=%08lx  \n", __FILE__, __FUNC__, __LINE__, TempNameBuffer));
+		if (NULL == TempNameBuffer)
+			break;
+
+		if (!TempName(TempNameBuffer, Max_PathLen))
+			break;
+
+		// PutIconObject()
+		rc = PutIconObjectTags(OrigIconObj, TempNameBuffer,
+			TAG_END);
+		d2(kprintf("%s/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+		if (RETURN_OK != rc)
+			break;
+
+		IconObjClone = NewIconObjectTags(TempNameBuffer,
+			TAG_END);
+		} while (0);
+
+	(void) DeleteFile(TempNameBuffer);
+
+	if (TempNameBuffer)
+		FreePathBuffer(TempNameBuffer);
+	if (oldDir)
+		CurrentDir(oldDir);
+	if (TempDirLock)
+		UnLock(TempDirLock);
+
+	d2(kprintf("%s/%s/%ld: END  IconObjClone=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObjClone));
+
+	return IconObjClone;
+}
+
 // ----------------------------------------------------------
 
 #if !defined(__SASC) &&!defined(__MORPHOS__)

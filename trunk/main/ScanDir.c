@@ -865,7 +865,7 @@ static struct ScaIconNode *ScanDirInitIcon(struct internalScaWindowTask *iwt,
 	if ((THUMBNAILS_Always == iwt->iwt_ThumbnailMode)
 		|| (isDefIcon && THUMBNAILS_AsDefault == iwt->iwt_ThumbnailMode))
 		{
-		if (!AddThumbnailIcon(iwt, IconObj, currentDirLock, rild->rild_Name, 0)
+		if (!AddThumbnailIcon(iwt, IconObj, currentDirLock, rild->rild_Name, 0, NULL)
 			&& isDefIcon && !IsShowAllType(iwt->iwt_OldShowType))
 			{
 			// fail with default icons w/o thumbnails

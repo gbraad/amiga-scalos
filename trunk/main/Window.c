@@ -1319,6 +1319,29 @@ LONG ScalosPutIcon(struct ScaIconNode *in, BPTR destDirLock, BOOL NeedUpdateIcon
 }
 
 
+Object *LoadIconObject(BPTR DirLock, CONST_STRPTR IconName, struct TagItem *TagList)
+{
+	Object *IconObj;
+	BPTR oldDir;
+	LONG Result;
+
+	d1(KPrintF("%s/%s/%ld:  START IconObj=%08lx  NeedUpdateIcon=%ld\n", __FILE__, __FUNC__, __LINE__, IconObj, NeedUpdateIcon));
+	debugLock_d1(DirLock);
+
+	oldDir = CurrentDir(DirLock);
+
+	IconObj = NewIconObjectTags(IconName,
+		TAG_MORE, TagList,
+		TAG_END);
+
+	CurrentDir(oldDir);
+
+	d1(KPrintF("%s/%s/%ld:  END IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
+
+	return IconObj;
+}
+
+
 LONG SaveIconObject(Object *IconObj, BPTR DirLock,
 	CONST_STRPTR IconName, BOOL NeedUpdateIcon, 
 	struct TagItem *TagList)
@@ -1334,8 +1357,8 @@ LONG SaveIconObject(Object *IconObj, BPTR DirLock,
 	// PutIconObject()
 	Result = PutIconObjectTags(IconObj, IconName,
 		ICONA_NoNewImage, TRUE,
-		TAG_MORE, (ULONG) TagList,
 		ICONA_NotifyWorkbench, NeedUpdateIcon,
+		TAG_MORE, (ULONG) TagList,
 		TAG_END);
 
 	d1(KPrintF("%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));

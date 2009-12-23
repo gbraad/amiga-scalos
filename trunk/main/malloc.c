@@ -557,16 +557,16 @@ static void init_malloc_global_mutex(void);
 
 static void init_malloc_global_mutex(void)
 {
+	Forbid();
 	while (1)
 		{
 		long stat = malloc_global_mutex_status;
 		if (stat > 0)
-		      return;
-		Forbid();
+		      break;
 		InitSemaphore(&malloc_global_mutex);
 		malloc_global_mutex_status++;
-		Permit();
 		}
+	Permit();
 }
 
 #endif //AMIGA

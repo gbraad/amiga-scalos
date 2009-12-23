@@ -88,6 +88,7 @@ static BOOL AddLeaveOutPutAwayEvent(struct UndoEvent *uev, struct TagItem *TagLi
 static BOOL AddSetProtectionEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList);
+static BOOL AddChangeIconObjectEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -109,6 +110,7 @@ static SAVEDS(void) UndoDisposeSizeWindowData(struct Hook *hook, APTR object, st
 static SAVEDS(void) UndoDisposeSetProtectionData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(void) UndoDisposeSetCommentData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(void) UndoDisposeSetToolTypesData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeChangeIconObjectData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoLeaveOutEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoLeaveOutEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -133,6 +135,8 @@ static SAVEDS(LONG) UndoSetCommentEvent(struct Hook *hook, APTR object, struct U
 static SAVEDS(LONG) RedoSetCommentEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoSetToolTypesEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) UndoChangeIconObjectEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) RedoChangeIconObjectEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 
 //----------------------------------------------------------------------------
 
@@ -272,6 +276,9 @@ BOOL UndoAddEventTagList(struct internalScaWindowTask *iwt, enum ScalosUndoType 
 					break;
 				case UNDO_SetToolTypes:
 					Success = AddSetToolTypesEvent(uev, TagList);
+					break;
+				case UNDO_ChangeIconObject:
+					Success = AddChangeIconObjectEvent(uev, TagList);
 					break;
 				default:
 					if (uev->uev_CustomAddHook)
@@ -1578,7 +1585,7 @@ static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
 		d1(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
 		if (BNULL == dirLock)
 			break;
@@ -1586,17 +1593,17 @@ static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (!NameFromLock(dirLock, name, Max_PathLen))
 			break;
 
-		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 		und->und_DirName = AllocCopyString(name);
 		if (NULL == und->und_DirName)
 			break;
 
-		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopySrcName, (ULONG) NULL, TagList);
+		fName = (CONST_STRPTR) GetTagData(UNDOTAG_IconName, (ULONG) NULL, TagList);
 		if (NULL == fName)
 			break;
 
-		d1(kprintf("%s/%s/%ld: UNDOTAG_CopySrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
+		d1(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
 
 		und->und_srcName = AllocCopyString(fName);
 		if (NULL == und->und_srcName)
@@ -1999,6 +2006,109 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		FreePathBuffer(name);
 
 	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static BOOL AddChangeIconObjectEvent(struct UndoEvent *uev, struct TagItem *TagList)
+{
+	BOOL Success = FALSE;
+	STRPTR name;
+
+	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		struct UndoChangeIconObjectData *uciod = &uev->uev_Data.uev_ChangeIconObjectData;
+		BPTR dirLock;
+		CONST_STRPTR IconName;
+		Object *IconObj;
+		static struct Hook UndoDisposeChangeIconObjectHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoDisposeChangeIconObjectData),  // h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook UndoChangeIconObjectHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoChangeIconObjectEvent),    // h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook RedoChangeIconObjectHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(RedoChangeIconObjectEvent),    // h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+
+		uev->uev_DisposeHook = (struct Hook *) GetTagData(UNDOTAG_DisposeHook, (ULONG) &UndoDisposeChangeIconObjectHook, TagList);
+
+		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoChangeIconObjectHook, TagList);
+		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoChangeIconObjectHook, TagList);
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_CHANGEICON_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_CHANGEICON_MORE;
+
+		uev->uev_DescrObjName = &uciod->uciod_IconName;
+
+		name = AllocPathBuffer();
+		if (NULL == name)
+			break;
+
+		d2(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		debugLock_d2(dirLock);
+		if (BNULL == dirLock)
+			break;
+
+		if (!NameFromLock(dirLock, name, Max_PathLen))
+			break;
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_IconDirLock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+
+		uciod->uciod_DirName = AllocCopyString(name);
+		if (NULL == uciod->uciod_DirName)
+			break;
+
+		IconName = (CONST_STRPTR) GetTagData(UNDOTAG_IconName, (ULONG) NULL, TagList);
+		if (NULL == IconName)
+			break;
+
+		uciod->uciod_IconName = AllocCopyString(IconName);
+		if (NULL == uciod->uciod_IconName)
+			break;
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, uciod->uciod_IconName));
+
+		IconObj	= (Object *) GetTagData(UNDOTAG_OldIconObject, (ULONG) NULL, TagList);
+		if (NULL == IconObj)
+			break;
+
+		uciod->uciod_OldIconObject = CloneIconObject(IconObj);
+		if (NULL == uciod->uciod_OldIconObject)
+			break;
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_OldIconObject=%08lx\n", __FILE__, __FUNC__, __LINE__, uciod->uciod_OldIconObject));
+
+		IconObj	= (Object *) GetTagData(UNDOTAG_NewIconObject, (ULONG) NULL, TagList);
+		if (NULL == IconObj)
+			break;
+
+		uciod->uciod_NewIconObject = CloneIconObject(IconObj);
+		if (NULL == uciod->uciod_NewIconObject)
+			break;
+
+		d2(kprintf("%s/%s/%ld: UNDOTAG_NewIconObject=%08lx\n", __FILE__, __FUNC__, __LINE__, uciod->uciod_NewIconObject));
+
+		Success = TRUE;
+		} while (0);
+
+	if (name)
+		FreePathBuffer(name);
+
+	d2(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -2709,6 +2819,40 @@ static SAVEDS(void) UndoDisposeSetToolTypesData(struct Hook *hook, APTR object, 
 }
 
 //----------------------------------------------------------------------------
+
+static SAVEDS(void) UndoDisposeChangeIconObjectData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	(void) hook;
+	(void) object;
+
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	if (uev)
+		{
+		struct UndoChangeIconObjectData *uciod = &uev->uev_Data.uev_ChangeIconObjectData;
+
+		if (uciod->uciod_DirName)
+			{
+			FreeCopyString(uciod->uciod_DirName);
+			uciod->uciod_DirName = NULL;
+			}
+		if (uciod->uciod_IconName)
+			{
+			FreeCopyString(uciod->uciod_IconName);
+			uciod->uciod_IconName = NULL;
+			}
+		if (uciod->uciod_OldIconObject)
+			{
+			DisposeIconObject(uciod->uciod_OldIconObject);
+			uciod->uciod_OldIconObject = NULL;
+			}
+		if (uciod->uciod_NewIconObject)
+			{
+			DisposeIconObject(uciod->uciod_NewIconObject);
+			uciod->uciod_NewIconObject = NULL;
+			}
+		}
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+}
 
 //----------------------------------------------------------------------------
 
@@ -3688,6 +3832,7 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 
 		if (und->und_CreateIcon)
 			{
+			LONG rc;
 			struct ScaUpdateIcon_IW upd;
 
 			IconObj	= GetDefIconObject(WBDRAWER, NULL);
@@ -3700,8 +3845,11 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 			upd.ui_iw_Lock = srcDirLock;
 			upd.ui_iw_Name = und->und_srcName;
 
-			PutIconObjectTags(IconObj, und->und_srcName,
+			rc = PutIconObjectTags(IconObj, und->und_srcName,
 				TAG_END);
+			d2(kprintf(__FILE__ "/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FUNC__, __LINE__, rc));
+			if (RETURN_OK != rc)
+				break;
 
 			SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
 			}
@@ -3913,6 +4061,7 @@ static SAVEDS(LONG) UndoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 	do	{
 		struct UndoSetToolTypesData *ustd = &uev->uev_Data.uev_SetToolTypesData;
 		struct ScaUpdateIcon_IW upd;
+		LONG rc;
 
 		dirLock = Lock(ustd->ustd_DirName, ACCESS_READ);
 		debugLock_d1(dirLock);
@@ -3936,9 +4085,12 @@ static SAVEDS(LONG) UndoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 			IDTA_ToolTypes, (ULONG) ustd->ustd_OldToolTypes,
 			TAG_END);
 
-		PutIconObjectTags(in->in_Icon, ustd->ustd_IconName,
+		rc = PutIconObjectTags(in->in_Icon, ustd->ustd_IconName,
 			ICONA_NoNewImage, TRUE,
 			TAG_END);
+		d2(kprintf(__FILE__ "/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FUNC__, __LINE__, rc));
+		if (RETURN_OK != rc)
+			break;
 
 		SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
 
@@ -3979,6 +4131,7 @@ static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 	do	{
 		struct UndoSetToolTypesData *ustd = &uev->uev_Data.uev_SetToolTypesData;
 		struct ScaUpdateIcon_IW upd;
+		LONG rc;
 
 		dirLock = Lock(ustd->ustd_DirName, ACCESS_READ);
 		debugLock_d1(dirLock);
@@ -4002,9 +4155,12 @@ static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 			IDTA_ToolTypes, (ULONG) ustd->ustd_OldToolTypes,
 			TAG_END);
 
-		PutIconObjectTags(in->in_Icon, ustd->ustd_IconName,
+		rc = PutIconObjectTags(in->in_Icon, ustd->ustd_IconName,
 			ICONA_NoNewImage, TRUE,
 			TAG_END);
+		d2(kprintf(__FILE__ "/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FUNC__, __LINE__, rc));
+		if (RETURN_OK != rc)
+			break;
 
 		SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
 
@@ -4027,6 +4183,103 @@ static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 	return Success;
 }
 
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) UndoChangeIconObjectEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	BOOL Success = FALSE;
+	BPTR dirLock;
+	BPTR oldDir = BNULL;
+
+	(void) hook;
+	(void) object;
+
+	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		struct UndoChangeIconObjectData *uciod = &uev->uev_Data.uev_ChangeIconObjectData;
+		struct ScaUpdateIcon_IW upd;
+		LONG rc;
+
+		dirLock = Lock(uciod->uciod_DirName, ACCESS_READ);
+		debugLock_d2(dirLock);
+		if (BNULL == dirLock)
+			break;
+
+		oldDir = CurrentDir(dirLock);
+
+		upd.ui_iw_Lock = dirLock;
+		upd.ui_iw_Name = uciod->uciod_IconName;
+
+		rc = PutIconObjectTags(uciod->uciod_OldIconObject, uciod->uciod_IconName,
+			TAG_END);
+		d2(kprintf(__FILE__ "/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FUNC__, __LINE__, rc));
+		if (RETURN_OK != rc)
+			break;
+
+		SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
+
+		Success = TRUE;
+		} while (0);
+
+	if (oldDir)
+		CurrentDir(oldDir);
+	if (BNULL != dirLock)
+		UnLock(dirLock);
+
+	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) RedoChangeIconObjectEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	BOOL Success = FALSE;
+	BPTR dirLock;
+	BPTR oldDir = BNULL;
+
+	(void) hook;
+	(void) object;
+
+	d2(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		struct UndoChangeIconObjectData *uciod = &uev->uev_Data.uev_ChangeIconObjectData;
+		struct ScaUpdateIcon_IW upd;
+		LONG rc;
+
+		dirLock = Lock(uciod->uciod_DirName, ACCESS_READ);
+		debugLock_d2(dirLock);
+		if (BNULL == dirLock)
+			break;
+
+		oldDir = CurrentDir(dirLock);
+
+		upd.ui_iw_Lock = dirLock;
+		upd.ui_iw_Name = uciod->uciod_IconName;
+
+		rc = PutIconObjectTags(uciod->uciod_NewIconObject, uciod->uciod_IconName,
+			TAG_END);
+		d2(kprintf(__FILE__ "/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FUNC__, __LINE__, rc));
+		if (RETURN_OK != rc)
+			break;
+
+		SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
+
+		Success = TRUE;
+		} while (0);
+
+	if (oldDir)
+		CurrentDir(oldDir);
+	if (BNULL != dirLock)
+		UnLock(dirLock);
+
+	d2(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
 //----------------------------------------------------------------------------
 
 // If window <iwt> is about to close, walk through Undo/Redo lists
@@ -4136,4 +4389,6 @@ void UndoWindowSignalClosing(struct internalScaWindowTask *iwt)
 
 	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
+
+//----------------------------------------------------------------------------
 

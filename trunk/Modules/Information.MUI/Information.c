@@ -269,7 +269,7 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 	ULONG *DrawersCount, ULONG *BlocksCount, ULONG64 *ByteCount);
 static CONST_STRPTR GetLocString(ULONG MsgId);
 static void TranslateStringArray(STRPTR *stringArray);
-static void SaveSettings(Object *IconObj, CONST_STRPTR IconName);
+static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR IconName);
 static void GetIconObject(struct DefIconInfo *dii, CONST_STRPTR IconName, BPTR DirLock,
 	STRPTR FileTypeName, size_t FileTypeNameSize);
 static void GetDeviceIconObject(struct DefIconInfo *dii, CONST_STRPTR IconName,
@@ -536,6 +536,7 @@ int main(int argc, char *argv[])
 	CONST_STRPTR IconName = "";
 	Object *iconObjFromScalos = NULL;
 	Object *iconObjFromDisk = NULL;
+	Object *backupIconObjFromDisk = NULL;
 	BOOL IsWriteable = TRUE;
 	BOOL IsWBStartup = FALSE;
 	char VolumeName[128];
@@ -550,6 +551,7 @@ int main(int argc, char *argv[])
 
 	dii.dii_IconObjectFromDisk = &iconObjFromDisk;
 	dii.dii_IconObjectFromScalos = &iconObjFromScalos;
+	dii.dii_BackupIconObjectFromDisk = &backupIconObjFromDisk;
 
 	ChangeIconTypeHook.h_Data = DefaultIconHook.h_Data = &dii;
 
@@ -1787,7 +1789,7 @@ int main(int argc, char *argv[])
 				switch (Action)
 					{
 				case Application_Return_Ok:
-					SaveSettings(iconObjFromDisk, IconName);
+					SaveSettings(iconObjFromDisk, backupIconObjFromDisk, IconName);
 					Run = FALSE;
 					break;
 
@@ -1872,6 +1874,8 @@ int main(int argc, char *argv[])
 		set(WIN_Main, MUIA_Window_Open, FALSE);
 		}
 
+	if (backupIconObjFromDisk)
+		DisposeIconObject(backupIconObjFromDisk);
 	if (iconObjFromDisk)
 		DisposeIconObject(iconObjFromDisk);
 	if (iconObjFromScalos)
@@ -2737,7 +2741,7 @@ static void ReplaceIcon(Object *NewIconObj, Object **OldIconObj)
 
 //----------------------------------------------------------------------------
 
-static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
+static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR IconName)
 {
 	d1(KPrintF(__FILE__ "/%s/%ld: IconObj=%08lx  IconName=<%s>\n", __FUNC__, __LINE__, IconObj, IconName));
 
@@ -3099,28 +3103,21 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 			*((char *) Pos2) = '\0';
 			}
 
+		d1(KPrintF(__FILE__ "/%s/%ld: IconObj=%08lx  IconName=<%s>\n", __FUNC__, __LINE__, IconObj, IconName));
+
 		if (ws)
 			{
-			CONST_STRPTR *NewToolTypeArray = NULL;
-
-			GetAttr(IDTA_ToolTypes, IconObj, (APTR) &NewToolTypeArray);
-
-			if (0 != CmpToolTypeArrays(NewToolTypeArray, (CONST_STRPTR *) OldToolTypesArray))
-				{
-				DoMethod(ws->ws_WindowTask->mt_MainObject,
-					SCCM_IconWin_AddUndoEvent,
-					UNDO_SetToolTypes,
-					UNDOTAG_UndoMultiStep, UndoStep,
-					UNDOTAG_IconDirLock, dirLock,
-					UNDOTAG_IconName, (ULONG) fib->fib_FileName,
-					UNDOTAG_OldToolTypes, (ULONG) OldToolTypesArray,
-					UNDOTAG_NewToolTypes, (ULONG) NewToolTypeArray,
-					TAG_END
-					);
-				}
+			DoMethod(ws->ws_WindowTask->mt_MainObject,
+				SCCM_IconWin_AddUndoEvent,
+				UNDO_ChangeIconObject,
+				UNDOTAG_UndoMultiStep, UndoStep,
+				UNDOTAG_IconDirLock, dirLock,
+				UNDOTAG_IconName, (ULONG) fib->fib_FileName,
+				UNDOTAG_OldIconObject, (ULONG) originalIconObj,
+				UNDOTAG_NewIconObject, (ULONG) IconObj,
+				TAG_END
+				);
 			}
-
-		d1(KPrintF(__FILE__ "/%s/%ld: IconObj=%08lx  IconName=<%s>\n", __FUNC__, __LINE__, IconObj, IconName));
 
 		PutIconObjectTags(IconObj, GetName,
 			ICONA_NoNewImage, TRUE,
@@ -3254,10 +3251,18 @@ static void GetIconObject(struct DefIconInfo *dii, CONST_STRPTR IconName, BPTR D
 		*dii->dii_IconObjectFromDisk = NewIconObject(IconName, NULL);
 		d1(KPrintF(__FILE__ "/%s/%ld: IconName=<%s> dii_IconObjectFromDisk=%08lx\n", __FUNC__, __LINE__, IconName, *dii->dii_IconObjectFromDisk));
 		if (*dii->dii_IconObjectFromDisk)
+			{
+			*dii->dii_BackupIconObjectFromDisk = NewIconObject(IconName, NULL);
 			break;
+			}
 
 		*dii->dii_IconObjectFromDisk = SCA_GetDefIconObjectTags(DirLock, IconName,
 			TAG_END);
+		if (*dii->dii_IconObjectFromDisk)
+			{
+			*dii->dii_BackupIconObjectFromDisk = SCA_GetDefIconObjectTags(DirLock, IconName,
+				TAG_END);
+			}
 
 		d1(KPrintF(__FILE__ "/%s/%ld: dii_IconObjectFromDisk=%08lx\n", __FUNC__, __LINE__, *dii->dii_IconObjectFromDisk));
 		} while (0);

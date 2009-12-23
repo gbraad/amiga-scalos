@@ -21,23 +21,24 @@
 
 enum ScalosUndoType
 	{
-	UNDO_Snapshot,
-	UNDO_Unsnapshot,
-	UNDO_Cleanup,
-	UNDO_Copy,
-	UNDO_Move,
-	UNDO_CreateLink,
-	UNDO_ChangeIconPos,
-	UNDO_Rename,
-	UNDO_Relabel,
-	UNDO_Delete,
-	UNDO_Leaveout,
-	UNDO_PutAway,
-	UNDO_NewDrawer,
-	UNDO_SizeWindow,
-	UNDO_SetProtection,
-	UNDO_SetComment,
-	UNDO_SetToolTypes,
+	UNDO_Snapshot,			// UNDOTAG_IconDirLock, UNDOTAG_SaveIcon, UNDOTAG_IconNode
+	UNDO_Unsnapshot,                // UNDOTAG_IconDirLock, UNDOTAG_SaveIcon, UNDOTAG_IconNode
+	UNDO_Cleanup,			// UNDOTAG_CleanupMode, UNDOTAG_WindowTask, UNDOTAG_IconList
+	UNDO_Copy,			// UNDOTAG_CopySrcDirLock, UNDOTAG_CopyDestDirLock, UNDOTAG_CopySrcName, UNDOTAG_CopyDestName
+	UNDO_Move,                      // UNDOTAG_CopySrcDirLock, UNDOTAG_CopyDestDirLock, UNDOTAG_CopySrcName, UNDOTAG_CopyDestName
+	UNDO_CreateLink,                // UNDOTAG_CopySrcDirLock, UNDOTAG_CopyDestDirLock, UNDOTAG_CopySrcName, UNDOTAG_CopyDestName
+	UNDO_ChangeIconPos,		// UNDOTAG_IconDirLock, UNDOTAG_IconNode,
+	UNDO_Rename,			// UNDOTAG_CopySrcDirLock, UNDOTAG_CopySrcName, UNDOTAG_CopyDestName
+	UNDO_Relabel,			// UNDOTAG_CopySrcName, UNDOTAG_CopyDestName
+	UNDO_Delete,                    // UNDOTAG_CopySrcDirLock, UNDOTAG_CopySrcName, UNDOTAG_CopyDestName
+	UNDO_Leaveout,                  // UNDOTAG_IconDirLock, UNDOTAG_IconName
+	UNDO_PutAway,                   // UNDOTAG_IconDirLock, UNDOTAG_IconName
+	UNDO_NewDrawer,			// UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_CreateIcon
+	UNDO_SizeWindow,		// UNDOTAG_WindowTask, UNDOTAG_OldWindowLeft, UNDOTAG_OldWindowTop, UNDOTAG_OldWindowWidth, UNDOTAG_OldWindowHeight, UNDOTAG_OldWindowVirtX, UNDOTAG_OldWindowVirtY,UNDOTAG_NewWindowLeft,UNDOTAG_NewWindowTop,UNDOTAG_NewWindowWidth,UNDOTAG_NewWindowHeight,UNDOTAG_NewWindowVirtX,UNDOTAG_NewWindowVirtY
+	UNDO_SetProtection,             // UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_OldProtection, UNDOTAG_NewProtection
+	UNDO_SetComment,		// UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_OldComment, UNDOTAG_NewComment
+	UNDO_SetToolTypes,		// UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_OldToolTypes, UNDOTAG_NewToolTypes
+	UNDO_ChangeIconObject,		// UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_OldIconObject, UNDOTAG_NewIconObject
 	};
 
 enum ScalosUndoTags
@@ -82,6 +83,8 @@ enum ScalosUndoTags
 	UNDOTAG_NewComment,		// CONST_STRPTR
 	UNDOTAG_OldToolTypes,		// const STRPTR *
 	UNDOTAG_NewToolTypes,		// const STRPTR *
+	UNDOTAG_OldIconObject,		// Object *
+	UNDOTAG_NewIconObject,		// Object *
 	};
 
 enum ScalosUndoCleanupMode
@@ -192,6 +195,13 @@ struct UndoEvent
 			STRPTR *ustd_OldToolTypes;
 			STRPTR *ustd_NewToolTypes;
 			} uev_SetToolTypesData;
+		struct UndoChangeIconObjectData
+			{
+			STRPTR uciod_DirName;
+			STRPTR uciod_IconName;
+			Object *uciod_OldIconObject;
+			Object *uciod_NewIconObject;
+			} uev_ChangeIconObjectData;
 		} uev_Data;
 
 	struct UndoStep *uev_UndoStep;
