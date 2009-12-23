@@ -3252,7 +3252,8 @@ static void GetIconObject(struct DefIconInfo *dii, CONST_STRPTR IconName, BPTR D
 		d1(KPrintF(__FILE__ "/%s/%ld: IconName=<%s> dii_IconObjectFromDisk=%08lx\n", __FUNC__, __LINE__, IconName, *dii->dii_IconObjectFromDisk));
 		if (*dii->dii_IconObjectFromDisk)
 			{
-			*dii->dii_BackupIconObjectFromDisk = NewIconObject(IconName, NULL);
+			if (NULL == *dii->dii_BackupIconObjectFromDisk)
+				*dii->dii_BackupIconObjectFromDisk = NewIconObject(IconName, NULL);
 			break;
 			}
 
@@ -3260,8 +3261,11 @@ static void GetIconObject(struct DefIconInfo *dii, CONST_STRPTR IconName, BPTR D
 			TAG_END);
 		if (*dii->dii_IconObjectFromDisk)
 			{
-			*dii->dii_BackupIconObjectFromDisk = SCA_GetDefIconObjectTags(DirLock, IconName,
-				TAG_END);
+			if (NULL == *dii->dii_BackupIconObjectFromDisk)
+				{
+				*dii->dii_BackupIconObjectFromDisk = SCA_GetDefIconObjectTags(DirLock, IconName,
+					TAG_END);
+				}
 			}
 
 		d1(KPrintF(__FILE__ "/%s/%ld: dii_IconObjectFromDisk=%08lx\n", __FUNC__, __LINE__, *dii->dii_IconObjectFromDisk));
