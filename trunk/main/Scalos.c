@@ -975,10 +975,12 @@ Object *CloneIconObject(Object *OrigIconObj)
 			TAG_END);
 		} while (0);
 
-	(void) DeleteFile(TempNameBuffer);
-
 	if (TempNameBuffer)
+		{
+		SafeStrCat(TempNameBuffer, ".info", Max_PathLen);
+		(void) DeleteFile(TempNameBuffer);
 		FreePathBuffer(TempNameBuffer);
+		}
 	if (oldDir)
 		CurrentDir(oldDir);
 	if (TempDirLock)
