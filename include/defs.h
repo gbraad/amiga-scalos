@@ -96,10 +96,12 @@
 	#define __FUNC__    __FUNCTION__
 #endif
 
-#ifndef __amigaos4__
-	#define	WBENCHMSG	_WBenchMsg
-#else // __amigaos4__
+#ifdef __amigaos4__
 	#define WBENCHMSG	WBenchMsg
+	#define	T_ITEXT		STRPTR
+#else // __amigaos4__
+	#define	WBENCHMSG	_WBenchMsg
+	#define	T_ITEXT		UBYTE *
 #endif // __amigaos4__
 
 #if defined(__MORPHOS__) || defined(__amigaos4__)
