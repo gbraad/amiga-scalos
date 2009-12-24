@@ -141,38 +141,38 @@ CLEANUP_ByType		equ	4
 	LONG 	uswd_NewVirtY
 	LABEL	uswd_SIZEOF
 
-  STRUCTURE 	UndoNewDrawerData
+  STRUCTURE 	UndoNewDrawerData,0
 	APTR 	und_DirName		; STRPTR
 	APTR 	und_srcName		; STRPTR
 	ULONG	und_CreateIcon
 	LABEL 	und_SIZEOF
 
-  STRUCTURE 	UndoSetProtectionData
+  STRUCTURE 	UndoSetProtectionData,0
 	APTR 	uspd_DirName		; STRPTR
 	APTR 	uspd_IconName		; STRPTR
 	ULONG 	uspd_OldProtection
 	ULONG 	uspd_NewProtection
 	LABEL	uspd_SIZEOF
 
-  STRUCTURE 	UndoSetCommentData
+  STRUCTURE 	UndoSetCommentData,0
 	APTR 	uscd_DirName		; STRPTR
 	APTR 	uscd_IconName		; STRPTR
 	APTR	uscd_OldComment		; STRPTR
 	APTR	uscd_NewComment		; STRPTR
 	LABEL	uscd_SIZEOF
 
-  STRUCTURE 	UndoSetToolTypesData
+  STRUCTURE 	UndoSetToolTypesData,0
 	APTR 	ustd_DirName		; STRPTR
 	APTR 	ustd_IconName		; STRPTR
 	APTR	ustd_OldToolTypes	; STRPTR *
 	APTR	ustd_NewToolTypes	; STRPTR *
 	LABEL	ustd_SIZEOF
 
-  STRUCTURE 	UndoChangeIconObjectData
+  STRUCTURE 	UndoChangeIconObjectData,0
 	APTR	uciod_DirName		; STRPTR
 	APTR 	uciod_IconName		; STRPTR
 	APTR	uciod_OldIconObject     ; Object *
-	APT	uciod_NewIconObject	; Object *
+	APTR	uciod_NewIconObject	; Object *
 	LABEL	uciod_SIZEOF
 
 ; uev_Data_SIZEOF is the largest of all sizes of the sub-structures

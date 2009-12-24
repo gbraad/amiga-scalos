@@ -1323,7 +1323,6 @@ Object *LoadIconObject(BPTR DirLock, CONST_STRPTR IconName, struct TagItem *TagL
 {
 	Object *IconObj;
 	BPTR oldDir;
-	LONG Result;
 
 	d1(KPrintF("%s/%s/%ld:  START IconObj=%08lx  NeedUpdateIcon=%ld\n", __FILE__, __FUNC__, __LINE__, IconObj, NeedUpdateIcon));
 	debugLock_d1(DirLock);
