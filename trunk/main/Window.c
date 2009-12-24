@@ -1330,7 +1330,7 @@ Object *LoadIconObject(BPTR DirLock, CONST_STRPTR IconName, struct TagItem *TagL
 	oldDir = CurrentDir(DirLock);
 
 	IconObj = NewIconObjectTags(IconName,
-		TAG_MORE, TagList,
+		TAG_MORE, (ULONG) TagList,
 		TAG_END);
 
 	CurrentDir(oldDir);

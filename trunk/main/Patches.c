@@ -360,6 +360,10 @@ static LONG ReOpenScalos(void)
 		if (GuiGFXBase && NULL == PenShareMap)
 			PenShareMap = CreatePenShareMapA(NULL);
 
+#if defined(__MORPHOS__)
+		iInfos.xii_Layers3D = NULL != FindTask("« LayerInfoTask »");
+#endif //defined(__MORPHOS__)
+
 		ReplyPort = CreateMsgPort();
 		if (NULL == ReplyPort)
 			break;

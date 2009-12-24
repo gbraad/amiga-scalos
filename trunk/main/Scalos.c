@@ -945,7 +945,7 @@ Object *CloneIconObject(Object *OrigIconObj)
 	BPTR TempDirLock;
 	STRPTR TempNameBuffer = NULL;
 
-	d2(kprintf("%s/%s/%ld: START  OrigIconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, OrigIconObj));
+	d1(kprintf("%s/%s/%ld: START  OrigIconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, OrigIconObj));
 
 	do	{
 		LONG rc;
@@ -957,7 +957,7 @@ Object *CloneIconObject(Object *OrigIconObj)
 		oldDir = CurrentDir(TempDirLock);
 
 		TempNameBuffer = AllocPathBuffer();
-		d2(kprintf("%s/%s/%ld: TempNameBuffer=%08lx  \n", __FILE__, __FUNC__, __LINE__, TempNameBuffer));
+		d1(kprintf("%s/%s/%ld: TempNameBuffer=%08lx  \n", __FILE__, __FUNC__, __LINE__, TempNameBuffer));
 		if (NULL == TempNameBuffer)
 			break;
 
@@ -967,7 +967,7 @@ Object *CloneIconObject(Object *OrigIconObj)
 		// PutIconObject()
 		rc = PutIconObjectTags(OrigIconObj, TempNameBuffer,
 			TAG_END);
-		d2(kprintf("%s/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+		d1(kprintf("%s/%s/%ld: PutIconObjectTags returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 		if (RETURN_OK != rc)
 			break;
 
@@ -986,7 +986,7 @@ Object *CloneIconObject(Object *OrigIconObj)
 	if (TempDirLock)
 		UnLock(TempDirLock);
 
-	d2(kprintf("%s/%s/%ld: END  IconObjClone=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObjClone));
+	d1(kprintf("%s/%s/%ld: END  IconObjClone=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObjClone));
 
 	return IconObjClone;
 }
