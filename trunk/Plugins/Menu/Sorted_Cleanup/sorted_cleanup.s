@@ -178,7 +178,7 @@ menufunction:
 	move.l	a0,a5
 
 	lea		(RedoHook,pc),a0
-	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTag_WindowTask,a5,#UNDOTag_CleanupMode,#CLEANUP_Default,#UNDOTAG_RedoHook,a0,#TAG_END
+	DoMethod	(mt_MainObject,a5),#SCCM_IconWin_AddUndoEvent,#UNDO_Cleanup,#UNDOTAG_IconList,(wt_IconList,a5),#UNDOTAG_WindowTask,a5,#UNDOTAG_CleanupMode,#CLEANUP_Default,#UNDOTAG_RedoHook,a0,#TAG_END
 
 menufunction2:
 	move.l	4.w,a6
