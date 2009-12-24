@@ -138,7 +138,7 @@ Scalos_Locale.h : Scalos.cd
 
 MsgIdNames.h : Scalos_Locale.h
 	@printf 'Generate $<\n'
-	@GenMsgIdNames Scalos_Locale.h MsgIdNames.h
+	@$(GENMSGIDNAMES) Scalos_Locale.h MsgIdNames.h
 
 $(OBJDIR)/ScalosVersion.o : FORCE
 

@@ -31,6 +31,7 @@ ifeq ($(MACHINE), ppc-morphos)
 ###############################################################################
 # MorphOS
 
+GENMSGIDNAMES 	= GenMsgIdNames
 INCLUDES	+=
 
 LFLAGS	+=	-lpng \
@@ -44,6 +45,7 @@ ifeq ($(MACHINE), ppc-amigaos)
 ###############################################################################
 # AmigOS4
 
+GENMSGIDNAMES 	= ./GenMsgIdNames
 INCLUDES	+=
 
 LFLAGS	+=      -lpng \
@@ -56,6 +58,7 @@ else
 ###############################################################################
 # AmigaOS
 
+GENMSGIDNAMES 	= GenMsgIdNames
 INCLUDES	+=
 
 LFLAGS	+=	-lpng \
