@@ -549,7 +549,7 @@ LIBFUNC_P3(struct Iconobject *, LIBNewIconObject,
 	A6, struct IconObjectBase *, IconObjectBase)
 {
 	struct Iconobject *obj = NULL;
-	BPTR IconFh = NULL;
+	BPTR IconFh = (BPTR) NULL;
 
 	d1(kprintf(__FILE__ "/%s/%ld: Name=<%s>\n", __FUNC__, __LINE__, Name));
 
