@@ -460,14 +460,14 @@ static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 							{
 							struct IntuiText *itx = mInfo->minf_item->ItemFill;
 							d1(kprintf("%s/%s/%ld: mTree=%08lx  ItemFill=%08lx  IText=%08lx\n", __FILE__, __FUNC__, __LINE__, mTree, itx, itx->IText));
-							itx->IText = (UBYTE *) UndoGetDescription();
+							itx->IText = (T_ITEXT) UndoGetDescription();
 							TextChanged++;
 							}
 						if (0 == Stricmp("redo", mTree->MenuCombo.MenuCommand.mcom_name))
 							{
 							struct IntuiText *itx = mInfo->minf_item->ItemFill;
 							d1(kprintf("%s/%s/%ld: mTree=%08lx  ItemFill=%08lx  IText=%08lx\n", __FILE__, __FUNC__, __LINE__, mTree, itx, itx->IText));
-							itx->IText = (UBYTE *) RedoGetDescription();
+							itx->IText = (T_ITEXT) RedoGetDescription();
 							TextChanged++;
 							}
 
@@ -1578,6 +1578,9 @@ static void SubMenusOnOff(struct internalScaWindowTask *iwt, ULONG Changed, ULON
 		if (TextChanged)
 			{
 			ClearMenuStrip(iwt->iwt_WindowTask.wt_Window);
+			LayoutMenus(MainMenu, iInfos.xii_iinfos.ii_visualinfo,
+				GTMN_NewLookMenus, TRUE,
+				TAG_END);
 			SetMenuStrip(iwt->iwt_WindowTask.wt_Window, MainMenu);
 			}
 		else
