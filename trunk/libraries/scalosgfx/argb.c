@@ -349,10 +349,10 @@ void FillARGBFromBitMap(struct ARGBHeader *argbh, struct BitMap *srcBM,
 	d1(KPrintF("%s/%ld:  Width=%ld  Height=%ld\n", __FUNC__, __LINE__, argbh->argb_Width, argbh->argb_Height));
 
 	handle = LockBitMapTags(srcBM,
-		LBMI_PIXFMT, &PixFmt,
-		LBMI_BASEADDRESS, &src,
-		LBMI_BYTESPERROW, &BytesPerRow,
-		LBMI_BYTESPERPIX, &BytesPerPixel,
+		LBMI_PIXFMT, (ULONG) &PixFmt,
+		LBMI_BASEADDRESS, (ULONG) &src,
+		LBMI_BYTESPERROW, (ULONG) &BytesPerRow,
+		LBMI_BYTESPERPIX, (ULONG) &BytesPerPixel,
 		TAG_END);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: handle=%08lx\n", __FUNC__, __LINE__, handle));
