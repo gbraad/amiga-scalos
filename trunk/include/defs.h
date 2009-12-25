@@ -182,6 +182,7 @@
 	#define T_TIMERBASE	struct Device *
 	#define T_CONSOLEDEVICE	struct Device *
 	#define T_INPUTDEVICE	struct Device *
+	#define	T_ITEXT		UBYTE *
 
 	#define	COMPILER_STRING	" (SAS/C " STR(__VERSION__) "." STR(__REVISION__) ")"
 
