@@ -110,8 +110,6 @@ static const UBYTE InvalidTab[256] =
 
 static struct TypeNode *RootType = NULL;
 static BPTR seglist = (BPTR)NULL;
-static SCALOSSEMAPHORE DefIconsSemaphore;
-static SCALOSSEMAPHORE DefIconsCacheSemaphore;
 static BOOL DefIconsInit = FALSE;
 static ULONG DefIconsPrefsCRC = 0;
 
@@ -120,6 +118,8 @@ static Object *CachedDefIconObjects[1 + WBAPPICON];
 //----------------------------------------------------------------------------
 
 // public data items
+SCALOSSEMAPHORE DefIconsSemaphore;
+SCALOSSEMAPHORE DefIconsCacheSemaphore;
 
 //----------------------------------------------------------------------------
 

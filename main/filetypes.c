@@ -173,6 +173,7 @@ static void ShowTagList(struct TagItem *tagList);
 //----------------------------------------------------------------------------
 
 // public data items :
+SCALOSSEMAPHORE FileTypeListSema;
 
 //----------------------------------------------------------------------------
 
@@ -226,7 +227,6 @@ static ULONG Default_Priority = 0;	// default priority for running WB/CLI/ARexx 
 
 static BOOL FilesTypesInitialized = FALSE;
 
-static SCALOSSEMAPHORE FileTypeListSema;
 static struct List FileTypeList;
 static struct List ObsoleteFileTypeList;
 

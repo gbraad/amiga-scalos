@@ -53,13 +53,13 @@ struct Hook ScalosFontHook =
 	NULL,					// h_Data
 	};
 
+SCALOSSEMAPHORE tteSema;
+
 //----------------------------------------------------------------------------
 
 // local data items
 
 #define	USE_SEMA
-
-static SCALOSSEMAPHORE tteSema;
 
 //----------------------------------------------------------------------------
 

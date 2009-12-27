@@ -32,6 +32,19 @@ enum PopupMenusArrayIndex {
 
 /* ------------------------------------------------- */
 
+// defined in DefIcons.c
+///
+extern SCALOSSEMAPHORE DefIconsSemaphore;
+extern SCALOSSEMAPHORE DefIconsCacheSemaphore;
+///
+/* ------------------------------------------------- */
+
+// defined in filetypes.c
+///
+extern SCALOSSEMAPHORE FileTypeListSema;
+///
+/* ------------------------------------------------- */
+
 // defined in FileCommands.c
 
 extern ULONG prefCopyBuffLen;			// size of file copy buffer
@@ -41,6 +54,7 @@ extern ULONG prefCopyBuffLen;			// size of file copy buffer
 // defined in FontUtil.c
 
 extern struct Hook ScalosFontHook;
+extern SCALOSSEMAPHORE tteSema;
 
 /* ------------------------------------------------- */
 
@@ -119,6 +133,12 @@ extern struct ScalosPrefs CurrentPrefs;
 extern struct ScalosPalettePrefs PalettePrefs;
 extern struct ScalosPatternPrefs PatternPrefs;
 extern struct ScalosFontPrefs FontPrefs;
+///
+/* ------------------------------------------------- */
+
+// defined in RootClass.c
+///
+extern SCALOSSEMAPHORE ListenerSema;
 ///
 /* ------------------------------------------------- */
 
