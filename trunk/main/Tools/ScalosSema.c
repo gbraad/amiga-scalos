@@ -46,11 +46,25 @@
 #endif //__SASC
 
 
+struct DebugSemaOwnerClone
+	{
+	struct Node node;
+	ULONG OwnMode;
+	ULONG Line;
+	STRPTR FileName;
+	STRPTR Func;
+	STRPTR ProcName;
+	};
+
+
 //struct ScaWindowList *SCA_LockWindowList( LONG accessmode );
 
 static void DoSema(const struct internalScaWindowTask *iwt, 
 	const SCALOSSEMAPHORE *xSema, CONST_STRPTR SemaName, BOOL *WinTitlePrinted);
 static STRPTR GetProcName(struct Process *Proc, STRPTR Buffer, size_t BuffLength);
+static BOOL CloneList(struct List *destList, const struct List *srcList);
+static void CleanupList(struct List *theList);
+
 #if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
 size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !defined(__SASC) && !defined(__MORPHOS__)  */
@@ -165,9 +179,8 @@ static void DoSema(const struct internalScaWindowTask *iwt,
 		{
 		if (fListAll || !IsListEmpty((struct List *) &xSema->OwnerList) || !IsListEmpty((struct List *) &xSema->BidderList))
 			{
-			char ProcName[256];
 			CONST_STRPTR Prefix;
-			const struct DebugSemaOwner *Owner;
+			const struct DebugSemaOwnerClone *Owner;
 
 			if (iwt)
 				{
@@ -194,11 +207,16 @@ static void DoSema(const struct internalScaWindowTask *iwt,
 				}
 			else
 				{
+				struct List ListClone;
+
+				NewList(&ListClone);
+				CloneList(&ListClone, &xSema->OwnerList);
+
 				printf("\n");
 
-				for (Owner = (const struct DebugSemaOwner *) xSema->OwnerList.lh_Head;
-					Owner != (const struct DebugSemaOwner *) &xSema->OwnerList.lh_Tail;
-					Owner = (const struct DebugSemaOwner *) Owner->node.ln_Succ)
+				for (Owner = (const struct DebugSemaOwnerClone *) ListClone.lh_Head;
+					Owner != (const struct DebugSemaOwnerClone *) &ListClone.lh_Tail;
+					Owner = (const struct DebugSemaOwnerClone *) Owner->node.ln_Succ)
 					{
 					CONST_STRPTR OwnModeString;
 
@@ -211,8 +229,10 @@ static void DoSema(const struct internalScaWindowTask *iwt,
 						OwnModeString,
 						Owner->FileName, 
 						Owner->Func, Owner->Line,
-						GetProcName(Owner->Proc, ProcName, sizeof(ProcName)));
+						Owner->ProcName);
 					}
+
+				CleanupList(&ListClone);
 				}
 
 			printf("%s   Bidder:  ", Prefix);
@@ -222,18 +242,25 @@ static void DoSema(const struct internalScaWindowTask *iwt,
 				}
 			else
 				{
+				struct List ListClone;
+
+				NewList(&ListClone);
+				CloneList(&ListClone, &xSema->BidderList);
+
 				printf("\n");
 
-				for (Owner = (const struct DebugSemaOwner *) xSema->BidderList.lh_Head;
-					Owner != (const struct DebugSemaOwner *) &xSema->BidderList.lh_Tail;
-					Owner = (const struct DebugSemaOwner *) Owner->node.ln_Succ)
+				for (Owner = (const struct DebugSemaOwnerClone *) ListClone.lh_Head;
+					Owner != (const struct DebugSemaOwnerClone *) &ListClone.lh_Tail;
+					Owner = (const struct DebugSemaOwnerClone *) Owner->node.ln_Succ)
 					{
 					printf("%s      [%s] %s/%s/%ld  <%s>\n", Prefix, 
 						(OWNMODE_EXCLUSIVE == Owner->OwnMode) ? "Ex" : "Sh",
 						Owner->FileName, 
 						Owner->Func, Owner->Line,
-						GetProcName(Owner->Proc, ProcName, sizeof(ProcName)));
+						Owner->ProcName);
 					}
+
+				CleanupList(&ListClone);
 				}
 			}
 		}
@@ -248,6 +275,57 @@ static STRPTR GetProcName(struct Process *Proc, STRPTR Buffer, size_t BuffLength
 
 	return Buffer;
 }
+
+
+static BOOL CloneList(struct List *destList, const struct List *srcList)
+{
+	BOOL Success = TRUE;
+	const struct DebugSemaOwner *Entry;
+
+	Forbid();
+	for (Entry = (const struct DebugSemaOwner *) srcList->lh_Head;
+		Entry != (const struct DebugSemaOwner *) &srcList->lh_Tail;
+		Entry = (const struct DebugSemaOwner *) Entry->node.ln_Succ)
+		{
+		struct DebugSemaOwnerClone *Clone;
+
+		Clone = malloc(sizeof(struct DebugSemaOwnerClone));
+		if (Clone)
+			{
+			char ProcName[256];
+
+			Clone->OwnMode = Entry->OwnMode;
+			Clone->Line = Entry->Line;
+			Clone->FileName = strdup(Entry->FileName);
+			Clone->Func = strdup(Entry->Func);
+			GetProcName(Entry->Proc, ProcName, sizeof(ProcName));
+			Clone->ProcName = strdup(ProcName);
+
+			AddTail(destList, &Clone->node);
+			}
+		}
+	Permit();
+
+	return Success;
+}
+
+
+static void CleanupList(struct List *theList)
+{
+	struct DebugSemaOwnerClone *Clone;
+
+	while ((Clone = (struct DebugSemaOwnerClone *) RemTail(theList)))
+		{
+		if (Clone->FileName)
+			free(Clone->FileName);
+		if (Clone->Func)
+			free(Clone->Func);
+		if (Clone->ProcName)
+			free(Clone->ProcName);
+		free(Clone);
+		}
+}
+
 
 #if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
 // Replacement for SAS/C library functions
