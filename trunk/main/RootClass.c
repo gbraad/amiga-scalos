@@ -86,13 +86,13 @@ static void GenerateEvents(Class *cl, Object *o, Msg msg);
 //----------------------------------------------------------------------------
 
 // public data items :
+SCALOSSEMAPHORE ListenerSema;
 
 //----------------------------------------------------------------------------
 
 // private data items :
 
 static struct List ListenerList;
-static SCALOSSEMAPHORE ListenerSema;
 
 //----------------------------------------------------------------------------
 
