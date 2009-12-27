@@ -528,31 +528,34 @@ int main(int argc, char *argv[])
 							End, //VGroup
 						End, //VGroup
 
-						Child, VGroup,
-							MUIA_FrameTitle, (ULONG) GetLocString(MSGID_GROUP_RESULTS),
-							GroupFrame,
-							MUIA_Background, MUII_GroupBack,
+					Child, BalanceObject,
+						End, // BalanceObject
 
-							Child, NListviewObject,
-								//MUIA_CycleChain, TRUE,
-								MUIA_NListview_Horiz_ScrollBar, MUIV_NListview_HSB_FullAuto,
-								MUIA_NListview_NList, NListResults = NewObject(myFindResultsNListClass->mcc_Class, 0,
-									MUIA_CycleChain, TRUE,
-									MUIA_NList_Format, "BAR,BAR,",
-									MUIA_NList_ConstructHook2, &ResultsConstructHook,
-									MUIA_NList_DestructHook2, &ResultsDestructHook,
-									MUIA_NList_DisplayHook2, &ResultsDisplayHook,
-									MUIA_NList_CompareHook2, &ResultsCompareHook,
-									MUIA_NList_CopyEntryToClipHook2, &ResultsCopyEntryToClipHook,
-									MUIA_NList_TitleSeparator, TRUE,
-									MUIA_NList_Title, TRUE,
-									MUIA_NList_SortType, 0,
-									MUIA_ContextMenu, ContextMenuResults,
-									MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 0,
-									End, //NListObject
-								End, //NListviewObject
+					Child, VGroup,
+						MUIA_FrameTitle, (ULONG) GetLocString(MSGID_GROUP_RESULTS),
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
 
-		                                        End, //VGroup
+						Child, NListviewObject,
+							//MUIA_CycleChain, TRUE,
+							MUIA_NListview_Horiz_ScrollBar, MUIV_NListview_HSB_FullAuto,
+							MUIA_NListview_NList, NListResults = NewObject(myFindResultsNListClass->mcc_Class, 0,
+								MUIA_CycleChain, TRUE,
+								MUIA_NList_Format, "BAR,BAR,",
+								MUIA_NList_ConstructHook2, &ResultsConstructHook,
+								MUIA_NList_DestructHook2, &ResultsDestructHook,
+								MUIA_NList_DisplayHook2, &ResultsDisplayHook,
+								MUIA_NList_CompareHook2, &ResultsCompareHook,
+								MUIA_NList_CopyEntryToClipHook2, &ResultsCopyEntryToClipHook,
+								MUIA_NList_TitleSeparator, TRUE,
+								MUIA_NList_Title, TRUE,
+								MUIA_NList_SortType, 0,
+								MUIA_ContextMenu, ContextMenuResults,
+								MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 0,
+								End, //NListObject
+							End, //NListviewObject
+
+	                                        End, //VGroup
 
 					End, // HGroup
 
