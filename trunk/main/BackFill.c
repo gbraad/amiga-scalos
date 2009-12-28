@@ -48,22 +48,24 @@ SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct 
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) bfHook->h_Data;
 	struct PatternInfo *ptInfo = &iwt->iwt_WindowTask.wt_PatternInfo;
 
-	d1(KPrintF("\nSTART " "%s/%s/%ld: ptinfo=bfHook=%08lx  rp=%08lx  msg=%08lx\n", \
+	d1(KPrintF("START " "%s/%s/%ld: ptinfo=bfHook=%08lx  rp=%08lx  msg=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, bfHook, rp, msg));
 
-	d1(KPrintF("\n" "%s/%s/%ld: RastPort=%08lx\n", __FILE__, __FUNC__, __LINE__, rp));
+	d1(KPrintF("%s/%s/%ld: RastPort=%08lx\n", __FILE__, __FUNC__, __LINE__, rp));
 	d1(KPrintF("%s/%s/%ld: Rect=%ld %ld %ld %ld\n", __FILE__, __FUNC__, __LINE__, \
 		msg->bfm_Rect.MinX, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxX, msg->bfm_Rect.MaxY));
 	d1(KPrintF("%s/%s/%ld: Layer=%08lx  OffsetX=%ld  OffsetY=%ld\n", __FILE__, __FUNC__, __LINE__, \
 		msg->bfm_Layer, msg->bfm_OffsetX, msg->bfm_OffsetY));
 
-	d1(KPrintF("\n" "%s/%s/%ld: ptinf_bitmap=%08lx\n", __FILE__, __FUNC__, __LINE__, ptInfo->ptinf_bitmap));
+	d1(KPrintF("%s/%s/%ld: ptinf_bitmap=%08lx\n", __FILE__, __FUNC__, __LINE__, ptInfo->ptinf_bitmap));
 	if (ptInfo->ptinf_bitmap)
 		d1(KPrintF("\n" "%s/%s/%ld: ptinf_bitmap  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
 			GetBitMapAttr(ptInfo->ptinf_bitmap, BMA_WIDTH), GetBitMapAttr(ptInfo->ptinf_bitmap, BMA_HEIGHT)));
 
-	d1(KPrintF("\n" "%s/%s/%ld: rp->bitmap=%08lx  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
+	d1(KPrintF("%s/%s/%ld: rp->bitmap=%08lx  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
 		rp->BitMap, GetBitMapAttr(rp->BitMap, BMA_WIDTH), GetBitMapAttr(rp->BitMap, BMA_HEIGHT)));
+
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	rpCopy = *rp;
 	rpCopy.Layer = NULL;
@@ -71,8 +73,10 @@ SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct 
 	// avoid erasing parts of the window frame
 	msgCopy = *msg;
 
+	d1(KPrintF("%s/%s/%ld: wt_Window=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_Window));
+
 #if defined(__MORPHOS__)
-	if (iInfos.xii_Layers3D)
+	if (iInfos.xii_Layers3D && iwt->iwt_WindowTask.wt_Window)
 		{
 		LONG xOffset = iwt->iwt_WindowTask.wt_Window->LeftEdge % 16;
 
@@ -111,11 +115,15 @@ SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct 
 		}
 #endif /* __MORPHOS__ */
 	
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 	WindowBackFill(&rpCopy, &msgCopy, ptInfo->ptinf_bitmap,
 		ptInfo->ptinf_width, ptInfo->ptinf_height,
 		iwt->iwt_WinDrawInfo->dri_Pens[BACKGROUNDPEN],
 		iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset,
 		NULL);
+
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	if (!IsIwtViewByIcon(iwt) && CurrentPrefs.pref_TextWindowStriped)
 		{
@@ -124,7 +132,7 @@ SAVEDS(ULONG) BackFillHookFunc(struct Hook *bfHook, struct RastPort *rp, struct 
 			iwt->iwt_WindowTask.wt_YOffset);
 		}
 
-	d1(KPrintF("\n " "%s/%s/%ld: finished\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("\n " "%s/%s/%ld: END finished\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }
@@ -135,6 +143,8 @@ void WindowBackFill(struct RastPort *rp,
 	LONG bmWidth, LONG bmHeight, WORD BGPen,
 	LONG XOffset, LONG YOffset, APTR MaskPlane)
 {
+	d1(KPrintF("%s/%s/%ld: START  bitmap=%08lx\n", __FILE__, __FUNC__, __LINE__, bitmap));
+
 	if (bitmap)
 		{
 		LONG x, y;
@@ -239,6 +249,8 @@ void WindowBackFill(struct RastPort *rp,
 		RectFill(rp, msg->bfm_Rect.MinX, msg->bfm_Rect.MinY,
 			msg->bfm_Rect.MaxX, msg->bfm_Rect.MaxY);
 		}
+
+	d1(KPrintF("\n " "%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 
