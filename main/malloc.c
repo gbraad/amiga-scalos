@@ -550,7 +550,10 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define RELEASE_LOCK(sl)      	(ReleaseSemaphore(sl), 0)
 #define TRY_LOCK(sl)          	(!AttemptSemaphore(sl))
 
+
+#if !defined(__SASC)
 #define assert(x)		if (!(x)) kprintf("%s/%s/%ld: assert(%s) failed.\n", __FILE__, __FUNCTION__, __LINE__, x);
+#endif //__SASC
 
 static MLOCK_T malloc_global_mutex;
 static volatile long malloc_global_mutex_status = 0;

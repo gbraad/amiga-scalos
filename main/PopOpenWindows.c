@@ -13,6 +13,7 @@
 #include <proto/intuition.h>
 #include "debug.h"
 #include <proto/scalos.h>
+#include <clib/alib_protos.h>
 
 #include <defs.h>
 #include <scalos/scalos.h>
