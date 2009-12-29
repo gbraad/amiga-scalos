@@ -69,6 +69,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/OpenDrawerByName.o	    	\
 		$(OBJDIR)/Patches.o                 	\
 		$(OBJDIR)/Pattern.o                 	\
+		$(OBJDIR)/PopOpenWindows.o              \
 		$(OBJDIR)/PopupMenus.o              	\
 		$(OBJDIR)/Prefs.o                   	\
 		$(OBJDIR)/Request.o                 	\

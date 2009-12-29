@@ -1,4 +1,4 @@
-// Patterns.c
+// BackFill.c
 // $Date$
 // $Revision$
 
