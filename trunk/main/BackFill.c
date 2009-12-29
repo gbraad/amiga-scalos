@@ -258,71 +258,76 @@ static void TextWindowStripeFill(struct RastPort *rp,
 	struct BackFillMsg *msg, struct internalScaWindowTask *iwt,
 	LONG XOffset, LONG YOffset)
 {
-	struct ScaIconNode *in = iwt->iwt_WindowTask.wt_IconList;
-	ULONG Height;
-
-	if (in)
+	if (msg->bfm_Rect.MinY <= msg->bfm_Rect.MaxY)
 		{
-		struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
+		struct ScaIconNode *in = iwt->iwt_WindowTask.wt_IconList;
+		ULONG LineHeight;
 
-		Height = gg->Height;
-		}
-	else
-		{
-		Height = iwt->iwt_TextWindowLineHeight;
-		}
-
-	d1(kprintf("%s/%s/%ld: Height=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxY));
-	d1(kprintf("%s/%s/%ld: bfm_OffsetX=%ld  bfm_OffsetY=%ld\n", __FILE__, __FUNC__, __LINE__, Height, msg->bfm_OffsetX, msg->bfm_OffsetY));
-
-	if (Height > 0)
-		{
-		LONG y;
-
-		for (y = msg->bfm_Rect.MinY; y <= msg->bfm_Rect.MaxY; y += Height)
+		if (in)
 			{
-			ULONG Ordinal = (y + YOffset - iwt->iwt_InnerTop) / Height;
+			struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 
-			d1(kprintf("%s/%s/%ld: y=%ld  Ordinal=%ld\n", __FILE__, __FUNC__, __LINE__, y, Ordinal));
+			LineHeight = gg->Height;
+			}
+		else
+			{
+			LineHeight = iwt->iwt_TextWindowLineHeight;
+			}
 
-			if (Ordinal & 1)
+		d1(kprintf("\n"));
+		d1(kprintf("%s/%s/%ld: LineHeight=%ld  MinY=%ld  MaxY=%ld  YOffset=%ld iwt_InnerTop=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, LineHeight, msg->bfm_Rect.MinY, msg->bfm_Rect.MaxY, \
+			YOffset, iwt->iwt_InnerTop));
+		d1(kprintf("%s/%s/%ld: bfm_OffsetX=%ld  bfm_OffsetY=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			msg->bfm_OffsetX, msg->bfm_OffsetY));
+
+		if (LineHeight > 0)
+			{
+			LONG yMin;
+			ULONG Depth = GetBitMapAttr(rp->BitMap, BMA_DEPTH);
+			ULONG Ordinal = (msg->bfm_Rect.MinY + YOffset - iwt->iwt_InnerTop) / LineHeight;
+
+			yMin = Ordinal * LineHeight - YOffset + iwt->iwt_InnerTop;
+
+			while (yMin <= msg->bfm_Rect.MaxY)
 				{
-				LONG yMin, yMax;
-				ULONG Depth;
+				LONG yMax = yMin + LineHeight - 1;
 
-				yMin = Ordinal * Height - YOffset + iwt->iwt_InnerTop;
 				if (yMin < msg->bfm_Rect.MinY)
 					yMin = msg->bfm_Rect.MinY;
-				yMax = yMin + Height - 1;
 				if (yMax > msg->bfm_Rect.MaxY)
 					yMax = msg->bfm_Rect.MaxY;
 
-				Depth = GetBitMapAttr(rp->BitMap, BMA_DEPTH);
-
-				d1(kprintf("%s/%s/%ld: yMin=%ld  yMax=%ld  Depth=%ld\n", __FILE__, __FUNC__, __LINE__, yMin, yMax, Depth));
-
-				if (NULL == CyberGfxBase || Depth <= 8)
+				if (Ordinal & 1)
 					{
-					EraseRect(rp,
-						msg->bfm_Rect.MinX,
-						yMin,
-						msg->bfm_Rect.MaxX,
-						yMax);
-					}
-				else
-					{
-					static const struct ARGB Numerator = { (UBYTE) ~0, 70, 70, 70 };
-					static const struct ARGB Denominator =  { (UBYTE) ~0, 80, 80, 80 };
+					d1(kprintf("%s/%s/%ld: Ordinal=%ld  yMin=%ld  yMax=%ld  Depth=%ld\n", __FILE__, __FUNC__, __LINE__, Ordinal, yMin, yMax, Depth));
 
-					ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
-						msg->bfm_Rect.MinX,
-						yMin,
-						msg->bfm_Rect.MaxX,
-						yMax);
+					if (NULL == CyberGfxBase || Depth <= 8)
+						{
+						EraseRect(rp,
+							msg->bfm_Rect.MinX,
+							yMin,
+							msg->bfm_Rect.MaxX,
+							yMax);
+						}
+					else
+						{
+						static const struct ARGB Numerator = { (UBYTE) ~0, 70, 70, 70 };
+						static const struct ARGB Denominator =  { (UBYTE) ~0, 80, 80, 80 };
+
+						ScalosGfxARGBRectMult(rp, &Numerator, &Denominator,
+							msg->bfm_Rect.MinX,
+							yMin,
+							msg->bfm_Rect.MaxX,
+							yMax);
+						}
 					}
+				Ordinal++;
+				yMin = Ordinal * LineHeight - YOffset + iwt->iwt_InnerTop;
 				}
 			}
 		}
+
 	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 

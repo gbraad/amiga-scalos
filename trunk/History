@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20091218	jl	- Bugfix: with "apply to all selected icons" enabled, popup menu selection
+41.7    20091229	jl	- Bugfix: corrected problems with text window striping and
+				  window resizing under MorphOS.
+	20091218	jl	- Bugfix: with "apply to all selected icons" enabled, popup menu selection
 				  always was applied to one icon less than selected.
 	20091214	jl	- Improvement: information.module: added Undo/Redo support for object renaming.
 				- Bugfix: information.module: for text windows, icons are not displayed correctly.
