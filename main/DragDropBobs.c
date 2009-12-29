@@ -3268,63 +3268,6 @@ static void BlitARGBMaskAlpha(ULONG SrcWidth, ULONG SrcHeight,
 }
 
 //----------------------------------------------------------------------------
-
-// If CloseAll is FALSE, window under mouse pointer will not be closed
-// If CloseAll is TRUE, all popup windows are closed
-
-void ClosePopupWindows(BOOL CloseAll)
-{
-	struct ScaWindowStruct *ws, *wsNext;
-	struct internalScaWindowTask *iwtUnderMouse;
-	struct ScaIconNode *in;
-	struct ScaIconNode *inOuterBounds;
-	struct Window *foreignWin;
-
-	d1(kprintf("%s/%s/%ld: START  CloseAll=%ld\n", __FILE__, __FUNC__, __LINE__, CloseAll));
-
-	QueryObjectUnderPointer(&iwtUnderMouse, &in, &inOuterBounds, &foreignWin);
-
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-	// Close all windows that have popped up during D&D
-	if (NULL == iwtUnderMouse)
-		{
-		SCA_LockWindowList(SCA_LockWindowList_Exclusiv);
-		}
-	else
-		{
-		if (in)
-			ScalosUnLockIconList(iwtUnderMouse);
-		}
-
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-	for (ws = winlist.wl_WindowStruct; ws; ws = wsNext)
-		{
-		wsNext = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ;
-
-		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-		if ((CloseAll || (NULL == iwtUnderMouse) || (ws != iwtUnderMouse->iwt_WindowTask.mt_WindowStruct)) && (ws->ws_Flags & WSV_FlagF_DdPopupWindow))
-			{
-			struct SM_CloseWindow *msg;
-
-			msg = (struct SM_CloseWindow *) SCA_AllocMessage(MTYP_CloseWindow, 0);
-			if (msg)
-				{
-				msg->ScalosMessage.sm_Message.mn_ReplyPort = iInfos.xii_iinfos.ii_MainMsgPort;
-				PutMsg(ws->ws_MessagePort, &msg->ScalosMessage.sm_Message);
-				}
-			}
-		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-		}
-
-	SCA_UnLockWindowList();
-
-	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
-}
-
-//----------------------------------------------------------------------------
 #if 0
 static void DumpBitMap(struct BitMap *bm)
 {

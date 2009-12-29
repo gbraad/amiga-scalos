@@ -142,6 +142,7 @@ SRCS  =	about.c			\
 	Patches-classic.c       \
 	Pattern.c		\
 	PopupMenus.c		\
+	PopOpenWindows.c	\
 	Prefs.c			\
 	Request.c		\
 	RootClass.c		\
@@ -293,6 +294,7 @@ $(OBJDIR)/OpenDrawerByName.o		: OpenDrawerByName.c $(CHEADERS)
 $(OBJDIR)/Patches.o			: Patches.c Patches.h $(CHEADERS)
 $(OBJDIR)/Patches-classic.o		: Patches-classic.c Patches.h $(CHEADERS)
 $(OBJDIR)/Pattern.o			: Pattern.c $(CHEADERS)
+$(OBJDIR)/PopOpenWindows.o		: PopOpenWindows.c $(CHEADERS)
 $(OBJDIR)/PopupMenus.o			: PopupMenus.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/Prefs.o			: Prefs.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/Request.o			: Request.c $(CHEADERS) $(LOCALE_HEADERS)
