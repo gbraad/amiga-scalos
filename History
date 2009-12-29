@@ -2679,6 +2679,11 @@ Additions/changes:
 
 --------------------persist.plugin------------------------------------------
 
+ 39.25	20091229	jl	- Improvement: changed saving of current state to make it bullet
+				  proof. Now new file is written under name Persistant_Windows-new,
+				  then existing file is renamed to Persistant_Windows-old, and
+				  if everything worked, new file is renamed to Persistant_Windows
+				  and old file Persistant_Windows-old is deleted.
  39.24	20090712	jl	- Improvement: plugin now automatically reconizes when Scalos has
 				  finished starting up, and will start re-opening windows.
 				  Preferences variable "StartDelay_Seconds" is no longer used.

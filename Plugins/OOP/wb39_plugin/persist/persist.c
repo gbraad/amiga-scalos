@@ -660,40 +660,125 @@ static void FreeNode(struct OpenNode *OldNode)
 
 static void RewriteNodeListFile(void)
 {
-	BPTR fh;
+	static CONST_STRPTR NewSuffix = "-new";
+	static CONST_STRPTR OldSuffix = "-old";
+	STRPTR FNameNew;
+	STRPTR FNameOld;
 
-	fh = Open(Persist_FileName, MODE_NEWFILE);
-	if (fh)
+	FNameNew = malloc(1 + strlen(Persist_FileName) + strlen(NewSuffix));
+	FNameOld = malloc(1 + strlen(Persist_FileName) + strlen(OldSuffix));
+	if (FNameNew && FNameOld)
 		{
-		struct OpenNode *OldNode;
+		BOOL Success = TRUE;
 
-		FPuts(fh, "# written by persist.plugin\n");
-		FPuts(fh, "#\n");
+		strcpy(FNameNew, Persist_FileName);
+		strcat(FNameNew, NewSuffix);
 
-		ObtainSemaphoreShared(&PersistSema);
+		strcpy(FNameOld, Persist_FileName);
+		strcat(FNameOld, OldSuffix);
 
-		for (OldNode = (struct OpenNode *) OpenList.lh_Head; 
-				OldNode != (struct OpenNode *) &OpenList.lh_Tail; 
-				OldNode = (struct OpenNode *) OldNode->on_Node.ln_Succ )
+		do	{
+			BPTR fh;
+
+			fh = Open(FNameNew, MODE_NEWFILE);
+			if (fh)
+				{
+				LONG rc;
+				struct OpenNode *OldNode;
+
+				rc = FPuts(fh, "# written by persist.plugin\n");
+				if (rc < 0)
+					{
+					Success = FALSE;
+					break;
+					}
+				rc = FPuts(fh, "#\n");
+				if (rc < 0)
+					{
+					Success = FALSE;
+					break;
+					}
+				ObtainSemaphoreShared(&PersistSema);
+
+				for (OldNode = (struct OpenNode *) OpenList.lh_Head; 
+						Success && (OldNode != (struct OpenNode *) &OpenList.lh_Tail);
+						OldNode = (struct OpenNode *) OldNode->on_Node.ln_Succ )
+					{
+					if (OldNode->on_Left)
+						{
+						rc = FPrintf(fh, "X=%ld ", OldNode->on_Left);
+						if (rc < 0)
+							{
+							Success = FALSE;
+							break;
+							}
+						}
+					if (OldNode->on_Top)
+						{
+						rc = FPrintf(fh, "Y=%ld ", OldNode->on_Top);
+						if (rc < 0)
+							{
+							Success = FALSE;
+							break;
+							}
+						}
+					if (OldNode->on_Width)
+						{
+						rc = FPrintf(fh, "W=%ld ", OldNode->on_Width);
+						if (rc < 0)
+							{
+							Success = FALSE;
+							break;
+							}
+						}
+					if (OldNode->on_Height)
+						{
+						rc = FPrintf(fh, "H=%ld ", OldNode->on_Height);
+						if (rc < 0)
+							{
+							Success = FALSE;
+							break;
+							}
+						}
+					rc = FPrintf(fh, "%s%sP=%s\n",
+						(ULONG) (OldNode->on_Iconified ? "I " : ""), 
+						(ULONG) (OldNode->on_BrowserMode ? "B " : ""),
+						(ULONG) OldNode->on_Path);
+					if (rc < 0)
+						{
+						Success = FALSE;
+						break;
+						}
+					}
+
+				ReleaseSemaphore(&PersistSema);
+
+				if (!Close(fh))
+					Success = FALSE;
+				}
+			else
+				{
+				Success = FALSE;
+				}
+			} while (0);
+
+		if (Success)
 			{
-			if (OldNode->on_Left)
-				FPrintf(fh, "X=%ld ", OldNode->on_Left);
-			if (OldNode->on_Top)
-				FPrintf(fh, "Y=%ld ", OldNode->on_Top);
-			if (OldNode->on_Width)
-				FPrintf(fh, "W=%ld ", OldNode->on_Width);
-			if (OldNode->on_Height)
-				FPrintf(fh, "H=%ld ", OldNode->on_Height);
-			FPrintf(fh, "%s%sP=%s\n",
-				(ULONG) (OldNode->on_Iconified ? "I " : ""), 
-				(ULONG) (OldNode->on_BrowserMode ? "B " : ""),
-				(ULONG) OldNode->on_Path);
+			if (Rename(Persist_FileName, FNameOld)
+				&& Rename(FNameNew, Persist_FileName))
+				{
+				(void) DeleteFile(FNameOld);
+				}
 			}
-
-		ReleaseSemaphore(&PersistSema);
-
-		Close(fh);
+		else
+			{
+			(void) DeleteFile(FNameNew);
+			}
 		}
+	if (FNameNew)
+		free(FNameNew);
+	if (FNameOld)
+		free(FNameOld);
 }
 
 //----------------------------------------------------------------------------
