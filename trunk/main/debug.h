@@ -13,7 +13,7 @@
 
 /* ------------------------------------------------- */
 #define       DEBUG_SEMAPHORES
-//#define	DEBUG_LOCKS
+//#define       DEBUG_LOCKS
 //#define       DEBUG_MEMORY
 /* ------------------------------------------------- */
 
@@ -93,6 +93,13 @@ BPTR ParentOfFH_Debug(BPTR fh,
 BPTR DupLockFromFH_Debug(BPTR fh,
 	CONST_STRPTR CallingArg, CONST_STRPTR CallingFile, 
 	CONST_STRPTR CallingFunc, ULONG CallingLine);
+
+#undef Lock
+#undef UnLock
+#undef DupLock
+#undef ParentDir
+#undef ParentOfFH
+#undef DupLockFromFH
 
 #define	Lock(name, mode) Lock_Debug(name, mode, #mode, __FILE__, __FUNC__, __LINE__)
 #define	UnLock(lock) UnLock_Debug(lock, #lock, __FILE__, __FUNC__, __LINE__)

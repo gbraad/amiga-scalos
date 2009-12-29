@@ -498,6 +498,7 @@ void DebugScalosReleaseSemaphore(struct ScalosSemaphore *xsema,
 {
 	struct DebugSemaOwner *Owner;
 	struct Process *myProc = (struct Process *) FindTask(NULL);
+	BOOL Found = FALSE;
 
 	d1(kprintf("%s/%s/%ld: Begin ReleaseSemaphore(%08lx <%s>)  Task=%08lx <%s>\n", \
 		CallingFile, CallingFunc, CallingLine, xsema, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name));
@@ -509,12 +510,20 @@ void DebugScalosReleaseSemaphore(struct ScalosSemaphore *xsema,
 		{
 		if (Owner->Proc == myProc)
 			{
+			Found = TRUE;
 			Remove(&Owner->node);
 			FreeVec(Owner);
 			break;
 			}
 		}
 	Permit();
+
+	if (!Found)
+		{
+		kprintf("%s/%s/%ld: FAILED ReleaseSemaphore(%08lx) - Task %08lx (%s) never locked this Semaphore!\n", \
+			CallingFile, CallingFunc, CallingLine, xsema,
+			FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name);
+		}
 
 	ReleaseSemaphore(&xsema->Sema);
 

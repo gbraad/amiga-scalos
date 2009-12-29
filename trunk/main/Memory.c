@@ -45,7 +45,10 @@
 #define	PUDDLESIZE_NODES	8192
 #define	THRESHOLD_NODES		256
 
-#define	DLMALLOC		1
+// define DLMALLOC to use Doug Lea's memory allocator instead of OS's memory pools
+#define DLMALLOC	        1
+
+// DLMALLOC_CLEAR to clear all allocated memory - ATM still required
 #define DLMALLOC_CLEAR		1
 
 //----------------------------------------------------------------------------

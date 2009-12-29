@@ -158,7 +158,8 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 
 		SCA_UnLockWindowList();
 
-		ClosePopupWindows(iInfos.xii_GlobalDragHandle, TRUE);
+		if (!CurrentPrefs.pref_EnableDropMenu)
+			ClosePopupWindows(TRUE);
 
 		if (iwt->iwt_DragIconList)
 			{
@@ -190,7 +191,7 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 				DragDropFinish(iwt, iwt->iwt_WindowTask.mt_WindowStruct, iwtDest->iwt_WindowTask.mt_WindowStruct, x, y, &drops);
 
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
+#if 0
 			// if iwtDest was a Popup window, close it now!
 			if (iwtDest->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow)
 				{
@@ -203,6 +204,7 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 					PutMsg(iwtDest->iwt_WindowTask.mt_WindowStruct->ws_MessagePort, &msg->ScalosMessage.sm_Message);
 					}
 				}
+#endif
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			}
 		break;
@@ -2261,6 +2263,8 @@ static BOOL DropPopupMenu(struct internalScaWindowTask *iwtSrc,
 				}
 			}
 		}
+
+	ClosePopupWindows(TRUE);
 
 	return DoDrop;
 }

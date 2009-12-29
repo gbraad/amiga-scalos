@@ -99,6 +99,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 
 		ScalosInitSemaphore(&iwt->iwt_ThumbnailIconSemaphore);
 		ScalosInitSemaphore(&iwt->iwt_ThumbGenerateSemaphore);
+		ScalosInitSemaphore(&iwt->iwt_PopChildListSemaphore);
 
 		iwt->iwt_WindowTask.wt_PatternInfo.ptinf_BgPen = NO_PEN;
 
@@ -106,6 +107,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 		NewList(&iwt->iwt_IconDropMarkInfoList);
 		NewList(&iwt->iwt_ControlBarMemberList);
 		NewList(&iwt->iwt_HistoryList);
+		NewList(&iwt->iwt_PopChildList);
 
 		iwt->iwt_BottomScrollerScale = iwt->iwt_SideScrollerScale = 0;
 
@@ -473,6 +475,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 	if (iwt)
 		{
 		struct WindowHistoryEntry *whe;
+		struct ScaPopChildWindow *spcw;
 		ULONG n;
 
 		UndoWindowSignalClosing(iwt);
@@ -535,6 +538,12 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 			WindowHistoryEntryDispose(iwt, whe);
 			}
 		iwt->iwt_CurrentHistoryEntry = NULL;
+
+		// Dispose all entries in iwt_PopChildList
+		while ((spcw = (struct ScaPopChildWindow *) RemHead(&iwt->iwt_PopChildList)))
+			{
+			PopChildWindowDispose(iwt, spcw);
+			}
 
 		if (iwt->iwt_WindowTask.mt_WindowObject)
 			DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_Close);

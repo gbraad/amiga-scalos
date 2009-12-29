@@ -445,6 +445,9 @@ struct internalScaWindowTask
 	struct WindowHistoryEntry *iwt_CurrentHistoryEntry;	// Pointer to "current" entry in iwt_HistoryList
 
 	struct FileRequester *iwt_AslFileRequest;	// ASL file requester, e.g. for SCCM_IconWin_Browse
+
+	struct List iwt_PopChildList;			// List for ScaPopChildWindow structures;
+	SCALOSSEMAPHORE iwt_PopChildListSemaphore;	// Semaphore for protection of iwt_PopChildList
         };
 
 //-----------------------------------------------------------------------
@@ -1446,6 +1449,17 @@ struct IconWindowProperties
 	UWORD iwp_OpacityActive;
 	UWORD iwp_OpacityInactive;
 	enum ScalosSortOrder iwp_SortOrder;
+	};
+
+//---------------------------------------------------------------
+
+struct ScaPopChildWindow
+	{
+	struct Node spcw_Node;
+	BOOL spcw_WasLocked;		// Result from initial SuspendDrag
+	APTR spcw_EventHandle;		// Result from SCCM_AddListener
+	struct DragHandle *spcw_DragHandle;
+	struct internalScaWindowTask *spcw_DestWindowTask;
 	};
 
 //---------------------------------------------------------------

@@ -721,12 +721,15 @@ static void GenerateEvents(Class *cl, Object *o, Msg msg)
 	ScalosObtainSemaphore(&ListenerSema);
 
 	for (el = (struct EventListener *) ListenerList.lh_Head;
-		el != (struct EventListener *) &ListenerList.lh_Tail;
-		el = (struct EventListener *) el->el_Node.ln_Succ)
+		el != (struct EventListener *) &ListenerList.lh_Tail; )
 		{
+		struct EventListener *elNext = (struct EventListener *) el->el_Node.ln_Succ;
+
 		if (msg->MethodID == el->el_Method)
 			{
 			struct SM_RootEvent *smre = (struct SM_RootEvent *) SCA_AllocMessage(MTYP_RootEvent, 0);
+
+			d1(KPrintF("%s/%s/%ld:  smre=%08lx\n", __FILE__, __FUNC__, __LINE__, smre));
 
 			if (smre)
 				{
@@ -747,6 +750,8 @@ static void GenerateEvents(Class *cl, Object *o, Msg msg)
 				}
 			break;
 			}
+
+		el = elNext;
 		}
 
 	ScalosReleaseSemaphore(&ListenerSema);
