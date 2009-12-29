@@ -151,10 +151,13 @@ void EraseIconDropMark(struct internalScaWindowTask *iwt, struct ScaIconNode *in
 		d1(KPrintF("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
 		dmi = GetIconDropMark(iwt, in);
+		d1(KPrintF("%s/%s/%ld: dmi=%08lx\n", __FILE__, __FUNC__, __LINE__, dmi));
 		if (dmi)
 			{
 			RestoreFromDropMarkInfo(dmi, iwt->iwt_WindowTask.wt_Window->RPort);
+			d1(KPrintF("%s/%s/%ld: dmi=%08lx\n", __FILE__, __FUNC__, __LINE__, dmi));
 			ScalosFree(dmi);
+			d1(KPrintF("%s/%s/%ld: dmi=%08lx\n", __FILE__, __FUNC__, __LINE__, dmi));
 			}
 
 		in->in_Flags &= ~INF_DropMarkVisible;
@@ -443,6 +446,11 @@ static BOOL SaveToDropMarkInfo(struct DropMarkInfo *dmi,
 
 static void RestoreFromDropMarkInfo(struct DropMarkInfo *dmi, struct RastPort *DestRp)
 {
+	d1(KPrintF("%s/%s/%ld: ss_Owner=%08lx  ss_QueueCount=%ld  ss_NestCount=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		iInfos.xii_iinfos.ii_Screen->LayerInfo.Lock.ss_Owner, \
+		iInfos.xii_iinfos.ii_Screen->LayerInfo.Lock.ss_QueueCount, \
+		iInfos.xii_iinfos.ii_Screen->LayerInfo.Lock.ss_NestCount));
+
 	if (dmi && dmi->dmi_SaveBM[0])
 		{
 		WORD Width = 1 + (dmi->dmi_Rectangle.MaxX - dmi->dmi_Rectangle.MinX);
@@ -453,6 +461,8 @@ static void RestoreFromDropMarkInfo(struct DropMarkInfo *dmi, struct RastPort *D
 
 		InitRastPort(&rp);
 
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 		rp.BitMap = dmi->dmi_SaveBM[0];
 		ClipBlit(&rp,
 			0, 0,
@@ -461,6 +471,7 @@ static void RestoreFromDropMarkInfo(struct DropMarkInfo *dmi, struct RastPort *D
 			dmi->dmi_Rectangle.MinY,
 			Width, dmi->dmi_Thickness,
 			ABC | ABNC);
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		rp.BitMap = dmi->dmi_SaveBM[1];
 		ClipBlit(&rp,
 			0, 0,
@@ -469,6 +480,7 @@ static void RestoreFromDropMarkInfo(struct DropMarkInfo *dmi, struct RastPort *D
 			dmi->dmi_Rectangle.MinY,
 			dmi->dmi_Thickness, Height,
 			ABC | ABNC);
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		rp.BitMap = dmi->dmi_SaveBM[2];
 		ClipBlit(&rp,
 			0, 0,
@@ -477,6 +489,7 @@ static void RestoreFromDropMarkInfo(struct DropMarkInfo *dmi, struct RastPort *D
 			dmi->dmi_Rectangle.MaxY - (dmi->dmi_Thickness - 1),
 			Width, dmi->dmi_Thickness,
 			ABC | ABNC);
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		rp.BitMap = dmi->dmi_SaveBM[3];
 		ClipBlit(&rp,
 			0, 0,
@@ -486,9 +499,12 @@ static void RestoreFromDropMarkInfo(struct DropMarkInfo *dmi, struct RastPort *D
 			dmi->dmi_Thickness, Height,
 			ABC | ABNC);
 
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		WaitBlit();
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		CleanupDropMarkInfo(dmi);
                 }
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 
@@ -520,11 +536,11 @@ static struct DropMarkInfo *GetIconDropMark(struct internalScaWindowTask *iwt,
 		dmi != (struct DropMarkInfo *) &iwt->iwt_IconDropMarkInfoList.lh_Tail;
 		dmi = (struct DropMarkInfo *) dmi->dmi_Node.ln_Succ)
 		{
-			if (dmi->dmi_Icon == in)
-				{
-				Remove(&dmi->dmi_Node);
-				return dmi;
-				}
+		if (dmi->dmi_Icon == in)
+			{
+			Remove(&dmi->dmi_Node);
+			return dmi;
+			}
 		}
 
 	return NULL;

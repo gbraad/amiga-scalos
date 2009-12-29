@@ -1088,6 +1088,8 @@ BOOL SuspendDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt)
 {
 	BOOL WasLocked = FALSE;
 
+	d1(kprintf("%s/%s/%ld: START dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
+
 	if (dh)
 		{
 		if (!(dh->drgh_flags & DRGHF_LockSuspended))
@@ -1102,12 +1104,16 @@ BOOL SuspendDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt)
 			}
 		}
 
+	d1(kprintf("%s/%s/%ld: END dh=%08lx  WasLocked=%ld\n", __FILE__, __FUNC__, __LINE__, dh, WasLocked));
+
 	return WasLocked;
 }
 
 
 void ResumeDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked)
 {
+	d1(kprintf("%s/%s/%ld: START dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
+
 	if (dh)
 		{
 		if (dh->drgh_flags & DRGHF_LockSuspended)
@@ -1115,10 +1121,11 @@ void ResumeDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL w
 			SetWindowPointer(iwt->iwt_WindowTask.wt_Window,
 				WA_Pointer, NULL,
 				TAG_END);
-			ReLockDrag(dh, iwt, wasLocked);
 			dh->drgh_flags &= ~DRGHF_LockSuspended;
+			ReLockDrag(dh, iwt, wasLocked);
 			}
 		}
+	d1(kprintf("%s/%s/%ld: END dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
 }
 
 
@@ -1152,6 +1159,8 @@ void ReLockDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL w
 				iwt->iwt_WinScreen->MouseY,
 				0);
 			}
+
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%08lx\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_flags));
 		}
 	d1(kprintf("%s/%s/%ld: END dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
 }
@@ -1165,7 +1174,8 @@ LIBFUNC_P2(void, sca_LockDrag,
 
 	if (dh)
 		{
-		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%l08lx\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_flags));
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%08lx  Task=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
+			dh, dh->drgh_flags, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name));
 
 		if (!(dh->drgh_flags & DRGHF_LockSuspended) && !(dh->drgh_flags & DRGHF_LayersLocked))
 			{
@@ -1173,6 +1183,7 @@ LIBFUNC_P2(void, sca_LockDrag,
 			ScalosObtainSemaphore(&LayersSema);
 			ScaLockScreenLayers();
 			dh->drgh_flags |= DRGHF_LayersLocked;
+			d1(kprintf("%s/%s/%ld: dh=%08lx  ScaLockScreenLayers\n", __FILE__, __FUNC__, __LINE__, dh));
 			}
 		}
 }
@@ -1189,7 +1200,8 @@ LIBFUNC_P2(ULONG, sca_UnlockDrag,
 
 	if (dh)
 		{
-		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%l08lx\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_flags));
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%08lx  Task=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
+			dh, dh->drgh_flags, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name));
 		WasLocked = TRUE;
 
 		if (dh->drgh_flags & DRGHF_LayersLocked)
@@ -1198,8 +1210,11 @@ LIBFUNC_P2(ULONG, sca_UnlockDrag,
 			dh->drgh_flags &= ~DRGHF_LayersLocked;
 			ScaUnlockScreenLayers();
 			ScalosReleaseSemaphore(&LayersSema);
+			d1(kprintf("%s/%s/%ld: dh=%08lx  ScaUnlockScreenLayers\n", __FILE__, __FUNC__, __LINE__, dh));
 			}
 		}
+
+	d1(kprintf("%s/%s/%ld: END  WasLocked=%ld\n", __FILE__, __FUNC__, __LINE__, WasLocked));
 
 	return WasLocked;
 }
@@ -2586,6 +2601,7 @@ LIBFUNC_P2(void, sca_EndDrag,
 			SCA_FreeNode((struct ScalosNodeList *) &dh->drgh_SpecialIconList, &dh->drgh_SpecialIconList->in_Node);
 			}
 
+		d1(kprintf("%s/%s/%ld: dh=%08lx  drgh_flags=%08lx\n", __FILE__, __FUNC__, __LINE__, dh, dh->drgh_flags));
 		if (dh->drgh_flags & DRGHF_LayersLocked)
 			{
 			SCA_UnlockDrag(dh);
@@ -2593,8 +2609,10 @@ LIBFUNC_P2(void, sca_EndDrag,
 
 		ScalosFree(dh);
 
-		ClosePopupWindows(dh, FALSE);
+		if (!CurrentPrefs.pref_EnableDropMenu)
+			ClosePopupWindows(FALSE);
 		}
+	d1(kprintf("%s/%s/%ld: END  dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
 }
 LIBFUNC_END
 
@@ -3251,7 +3269,10 @@ static void BlitARGBMaskAlpha(ULONG SrcWidth, ULONG SrcHeight,
 
 //----------------------------------------------------------------------------
 
-void ClosePopupWindows(struct DragHandle *dh, BOOL CloseAll)
+// If CloseAll is FALSE, window under mouse pointer will not be closed
+// If CloseAll is TRUE, all popup windows are closed
+
+void ClosePopupWindows(BOOL CloseAll)
 {
 	struct ScaWindowStruct *ws, *wsNext;
 	struct internalScaWindowTask *iwtUnderMouse;
@@ -3259,7 +3280,7 @@ void ClosePopupWindows(struct DragHandle *dh, BOOL CloseAll)
 	struct ScaIconNode *inOuterBounds;
 	struct Window *foreignWin;
 
-	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: START  CloseAll=%ld\n", __FILE__, __FUNC__, __LINE__, CloseAll));
 
 	QueryObjectUnderPointer(&iwtUnderMouse, &in, &inOuterBounds, &foreignWin);
 

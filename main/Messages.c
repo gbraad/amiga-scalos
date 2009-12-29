@@ -55,34 +55,35 @@
 
 // local functions
 
-static ULONG WinRunMenuCmdMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG AsyncRoutineMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG ShowTitleMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG IconifyMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG UnIconifyMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG UpdateMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG RedrawMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG UpdateIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG AddIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG RemIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG WindowSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG WindowWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG TimerReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *Msg, APTR p);
-static ULONG ARexxRoutineMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG ShowPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG ShowStatusBarMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG RedrawIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG RedrawIconObjectMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG DoPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG PrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG DeltaMoveMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG SetThumbnailImageRemappedMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG SetThumbnailImageARGBMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG NewWindowPathMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
-static ULONG WindowPrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
+static ULONG WinRunMenuCmdMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG AsyncRoutineMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG ShowTitleMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG IconifyMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG UnIconifyMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG UpdateMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG RedrawMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG UpdateIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG AddIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG RemIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG WindowSleepMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG WindowWakeupMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG TimerReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *msg, APTR p);
+static ULONG ARexxRoutineMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG ShowPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG ShowStatusBarMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG RedrawIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG RedrawIconObjectMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG DoPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG PrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG DeltaMoveMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG SetThumbnailImageRemappedMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG SetThumbnailImageARGBMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG NewWindowPathMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG WindowPrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
+static ULONG WindowRootEventMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p);
 
 //----------------------------------------------------------------------------
 
@@ -125,7 +126,7 @@ struct MsgTableEntry iMsgTable[] =
 	{ NewWindowPathMsg,		NULL		},	// MTYP_NewWindowPath	switch window to display new drawer
 	{ WindowPrefsChangedMsg,	NULL		},	// MTYP_PrefsChanged	 notifies window about changed preferences
 	{ NULL,				NULL		},	// MTYP_StartChildProcess
-	{ NULL,				NULL		},	// MTYP_RootEvent
+	{ WindowRootEventMsg,		NULL		},	// MTYP_RootEvent
 	{ ShowControlBarMsg,		NULL		},	// MTYP_ShowControlBar
 	};
 
@@ -179,9 +180,9 @@ LONG SendAppMessage(struct AppObject *appo, ULONG AmClass, WORD x, WORD y)
 }
 
 
-ULONG AsyncReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *Msg, APTR p)
+ULONG AsyncReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *msg, APTR p)
 {
-	struct SM_AsyncBackFill *smab = (struct SM_AsyncBackFill *) Msg;
+	struct SM_AsyncBackFill *smab = (struct SM_AsyncBackFill *) msg;
 	struct PatternInfo *pti = (struct PatternInfo *) smab->smab_PatternInfoCopy;
 
 	smab->smab_PatternInfo->ptinf_message = NULL;
@@ -205,9 +206,9 @@ ULONG AsyncReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *Msg, APT
 }
 
 
-static ULONG WinRunMenuCmdMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG WinRunMenuCmdMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_RunMenuCmd *smrm = (struct SM_RunMenuCmd *) Msg;
+	struct SM_RunMenuCmd *smrm = (struct SM_RunMenuCmd *) msg;
 
 	d1(kprintf("%s/%s/%ld: MenuItem=%08lx Next=%08lx  IconNode=%08lx  Flags=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, smrm->smrm_MenuItem, smrm->smrm_MenuItem->mtre_Next, smrm->smrm_IconNode, smrm->smrm_Flags));
@@ -220,9 +221,9 @@ static ULONG WinRunMenuCmdMsg(struct internalScaWindowTask *iwt, struct Message 
 }
 
 
-static ULONG AsyncRoutineMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG AsyncRoutineMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_AsyncRoutine *smar = (struct SM_AsyncRoutine *) Msg;
+	struct SM_AsyncRoutine *smar = (struct SM_AsyncRoutine *) msg;
 
 	d1(KPrintF("%s/%s/%ld: smar=%08lx  args=%08lx \n", __FILE__, __FUNC__, __LINE__, smar, smar->smar_Args));
 
@@ -232,7 +233,7 @@ static ULONG AsyncRoutineMsg(struct internalScaWindowTask *iwt, struct Message *
 }
 
 
-ULONG CloseWindowMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+ULONG CloseWindowMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
 	d1(KPrintF("\n" "%s/%s/%ld: iwt=%08lx  ws=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WindowTask.mt_WindowStruct));
 
@@ -242,9 +243,9 @@ ULONG CloseWindowMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APT
 }
 
 
-static ULONG ShowTitleMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG ShowTitleMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_ShowTitle *smst = (struct SM_ShowTitle *) Msg;
+	struct SM_ShowTitle *smst = (struct SM_ShowTitle *) msg;
 
 	d1(KPrintF("\n" "%s/%s/%ld: iwt=%08lx  ws=%08lx  ShowTitle=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WindowTask.mt_WindowStruct, smst->smst_showTitle));
@@ -255,7 +256,7 @@ static ULONG ShowTitleMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 }
 
 
-static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
 	struct ScaWindowStruct *ws;
 	ULONG WaitCount = 0;
@@ -340,9 +341,9 @@ static ULONG AppSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg,
 }
 
 
-static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_AppWakeup *smaw = (struct SM_AppWakeup *) Msg;
+	struct SM_AppWakeup *smaw = (struct SM_AppWakeup *) msg;
 	struct ScaWindowStruct *ws;
 	struct Hook *hook;
 	ULONG WaitCount = 0;
@@ -415,7 +416,7 @@ static ULONG AppWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 }
 
 
-static ULONG IconifyMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG IconifyMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
 	DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_Iconify);
 
@@ -423,7 +424,7 @@ static ULONG IconifyMsg(struct internalScaWindowTask *iwt, struct Message *Msg, 
 }
 
 
-static ULONG UnIconifyMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG UnIconifyMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
 	DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_UnIconify);
 
@@ -431,13 +432,13 @@ static ULONG UnIconifyMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 }
 
 
-static ULONG UpdateMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG UpdateMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
 	struct ScaWindowStruct *ws = iwt->iwt_WindowTask.mt_WindowStruct;
 	UBYTE ActualViewByType;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  iwt_WinTitle=<%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
-	d1(kprintf("%s/%s/%ld: ReplyTask=%08lx\n", __FILE__, __FUNC__, __LINE__, Msg->mn_ReplyPort->mp_SigTask));
+	d1(kprintf("%s/%s/%ld: ReplyTask=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->mn_ReplyPort->mp_SigTask));
 	d1(KPrintF("%s/%s/%ld: ClassName=<%s>\n", __FILE__, __FUNC__, __LINE__, ws->ms_ClassName));
 
 	if (WSV_Type_DeviceWindow != iwt->iwt_WindowTask.mt_WindowStruct->ws_WindowType
@@ -476,9 +477,9 @@ static ULONG UpdateMsg(struct internalScaWindowTask *iwt, struct Message *Msg, A
 }
 
 
-static ULONG RedrawMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG RedrawMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_Redraw *smmr = (struct SM_Redraw *) Msg;
+	struct SM_Redraw *smmr = (struct SM_Redraw *) msg;
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Redraw, smmr->smmr_Flags);
 
@@ -486,9 +487,9 @@ static ULONG RedrawMsg(struct internalScaWindowTask *iwt, struct Message *Msg, A
 }
 
 
-static ULONG UpdateIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG UpdateIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_UpdateIcon *smui = (struct SM_UpdateIcon *) Msg;
+	struct SM_UpdateIcon *smui = (struct SM_UpdateIcon *) msg;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 	d1(kprintf("%s/%s/%ld: Lock=%08lx  IconName=<%s>\n",\
@@ -505,9 +506,9 @@ static ULONG UpdateIconMsg(struct internalScaWindowTask *iwt, struct Message *Ms
 }
 
 
-static ULONG AddIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG AddIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_AddIcon *smai = (struct SM_AddIcon *) Msg;
+	struct SM_AddIcon *smai = (struct SM_AddIcon *) msg;
 	ULONG Result;
 
 	Result = DoMethod(iwt->iwt_WindowTask.mt_MainObject,
@@ -521,9 +522,9 @@ static ULONG AddIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, 
 }
 
 
-static ULONG RemIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG RemIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_RemIcon *smri = (struct SM_RemIcon *) Msg;
+	struct SM_RemIcon *smri = (struct SM_RemIcon *) msg;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 	d1(kprintf("%s/%s/%ld: Lock=%08lx  IconName=<%s>\n",\
@@ -538,7 +539,7 @@ static ULONG RemIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, 
 }
 
 
-static ULONG WindowSleepMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG WindowSleepMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Sleep);
 
@@ -546,9 +547,9 @@ static ULONG WindowSleepMsg(struct internalScaWindowTask *iwt, struct Message *M
 }
 
 
-static ULONG WindowWakeupMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG WindowWakeupMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_Wakeup *smwu = (struct SM_Wakeup *) Msg;
+	struct SM_Wakeup *smwu = (struct SM_Wakeup *) msg;
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_WakeUp, smwu->smwu_ReLayout);
 
@@ -556,9 +557,9 @@ static ULONG WindowWakeupMsg(struct internalScaWindowTask *iwt, struct Message *
 }
 
 
-static ULONG TimerReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *Msg, APTR p)
+static ULONG TimerReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *msg, APTR p)
 {
-	struct SM_Timer *smtm = (struct SM_Timer *) Msg;
+	struct SM_Timer *smtm = (struct SM_Timer *) msg;
 
 	smtm->smtm_WindowStruct->ws_Flags &= ~WSV_FlagF_TimerMsgSent;
 
@@ -566,9 +567,9 @@ static ULONG TimerReplyMsg(struct internalScaWindowTask *iwt, 	struct Message *M
 }
 
 
-static ULONG ARexxRoutineMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG ARexxRoutineMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_ARexxRoutine *smrx = (struct SM_ARexxRoutine *) Msg;
+	struct SM_ARexxRoutine *smrx = (struct SM_ARexxRoutine *) msg;
 
 	(*smrx->smrx_EntryPoint)(&iwt->iwt_WindowTask, smrx->smrx_RexxMsg);
 
@@ -578,9 +579,9 @@ static ULONG ARexxRoutineMsg(struct internalScaWindowTask *iwt, struct Message *
 }
 
 
-static ULONG ShowPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG ShowPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_ShowPopupMenu *smpm = (struct SM_ShowPopupMenu *) Msg;
+	struct SM_ShowPopupMenu *smpm = (struct SM_ShowPopupMenu *) msg;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  smpm_Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smpm->smpm_Flags));
 
@@ -592,9 +593,9 @@ static ULONG ShowPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message 
 }
 
 
-static ULONG ShowStatusBarMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG ShowStatusBarMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_ShowStatusBar *smsb = (struct SM_ShowStatusBar *) Msg;
+	struct SM_ShowStatusBar *smsb = (struct SM_ShowStatusBar *) msg;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  smsb_Visible=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smsb->smsb_Visible));
 
@@ -629,9 +630,9 @@ static ULONG ShowStatusBarMsg(struct internalScaWindowTask *iwt, struct Message 
 }
 
 
-static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_ShowControlBar *smcb = (struct SM_ShowControlBar *) Msg;
+	struct SM_ShowControlBar *smcb = (struct SM_ShowControlBar *) msg;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  smcb_Visible=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smsb->smcb_Visible));
 
@@ -647,9 +648,9 @@ static ULONG ShowControlBarMsg(struct internalScaWindowTask *iwt, struct Message
 }
 
 
-static ULONG RedrawIconMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG RedrawIconMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_RedrawIcon *smri = (struct SM_RedrawIcon *) Msg;
+	struct SM_RedrawIcon *smri = (struct SM_RedrawIcon *) msg;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>  in=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smri->smri_Icon));
 
@@ -675,9 +676,9 @@ static ULONG RedrawIconMsg(struct internalScaWindowTask *iwt, struct Message *Ms
 }
 
 
-static ULONG RedrawIconObjectMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG RedrawIconObjectMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_RedrawIconObj *smrio = (struct SM_RedrawIconObj *) Msg;
+	struct SM_RedrawIconObj *smrio = (struct SM_RedrawIconObj *) msg;
 
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>  IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, smrio->smrio_IconObject));
 
@@ -776,9 +777,9 @@ static ULONG RedrawIconObjectMsg(struct internalScaWindowTask *iwt, struct Messa
 }
 
 
-static ULONG DoPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG DoPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_DoPopupMenu *smdpm = (struct SM_DoPopupMenu *) Msg;
+	struct SM_DoPopupMenu *smdpm = (struct SM_DoPopupMenu *) msg;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
@@ -798,9 +799,9 @@ static ULONG DoPopupMenuMsg(struct internalScaWindowTask *iwt, struct Message *M
 }
 
 
-static ULONG PrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG PrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_NewPreferences *smnp = (struct SM_NewPreferences *) Msg;
+	struct SM_NewPreferences *smnp = (struct SM_NewPreferences *) msg;
 
 	(void) p;
 
@@ -812,9 +813,9 @@ static ULONG PrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *
 }
 
 
-static ULONG DeltaMoveMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG DeltaMoveMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_DeltaMove *smdm = (struct SM_DeltaMove *) Msg;
+	struct SM_DeltaMove *smdm = (struct SM_DeltaMove *) msg;
 
 	(void) p;
 
@@ -828,9 +829,9 @@ static ULONG DeltaMoveMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 }
 
 
-static ULONG SetThumbnailImageRemappedMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG SetThumbnailImageRemappedMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_SetThumbnailImage_Remapped *smtir = (struct SM_SetThumbnailImage_Remapped *) Msg;
+	struct SM_SetThumbnailImage_Remapped *smtir = (struct SM_SetThumbnailImage_Remapped *) msg;
 
 	(void) p;
 
@@ -842,9 +843,9 @@ static ULONG SetThumbnailImageRemappedMsg(struct internalScaWindowTask *iwt, str
 }
 
 
-static ULONG SetThumbnailImageARGBMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG SetThumbnailImageARGBMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_SetThumbnailImage_ARGB *smtia = (struct SM_SetThumbnailImage_ARGB *) Msg;
+	struct SM_SetThumbnailImage_ARGB *smtia = (struct SM_SetThumbnailImage_ARGB *) msg;
 
 	(void) p;
 
@@ -856,9 +857,9 @@ static ULONG SetThumbnailImageARGBMsg(struct internalScaWindowTask *iwt, struct 
 }
 
 
-static ULONG NewWindowPathMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG NewWindowPathMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
-	struct SM_NewWindowPath *smnwp = (struct SM_NewWindowPath *) Msg;
+	struct SM_NewWindowPath *smnwp = (struct SM_NewWindowPath *) msg;
 
 	(void) p;
 
@@ -878,13 +879,13 @@ static ULONG NewWindowPathMsg(struct internalScaWindowTask *iwt, struct Message 
 }
 
 
-static ULONG WindowPrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p)
+static ULONG WindowPrefsChangedMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
 {
 	struct ScaWindowStruct *ws = iwt->iwt_WindowTask.mt_WindowStruct;
 	UBYTE ActualViewByType;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  iwt_WinTitle=<%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
-	d1(kprintf("%s/%s/%ld: ReplyTask=%08lx\n", __FILE__, __FUNC__, __LINE__, Msg->mn_ReplyPort->mp_SigTask));
+	d1(kprintf("%s/%s/%ld: ReplyTask=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->mn_ReplyPort->mp_SigTask));
 	d1(KPrintF("%s/%s/%ld: ClassName=<%s>\n", __FILE__, __FUNC__, __LINE__, ws->ms_ClassName));
 
 	// Rebuild control bar is necessary
@@ -919,6 +920,45 @@ static ULONG WindowPrefsChangedMsg(struct internalScaWindowTask *iwt, struct Mes
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Update);
+
+	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+	return 0;
+}
+
+
+static ULONG WindowRootEventMsg(struct internalScaWindowTask *iwt, struct Message *msg, APTR p)
+{
+	struct SM_RootEvent *smre = (struct SM_RootEvent *) msg;
+
+	(void) p;
+
+	d1(KPrintF("%s/%s/%ld: iwt=%08lx  iwt_WinTitle=<%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+	if (SCCM_WindowStartComplete == smre->smre_MethodID)
+		{
+		struct ScaPopChildWindow *spcw;
+
+		d1(KPrintF("%s/%s/%ld:  SCCM_WindowStartComplete  msg=%08lx\n", __FILE__, __FUNC__, __LINE__, msg));
+
+		ScalosObtainSemaphore(&iwt->iwt_PopChildListSemaphore);
+
+		for (spcw = (struct ScaPopChildWindow *) iwt->iwt_PopChildList.lh_Head;
+			spcw != (struct ScaPopChildWindow *) &iwt->iwt_PopChildList.lh_Tail;
+			spcw = (struct ScaPopChildWindow *) spcw->spcw_Node.ln_Succ)
+			{
+			if (spcw->spcw_EventHandle == smre->smre_EventHandle)
+				{
+				d1(KPrintF("%s/%s/%ld:  Found EventHandle %08lx\n", __FILE__, __FUNC__, __LINE__, spcw->spcw_EventHandle));
+				Remove(&spcw->spcw_Node);
+
+				PopChildWindowDispose(iwt, spcw);
+				break;
+				}
+			}
+		
+		ScalosReleaseSemaphore(&iwt->iwt_PopChildListSemaphore);
+		}
 
 	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 

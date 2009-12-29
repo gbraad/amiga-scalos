@@ -274,7 +274,7 @@ void BlitARGB(ULONG SrcWidth, ULONG SrcHeight,
 		const struct ARGB *Src, LONG SrcLeft, LONG SrcTop,
 		ULONG DestWidth, struct ARGB *Dest, LONG DestLeft, LONG DestTop,
 		ULONG Trans);
-void ClosePopupWindows(struct DragHandle *dh, BOOL CloseAll);
+void ClosePopupWindows(BOOL CloseAll);
 ///
 /* ------------------------------------------------- */
 
@@ -475,6 +475,7 @@ void IDCMPDragMouseMove(struct internalScaWindowTask *iwt, struct IntuiMessage *
 void IconWin_EndDrag(struct internalScaWindowTask *iwt);
 void IDCMPMMBMouseMove(struct internalScaWindowTask *iwt);
 void IDCMPDragIntuiTicks(struct internalScaWindowTask *iwt, struct IntuiMessage *msg);
+void PopChildWindowDispose(struct internalScaWindowTask *iwt, struct ScaPopChildWindow *spcw);
 ///
 /* ------------------------------------------------- */
 

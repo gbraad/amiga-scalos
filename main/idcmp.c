@@ -1560,7 +1560,7 @@ void AbortFunctions(struct internalScaWindowTask *iwt)
 	switch (iwt->iwt_MoveGadId)
 		{
 	case VGADGETID_DRAGMOUSEMOVE:
-		ClosePopupWindows(iInfos.xii_GlobalDragHandle, TRUE);
+		ClosePopupWindows(TRUE);
 		EndDrag(iwt);
 		IconWin_EndDrag(iwt);
 		RestoreDragIcons(iwt);
