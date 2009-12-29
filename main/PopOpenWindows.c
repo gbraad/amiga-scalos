@@ -10,6 +10,7 @@
 #define	__USE_SYSBASE
 
 #include <proto/exec.h>
+#include <proto/intuition.h>
 #include "debug.h"
 #include <proto/scalos.h>
 
