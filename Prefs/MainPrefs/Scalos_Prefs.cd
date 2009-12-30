@@ -1706,6 +1706,20 @@ operation that allows easy selection whether to \033bcopy\033n or\n\
 MSGID_DRAGNDROPPAGE_TRIGGERS_SCALOS_WINDOWS (//)
 Scalos Windows
 ;
+;
+MSGID_DRAGNDROPPAGE_POPOPENWINDOWS (//)
+Pop-Open Windows
+;
+;
+MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY (//)
+Pop-Open Delay:
+;
+;
+MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY_SHORTHELP (//)
+During a drag&drop operation, this is the number of seconds\n\
+you have to keep the mouse pointer steady over a drawer\n\
+or volume icon before it pops open.
+;
 ;-----------------------------------------------------------
 ;
 MSGID_WINDOWPAGE_WINDOWTITLES (25600//)

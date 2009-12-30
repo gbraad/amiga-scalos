@@ -2258,6 +2258,25 @@ MSGID_DRAGNDROPPAGE_TRIGGERS_SCALOS_WINDOWS
 Scalos Windows
 ;Scalos Windows
 ;
+;+++translateme+++
+MSGID_DRAGNDROPPAGE_POPOPENWINDOWS
+Pop-Open Windows
+;Pop-Open Windows
+;
+;+++translateme+++
+MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY
+Pop-Open Delay:
+;Pop-Open Delay:
+;
+;+++translateme+++
+MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY_SHORTHELP
+During a drag&drop operation, this is the number of seconds\n\
+you have to keep the mouse pointer steady over a drawer\n\
+or volume icon before it pops open.
+;During a drag&drop operation, this is the number of seconds\n\
+;you have to keep the mouse pointer steady over a drawer\n\
+;or volume icon before it pops open.
+;
 ;-----------------------------------------------------------
 ;
 MSGID_WINDOWPAGE_WINDOWTITLES
