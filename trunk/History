@@ -1918,7 +1918,8 @@ Additions/changes:
 
 --------------------Scalos main Preferences---------------------------------
 
- 40.26  20091011	jl	- Improvement: Add support for control bar also for standard (non-browser) windows,
+ 40.26  20091230	jl	- Improvement: Add configuration for drag&drop pop-open windows open delay.
+	20091011	jl	- Improvement: Add support for control bar also for standard (non-browser) windows,
 				  standard and browser-mode control bars can be configured independently.
 
  40.25	20090829	jl	- Improvement: allow TrueType font selection for text windows on windows/text windows page.

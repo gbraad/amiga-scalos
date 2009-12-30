@@ -6260,13 +6260,37 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 						End, //ColGroup
 
 						Child, HVSpace,
-					End, //HGroup
+					End, //VGroup
 
 				Child, HVSpace,
 
 				End, //VGroup
 
-			Child, HVSpace,
+				Child, VGroup,
+					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_POPOPENWINDOWS),
+					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
+
+					Child, HVSpace,
+
+					Child, HGroup,
+						Child, Label((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY)),
+						Child, app->Obj[SLIDER_POPOPENWINDOW_DELAY] = SliderObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_Numeric_Min, 1,
+							MUIA_Numeric_Max, 20,
+							MUIA_Slider_Horiz, TRUE,
+							MUIA_Numeric_Value, 3,
+						End, //Slider
+						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY_SHORTHELP),
+						Child, Label((ULONG) GetLocString(MSGID_STARTUPPAGE_DOWAITDELAY_SECONDS)),
+					End, //HGroup
+
+					Child, HVSpace,
+
+					End, //VGroup
+
+				Child, HVSpace,
 
 			End, //VGroup,
 		End, //Register

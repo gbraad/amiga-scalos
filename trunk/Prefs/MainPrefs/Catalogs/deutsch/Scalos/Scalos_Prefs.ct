@@ -2257,6 +2257,26 @@ MSGID_DRAGNDROPPAGE_TRIGGERS_SCALOS_WINDOWS
 Scalos-Fenster
 ;Scalos Windows
 ;
+;
+MSGID_DRAGNDROPPAGE_POPOPENWINDOWS
+Aufspringende Fenster
+;Pop-Open Windows
+;
+;
+MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY
+Wartezeit fürs Aufspringen:
+;Pop-Open Delay:
+;
+;
+MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY_SHORTHELP
+Die ist die Anzahl Sekunden, die der Mauszeiger während des\n\
+Ziehens und Ablegens stetig über einem Schubladen- oder\n\
+Datenträgerpiktogramm gehalten werden muß, damit sich\n\
+das zugehörige Fenster automatisch öffnet.
+;During a drag&drop operation, this is the number of seconds\n\
+;you have to keep the mouse pointer steady over a drawer\n\
+;or volume icon before it pops open.
+;
 ;-----------------------------------------------------------
 ;
 MSGID_WINDOWPAGE_WINDOWTITLES

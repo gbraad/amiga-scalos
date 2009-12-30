@@ -225,6 +225,7 @@ struct DragNDropGroup
 	UWORD			ddg_TransparencyIconDrag;
 	UWORD			ddg_TransparencyIconShadow;
 	UBYTE			ddg_bEnableDropMenu;
+	UWORD 			ddg_PopupWindowDelaySeconds;			 // Time in s before drawer window pops up during D&D
 };
 
 struct WindowsGroup
@@ -445,6 +446,7 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		50,			// ddg_TransparencyIconDrag
 		25,			// ddg_TransparencyIconShadow
 		FALSE,			// ddg_bEnableDropMenu
+		3, 			// ddg_PopupWindowDelaySeconds - Time in s before drawer window pops up during D&D
 	},
 	{
 	// Windows
@@ -780,6 +782,7 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	setslider(app->Obj[SLIDER_ICONTRANSPARENCY_DRAG], currentPrefs.DragNDrop.ddg_TransparencyIconDrag);
 	setslider(app->Obj[SLIDER_ICONTRANSPARENCY_SHADOW], currentPrefs.DragNDrop.ddg_TransparencyIconShadow);
 	setcheckmark(app->Obj[CHECK_ENABLE_DROPMENU], currentPrefs.DragNDrop.ddg_bEnableDropMenu);
+	setslider(app->Obj[SLIDER_POPOPENWINDOW_DELAY], currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds);
 	setslider(app->Obj[SLIDER_ICONTRANSPARENCY_DEFICONS], currentPrefs.Icons.ig_TransparencyDefaultIcons);
 	setcheckmark(app->Obj[CHECK_AUTOREMOVE], currentPrefs.DragNDrop.ddg_bAutoRemoveIcons);
 	setcheckmark(app->Obj[CHECK_EASY_MULTISELECT], currentPrefs.DragNDrop.ddg_bEasyMultiSelect);
@@ -1180,6 +1183,7 @@ static void FillPrefsStructures(struct SCAModule *app)
 	currentPrefs.DragNDrop.ddg_bGroupDrag			= !getv(app->Obj[CHECK_GROUPDRAG], MUIA_Selected);
 	currentPrefs.DragNDrop.ddg_bShowObjectCount		= getv(app->Obj[CHECK_SHOWDRAG], MUIA_Selected);
 	currentPrefs.DragNDrop.ddg_bEnableDropMenu		= getv(app->Obj[CHECK_ENABLE_DROPMENU], MUIA_Selected);
+	currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds	= getv(app->Obj[SLIDER_POPOPENWINDOW_DELAY], MUIA_Numeric_Value);
 
 	//copy qualifier
 	lp = (CONST_STRPTR) getv(app->Obj[COPY_HOTKEY], MUIA_String_Contents);
@@ -1468,6 +1472,7 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconShadow, &currentPrefs.DragNDrop.ddg_TransparencyIconShadow, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconShadow) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyDefaultIcon, &currentPrefs.Icons.ig_TransparencyDefaultIcons, sizeof(currentPrefs.Icons.ig_TransparencyDefaultIcons) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_EnableDropMenu, &currentPrefs.DragNDrop.ddg_bEnableDropMenu, sizeof(currentPrefs.DragNDrop.ddg_bEnableDropMenu) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.FileDisplay.fd_bShowStripes, sizeof(currentPrefs.FileDisplay.fd_bShowStripes) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.FileDisplay.fd_SelectTextIconName, sizeof(currentPrefs.FileDisplay.fd_SelectTextIconName) );
@@ -1655,6 +1660,7 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconShadow, &currentPrefs.DragNDrop.ddg_TransparencyIconShadow, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconShadow) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyDefaultIcon, &currentPrefs.Icons.ig_TransparencyDefaultIcons, sizeof(currentPrefs.Icons.ig_TransparencyDefaultIcons) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_EnableDropMenu, &currentPrefs.DragNDrop.ddg_bEnableDropMenu, sizeof(currentPrefs.DragNDrop.ddg_bEnableDropMenu) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) );
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.FileDisplay.fd_bShowStripes, sizeof(currentPrefs.FileDisplay.fd_bShowStripes) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.FileDisplay.fd_SelectTextIconName, sizeof(currentPrefs.FileDisplay.fd_SelectTextIconName) );
