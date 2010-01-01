@@ -30,6 +30,7 @@
 #include <graphics/gfxbase.h>
 #include <graphics/gfxmacros.h>
 #include <prefs/prefhdr.h>
+#include <prefs/popupmenu.h>
 
 #include <clib/alib_protos.h>
 
@@ -41,6 +42,7 @@
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 #include <proto/gadtools.h>
+#include <proto/preferences.h>
 #include <proto/utility.h>
 #include <proto/asl.h>
 #include <proto/pm.h>
@@ -64,7 +66,6 @@
 #include "PopupMenuPrefs.h"
 #include "DataTypesMCC.h"
 #include "FrameButtonMCC.h"
-#include "pmprefs.h"
 
 #include "plugin.h"
 
@@ -198,7 +199,7 @@ static SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, 
 static SAVEDS(void) INTERRUPT FrameTypeSelectHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT SelFrameTypeSelectHookFunc(struct Hook *hook, Object *o, Msg msg);
 
-static LONG ReadPrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filename, BOOL Quiet);
+static LONG ReadPrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR FilenameOld, CONST_STRPTR FilenameNew, BOOL Quiet);
 static LONG WritePrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filename);
 static LONG SaveIcon(struct PopupMenuPrefsInst *inst, CONST_STRPTR IconName);
 static Object *CreatePrefsImage(void);
@@ -208,6 +209,9 @@ static void ParseToolTypes(struct PopupMenuPrefsInst *inst, struct MUIP_ScalosPr
 static void PrefsToGUI(struct PopupMenuPrefsInst *inst, const struct PopupMenuPrefs *pmPrefs);
 static void GUItoPrefs(struct PopupMenuPrefsInst *inst, struct PopupMenuPrefs *pmPrefs);
 static ULONG getv(APTR obj, ULONG attr);
+static LONG ReadOldPrefsFile(CONST_STRPTR Filename, struct oldPopupMenuPrefs *prefs, const struct oldPopupMenuPrefs *defaultPrefs);
+static void ConvertPmPrefs(CONST_STRPTR prefsFileOld, CONST_STRPTR prefsFileNew);
+
 #if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
@@ -225,6 +229,7 @@ T_UTILITYBASE UtilityBase;
 struct IntuitionBase *IntuitionBase;
 struct PopupMenuBase *PopupMenuBase;
 struct Library *DataTypesBase;
+struct Library *PreferencesBase;
 
 #ifdef __amigaos4__
 struct Library *DOSBase;
@@ -240,6 +245,7 @@ struct PopupMenuIFace *IPopupMenu;
 struct DataTypesIFace *IDataTypes;
 struct Library *NewlibBase;
 struct Interface *INewlib;
+struct PreferencesIFace *IPreferences;
 #endif
 
 #include "PopupMenuPrefsImage.h"
@@ -317,24 +323,9 @@ static STRPTR PrefsPageNames[] =
 	(STRPTR) MSGID_PREFSPAGES_BORDERS,
 	(STRPTR) MSGID_PREFSPAGES_SPACING,
 	(STRPTR) MSGID_PREFSPAGES_TEXT,
-	(STRPTR) MSGID_PREFSPAGES_PULLDOWN,
-	(STRPTR) MSGID_PREFSPAGES_ADVANCED,
+//	  (STRPTR) MSGID_PREFSPAGES_PULLDOWN,
 	(STRPTR) MSGID_PREFSPAGES_TRANSPARENCY,
-	NULL
-	};
-
-static STRPTR PulldownModeNames[] =
-	{
-	(STRPTR) MSGID_PULLDOWN_ALWAYS,
-	(STRPTR) MSGID_PULLDOWN_POPUP,
-	(STRPTR) MSGID_PULLDOWN_POSITION_DEPENDENT,
-	NULL
-	};
-
-static STRPTR AppearAtNames[] =
-	{
-	(STRPTR) MSGID_APPEAR_AT_SCREENBAR,
-	(STRPTR) MSGID_APPEAR_AT_WINDOWBAR,
+//	  (STRPTR) MSGID_PREFSPAGES_ADVANCED,
 	NULL
 	};
 
@@ -357,13 +348,13 @@ static STRPTR AnimationNames[] =
 	NULL
 	};
 
-static const struct PopupMenuPrefs DefaultPMPrefs = {
+static const struct PopupMenuPrefs DefaultPMPrefs =
+	{
 	1,			/* pmp_Flags		*/
 	0,			/* pmp_SubMenuDelay	*/
 	PMP_ANIM_NONE,		/* pmp_Animation	*/
 	PMP_PD_SCREENBAR,	/* pmp_PulldownPos	*/
 	FALSE,			/* pmp_Sticky		*/
-	FALSE,			/* pmp_SameHeight	*/
 	0,			/* pmp_MenuBorder	*/
 	0,			/* pmp_SelItemBorder	*/
 	0,			/* pmp_SeparatorBar	*/
@@ -375,17 +366,8 @@ static const struct PopupMenuPrefs DefaultPMPrefs = {
 	2,			/* pmp_YSpace		*/
 	2,			/* pmp_Intermediate	*/
 	0,			/* pmp_TextDisplace	*/
-	-30,			/* pmp_ShadowR		*/
-	-30,			/* pmp_ShadowG		*/
-	-30,			/* pmp_ShadowB		*/
-	0,			/* pmp_TransparencyR	*/
-	0,			/* pmp_TransparencyG	*/
-	0,			/* pmp_TransparencyB	*/
 	0,			/* pmp_TransparencyBlur	*/
-	0,			/* pmp_AnimationSpeed	*/
-
-	{0},			/* pmp_Reserved		*/
-};
+	};
 
 //----------------------------------------------------------------------------
 
@@ -578,14 +560,14 @@ DISPATCHER(PopupMenuPrefs)
 
 	case MUIM_ScalosPrefs_LoadConfig:
 		inst = (struct PopupMenuPrefsInst *) INST_DATA(cl, obj);
-		ReadPrefsFile(inst, PMP_PATH, TRUE);
+		ReadPrefsFile(inst, PMP_PATH_OLD, PMP_PATH_NEW, TRUE);
 		PrefsToGUI(inst, &inst->mpb_PMPrefs);
 		SetChangedFlag(inst, FALSE);
 		break;
 
 	case MUIM_ScalosPrefs_UseConfig:
 		inst = (struct PopupMenuPrefsInst *) INST_DATA(cl, obj);
-		WritePrefsFile(inst, PMP_PATH);
+		WritePrefsFile(inst, PMP_PATH_NEW);
 		PM_ReloadPrefs();
 		SetChangedFlag(inst, FALSE);
 		break;
@@ -594,7 +576,7 @@ DISPATCHER(PopupMenuPrefs)
 		inst = (struct PopupMenuPrefsInst *) INST_DATA(cl, obj);
 		if (inst->mpb_Changed)
 			{
-			WritePrefsFile(inst, PMP_PATH);
+			WritePrefsFile(inst, PMP_PATH_NEW);
 			PM_ReloadPrefs();
 			SetChangedFlag(inst, FALSE);
 			}
@@ -602,8 +584,8 @@ DISPATCHER(PopupMenuPrefs)
 
 	case MUIM_ScalosPrefs_SaveConfig:
 		inst = (struct PopupMenuPrefsInst *) INST_DATA(cl, obj);
-		WritePrefsFile(inst, PMP_S_PATH);
-		WritePrefsFile(inst, PMP_PATH);
+		WritePrefsFile(inst, PMP_S_PATH_NEW);
+		WritePrefsFile(inst, PMP_PATH_NEW);
 		PM_ReloadPrefs();
 		SetChangedFlag(inst, FALSE);
 		break;
@@ -612,8 +594,8 @@ DISPATCHER(PopupMenuPrefs)
 		inst = (struct PopupMenuPrefsInst *) INST_DATA(cl, obj);
 		if (inst->mpb_Changed)
 			{
-			WritePrefsFile(inst, PMP_S_PATH);
-			WritePrefsFile(inst, PMP_PATH);
+			WritePrefsFile(inst, PMP_S_PATH_NEW);
+			WritePrefsFile(inst, PMP_PATH_NEW);
 			PM_ReloadPrefs();
 			SetChangedFlag(inst, FALSE);
 			}
@@ -664,7 +646,7 @@ DISPATCHER(PopupMenuPrefs)
 		struct MUIP_ScalosPrefs_LoadNamedConfig *lnc = (struct MUIP_ScalosPrefs_LoadNamedConfig *) msg;
 
 		inst = (struct PopupMenuPrefsInst *) INST_DATA(cl, obj);
-		ReadPrefsFile(inst, lnc->ConfigFileName, FALSE);
+		ReadPrefsFile(inst, "", lnc->ConfigFileName, FALSE);
 		PrefsToGUI(inst, &inst->mpb_PMPrefs);
 		}
 		break;
@@ -702,7 +684,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 /*
 			//------ Colours ----------------------
 			Child, VGroup,
-				MUIA_Background, MUII_PageBack,
+				MUIA_Background, MUII_RegisterBack,
 				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_COLOURSPAGE_TITLE),
 
 				Child, HGroup,
@@ -729,7 +711,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 */
 			//------ Misc. ----------------------
 			Child, VGroup,
-				MUIA_Background, MUII_PageBack,
+				MUIA_Background, MUII_RegisterBack,
 				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_MISCPAGE_TITLE),
 
 				Child, HVSpace,
@@ -750,6 +732,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				Child, VGroup,
 					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
 					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_MISCPAGE_ANIMATION),
 
 					Child, ColGroup(2),
@@ -759,16 +742,6 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 							MUIA_Cycle_Entries, AnimationNames,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_MISCPAGE_ANIMATION_TYPE_SHORTHELP),
 							End, //Cycle
-
-						Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_ANIMATION_SPEED)),
-						Child, inst->mpb_Objects[OBJNDX_Slider_AnimationSpeed] = SliderObject,
-							MUIA_CycleChain, TRUE,
-							MUIA_Numeric_Min, 0,
-							MUIA_Numeric_Max, 100,
-							MUIA_Slider_Horiz, TRUE,
-							MUIA_Numeric_Value, 2,
-							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_MISCPAGE_ANIMATION_SPEED_SHORTHELP),
-							End, //SliderObject
 						End, //ColGroup
 					End, //VGroup
 
@@ -778,13 +751,9 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 				Child, HVSpace,
 
 				Child, ColGroup(4),
+					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
 
-					Child, HVSpace,
-
-					Child, inst->mpb_Objects[OBJNDX_CheckMark_SameHeight] = CheckMarkHelp(TRUE, MSGID_MISCPAGE_SAME_HEIGHT_SHORTHELP),
-					Child, LLabel1((ULONG) GetLocString(MSGID_MISCPAGE_SAME_HEIGHT)),
-
-					Child, HVSpace,
 					Child, HVSpace,
 
 					Child, inst->mpb_Objects[OBJNDX_CheckMark_MenuShadows] = CheckMarkHelp(TRUE, MSGID_MISCPAGE_MENUSHADOWS_SHORTHELP),
@@ -793,11 +762,16 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 					Child, HVSpace,
 
+					Child, inst->mpb_Objects[OBJNDX_CheckMark_RealShadows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP),
+					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_REALSHADOWS)),
+
+					Child, HVSpace,
+					Child, HVSpace,
+
 					Child, inst->mpb_Objects[OBJNDX_CheckMark_Sticky] = CheckMarkHelp(TRUE, MSGID_MISCPAGE_STICKY_SHORTHELP),
 					Child, LLabel1((ULONG) GetLocString(MSGID_MISCPAGE_STICKY)),
 
 					Child, HVSpace,
-
 					End, //ColGroup
 
 				Child, HVSpace,
@@ -805,7 +779,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 /*
 			//------ Images ----------------------
 			Child, VGroup,
-				MUIA_Background, MUII_PageBack,
+				MUIA_Background, MUII_RegisterBack,
 				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_IMAGESPAGE_TITLE),
 
 				Child, HVSpace,
@@ -832,7 +806,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 */
 			//------ Borders ----------------------
 			Child, VGroup,
-				MUIA_Background, MUII_PageBack,
+				MUIA_Background, MUII_RegisterBack,
 				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_BORDERSPAGE_TITLE),
 
 				Child, HVSpace,
@@ -895,7 +869,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 			//------ Spacing ----------------------
 			Child, VGroup,
-				MUIA_Background, MUII_PageBack,
+				MUIA_Background, MUII_RegisterBack,
 				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_SPACINGPAGE_TITLE),
 
 				Child, HVSpace,
@@ -1001,7 +975,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 			//------ Text ----------------------
 			Child, VGroup,
-				MUIA_Background, MUII_PageBack,
+				MUIA_Background, MUII_RegisterBack,
 				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TEXTPAGE_TITLE),
 
 				Child, HVSpace,
@@ -1078,154 +1052,25 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				End, //VGroup
 
-			//------ Pulldown ----------------------
-			Child, VGroup,
-				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_PULLDOWNPAGE_TITLE),
-
-				Child, HVSpace,
-
-				Child, ColGroup(2),
-					Child, Label1((ULONG) GetLocString(MSGID_PULLDOWNPAGE_MODE)),
-					Child, inst->mpb_Objects[OBJNDX_Cycle_PulldownMode] = CycleObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Cycle_Entries, PulldownModeNames,
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PULLDOWNPAGE_MODE_SHORTHELP),
-						End, //Cycle
-
-					Child, Label1((ULONG) GetLocString(MSGID_PULLDOWNPAGE_APPEAR_AT)),
-					Child, inst->mpb_Objects[OBJNDX_Cycle_PulldownLocation] = CycleObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Cycle_Entries, AppearAtNames,
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PULLDOWNPAGE_APPEAR_AT_SHORTHELP),
-						End, //Cycle
-					End, //ColGroup
-
-				Child, HVSpace,
-				
-                                End, //VGroup
-
-			//------ Advanced ----------------------
-			Child, VGroup,
-				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_TITLE),
-
-				Child, HVSpace,
-
-				Child, HGroup,
-					Child, Label1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION)),
-					Child, inst->mpb_Objects[OBJNDX_Cycle_ColourPrecision] = CycleObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Cycle_Entries, ColourMatchingPrecisionNames,
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PULLDOWNPAGE_MODE_SHORTHELP),
-						End, //CycleObject
-					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION_SHORTHELP),
-					End, //HGroup
-
-				Child, HVSpace,
-
-				Child, ColGroup(3),
-
-					Child, inst->mpb_Objects[OBJNDX_CheckMark_UseWindows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_USE_WINDOWS_SHORTHELP),
-					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_USE_WINDOWS)),
-
-					Child, HVSpace,
-
-					Child, inst->mpb_Objects[OBJNDX_CheckMark_RealShadows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP),
-					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_REALSHADOWS)),
-
-					Child, HVSpace,
-
-					End, //ColGroup
-
-				Child, HVSpace,
-
-				Child, ColGroup(2),
-					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_INTENSITY),
-					GroupFrame,
-
-					Child, Label1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_R)),
-					Child, inst->mpb_Objects[OBJNDX_Slider_ShadowR] = SliderObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Numeric_Min, -100,
-						MUIA_Numeric_Max, 100,
-						MUIA_Slider_Horiz, TRUE,
-						MUIA_Numeric_Value, -16,
-						MUIA_Numeric_Format, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_NUMERIC_FORMAT),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_R_SHORTHELP),
-						End, //SliderObject
-					Child, Label1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_G)),
-					Child, inst->mpb_Objects[OBJNDX_Slider_ShadowG] = SliderObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Numeric_Min, -100,
-						MUIA_Numeric_Max, 100,
-						MUIA_Slider_Horiz, TRUE,
-						MUIA_Numeric_Value, -16,
-						MUIA_Numeric_Format, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_NUMERIC_FORMAT),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_G_SHORTHELP),
-						End, //SliderObject
-					Child, Label1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_B)),
-					Child, inst->mpb_Objects[OBJNDX_Slider_ShadowB] = SliderObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Numeric_Min, -100,
-						MUIA_Numeric_Max, 100,
-						MUIA_Slider_Horiz, TRUE,
-						MUIA_Numeric_Value, -16,
-						MUIA_Numeric_Format, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_NUMERIC_FORMAT),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_SHADOW_B_SHORTHELP),
-						End, //SliderObject
-					End, //ColGroup
-
-				Child, HVSpace,
-
-				End, //VGroup
-
 			//------ Transparency ----------------------
 			Child, VGroup,
-				MUIA_Background, MUII_PageBack,
+				MUIA_Background, MUII_RegisterBack,
 				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TITLE),
 
 				Child, HVSpace,
 
-				Child, ColGroup(2),
-					GroupFrame,
-					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSPARENCY),
+				Child, ColGroup(4),
+					Child, HVSpace,
 
-					Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_R)),
-					Child, inst->mpb_Objects[OBJNDX_Slider_TranspR] = SliderObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Numeric_Min, -100,
-						MUIA_Numeric_Max, 100,
-						MUIA_Slider_Horiz, TRUE,
-						MUIA_Numeric_Value, -16,
-						MUIA_Numeric_Format, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_NUMERIC_FORMAT),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_R_SHORTHELP),
-						End, //SliderObject
+					Child, inst->mpb_Objects[OBJNDX_CheckMark_Transparency_Enable] = CheckMarkHelp(TRUE, MSGID_TRANSPARENCYPAGE_ENABLE_SHORTHELP),
+					Child, LLabel1((ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_ENABLE)),
 
-					Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_G)),
-					Child, inst->mpb_Objects[OBJNDX_Slider_TranspG] = SliderObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Numeric_Min, -100,
-						MUIA_Numeric_Max, 100,
-						MUIA_Slider_Horiz, TRUE,
-						MUIA_Numeric_Value, -16,
-						MUIA_Numeric_Format, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_NUMERIC_FORMAT),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_G_SHORTHELP),
-						End, //SliderObject
-
-					Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_B)),
-					Child, inst->mpb_Objects[OBJNDX_Slider_TranspB] = SliderObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Numeric_Min, -100,
-						MUIA_Numeric_Max, 100,
-						MUIA_Slider_Horiz, TRUE,
-						MUIA_Numeric_Value, -16,
-						MUIA_Numeric_Format, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_NUMERIC_FORMAT),
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_TRANSP_B_SHORTHELP),
-						End, //SliderObject
+					Child, HVSpace,
 					End, //ColGroup
 
 				Child, HVSpace,
 
-				Child, ColGroup(2),
+				Child, inst->mpb_Objects[OBJNDX_Group_Transp_Blur] = ColGroup(2),
 					Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCYPAGE_BLUR)),
 					Child, inst->mpb_Objects[OBJNDX_Slider_Transp_Blur] = SliderObject,
 						MUIA_CycleChain, TRUE,
@@ -1241,7 +1086,42 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 				Child, HVSpace,
 
 				End, //VGroup
+/*
+			//------ Advanced ----------------------
+			Child, VGroup,
+				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_TITLE),
+				MUIA_Background, MUII_RegisterBack,
 
+				Child, HVSpace,
+
+				Child, HGroup,
+					Child, Label1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION)),
+					Child, inst->mpb_Objects[OBJNDX_Cycle_ColourPrecision] = CycleObject,
+						MUIA_CycleChain, TRUE,
+						MUIA_Cycle_Entries, ColourMatchingPrecisionNames,
+						End, //CycleObject
+					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION_SHORTHELP),
+					End, //HGroup
+
+				Child, HVSpace,
+
+				Child, ColGroup(3),
+					Child, inst->mpb_Objects[OBJNDX_CheckMark_UseWindows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_USE_WINDOWS_SHORTHELP),
+					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_USE_WINDOWS)),
+
+					Child, HVSpace,
+
+					Child, inst->mpb_Objects[OBJNDX_CheckMark_RealShadows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP),
+					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_REALSHADOWS)),
+
+					Child, HVSpace,
+
+					End, //ColGroup
+
+				Child, HVSpace,
+
+				End, //VGroup
+*/
                         End, //RegisterObject
 
 		End; //VGroup
@@ -1282,6 +1162,14 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 		inst->mpb_Objects[OBJNDX_Button_OldLook], 3, MUIM_Set, MUIA_Selected, FALSE);
 	DoMethod(inst->mpb_Objects[OBJNDX_Button_OldLook], MUIM_Notify, MUIA_Selected, TRUE,
 		inst->mpb_Objects[OBJNDX_Button_NewLook], 3, MUIM_Set, MUIA_Selected, FALSE);
+
+	// Disable transparency settings if transparency is disabled
+	DoMethod(inst->mpb_Objects[OBJNDX_CheckMark_Transparency_Enable], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		inst->mpb_Objects[OBJNDX_Group_Transp_Blur], 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+
+	// Disable "real shadows" settings if shadow is disabled
+	DoMethod(inst->mpb_Objects[OBJNDX_CheckMark_MenuShadows], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+		inst->mpb_Objects[OBJNDX_CheckMark_RealShadows], 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 	d1(kprintf("%s/%s/%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __FILE__, __FUNC__, __LINE__, LocaleBase, IFFParseBase));
@@ -1359,6 +1247,16 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif
 
+	PreferencesBase	= OpenLibrary("preferences.library", 39);
+	if (NULL == PreferencesBase)
+		return FALSE;
+	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld  PreferencesBase=%08lx\n", __LINE__, PreferencesBase));
+#ifdef __amigaos4__
+	IPreferences = (struct PreferencesIFace *) GetInterface(PreferencesBase, "main", 1, NULL);
+	if (NULL == IPreferences)
+		return FALSE;
+#endif
+
 	PopupMenuBase = (struct PopupMenuBase *) OpenLibrary(POPUPMENU_NAME, POPUPMENU_VERSION);
 	if (NULL == PopupMenuBase)
 		return FALSE;
@@ -1426,6 +1324,13 @@ static void CloseLibraries(void)
 		DOSBase = NULL;
 		}
 #ifdef __amigaos4__
+	if (PreferencesBase)
+		{
+#ifdef __amigaos4__
+		DropInterface((struct Interface *)IPreferences);
+#endif
+		CloseLibrary(PreferencesBase);
+		}
 	if (IDataTypes)
 		{
 		DropInterface((struct Interface *)IDataTypes);
@@ -1644,7 +1549,7 @@ static SAVEDS(APTR) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg
 				{
 				BPTR oldDir = CurrentDir(dirLock);
 
-				ReadPrefsFile(inst, inst->mpb_LoadReq->fr_File, FALSE);
+				ReadPrefsFile(inst, "", inst->mpb_LoadReq->fr_File, FALSE);
 				PrefsToGUI(inst, &inst->mpb_PMPrefs);
 
 				CurrentDir(oldDir);
@@ -1662,7 +1567,7 @@ static SAVEDS(APTR) INTERRUPT LastSavedHookFunc(struct Hook *hook, Object *o, Ms
 {
 	struct PopupMenuPrefsInst *inst = (struct PopupMenuPrefsInst *) hook->h_Data;
 
-	ReadPrefsFile(inst, PMP_S_PATH, FALSE);
+	ReadPrefsFile(inst, PMP_S_PATH_OLD, PMP_S_PATH_NEW, FALSE);
 	PrefsToGUI(inst, &inst->mpb_PMPrefs);
 	SetChangedFlag(inst, TRUE);
 
@@ -1675,7 +1580,7 @@ static SAVEDS(APTR) INTERRUPT RestoreHookFunc(struct Hook *hook, Object *o, Msg 
 {
 	struct PopupMenuPrefsInst *inst = (struct PopupMenuPrefsInst *) hook->h_Data;
 
-	ReadPrefsFile(inst, PMP_PATH, FALSE);
+	ReadPrefsFile(inst, PMP_PATH_OLD, PMP_PATH_NEW, FALSE);
 	PrefsToGUI(inst, &inst->mpb_PMPrefs);
 	SetChangedFlag(inst, TRUE);
 
@@ -1747,101 +1652,60 @@ static SAVEDS(APTR) INTERRUPT AboutHookFunc(struct Hook *hook, Object *o, Msg ms
 
 //----------------------------------------------------------------------------
 
-static LONG ReadPrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filename, BOOL Quiet)
+static LONG ReadPrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR FilenameOld, CONST_STRPTR FilenameNew, BOOL Quiet)
 {
-	LONG Result;
-	struct IFFHandle *iff;
-	BOOL iffOpened = FALSE;
+	LONG Result = RETURN_OK;
+	APTR myPrefsHandle;
 
 	d1(KPrintF("%s/%s/%ld:  Filename=<%s>  LocaleBase=%08lx  IFFParseBase=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, Filename, LocaleBase, IFFParseBase));
 
-	do	{
-		iff = AllocIFF();
-		if (NULL == iff)
-			{
-			Result = IoErr();
-			break;
-			}
+	ConvertPmPrefs(FilenameOld, FilenameNew);
 
-		InitIFFasDOS(iff);
-
-		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
-			{
-			Result = IoErr();
-			break;
-			}
-
-		Result = OpenIFF(iff, IFFF_READ);
-		if (RETURN_OK != Result)
-			break;
-
-		iffOpened = TRUE;
-
-		Result = StopChunks(iff, StopChunkList, 2);
-		if (RETURN_OK != Result)
-			break;
-
-		while (1)
-			{
-			struct ContextNode *cn;
-
-			Result = ParseIFF(iff, IFFPARSE_SCAN);
-			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
-			if (RETURN_OK != Result)
-				break;
-
-			cn = CurrentChunk(iff);
-
-			d1(KPrintF("%s/%s/%ld:  cn=%08lx\n", __FILE__, __FUNC__, __LINE__, cn));
-			if (NULL == cn)
-				break;
-
-			d1(KPrintF("%s/%s/%ld:  cn=%08lx  id=%08lx\n", __FILE__, __FUNC__, __LINE__, cn, cn->cn_ID));
-			if (ID_PMNU == cn->cn_ID)
-				{
-				LONG Actual;
-
-				d1(KPrintF("%s/%s/%ld:  cn_Size=%lu\n", __FILE__, __FUNC__, __LINE__, cn->cn_Size));
-
-				if (cn->cn_Size != sizeof(struct PopupMenuPrefs))
-					break;
-
-				Actual = ReadChunkBytes(iff, &inst->mpb_PMPrefs, cn->cn_Size);
-				d1(KPrintF("%s/%s/%ld:  Actual=%lu\n", __FILE__, __FUNC__, __LINE__, Actual));
-				if (Actual != cn->cn_Size)
-					break;
-				}
-			}
-
-		d1(KPrintF(__FILE__ "%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
-		if (IFFERR_EOF == Result)
-			Result = RETURN_OK;
-		} while (0);
-
-	if (iff)
+	myPrefsHandle = AllocPrefsHandle("PopupMenuPrefs");
+	if (myPrefsHandle)
 		{
-		if (iffOpened)
-			CloseIFF(iff);
+		LONG lID = MAKE_ID('M', 'A', 'I', 'N');
 
-		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+		ReadPrefsHandle(myPrefsHandle, FilenameNew);
 
-		FreeIFF(iff);
+		GetPreferences(myPrefsHandle, lID, PMP_Flags, &inst->mpb_PMPrefs.pmp_Flags, sizeof(inst->mpb_PMPrefs.pmp_Flags) );
+		GetPreferences(myPrefsHandle, lID, PMP_SubMenuDelay, &inst->mpb_PMPrefs.pmp_SubMenuDelay, sizeof(inst->mpb_PMPrefs.pmp_SubMenuDelay) );
+		GetPreferences(myPrefsHandle, lID, PMP_AnimationType, &inst->mpb_PMPrefs.pmp_Animation, sizeof(inst->mpb_PMPrefs.pmp_Animation) );
+		GetPreferences(myPrefsHandle, lID, PMP_PullDownMenuPos, &inst->mpb_PMPrefs.pmp_PulldownPos, sizeof(inst->mpb_PMPrefs.pmp_PulldownPos) );
+		GetPreferences(myPrefsHandle, lID, PMP_Sticky, &inst->mpb_PMPrefs.pmp_Sticky, sizeof(inst->mpb_PMPrefs.pmp_Sticky) );
+		GetPreferences(myPrefsHandle, lID, PMP_MenuBorderType, &inst->mpb_PMPrefs.pmp_MenuBorder, sizeof(inst->mpb_PMPrefs.pmp_MenuBorder) );
+		GetPreferences(myPrefsHandle, lID, PMP_SelItemBorderType, &inst->mpb_PMPrefs.pmp_SelItemBorder, sizeof(inst->mpb_PMPrefs.pmp_SelItemBorder) );
+		GetPreferences(myPrefsHandle, lID, PMP_SeparatorBarStyle, &inst->mpb_PMPrefs.pmp_SeparatorBar, sizeof(inst->mpb_PMPrefs.pmp_SeparatorBar) );
+		GetPreferences(myPrefsHandle, lID, PMP_XOffset, &inst->mpb_PMPrefs.pmp_XOffset, sizeof(inst->mpb_PMPrefs.pmp_XOffset) );
+		GetPreferences(myPrefsHandle, lID, PMP_YOffset, &inst->mpb_PMPrefs.pmp_YOffset, sizeof(inst->mpb_PMPrefs.pmp_YOffset) );
+		GetPreferences(myPrefsHandle, lID, PMP_XSpace, &inst->mpb_PMPrefs.pmp_XSpace, sizeof(inst->mpb_PMPrefs.pmp_XSpace) );
+		GetPreferences(myPrefsHandle, lID, PMP_YSpace, &inst->mpb_PMPrefs.pmp_YSpace, sizeof(inst->mpb_PMPrefs.pmp_YSpace) );
+		GetPreferences(myPrefsHandle, lID, PMP_Intermediate, &inst->mpb_PMPrefs.pmp_Intermediate, sizeof(inst->mpb_PMPrefs.pmp_Intermediate) );
+		GetPreferences(myPrefsHandle, lID, PMP_TransparencyBlur, &inst->mpb_PMPrefs.pmp_TransparencyBlur, sizeof(inst->mpb_PMPrefs.pmp_TransparencyBlur) );
+		GetPreferences(myPrefsHandle, lID, PMP_TextDisplace, &inst->mpb_PMPrefs.pmp_TextDisplace, sizeof(inst->mpb_PMPrefs.pmp_TextDisplace) );
+		GetPreferences(myPrefsHandle, lID, PMP_MenuTitleStyle, &inst->mpb_PMPrefs.pmp_MenuTitles, sizeof(inst->mpb_PMPrefs.pmp_MenuTitles) );
+		GetPreferences(myPrefsHandle, lID, PMP_MenuItemStyle, &inst->mpb_PMPrefs.pmp_MenuItems, sizeof(inst->mpb_PMPrefs.pmp_MenuItems) );
+
+		FreePrefsHandle(myPrefsHandle);
 		}
 
-	if (RETURN_OK != Result && !Quiet)
+	if (RETURN_OK == Result)
+		{
+		if (inst->mpb_fCreateIcons)
+			SaveIcon(inst, FilenameNew);
+		}
+	else
 		{
 		char Buffer[120];
 
 		Fault(Result, "", Buffer, sizeof(Buffer) - 1);
 
 		// MUI_RequestA()
-		MUI_Request(inst->mpb_Objects[OBJNDX_APP_Main], inst->mpb_Objects[OBJNDX_WIN_Main], 0, NULL, 
-			GetLocString(MSGID_ABOUTREQOK), 
-			GetLocString(MSGID_REQTITLE_READERROR), 
-			Filename,
+		MUI_Request(inst->mpb_Objects[OBJNDX_APP_Main], inst->mpb_Objects[OBJNDX_WIN_Main], 0, NULL,
+			GetLocString(MSGID_ABOUTREQOK),
+			GetLocString(MSGID_REQTITLE_SAVEERROR),
+			FilenameNew,
 			Buffer);
 		}
 
@@ -1855,138 +1719,37 @@ static LONG ReadPrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filename
 
 static LONG WritePrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filename)
 {
-	LONG Result;
-	struct IFFHandle *iff;
-	BOOL IffOpen = FALSE;
+	APTR myPrefsHandle;
+	LONG Result = RETURN_OK;
 
-	do	{
-		static const struct PrefHeader prefHeader = { 1, 0, 0L };
+	GUItoPrefs(inst, &inst->mpb_PMPrefs);
 
-		GUItoPrefs(inst, &inst->mpb_PMPrefs);
-
-		iff = AllocIFF();
-		if (NULL == iff)
-			{
-			Result = IoErr();
-			break;
-			}
-
-		InitIFFasDOS(iff);
-
-		iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
-			{
-			// ... try to create missing directories here
-			STRPTR FilenameCopy;
-
-			Result = IoErr();
-			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
-
-			FilenameCopy = AllocVec(1 + strlen(Filename), MEMF_PUBLIC);
-
-			if (FilenameCopy)
-				{
-				STRPTR lp;
-
-				strcpy(FilenameCopy, Filename);
-
-				lp = PathPart(FilenameCopy);
-				if (lp)
-					{
-					BPTR dirLock;
-
-					*lp = '\0';
-					dirLock = CreateDir(FilenameCopy);
-
-					if (dirLock)
-						UnLock(dirLock);
-
-					iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-					if ((BPTR)NULL == iff->iff_Stream)
-						Result = IoErr();
-					else
-						Result = RETURN_OK;
-					}
-
-				FreeVec(FilenameCopy);
-				}
-
-			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
-			if (RETURN_OK != Result)
-				break;
-			}
-
-		Result = OpenIFF(iff, IFFF_WRITE);
-		if (RETURN_OK != Result)
-			break;
-
-		IffOpen = TRUE;
-
-		Result = PushChunk(iff, ID_PREF, ID_FORM, IFFSIZE_UNKNOWN);
-		if (RETURN_OK != Result)
-			break;
-
-		Result = PushChunk(iff, 0, ID_PRHD, IFFSIZE_UNKNOWN);
-		if (RETURN_OK != Result)
-			break;
-
-		if (WriteChunkBytes(iff, (APTR) &prefHeader, sizeof(prefHeader)) < 0)
-			{
-			Result = IoErr();
-			break;
-			}
-
-		Result = PopChunk(iff);
-		if (RETURN_OK != Result)
-			break;
-
-		Result = PushChunk(iff, 0, ID_PMNU, IFFSIZE_UNKNOWN);
-		if (RETURN_OK != Result)
-			break;
-
-		if (WriteChunkBytes(iff, (APTR) &inst->mpb_PMPrefs, sizeof(struct PopupMenuPrefs)) < 0)
-			{
-			Result = IoErr();
-			break;
-			}
-
-		Result = PopChunk(iff);
-		if (RETURN_OK != Result)
-			break;
-
-		} while (0);
-
-	if (iff)
+	myPrefsHandle = AllocPrefsHandle("PopupMenuPrefs");
+	if (myPrefsHandle)
 		{
-		if (IffOpen)
-			CloseIFF(iff);
+		LONG lID = MAKE_ID('M', 'A', 'I', 'N');
 
-		if (iff->iff_Stream)
-			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = (BPTR)NULL;
-			}
+		SetPreferences(myPrefsHandle, lID, PMP_Flags, &inst->mpb_PMPrefs.pmp_Flags, sizeof(inst->mpb_PMPrefs.pmp_Flags) );
+		SetPreferences(myPrefsHandle, lID, PMP_SubMenuDelay, &inst->mpb_PMPrefs.pmp_SubMenuDelay, sizeof(inst->mpb_PMPrefs.pmp_SubMenuDelay) );
+		SetPreferences(myPrefsHandle, lID, PMP_AnimationType, &inst->mpb_PMPrefs.pmp_Animation, sizeof(inst->mpb_PMPrefs.pmp_Animation) );
+		SetPreferences(myPrefsHandle, lID, PMP_PullDownMenuPos, &inst->mpb_PMPrefs.pmp_PulldownPos, sizeof(inst->mpb_PMPrefs.pmp_PulldownPos) );
+		SetPreferences(myPrefsHandle, lID, PMP_Sticky, &inst->mpb_PMPrefs.pmp_Sticky, sizeof(inst->mpb_PMPrefs.pmp_Sticky) );
+		SetPreferences(myPrefsHandle, lID, PMP_MenuBorderType, &inst->mpb_PMPrefs.pmp_MenuBorder, sizeof(inst->mpb_PMPrefs.pmp_MenuBorder) );
+		SetPreferences(myPrefsHandle, lID, PMP_SelItemBorderType, &inst->mpb_PMPrefs.pmp_SelItemBorder, sizeof(inst->mpb_PMPrefs.pmp_SelItemBorder) );
+		SetPreferences(myPrefsHandle, lID, PMP_SeparatorBarStyle, &inst->mpb_PMPrefs.pmp_SeparatorBar, sizeof(inst->mpb_PMPrefs.pmp_SeparatorBar) );
+		SetPreferences(myPrefsHandle, lID, PMP_XOffset, &inst->mpb_PMPrefs.pmp_XOffset, sizeof(inst->mpb_PMPrefs.pmp_XOffset) );
+		SetPreferences(myPrefsHandle, lID, PMP_YOffset, &inst->mpb_PMPrefs.pmp_YOffset, sizeof(inst->mpb_PMPrefs.pmp_YOffset) );
+		SetPreferences(myPrefsHandle, lID, PMP_XSpace, &inst->mpb_PMPrefs.pmp_XSpace, sizeof(inst->mpb_PMPrefs.pmp_XSpace) );
+		SetPreferences(myPrefsHandle, lID, PMP_YSpace, &inst->mpb_PMPrefs.pmp_YSpace, sizeof(inst->mpb_PMPrefs.pmp_YSpace) );
+		SetPreferences(myPrefsHandle, lID, PMP_Intermediate, &inst->mpb_PMPrefs.pmp_Intermediate, sizeof(inst->mpb_PMPrefs.pmp_Intermediate) );
+		SetPreferences(myPrefsHandle, lID, PMP_TransparencyBlur, &inst->mpb_PMPrefs.pmp_TransparencyBlur, sizeof(inst->mpb_PMPrefs.pmp_TransparencyBlur) );
+		SetPreferences(myPrefsHandle, lID, PMP_TextDisplace, &inst->mpb_PMPrefs.pmp_TextDisplace, sizeof(inst->mpb_PMPrefs.pmp_TextDisplace) );
+		SetPreferences(myPrefsHandle, lID, PMP_MenuTitleStyle, &inst->mpb_PMPrefs.pmp_MenuTitles, sizeof(inst->mpb_PMPrefs.pmp_MenuTitles) );
+		SetPreferences(myPrefsHandle, lID, PMP_MenuItemStyle, &inst->mpb_PMPrefs.pmp_MenuItems, sizeof(inst->mpb_PMPrefs.pmp_MenuItems) );
 
-		FreeIFF(iff);
-		}
+		WritePrefsHandle(myPrefsHandle, Filename);
 
-	if (RETURN_OK == Result)
-		{
-		if (inst->mpb_fCreateIcons)
-			SaveIcon(inst, Filename);
-		}
-	else
-		{
-		char Buffer[120];
-
-		Fault(Result, "", Buffer, sizeof(Buffer) - 1);
-
-		// MUI_RequestA()
-		MUI_Request(inst->mpb_Objects[OBJNDX_APP_Main], inst->mpb_Objects[OBJNDX_WIN_Main], 0, NULL, 
-			GetLocString(MSGID_ABOUTREQOK), 
-			GetLocString(MSGID_REQTITLE_SAVEERROR), 
-			Filename,
-			Buffer);
+		FreePrefsHandle(myPrefsHandle);
 		}
 
 	return Result;
@@ -2285,7 +2048,6 @@ static void PrefsToGUI(struct PopupMenuPrefsInst *inst, const struct PopupMenuPr
 		set(inst->mpb_Objects[OBJNDX_Button_NewLook], MUIA_Selected, TRUE);
 
 	setslider(inst->mpb_Objects[OBJNDX_Slider_DelaySubMenus], pmPrefs->pmp_SubMenuDelay);
-	setslider(inst->mpb_Objects[OBJNDX_Slider_AnimationSpeed], pmPrefs->pmp_AnimationSpeed);
 
 	setslider(inst->mpb_Objects[OBJNDX_Slider_Horizontal], pmPrefs->pmp_XOffset);
 	setslider(inst->mpb_Objects[OBJNDX_Slider_VerticalOffset], pmPrefs->pmp_YOffset);
@@ -2293,13 +2055,9 @@ static void PrefsToGUI(struct PopupMenuPrefsInst *inst, const struct PopupMenuPr
 	setslider(inst->mpb_Objects[OBJNDX_Slider_VerticalSpacing], pmPrefs->pmp_YSpace);
 	setslider(inst->mpb_Objects[OBJNDX_Slider_IntermediateSpacing], pmPrefs->pmp_Intermediate);
 	setslider(inst->mpb_Objects[OBJNDX_Slider_TextDisplacement], pmPrefs->pmp_TextDisplace);
-	setslider(inst->mpb_Objects[OBJNDX_Slider_ShadowR], pmPrefs->pmp_ShadowR);
-	setslider(inst->mpb_Objects[OBJNDX_Slider_ShadowG], pmPrefs->pmp_ShadowG);
-	setslider(inst->mpb_Objects[OBJNDX_Slider_ShadowB], pmPrefs->pmp_ShadowB);
 
 	setcycle(inst->mpb_Objects[OBJNDX_Cycle_AnimationType], pmPrefs->pmp_Animation);
 
-	setcheckmark(inst->mpb_Objects[OBJNDX_CheckMark_SameHeight], pmPrefs->pmp_SameHeight);
 	setcheckmark(inst->mpb_Objects[OBJNDX_CheckMark_Sticky], pmPrefs->pmp_Sticky);
 
 	d1(KPrintF("%s/%s/%ld: pmp_MenuTitles=%08lx\n", __FILE__, __FUNC__, __LINE__, pmPrefs->pmp_MenuTitles));
@@ -2319,10 +2077,12 @@ static void PrefsToGUI(struct PopupMenuPrefsInst *inst, const struct PopupMenuPr
 	setcheckmark(inst->mpb_Objects[OBJNDX_CheckMark_MenuItems_Bold], pmPrefs->pmp_MenuItems & PMP_TEXT_BOLD);
 	setcheckmark(inst->mpb_Objects[OBJNDX_CheckMark_MenuItems_Italic], pmPrefs->pmp_MenuItems & PMP_TEXT_ITALIC);
 
-	setslider(inst->mpb_Objects[OBJNDX_Slider_TranspR], pmPrefs->pmp_TransparencyR);
-	setslider(inst->mpb_Objects[OBJNDX_Slider_TranspG], pmPrefs->pmp_TransparencyG);
-	setslider(inst->mpb_Objects[OBJNDX_Slider_TranspB], pmPrefs->pmp_TransparencyB);
 	setslider(inst->mpb_Objects[OBJNDX_Slider_Transp_Blur], pmPrefs->pmp_TransparencyBlur);
+	setcheckmark(inst->mpb_Objects[OBJNDX_CheckMark_Transparency_Enable], pmPrefs->pmp_Flags & PMP_FLAGS_TRANSPARENCY);
+	set(inst->mpb_Objects[OBJNDX_Group_Transp_Blur], MUIA_Disabled, !(pmPrefs->pmp_Flags & PMP_FLAGS_TRANSPARENCY));
+
+	setcheckmark(inst->mpb_Objects[OBJNDX_CheckMark_MenuShadows], pmPrefs->pmp_Flags & PMP_FLAGS_SHADOWS);
+	set(inst->mpb_Objects[OBJNDX_CheckMark_RealShadows], MUIA_Disabled, !(pmPrefs->pmp_Flags & PMP_FLAGS_SHADOWS));
 }
 
 //----------------------------------------------------------------------------
@@ -2359,7 +2119,6 @@ static void GUItoPrefs(struct PopupMenuPrefsInst *inst, struct PopupMenuPrefs *p
 		pmPrefs->pmp_SeparatorBar = FALSE;
 
 	pmPrefs->pmp_SubMenuDelay 	= getv(inst->mpb_Objects[OBJNDX_Slider_DelaySubMenus], MUIA_Numeric_Value);
-	pmPrefs->pmp_AnimationSpeed 	= getv(inst->mpb_Objects[OBJNDX_Slider_AnimationSpeed], MUIA_Numeric_Value);
 
 	pmPrefs->pmp_XOffset		= getv(inst->mpb_Objects[OBJNDX_Slider_Horizontal], MUIA_Numeric_Value);
 	pmPrefs->pmp_YOffset		= getv(inst->mpb_Objects[OBJNDX_Slider_VerticalOffset], MUIA_Numeric_Value);
@@ -2367,13 +2126,9 @@ static void GUItoPrefs(struct PopupMenuPrefsInst *inst, struct PopupMenuPrefs *p
 	pmPrefs->pmp_YSpace		= getv(inst->mpb_Objects[OBJNDX_Slider_VerticalSpacing], MUIA_Numeric_Value);
 	pmPrefs->pmp_Intermediate	= getv(inst->mpb_Objects[OBJNDX_Slider_IntermediateSpacing], MUIA_Numeric_Value);
 	pmPrefs->pmp_TextDisplace	= getv(inst->mpb_Objects[OBJNDX_Slider_TextDisplacement], MUIA_Numeric_Value);
-	pmPrefs->pmp_ShadowR		= getv(inst->mpb_Objects[OBJNDX_Slider_ShadowR], MUIA_Numeric_Value);
-	pmPrefs->pmp_ShadowG		= getv(inst->mpb_Objects[OBJNDX_Slider_ShadowG], MUIA_Numeric_Value);
-	pmPrefs->pmp_ShadowB		= getv(inst->mpb_Objects[OBJNDX_Slider_ShadowB], MUIA_Numeric_Value);
 
 	pmPrefs->pmp_Animation		= getv(inst->mpb_Objects[OBJNDX_Cycle_AnimationType], MUIA_Cycle_Active);
 
-	pmPrefs->pmp_SameHeight		= getv(inst->mpb_Objects[OBJNDX_CheckMark_SameHeight], MUIA_Selected);
 	pmPrefs->pmp_Sticky		= getv(inst->mpb_Objects[OBJNDX_CheckMark_Sticky], MUIA_Selected);
 
 	if (getv(inst->mpb_Objects[OBJNDX_CheckMark_MenuTitles_Embossed], MUIA_Selected))
@@ -2428,10 +2183,12 @@ static void GUItoPrefs(struct PopupMenuPrefsInst *inst, struct PopupMenuPrefs *p
 		pmPrefs->pmp_MenuItems &= ~PMP_TEXT_ITALIC;
 	d1(KPrintF("%s/%s/%ld: pmp_MenuItems=%08lx\n", __FILE__, __FUNC__, __LINE__, pmPrefs->pmp_MenuItems));
 
-	pmPrefs->pmp_TransparencyR	= getv(inst->mpb_Objects[OBJNDX_Slider_TranspR], MUIA_Numeric_Value);
-	pmPrefs->pmp_TransparencyG	= getv(inst->mpb_Objects[OBJNDX_Slider_TranspG], MUIA_Numeric_Value);
-	pmPrefs->pmp_TransparencyB	= getv(inst->mpb_Objects[OBJNDX_Slider_TranspB], MUIA_Numeric_Value);
 	pmPrefs->pmp_TransparencyBlur	= getv(inst->mpb_Objects[OBJNDX_Slider_Transp_Blur], MUIA_Numeric_Value);
+
+	if (getv(inst->mpb_Objects[OBJNDX_CheckMark_Transparency_Enable], MUIA_Selected))
+		pmPrefs->pmp_Flags |= PMP_FLAGS_TRANSPARENCY;
+	else
+		pmPrefs->pmp_Flags &= ~PMP_FLAGS_TRANSPARENCY;
 }
 
 //----------------------------------------------------------------------------
@@ -2568,8 +2325,6 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 			}
 
 		TranslateStringArray(PrefsPageNames);
-		TranslateStringArray(AppearAtNames);
-		TranslateStringArray(PulldownModeNames);
 		TranslateStringArray(ColorNames);
 		TranslateStringArray(ColourMatchingPrecisionNames);
 		TranslateStringArray(ImageSetNames);
@@ -2588,6 +2343,181 @@ static ULONG getv(APTR obj, ULONG attr)
     ULONG v;
     GetAttr(attr, obj, &v);
     return (v);
+}
+
+//----------------------------------------------------------------------------
+
+static LONG ReadOldPrefsFile(CONST_STRPTR Filename, struct oldPopupMenuPrefs *prefs, const struct oldPopupMenuPrefs *defaultPrefs)
+{
+	LONG Result;
+	struct IFFHandle *iff;
+	BOOL iffOpened = FALSE;
+
+	d2(KPrintF("%s/%s/%ld:  Filename=<%s>  LocaleBase=%08lx  IFFParseBase=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, Filename, LocaleBase, IFFParseBase));
+
+	do	{
+		*prefs = *defaultPrefs;
+
+		iff = AllocIFF();
+		if (NULL == iff)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		InitIFFasDOS(iff);
+
+		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
+		if ((BPTR)NULL == iff->iff_Stream)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		Result = OpenIFF(iff, IFFF_READ);
+		if (RETURN_OK != Result)
+			break;
+
+		iffOpened = TRUE;
+
+		Result = StopChunks(iff, StopChunkList, 2);
+		if (RETURN_OK != Result)
+			break;
+
+		while (1)
+			{
+			struct ContextNode *cn;
+
+			Result = ParseIFF(iff, IFFPARSE_SCAN);
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+			if (RETURN_OK != Result)
+				break;
+
+			cn = CurrentChunk(iff);
+
+			d1(KPrintF("%s/%s/%ld:  cn=%08lx\n", __FILE__, __FUNC__, __LINE__, cn));
+			if (NULL == cn)
+				break;
+
+			d1(KPrintF("%s/%s/%ld:  cn=%08lx  id=%08lx\n", __FILE__, __FUNC__, __LINE__, cn, cn->cn_ID));
+			if (ID_PMNU == cn->cn_ID)
+				{
+				LONG Actual;
+
+				d1(KPrintF("%s/%s/%ld:  cn_Size=%lu\n", __FILE__, __FUNC__, __LINE__, cn->cn_Size));
+
+				if (cn->cn_Size != sizeof(struct oldPopupMenuPrefs))
+					break;
+
+				Actual = ReadChunkBytes(iff, prefs, cn->cn_Size);
+				d1(KPrintF("%s/%s/%ld:  Actual=%lu\n", __FILE__, __FUNC__, __LINE__, Actual));
+				if (Actual != cn->cn_Size)
+					break;
+				}
+			}
+
+		d1(KPrintF(__FILE__ "%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+		if (IFFERR_EOF == Result)
+			Result = RETURN_OK;
+		} while (0);
+
+	if (iff)
+		{
+		if (iffOpened)
+			CloseIFF(iff);
+
+		if (iff->iff_Stream)
+			Close(iff->iff_Stream);
+
+		FreeIFF(iff);
+		}
+
+	d1(KPrintF("%s/%s/%ld: pmp_MenuTitles=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->mpb_PMPrefs.pmp_MenuTitles));
+	d1(KPrintF("%s/%s/%ld: pmp_MenuItems=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->mpb_PMPrefs.pmp_MenuItems));
+	d2(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+
+	return Result;
+}
+
+//----------------------------------------------------------------------------
+
+static void ConvertPmPrefs(CONST_STRPTR prefsFileOld, CONST_STRPTR prefsFileNew)
+{
+	BPTR fLock;
+
+	fLock = Lock(prefsFileNew, ACCESS_READ);
+	if (fLock)
+		{
+		UnLock(fLock);
+		}
+	else
+		{
+		struct oldPopupMenuPrefs LoadedPrefs;
+		APTR myPrefsHandle;
+		static const struct oldPopupMenuPrefs DefaultPrefs =
+			{
+			PMP_FLAGS_SHADOWS,	/* pmp_Flags		*/
+			0,			/* pmp_SubMenuDelay	*/
+			PMP_ANIM_NONE,		/* pmp_Animation	*/
+			PMP_PD_SCREENBAR,	/* pmp_PulldownPos	*/
+			FALSE,			/* pmp_Sticky		*/
+			FALSE,			/* pmp_SameHeight	unused */
+			0,			/* pmp_MenuBorder	*/
+			0,			/* pmp_SelItemBorder	*/
+			0,			/* pmp_SeparatorBar	*/
+			0,			/* pmp_MenuTitles	*/
+			0,			/* pmp_MenuItems	*/
+			2,			/* pmp_XOffset		*/
+			2,			/* pmp_YOffset		*/
+			2,			/* pmp_XSpace		*/
+			2,			/* pmp_YSpace		*/
+			2,			/* pmp_Intermediate	*/
+			0,			/* pmp_TextDisplace	*/
+			-30,			/* pmp_ShadowR		unused */
+			-30,			/* pmp_ShadowG		unused */
+			-30,			/* pmp_ShadowB		unused */
+			0,			/* pmp_TransparencyR	unused */
+			0,			/* pmp_TransparencyG	unused */
+			0,			/* pmp_TransparencyB	unused */
+			0,			/* pmp_TransparencyBlur	*/
+			0,			/* pmp_AnimationSpeed	unused */
+
+			{0},			/* pmp_Reserved		*/
+			};
+
+		ReadOldPrefsFile(prefsFileOld,  &LoadedPrefs, &DefaultPrefs);
+
+		d2(KPrintF("%s/%s/%ld: pmp_Animation=%ld\n", __FILE__, __FUNC__, __LINE__, LoadedPrefs.pmp_Animation));
+
+		myPrefsHandle = AllocPrefsHandle("PopupMenuPrefs");
+		if (myPrefsHandle)
+			{
+			LONG lID = MAKE_ID('M', 'A', 'I', 'N');
+
+			SetPreferences(myPrefsHandle, lID, PMP_Flags, &LoadedPrefs.pmp_Flags, sizeof(LoadedPrefs.pmp_Flags) );
+			SetPreferences(myPrefsHandle, lID, PMP_SubMenuDelay, &LoadedPrefs.pmp_SubMenuDelay, sizeof(LoadedPrefs.pmp_SubMenuDelay) );
+			SetPreferences(myPrefsHandle, lID, PMP_AnimationType, &LoadedPrefs.pmp_Animation, sizeof(LoadedPrefs.pmp_Animation) );
+			SetPreferences(myPrefsHandle, lID, PMP_PullDownMenuPos, &LoadedPrefs.pmp_PulldownPos, sizeof(LoadedPrefs.pmp_PulldownPos) );
+			SetPreferences(myPrefsHandle, lID, PMP_Sticky, &LoadedPrefs.pmp_Sticky, sizeof(LoadedPrefs.pmp_Sticky) );
+			SetPreferences(myPrefsHandle, lID, PMP_MenuBorderType, &LoadedPrefs.pmp_MenuBorder, sizeof(LoadedPrefs.pmp_MenuBorder) );
+			SetPreferences(myPrefsHandle, lID, PMP_SelItemBorderType, &LoadedPrefs.pmp_SelItemBorder, sizeof(LoadedPrefs.pmp_SelItemBorder) );
+			SetPreferences(myPrefsHandle, lID, PMP_SeparatorBarStyle, &LoadedPrefs.pmp_SeparatorBar, sizeof(LoadedPrefs.pmp_SeparatorBar) );
+			SetPreferences(myPrefsHandle, lID, PMP_XOffset, &LoadedPrefs.pmp_XOffset, sizeof(LoadedPrefs.pmp_XOffset) );
+			SetPreferences(myPrefsHandle, lID, PMP_YOffset, &LoadedPrefs.pmp_YOffset, sizeof(LoadedPrefs.pmp_YOffset) );
+			SetPreferences(myPrefsHandle, lID, PMP_XSpace, &LoadedPrefs.pmp_XSpace, sizeof(LoadedPrefs.pmp_XSpace) );
+			SetPreferences(myPrefsHandle, lID, PMP_YSpace, &LoadedPrefs.pmp_YSpace, sizeof(LoadedPrefs.pmp_YSpace) );
+			SetPreferences(myPrefsHandle, lID, PMP_Intermediate, &LoadedPrefs.pmp_Intermediate, sizeof(LoadedPrefs.pmp_Intermediate) );
+			SetPreferences(myPrefsHandle, lID, PMP_TransparencyBlur, &LoadedPrefs.pmp_TransparencyBlur, sizeof(LoadedPrefs.pmp_TransparencyBlur) );
+			SetPreferences(myPrefsHandle, lID, PMP_TextDisplace, &LoadedPrefs.pmp_TextDisplace, sizeof(LoadedPrefs.pmp_TextDisplace) );
+			SetPreferences(myPrefsHandle, lID, PMP_MenuTitleStyle, &LoadedPrefs.pmp_MenuTitles, sizeof(LoadedPrefs.pmp_MenuTitles) );
+			SetPreferences(myPrefsHandle, lID, PMP_MenuItemStyle, &LoadedPrefs.pmp_MenuItems, sizeof(LoadedPrefs.pmp_MenuItems) );
+
+			WritePrefsHandle(myPrefsHandle, prefsFileNew);
+
+			FreePrefsHandle(myPrefsHandle);
+			}
+		}
 }
 
 //----------------------------------------------------------------------------

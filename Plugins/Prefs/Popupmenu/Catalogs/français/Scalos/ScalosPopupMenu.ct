@@ -361,32 +361,12 @@ Animation
 ;Animation
 ;
 ;
-MSGID_MISCPAGE_ANIMATION_SPEED
-Vitesse :
-;Speed:
-;
-;
-MSGID_MISCPAGE_ANIMATION_SPEED_SHORTHELP
-Choix de la vitesse de l'animation.
-;...
-;
-;
 MSGID_MISCPAGE_DELAY_SUBMENUS
 Délai des sous-menus :
 ;Delay for submenus:
 ;
 ;
 MSGID_MISCPAGE_DELAY_SUBMENUS_SHORTHELP
-...
-;...
-;
-;
-MSGID_MISCPAGE_SAME_HEIGHT
-Même hauteur ?
-;Same Height?
-;
-;
-MSGID_MISCPAGE_SAME_HEIGHT_SHORTHELP
 ...
 ;...
 ;
@@ -661,57 +641,6 @@ MSGID_TEXTPAGE_MENUITEMS_EMBOSSED_SHORTHELP
 ;
 ;-----------------------------------------------------------
 ;
-MSGID_PULLDOWNPAGE_TITLE
-Menus Puldown
-;Pulldown menus
-;
-;
-MSGID_PULLDOWNPAGE_MODE
-Mode
-;Mode
-;
-;
-MSGID_PULLDOWNPAGE_MODE_SHORTHELP
-...
-;...
-;
-;
-MSGID_PULLDOWNPAGE_APPEAR_AT
-Apparaît à
-;Appear at
-;
-;
-MSGID_PULLDOWN_ALWAYS
-Toujours baissé
-;Always pulldown
-;
-;
-MSGID_PULLDOWN_POPUP
-Toujours popup
-;Always popup
-;
-;
-MSGID_PULLDOWN_POSITION_DEPENDENT
-Position dépendente
-;Position dependent
-;
-;
-MSGID_PULLDOWNPAGE_APPEAR_AT_SHORTHELP
-...
-;...
-;
-;
-MSGID_APPEAR_AT_SCREENBAR
-Barre de l'écran
-;Screen bar
-;
-;
-MSGID_APPEAR_AT_WINDOWBAR
-Barre de la fenêtre
-;Window bar
-;
-;-----------------------------------------------------------
-;
 MSGID_ADVANCEDPAGE_TITLE
 Options avancées
 ;Advanced settings
@@ -750,36 +679,6 @@ MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP
 MSGID_ADVANCEDPAGE_SHADOW_INTENSITY
 Intensité de l'ombre
 ;Shadow Intensity
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_R
-Rouge
-;Red
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_R_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_G
-Vert
-;Green
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_G_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_B
-Bleu
-;Blue
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_B_SHORTHELP
-...
-;...
 ;
 ;
 MSGID_COLORMATCHING_EXACT
@@ -823,36 +722,6 @@ Transparence
 ;Transparency
 ;
 ;
-MSGID_TRANSPARENCYPAGE_TRANSP_R
-Rouge
-;Red
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_R_SHORTHELP
-...
-;...
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_G
-Vert
-;Green
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_G_SHORTHELP
-...
-;...
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_B
-Bleu
-;Blue
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_B_SHORTHELP
-...
-;...
-;
-;
 MSGID_TRANSPARENCYPAGE_BLUR
 Estomper
 ;Blur
@@ -866,6 +735,16 @@ MSGID_TRANSPARENCYPAGE_BLUR_SHORTHELP
 MSGID_TRANSPARENCYPAGE_BLUR_NUMERIC_FORMAT
 %ld %%
 ;%ld %%
+;
+;
+MSGID_TRANSPARENCYPAGE_ENABLE
+Transparent Menus?
+;Transparent Menus?
+;
+;
+MSGID_TRANSPARENCYPAGE_ENABLE_SHORTHELP
+...
+;...
 ;
 ;-----------------------------------------------------------
 ;

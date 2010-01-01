@@ -29,6 +29,7 @@
 #include <proto/layers.h>
 #include <proto/keymap.h>
 #include <proto/cybergraphics.h>
+#include <proto/preferences.h>
 #include <proto/pm.h>
 
 #include <exec/libraries.h>
@@ -356,7 +357,7 @@ struct PM_Root {
 
 extern struct PM_Root *p;
 
-///
+//
 
 #define IST_ACTIVE              1
 #define IST_INACTIVE            2

@@ -11,12 +11,12 @@
 #define PLUGIN_TYPE	PREFS
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	1
+#define	LIB_REVISION	2
 
 #define LIB_NAME	"PopupMenu.prefsplugin"
 #define LIB_VERSTRING   "$VER: " LIB_NAME " " \
 			STR(LIB_VERSION) "." STR(LIB_REVISION)  \
-			" (20.10.2006)" \
+			" " __DATE__ " " \
 			COMPILER_STRING " ©2006" CURRENTYEAR \
 			" The Scalos Team"
 

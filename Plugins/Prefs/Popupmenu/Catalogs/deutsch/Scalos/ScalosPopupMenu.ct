@@ -242,7 +242,7 @@ Farben
 ;
 ;
 MSGID_PREFSPAGES_MISC
-Versch.
+Verschiedenes
 ;Misc.
 ;
 ;
@@ -358,32 +358,12 @@ Effekt:
 ;Animation
 ;
 ;
-MSGID_MISCPAGE_ANIMATION_SPEED
-Geschwindigkeit:
-;Speed:
-;
-;
-MSGID_MISCPAGE_ANIMATION_SPEED_SHORTHELP
-...
-;...
-;
-;
 MSGID_MISCPAGE_DELAY_SUBMENUS
 Wartezeit für Untermenüs:
 ;Delay for submenus:
 ;
 ;
 MSGID_MISCPAGE_DELAY_SUBMENUS_SHORTHELP
-...
-;...
-;
-;
-MSGID_MISCPAGE_SAME_HEIGHT
-Gleiche Höhe
-;Same Height?
-;
-;
-MSGID_MISCPAGE_SAME_HEIGHT_SHORTHELP
 ...
 ;...
 ;
@@ -658,57 +638,6 @@ MSGID_TEXTPAGE_MENUITEMS_EMBOSSED_SHORTHELP
 ;
 ;-----------------------------------------------------------
 ;
-MSGID_PULLDOWNPAGE_TITLE
-Pulldown menus
-;Pulldown menus
-;
-;
-MSGID_PULLDOWNPAGE_MODE
-Mode
-;Mode
-;
-;
-MSGID_PULLDOWNPAGE_MODE_SHORTHELP
-...
-;...
-;
-;
-MSGID_PULLDOWNPAGE_APPEAR_AT
-Wo anzeigen:
-;Appear at
-;
-;
-MSGID_PULLDOWN_ALWAYS
-Always pulldown
-;Always pulldown
-;
-;
-MSGID_PULLDOWN_POPUP
-Always popup
-;Always popup
-;
-;
-MSGID_PULLDOWN_POSITION_DEPENDENT
-Positionsabhängig
-;Position dependent
-;
-;
-MSGID_PULLDOWNPAGE_APPEAR_AT_SHORTHELP
-...
-;...
-;
-;
-MSGID_APPEAR_AT_SCREENBAR
-Bildschirmtitelleiste
-;Screen bar
-;
-;
-MSGID_APPEAR_AT_WINDOWBAR
-Fenstertitelleiste
-;Window bar
-;
-;-----------------------------------------------------------
-;
 MSGID_ADVANCEDPAGE_TITLE
 Erweiterte Einstellungen
 ;Advanced settings
@@ -747,36 +676,6 @@ MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP
 MSGID_ADVANCEDPAGE_SHADOW_INTENSITY
 Stärke der Schatten
 ;Shadow Intensity
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_R
-Rot
-;Red
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_R_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_G
-Grün
-;Green
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_G_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_B
-Blau
-;Blue
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_B_SHORTHELP
-...
-;...
 ;
 ;
 MSGID_COLORMATCHING_EXACT
@@ -820,36 +719,6 @@ Transparenz
 ;Transparency
 ;
 ;
-MSGID_TRANSPARENCYPAGE_TRANSP_R
-Rot
-;Red
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_R_SHORTHELP
-...
-;...
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_G
-Grün
-;Green
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_G_SHORTHELP
-...
-;...
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_B
-Blau
-;Blue
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_B_SHORTHELP
-...
-;...
-;
-;
 MSGID_TRANSPARENCYPAGE_BLUR
 Verwischen
 ;Blur
@@ -863,6 +732,16 @@ MSGID_TRANSPARENCYPAGE_BLUR_SHORTHELP
 MSGID_TRANSPARENCYPAGE_BLUR_NUMERIC_FORMAT
 %ld %%
 ;%ld %%
+;
+;
+MSGID_TRANSPARENCYPAGE_ENABLE
+Transparente Menüs?
+;Transparent Menus?
+;
+;
+MSGID_TRANSPARENCYPAGE_ENABLE_SHORTHELP
+...
+;...
 ;
 ;-----------------------------------------------------------
 ;

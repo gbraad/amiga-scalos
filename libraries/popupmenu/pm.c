@@ -525,12 +525,13 @@ struct PM_Window *PM_SetupSubWindow(struct PM_Window *parent, struct PM_Root *p,
 				newwin->MenuDisabled = TRUE;
 		} else {
 			newwin->ReverseDirection = 0;
-			if(PM_Prefs->pmp_Flags&1) {
+			if(PM_Prefs->pmp_Flags & PMP_FLAGS_SHADOWS)
+				{
 				newwin->Topographic = PM_InitTopographicList();
 				newwin->Shadowmap = PM_InitShadowList();
 				if(newwin->Topographic)
 					PM_AddTopographicRegion(newwin->Topographic, 0, 0, 5000, 5000, 0);
-			}
+				}
 		}
 
 		newwin->PM.SubGroup.Sub = pm;
@@ -991,9 +992,9 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
 
                 p->pmh=PM_InstallHandler(127);
 
-                if(p->pmh) {
-
-			PM_Prefs_Load(PMP_PATH);
+		if(p->pmh)
+			{
+			PM_Prefs_Load(PMP_PATH_OLD, PMP_PATH_NEW);
 
 			p->RootMenu = PM_SetupSubWindow(NULL, p, NULL);
             		p->RButton=TRUE; // default

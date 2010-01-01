@@ -15,7 +15,7 @@
 #include <proto/dos.h>
 #include <proto/iffparse.h>
 #include <prefs/prefhdr.h>
-#include "prefs/popupmenu.h"
+#include <prefs/popupmenu.h>
 
 /* This function opens an IFF file and prepares it for reading or writing. */
 /* If the file is opened for writing, it is initialized as a FORM of the   */
@@ -25,7 +25,7 @@
 struct IFFParseIFace *IIFFParse;
 #endif
 
-struct IFFHandle *OpenIFFFile(STRPTR name, LONG type, ULONG mode, LONG *error, struct Library *IFFParseBase)
+struct IFFHandle *OpenIFFFile(CONST_STRPTR name, LONG type, ULONG mode, LONG *error, struct Library *IFFParseBase)
 {
 	struct IFFHandle *iffh;
 	BPTR file;
@@ -166,7 +166,7 @@ struct ContextNode *ReadChunk(struct IFFHandle *iffh, LONG id, APTR data, ULONG 
 }
 
 
-void PM_LoadPrefsFile(STRPTR filename, ULONG flags, struct PopupMenuPrefs *prefs, const struct PopupMenuPrefs *defprefs)
+void PM_LoadPrefsFile(CONST_STRPTR filename, ULONG flags, struct oldPopupMenuPrefs *prefs, const struct oldPopupMenuPrefs *defprefs)
 {
 	struct IFFHandle *iffh = NULL;
 	struct ContextNode *cn;
@@ -185,7 +185,7 @@ void PM_LoadPrefsFile(STRPTR filename, ULONG flags, struct PopupMenuPrefs *prefs
 		if ((iffh = OpenIFFFile(filename, ID_PREF, IFFF_READ, &error, IFFParseBase)))
 			{
 			d1(KPrintF("%s/%s/%ld: OpenIFFFile success\n", __FILE__, __FUNC__, __LINE__));
-			if ((cn = ReadChunk(iffh,ID_PMNU,prefs,sizeof(struct PopupMenuPrefs),IFFParseBase)))
+			if ((cn = ReadChunk(iffh,ID_PMNU,prefs,sizeof(struct oldPopupMenuPrefs),IFFParseBase)))
 				{
 				d1(KPrintF("%s/%s/%ld: ReadChunk success  cn_Size=%lu\n", __FILE__, __FUNC__, __LINE__, cn->cn_Size));
 				read = cn->cn_Size;
@@ -196,10 +196,10 @@ void PM_LoadPrefsFile(STRPTR filename, ULONG flags, struct PopupMenuPrefs *prefs
 				read = 0L;
 				}
 
-			if (read != sizeof(struct PopupMenuPrefs))
+			if (read != sizeof(struct oldPopupMenuPrefs))
 				{
 				d1(KPrintF("%s/%s/%ld: size mismatch:  read=%lu  expected=%lu\n", \
-					__FILE__, __FUNC__, __LINE__, read, sizeof(struct PopupMenuPrefs)));
+					__FILE__, __FUNC__, __LINE__, read, sizeof(struct oldPopupMenuPrefs)));
 				error = IFFERR_READ;
 				}
 

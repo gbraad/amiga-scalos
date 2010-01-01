@@ -44,9 +44,10 @@ struct RastPort *PM_CpyRPort(struct RastPort *rp)
 void PM_TransparencyBfr(struct PM_Window *bw)
 {
 	int j, bpp;
-	ULONG	transparent = TRUE;
+	ULONG	transparent;
 	struct RGB *TempArray = NULL;
 
+	transparent = PM_Prefs->pmp_Flags & PMP_FLAGS_TRANSPARENCY;
 #if 0
 #ifndef __AROS__
 	GetGUIAttrs(NULL, bw->p->DrawInfo, GUIA_MenuTransparency, &transparent, TAG_DONE);
@@ -54,6 +55,8 @@ void PM_TransparencyBfr(struct PM_Window *bw)
 #endif
 
 	do	{
+		ULONG BytesPerRow = sizeof(struct RGB) * bw->Width;
+
 		if (!CyberGfx)
 			break;
 		if (!transparent)
@@ -68,23 +71,26 @@ void PM_TransparencyBfr(struct PM_Window *bw)
 
 		// If we've gotten this far, the screen is CyberGfx and > 15 bpp
 
-		TempArray = PM_Mem_Alloc(3 * bw->Width * bw->Height);
+		TempArray = PM_Mem_Alloc(BytesPerRow * bw->Height);
 		if (NULL == TempArray)
 			break;
 
-		bw->bg.BgArray = PM_Mem_Alloc(3 * bw->Width * bw->Height);
+		bw->bg.BgArray = PM_Mem_Alloc(BytesPerRow * bw->Height);
 		if (NULL == bw->bg.BgArray)
 			break;
 
 		ReadPixelArray(TempArray, 0, 0,
-			bw->Width * 3, bw->RPort, 0, 0,
-			bw->Width, bw->Height, RECTFMT_RGB);
+			BytesPerRow,
+			bw->RPort,
+			0, 0,
+			bw->Width, bw->Height,
+			RECTFMT_RGB);
 
 		PM_BlurPixelArray((struct RGB *) bw->bg.BgArray, TempArray,
 			bw->Width, bw->Height, PM_Prefs->pmp_TransparencyBlur + 1);
 
 		// Fast and simple way to blend the background to gray...
-		for(j = 0; j < bw->Width * bw->Height * 3; j++)
+		for(j = 0; j < BytesPerRow * bw->Height; j++)
 			{
 			bw->bg.BgArray[j] = (bw->bg.BgArray[j]>>2) + 150;
 			}
