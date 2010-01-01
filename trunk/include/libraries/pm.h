@@ -234,6 +234,7 @@ struct PopupMenuBase {
 	struct Library		*pmb_CxBase;		/* commodities.   */
 	struct Library		*pmb_LayersBase;	/* layers.library */
 	struct Library		*pmb_CyberGfxBase;	/* cybergfx.lib   */
+	struct Library		*pmb_PreferencesBase;	/* preferences.library */
 };
 
 #endif

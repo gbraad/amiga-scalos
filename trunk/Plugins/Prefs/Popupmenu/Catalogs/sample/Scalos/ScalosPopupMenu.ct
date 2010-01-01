@@ -360,32 +360,12 @@ Animation
 ;Animation
 ;
 ;
-MSGID_MISCPAGE_ANIMATION_SPEED
-Speed:
-;Speed:
-;
-;
-MSGID_MISCPAGE_ANIMATION_SPEED_SHORTHELP
-...
-;...
-;
-;
 MSGID_MISCPAGE_DELAY_SUBMENUS
 Delay for submenus:
 ;Delay for submenus:
 ;
 ;
 MSGID_MISCPAGE_DELAY_SUBMENUS_SHORTHELP
-...
-;...
-;
-;
-MSGID_MISCPAGE_SAME_HEIGHT
-Same Height?
-;Same Height?
-;
-;
-MSGID_MISCPAGE_SAME_HEIGHT_SHORTHELP
 ...
 ;...
 ;
@@ -660,57 +640,6 @@ MSGID_TEXTPAGE_MENUITEMS_EMBOSSED_SHORTHELP
 ;
 ;-----------------------------------------------------------
 ;
-MSGID_PULLDOWNPAGE_TITLE
-Pulldown menus
-;Pulldown menus
-;
-;
-MSGID_PULLDOWNPAGE_MODE
-Mode
-;Mode
-;
-;
-MSGID_PULLDOWNPAGE_MODE_SHORTHELP
-...
-;...
-;
-;
-MSGID_PULLDOWNPAGE_APPEAR_AT
-Appear at
-;Appear at
-;
-;
-MSGID_PULLDOWN_ALWAYS
-Always pulldown
-;Always pulldown
-;
-;
-MSGID_PULLDOWN_POPUP
-Always popup
-;Always popup
-;
-;
-MSGID_PULLDOWN_POSITION_DEPENDENT
-Position dependent
-;Position dependent
-;
-;
-MSGID_PULLDOWNPAGE_APPEAR_AT_SHORTHELP
-...
-;...
-;
-;
-MSGID_APPEAR_AT_SCREENBAR
-Screen bar
-;Screen bar
-;
-;
-MSGID_APPEAR_AT_WINDOWBAR
-Window bar
-;Window bar
-;
-;-----------------------------------------------------------
-;
 MSGID_ADVANCEDPAGE_TITLE
 Advanced settings
 ;Advanced settings
@@ -749,36 +678,6 @@ MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP
 MSGID_ADVANCEDPAGE_SHADOW_INTENSITY
 Shadow Intensity
 ;Shadow Intensity
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_R
-Red
-;Red
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_R_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_G
-Green
-;Green
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_G_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_B
-Blue
-;Blue
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_B_SHORTHELP
-...
-;...
 ;
 ;
 MSGID_COLORMATCHING_EXACT
@@ -822,36 +721,6 @@ Transparency
 ;Transparency
 ;
 ;
-MSGID_TRANSPARENCYPAGE_TRANSP_R
-Red
-;Red
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_R_SHORTHELP
-...
-;...
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_G
-Green
-;Green
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_G_SHORTHELP
-...
-;...
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_B
-Blue
-;Blue
-;
-;
-MSGID_TRANSPARENCYPAGE_TRANSP_B_SHORTHELP
-...
-;...
-;
-;
 MSGID_TRANSPARENCYPAGE_BLUR
 Blur
 ;Blur
@@ -865,6 +734,16 @@ MSGID_TRANSPARENCYPAGE_BLUR_SHORTHELP
 MSGID_TRANSPARENCYPAGE_BLUR_NUMERIC_FORMAT
 %ld %%
 ;%ld %%
+;
+;
+MSGID_TRANSPARENCYPAGE_ENABLE
+Transparent Menus?
+;Transparent Menus?
+;
+;
+MSGID_TRANSPARENCYPAGE_ENABLE_SHORTHELP
+...
+;...
 ;
 ;-----------------------------------------------------------
 ;

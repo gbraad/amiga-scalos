@@ -6,12 +6,14 @@
 #ifndef SCALOS_POPUPMENUPREFS_H
 #define	SCALOS_POPUPMENUPREFS_H
 
-#include "pmprefs.h"
+#include <prefs/popupmenu.h>
 
 //----------------------------------------------------------------------------
 
-#define PMP_PATH	"ENV:sys/PopupMenu.prefs"
-#define PMP_S_PATH	"ENVARC:sys/PopupMenu.prefs"
+#define PMP_PATH_OLD	"ENV:sys/PopupMenu.prefs"
+#define PMP_PATH_NEW	"ENV:sys/NewPopupMenu.prefs"
+#define PMP_S_PATH_OLD	"ENVARC:sys/PopupMenu.prefs"
+#define PMP_S_PATH_NEW	"ENVARC:sys/NewPopupMenu.prefs"
 
 //----------------------------------------------------------------------------
 
@@ -50,8 +52,6 @@ enum ObjectIndex
 
 	OBJNDX_Slider_DelaySubMenus,
 	OBJNDX_Cycle_AnimationType,
-	OBJNDX_Slider_AnimationSpeed,
-	OBJNDX_CheckMark_SameHeight,
 	OBJNDX_CheckMark_MenuShadows,
 	OBJNDX_CheckMark_Sticky,
 
@@ -98,16 +98,33 @@ enum ObjectIndex
 	OBJNDX_CheckMark_UseWindows,
 	OBJNDX_CheckMark_RealShadows,
 
-	OBJNDX_Slider_ShadowR,
-	OBJNDX_Slider_ShadowG,
-	OBJNDX_Slider_ShadowB,
-
-	OBJNDX_Slider_TranspR,
-	OBJNDX_Slider_TranspG,
-	OBJNDX_Slider_TranspB,
 	OBJNDX_Slider_Transp_Blur,
+	OBJNDX_CheckMark_Transparency_Enable,
+	OBJNDX_Group_Transp_Blur,
 
 	OBJNDX_MAX
+};
+
+struct PopupMenuPrefs
+{
+    UBYTE pmp_Flags;            /* Enable shadows, transparency, etc. */
+    UBYTE pmp_SubMenuDelay;     /* Delay before opening submenus      */
+    UBYTE pmp_Animation;        /* Animation, see below for defines   */
+                                /* (Only one animation effect implemented currently) */
+    UBYTE pmp_PulldownPos;      /* Where to show pulldownmenus        */
+    WORD  pmp_Sticky;           /* Use 'sticky' mode                  */
+    UBYTE pmp_MenuBorder;       /* Menu border                        */
+    UBYTE pmp_SelItemBorder;    /* Border around selected item        */
+    UBYTE pmp_SeparatorBar;     /* Separator bar style                */
+    UBYTE pmp_MenuTitles;       /* Style flags for drawing menu texts       */
+    UBYTE pmp_MenuItems;        /* Style flags for drawing menu item texts  */
+    UBYTE pmp_XOffset;
+    UBYTE pmp_YOffset;
+    UBYTE pmp_XSpace;
+    UBYTE pmp_YSpace;
+    UBYTE pmp_Intermediate;
+    BYTE  pmp_TextDisplace;
+    UBYTE pmp_TransparencyBlur;
 };
 
 struct PopupMenuPrefsInst

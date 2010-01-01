@@ -25,8 +25,8 @@
 #include <clib/alib_protos.h>
 
 #include <defs.h>
+#include <prefs/popupmenu.h>
 #include "PopupMenuPrefs.h"
-#include "pmprefs.h"
 #include "FrameButtonMCC.h"
 
 /* ------------------------------------------------------------------------- */
