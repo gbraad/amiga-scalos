@@ -48,7 +48,6 @@ CFLAGS 		= optimize nostackcheck nover dbg=s DATA=far \
 		  idlen=64 \
 		  idir=///include \
                   idir=$(subst ../,/,$(DATATYPESMCC_DIR)) \
-		  idir=$(subst ../,/,$(PREFS_DIR)) \
 		  idir=///common/Plugin
 
 #############################################################
@@ -86,14 +85,14 @@ $(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h $(COMMON_DIR)/plugin.h
 
 $(OBJ_DIR)/FrameButtonMCC.o : FrameButtonMCC.c FrameButtonMCC.h \
-	PopupMenuPrefs.h $(PREFS_DIR)/pmprefs.h
+	PopupMenuPrefs.h $(PREFS_DIR)/popupmenu.h
 
 $(OBJ_DIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
 	$(DATATYPESMCC_DIR)/DataTypesMCC.h
 
 $(OBJ_DIR)/PopupMenuPrefs.o : PopupMenuPrefs.h PopupMenuPrefsImage.h \
 	plugin_data.h $(COMMON_DIR)/plugin.h PopupMenu_locale.h \
-        $(PREFS_DIR)/pmprefs.h FrameButtonMCC.h
+        $(PREFS_DIR)/popupmenu.h FrameButtonMCC.h
 
 #############################################################
 
