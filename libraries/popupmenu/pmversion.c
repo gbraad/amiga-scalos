@@ -10,7 +10,9 @@
 // $Revision$
 //
 
-#ifdef _M68020
+#if defined(__amigaos4__) || defined(__MORPHOS__)
+#define __CPU__ "PPC"
+#elif defined( _M68020)
 #ifdef _M68030
 #ifdef _M68040
 #ifdef _M68060
@@ -28,4 +30,5 @@
 #define __CPU__ "000"
 #endif
 
-char _LibID[] = "$VER: popupmenu.library-" __CPU__ " 10.10.182 (11.09.2009) ©1996-2009 Henrik Isaksson";
+
+char _LibID[] = "$VER: popupmenu.library-" __CPU__ " 10.11 (02.01.2010) ©1996-2010 Henrik Isaksson";
