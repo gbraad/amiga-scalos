@@ -16,9 +16,10 @@ include		config.mk
 #
 
 ifneq ($(MACHINE),ppc-amigaos)
-OBJS	:=	 $(OBJDIR)/popupmenu-classic.o
+OBJS	:=	$(OBJDIR)/popupmenu-classic.o
 else
-OBJS	:=	 $(OBJDIR)/popupmenu-aos4.o $(OBJDIR)/pm-aos4-68kstubs.o
+OBJS	:=	$(OBJDIR)/popupmenu-aos4.o     \
+		$(OBJDIR)/pm-aos4-68kstubs.o
 endif
 
 OBJS	+=	$(OBJDIR)/pm.o                  \

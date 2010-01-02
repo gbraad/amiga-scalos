@@ -2,7 +2,7 @@
 # Copyright Henrik Isaksson <henrik@isaksson.tk>
 # $Date$
 # $Revision$
-# $Id$
+#
 #############################################################
 
 CSRCS 	=  	popupmenu-classic.c	\
