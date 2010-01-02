@@ -139,6 +139,13 @@ say "Copying Rename.module..."
 "copy Modules/Rename.MUI/Catalogs/français/Scalos/Rename.ct                    	RAM:ScalosTranslation/Catalogs/Scalos/français clone quiet"
 "copy Modules/Rename.MUI/Catalogs/sample/Scalos/Rename.ct                       RAM:ScalosTranslation/Catalogs/Scalos/sample   clone quiet"
 
+say "Copying Updater.module..."
+
+"copy Modules/Updater.MUI/Updater.cd 						RAM:ScalosTranslation clone quiet"
+"copy Modules/Updater.MUI/Catalogs/deutsch/Scalos/Updater.ct           		RAM:ScalosTranslation/Catalogs/Scalos/deutsch  clone quiet"
+"copy Modules/Updater.MUI/Catalogs/français/Scalos/Updater.ct          		RAM:ScalosTranslation/Catalogs/Scalos/français clone quiet"
+"copy Modules/Updater.MUI/Catalogs/sample/Scalos/Updater.ct            		RAM:ScalosTranslation/Catalogs/Scalos/sample   clone quiet"
+
 say "Copying Empty_Trashcan.module..."
 
 "copy Modules/Empty_Trashcan.MUI/Empty_Trashcan.cd 				RAM:ScalosTranslation clone quiet"
