@@ -113,21 +113,6 @@
 		MUIA_Background   , MUII_ButtonBack,\
 		MUIA_ShortHelp, HelpText,\
 		End
-#if 0
-#define FrameButton(frame, text, selected, raised)\
-	NewObject(FrameButtonClass->mcc_Class, 0, \
-		MUIA_Frame, MUIV_Frame_None, \
-		MUIA_Text_Contents, (text),\
-		MUIA_Text_PreParse, "\33c", \
-		MUIA_Font, MUIV_Font_Button,\
-		MUIA_CycleChain, TRUE, \
-		MUIA_InputMode, MUIV_InputMode_Immediate,\
-		MUIA_Background, MUII_ButtonBack,\
-		MUIA_ScaFrameButton_FrameType, (frame),\
-		MUIA_ScaFrameButton_Selected, (selected), \
-		MUIA_ScaFrameButton_Raised, (raised), \
-		End
-#endif
 
 #define FrameButton(objindex, frame, text, selected, raised)\
 	VGroup, \
@@ -137,8 +122,7 @@
 			MUIA_Text_Contents, (text),\
 			MUIA_Text_PreParse, "\33c", \
 			MUIA_Font, MUIV_Font_Button,\
-			MUIA_CycleChain, TRUE, \
-			MUIA_InputMode, MUIV_InputMode_Immediate,\
+			MUIA_InputMode, MUIV_InputMode_None,\
 			MUIA_Background, MUII_ButtonBack,\
 			MUIA_ScaFrameButton_FrameType, (frame),\
 			MUIA_ScaFrameButton_Selected, (selected), \
@@ -813,6 +797,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				Child, HGroup,
 					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
 					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_BORDERSPAGE_MENUBORDER),
 
 					Child, FrameButton(OBJNDX_Button_FrameThin, PMP_MENUBORDER_THIN, "", FALSE, FALSE),
@@ -827,6 +812,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				Child, HGroup,
 					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
 					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_BORDERSPAGE_SELECTEDITEM),
 
 					Child, FrameButton(OBJNDX_Button_Normal, PMP_MENUBORDER_NONE, GetLocString(MSGID_BORDERSPAGE_NORMAL), TRUE, FALSE),
@@ -838,28 +824,46 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				Child, HGroup,
 					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
 					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_BORDERSPAGE_SEPARATORS),
 
 					Child, HVSpace,
 
-					Child, inst->mpb_Objects[OBJNDX_Button_NewLook] = TextObject,
-						ButtonFrame,
-						MUIA_Text_Contents, GetLocString(MSGID_BORDERSPAGE_NEW_LOOK),\
-						MUIA_Text_PreParse, "\33c",\
-						MUIA_Font, MUIV_Font_Button,
-						MUIA_CycleChain, TRUE,
-						MUIA_InputMode, MUIV_InputMode_Immediate,
-						MUIA_Background, MUII_ButtonBack,
-						End,
-					Child, inst->mpb_Objects[OBJNDX_Button_OldLook] = TextObject,
-						ButtonFrame,
-						MUIA_Text_Contents, GetLocString(MSGID_BORDERSPAGE_OLD_LOOK),\
-						MUIA_Text_PreParse, "\33c",\
-						MUIA_Font, MUIV_Font_Button,
-						MUIA_CycleChain, TRUE,
-						MUIA_InputMode, MUIV_InputMode_Immediate,
-						MUIA_Background, MUII_ButtonBack,
-						End,
+					Child, ColGroup(4),
+						Child, HGroup,
+							Child, HVSpace,
+							Child, IMG(NewStyle, NEWSTYLE),
+							Child, HVSpace,
+							End, //HGroup
+						Child, inst->mpb_Objects[OBJNDX_CheckMark_NewLook] = ImageObject,
+							ImageButtonFrame,
+							MUIA_InputMode, MUIV_InputMode_Toggle,
+							MUIA_Image_Spec, MUII_CheckMark,
+							MUIA_Image_FreeVert, TRUE,
+							MUIA_Background, MUII_ButtonBack,
+							MUIA_ShowSelState, FALSE,
+							MUIA_CycleChain, TRUE,
+							End, //ImageObject
+						Child, CLabel((ULONG) GetLocString(MSGID_BORDERSPAGE_NEW_LOOK)),
+						Child, HVSpace,
+
+						Child, HGroup,
+							Child, HVSpace,
+							Child, IMG(OldStyle, OLDSTYLE),
+							Child, HVSpace,
+							End, //HGroup
+						Child, inst->mpb_Objects[OBJNDX_CheckMark_OldLook] = ImageObject,
+							ImageButtonFrame,
+							MUIA_InputMode, MUIV_InputMode_Toggle,
+							MUIA_Image_Spec, MUII_CheckMark,
+							MUIA_Image_FreeVert, TRUE,
+							MUIA_Background, MUII_ButtonBack,
+							MUIA_ShowSelState, FALSE,
+							MUIA_CycleChain, TRUE,
+							End, //ImageObject
+						Child, CLabel((ULONG) GetLocString(MSGID_BORDERSPAGE_OLD_LOOK)),
+						Child, HVSpace,
+						End, //ColGroup
 
 					Child, HVSpace,
 					End, //HGroup
@@ -878,7 +882,10 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 
 					Child, VGroup,
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
 						Child, HVSpace,
+						Child, CLabel((ULONG) GetLocString(MSGID_SPACINGPAGE_HORIZONTAL_SPACE)),
 						Child, IMG(Horizontal_Space, HORIZONTAL_SPACE),
 						Child, inst->mpb_Objects[OBJNDX_Slider_HorizontalSpacing] = SliderObject,
 							MUIA_CycleChain, TRUE,
@@ -893,7 +900,10 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 
 					Child, VGroup,
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
 						Child, HVSpace,
+						Child, CLabel((ULONG) GetLocString(MSGID_SPACINGPAGE_VERTICAL_SPACE)),
 						Child, IMG(Vertical_Space, VERTICAL_SPACE),
 						Child, inst->mpb_Objects[OBJNDX_Slider_VerticalSpacing] = SliderObject,
 							MUIA_CycleChain, TRUE,
@@ -909,7 +919,10 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 
 					Child, VGroup,
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
 						Child, HVSpace,
+						Child, CLabel((ULONG) GetLocString(MSGID_SPACINGPAGE_HORIZONTAL)),
 						Child, IMG(Horizontal, HORIZONTAL),
 						Child, inst->mpb_Objects[OBJNDX_Slider_Horizontal] = SliderObject,
 							MUIA_CycleChain, TRUE,
@@ -924,7 +937,10 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 
 					Child, VGroup,
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
 						Child, HVSpace,
+						Child, CLabel((ULONG) GetLocString(MSGID_SPACINGPAGE_VERTICAL_OFFSET)),
 						Child, IMG(Vertical_Offset, VERTICAL_OFFSET),
 						Child, inst->mpb_Objects[OBJNDX_Slider_VerticalOffset] = SliderObject,
 							MUIA_CycleChain, TRUE,
@@ -940,7 +956,10 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 
 					Child, VGroup,
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
 						Child, HVSpace,
+						Child, CLabel((ULONG) GetLocString(MSGID_SPACINGPAGE_INTERMEDIATE_SPACING)),
 						Child, IMG(Intermediate_Spacing, INTERMEDIATE_SPACING),
 						Child, inst->mpb_Objects[OBJNDX_Slider_IntermediateSpacing] = SliderObject,
 							MUIA_CycleChain, TRUE,
@@ -955,7 +974,10 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 
 					Child, VGroup,
+						GroupFrame,
+						MUIA_Background, MUII_GroupBack,
 						Child, HVSpace,
+						Child, CLabel((ULONG) GetLocString(MSGID_SPACINGPAGE_TEXT_DISPLACEMENT)),
 						Child, IMG(Text_Displacement, TEXT_DISPLACEMENT),
 						Child, inst->mpb_Objects[OBJNDX_Slider_TextDisplacement] = SliderObject,
 							MUIA_CycleChain, TRUE,
@@ -982,6 +1004,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				Child, ColGroup(4),
 					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
 					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TEXTPAGE_MENU_TITLES),
 
 					Child, ColGroup(2),
@@ -1016,6 +1039,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				Child, ColGroup(4),
 					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
 					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TEXTPAGE_MENU_ITEMS),
 
 					Child, ColGroup(2),
@@ -1060,6 +1084,9 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 				Child, HVSpace,
 
 				Child, ColGroup(4),
+					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
+
 					Child, HVSpace,
 
 					Child, inst->mpb_Objects[OBJNDX_CheckMark_Transparency_Enable] = CheckMarkHelp(TRUE, MSGID_TRANSPARENCYPAGE_ENABLE_SHORTHELP),
@@ -1158,10 +1185,10 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 		inst->mpb_Objects[OBJNDX_Button_Recessed], 3, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_SelFrameSelected], MUIV_TriggerValue);
 
 	// Mutual exclusion for separator style buttons
-	DoMethod(inst->mpb_Objects[OBJNDX_Button_NewLook], MUIM_Notify, MUIA_Selected, TRUE,
-		inst->mpb_Objects[OBJNDX_Button_OldLook], 3, MUIM_Set, MUIA_Selected, FALSE);
-	DoMethod(inst->mpb_Objects[OBJNDX_Button_OldLook], MUIM_Notify, MUIA_Selected, TRUE,
-		inst->mpb_Objects[OBJNDX_Button_NewLook], 3, MUIM_Set, MUIA_Selected, FALSE);
+	DoMethod(inst->mpb_Objects[OBJNDX_CheckMark_NewLook], MUIM_Notify, MUIA_Selected, TRUE,
+		inst->mpb_Objects[OBJNDX_CheckMark_OldLook], 3, MUIM_Set, MUIA_Selected, FALSE);
+	DoMethod(inst->mpb_Objects[OBJNDX_CheckMark_OldLook], MUIM_Notify, MUIA_Selected, TRUE,
+		inst->mpb_Objects[OBJNDX_CheckMark_NewLook], 3, MUIM_Set, MUIA_Selected, FALSE);
 
 	// Disable transparency settings if transparency is disabled
 	DoMethod(inst->mpb_Objects[OBJNDX_CheckMark_Transparency_Enable], MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
@@ -2043,9 +2070,9 @@ static void PrefsToGUI(struct PopupMenuPrefsInst *inst, const struct PopupMenuPr
 		}
 
 	if (pmPrefs->pmp_SeparatorBar)
-		set(inst->mpb_Objects[OBJNDX_Button_OldLook], MUIA_Selected, TRUE);
+		set(inst->mpb_Objects[OBJNDX_CheckMark_OldLook], MUIA_Selected, TRUE);
 	else
-		set(inst->mpb_Objects[OBJNDX_Button_NewLook], MUIA_Selected, TRUE);
+		set(inst->mpb_Objects[OBJNDX_CheckMark_NewLook], MUIA_Selected, TRUE);
 
 	setslider(inst->mpb_Objects[OBJNDX_Slider_DelaySubMenus], pmPrefs->pmp_SubMenuDelay);
 
@@ -2113,7 +2140,7 @@ static void GUItoPrefs(struct PopupMenuPrefsInst *inst, struct PopupMenuPrefs *p
 	else
 		pmPrefs->pmp_SelItemBorder = PMP_SELITEM_NO_BORDER;
 
-	if (getv(inst->mpb_Objects[OBJNDX_Button_OldLook], MUIA_Selected))
+	if (getv(inst->mpb_Objects[OBJNDX_CheckMark_OldLook], MUIA_Selected))
 		pmPrefs->pmp_SeparatorBar = TRUE;
 	else
 		pmPrefs->pmp_SeparatorBar = FALSE;
