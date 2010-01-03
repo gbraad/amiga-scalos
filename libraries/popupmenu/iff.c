@@ -175,7 +175,7 @@ void PM_LoadPrefsFile(CONST_STRPTR filename, ULONG flags, struct oldPopupMenuPre
 	LONG error = 0;
 
 
-	if((IFFParseBase = OpenLibrary("iffparse.library", 0)))
+	if ((IFFParseBase = OpenLibrary("iffparse.library", 0)))
 		{
 		d1(KPrintF("%s/%s/%ld: OpenLibrary(iffparse.library) success \n", __FILE__, __FUNC__, __LINE__));
 #ifdef __amigaos4__

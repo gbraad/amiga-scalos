@@ -12,10 +12,10 @@
 
 void FreeIDList(struct PM_IDLst *f)
 {
-    if(f) {
+    if (f) {
         struct PM_IDLst *n;
 
-        while(f) {
+        while (f) {
             n=f->Next;
             PM_Mem_Free(f);
             f=n;
@@ -25,9 +25,9 @@ void FreeIDList(struct PM_IDLst *f)
 
 void PM_FreeTitle(struct PopupMenu *p)
 {
-    if(!p) return;
+    if (!p) return;
 
-    if(p->TitleUnion.Title && GET_TXTMODE(p)==0) PM_Mem_Free(p->TitleUnion.Title);
+    if (p->TitleUnion.Title && GET_TXTMODE(p)==0) PM_Mem_Free(p->TitleUnion.Title);
 
     p->TitleUnion.Title=NULL;
 }
@@ -44,16 +44,16 @@ LIBFUNC_END
 void pm_FreePopupMenu(struct PopupMenu *p, struct PopupMenuBase *PopupMenuBase)
 {
 
-    if(p) {
+    if (p) {
         struct PopupMenu *n;
 
-        while(p) {
+        while (p) {
             n=p->Next;
-	    if(p->SubGroup.Sub)
+	    if (p->SubGroup.Sub)
 		pm_FreePopupMenu(p->SubGroup.Sub, PopupMenuBase);
             PM_FreeTitle(p);
-            if(p->UserData && (p->Flags&NPM_UDATASTRING)) PM_Mem_Free(p->UserData);
-            if(p->Exclude && !(p->Flags&NPM_EXCLUDE_SHARED)) {
+            if (p->UserData && (p->Flags&NPM_UDATASTRING)) PM_Mem_Free(p->UserData);
+            if (p->Exclude && !(p->Flags&NPM_EXCLUDE_SHARED)) {
                 FreeIDList(p->Exclude);
             }
             PM_Mem_Free(p);
@@ -80,7 +80,7 @@ LIBFUNC_P2(struct PopupMenu *, LIBPM_MakeItemA,
 	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld  START\n", __LINE__));
 
     p = PM_Mem_Alloc(sizeof(struct PopupMenu));
-    if(p) {
+    if (p) {
 	pm_SetItemAttrsA(p, tags, PopupMenuBase);
 
 	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld  END  p=%08lx\n", __LINE__, p));
@@ -106,11 +106,11 @@ LIBFUNC_P2(struct PopupMenu *, LIBPM_MakeMenuA,
 	(void) PopupMenuBase;
 
     tstate = tags;
-    while((tag=NextTagItem(&tstate))) {
+    while ((tag=NextTagItem(&tstate))) {
         switch(tag->ti_Tag) {
             case PM_Item:
-                if(tag->ti_Data) {
-                    if(last) {
+                if (tag->ti_Data) {
+                    if (last) {
                         last->Next=(struct PopupMenu *)tag->ti_Data;
                         last=last->Next;
                     } else {
@@ -121,7 +121,7 @@ LIBFUNC_P2(struct PopupMenu *, LIBPM_MakeMenuA,
         }
     }
 
-    if(error) {
+    if (error) {
 	pm_FreePopupMenu(first, PopupMenuBase);
         first=0L;
     }
@@ -145,17 +145,17 @@ LIBFUNC_P2(struct PM_IDLst *, LIBPM_MakeIDListA,
 	(void) PopupMenuBase;
 
     tstate = tags;
-    while((tag=NextTagItem(&tstate))) {
+    while ((tag=NextTagItem(&tstate))) {
         switch(tag->ti_Tag) {
             case PM_ExcludeID:
                 n=PM_Mem_Alloc(sizeof(struct PM_IDLst));
-                if(n) {
+                if (n) {
                     n->Next=0L;
                     n->ID=tag->ti_Data;
                     n->Kind=IDKND_EXCLUDE;
                     n->Flags=0L;
 
-                    if(last) {
+                    if (last) {
                         last->Next=n;
                         last=last->Next;
                     } else {
@@ -165,13 +165,13 @@ LIBFUNC_P2(struct PM_IDLst *, LIBPM_MakeIDListA,
                 break;
             case PM_IncludeID:
                 n=PM_Mem_Alloc(sizeof(struct PM_IDLst));
-                if(n) {
+                if (n) {
                     n->Next=0L;
                     n->ID=tag->ti_Data;
                     n->Kind=IDKND_INCLUDE;
                     n->Flags=0L;
 
-                    if(last) {
+                    if (last) {
                         last->Next=n;
                         last=last->Next;
                     } else {
@@ -181,13 +181,13 @@ LIBFUNC_P2(struct PM_IDLst *, LIBPM_MakeIDListA,
                 break;
             case PM_ReflectID:
                 n=PM_Mem_Alloc(sizeof(struct PM_IDLst));
-                if(n) {
+                if (n) {
                     n->Next=0L;
                     n->ID=tag->ti_Data;
                     n->Kind=IDKND_REFLECT;
                     n->Flags=0L;
 
-                    if(last) {
+                    if (last) {
                         last->Next=n;
                         last=last->Next;
                     } else {
@@ -197,13 +197,13 @@ LIBFUNC_P2(struct PM_IDLst *, LIBPM_MakeIDListA,
                 break;
             case PM_InverseID:
                 n=PM_Mem_Alloc(sizeof(struct PM_IDLst));
-                if(n) {
+                if (n) {
                     n->Next=0L;
                     n->ID=tag->ti_Data;
                     n->Kind=IDKND_INVERSE;
                     n->Flags=0L;
 
-                    if(last) {
+                    if (last) {
                         last->Next=n;
                         last=last->Next;
                     } else {
@@ -214,7 +214,7 @@ LIBFUNC_P2(struct PM_IDLst *, LIBPM_MakeIDListA,
         }
     }
 
-    if(error) {
+    if (error) {
 	FreeIDList(first);
         first=0L;
     }
@@ -235,17 +235,17 @@ LIBFUNC_P2(struct PM_IDLst *, LIBPM_ExLstA,
 
 	(void) PopupMenuBase;
 
-	while(id[i])
+	while (id[i])
 		{
 		n=PM_Mem_Alloc(sizeof(struct PM_IDLst));
-		if(n)
+		if (n)
 			{
 			n->Next=0L;
 			n->ID=id[i];
 			n->Kind=IDKND_EXCLUDE;
 			n->Flags=0L;
 
-			if(last)
+			if (last)
 				{
 				last->Next=n;
 				last=last->Next;
@@ -260,7 +260,7 @@ LIBFUNC_P2(struct PM_IDLst *, LIBPM_ExLstA,
 		i++;
 		}
 
-	if(error)
+	if (error)
 		{
 		FreeIDList(first);
 		first=0L;
@@ -278,7 +278,7 @@ struct PM_Root *PM_AllocPMRoot(struct Window *w)
         struct PM_Root *p;
 
         p=PM_Mem_Alloc(sizeof(struct PM_Root));
-        if(p) {
+        if (p) {
                 p->ShadowWidth=p->ShadowHeight=4;
                 p->ShadowAddX=p->ShadowAddY=2;
 

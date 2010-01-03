@@ -69,7 +69,7 @@
 #include "pmimages.h"
 
 
-#define POPUPMENU_REVISION	10L
+#define POPUPMENU_REVISION	11L
 
 
 #define PM_Req(c, s)		if(c) EZReq("Assertion failed:\n\n" s, "OK", 0)

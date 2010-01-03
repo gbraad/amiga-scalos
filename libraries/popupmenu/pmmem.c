@@ -58,16 +58,16 @@ ULONG PM_String_Length(STRPTR s)
 {
 	ULONG r=(ULONG)s;
 	
-	while(*s++);
+	while (*s++);
 	
 	return ((ULONG)s)-r;
 }
 
 STRPTR PM_String_Copy(STRPTR Source, STRPTR Dest, LONG Len)
 {
-	if(Len==-1) 
+	if (Len==-1) 
 		{
-		while(*Source) 
+		while (*Source) 
 			*Dest++=*Source++;
 		*Dest++=0;
 		return Dest;
@@ -76,7 +76,7 @@ STRPTR PM_String_Copy(STRPTR Source, STRPTR Dest, LONG Len)
 		{
 		LONG ctr=0;
 		
-		while(ctr<Len) 
+		while (ctr<Len) 
 			{
 			Dest[ctr]=Source[ctr];
 			ctr++;
@@ -102,9 +102,9 @@ ULONG PM_String_Compare(STRPTR str1, STRPTR str2)
 
 void PM_StrCat(STRPTR str1, STRPTR str2)
 {
-	while(*str1) 
+	while (*str1) 
 		str1++;
-	while(*str2) 
+	while (*str2) 
 		*str1++=*str2++;
 	*str1=0;
 }

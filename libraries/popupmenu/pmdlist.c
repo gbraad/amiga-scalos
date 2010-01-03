@@ -25,7 +25,7 @@ PMDList *PM_InitList(void)
     PMDList *newlist;
 
     newlist=(PMDList *)AllocVec(sizeof(struct MinList), MEMF_ANY);
-    if(newlist) {
+    if (newlist) {
         NewList((struct List *)newlist);
     }
 
@@ -41,7 +41,7 @@ void PM_FreeList(PMDList *list)
     PMGLN *nextnode;
 
     worknode = (PMGLN *)(list->mlh_Head); /* First node */
-    while((nextnode = (PMGLN *)(worknode->n.mln_Succ))) {
+    while ((nextnode = (PMGLN *)(worknode->n.mln_Succ))) {
         PM_FreeNode((PMNode *)worknode);
         worknode = nextnode;
     }
@@ -59,12 +59,12 @@ PMDList *PM_CopyList(PMDList *list)
     PMGLN *nextnode;
 
     newlist=PM_InitList();
-    if(newlist) {
-        if(list) {
+    if (newlist) {
+        if (list) {
             worknode = (PMGLN *)(list->mlh_Head); /* First node */
-            while((nextnode = (PMGLN *)(worknode->n.mln_Succ))) {
+            while ((nextnode = (PMGLN *)(worknode->n.mln_Succ))) {
                 PMGLN *copy=(PMGLN *)PM_CopyNode((PMNode *)worknode);
-                if(copy) PM_AddToList(newlist, (PMNode *)copy);
+                if (copy) PM_AddToList(newlist, (PMNode *)copy);
                 worknode = nextnode;
             }
         }
@@ -104,9 +104,9 @@ PMNode *PM_CopyNode(PMNode *A)
 {
     PMNode *newnode=NULL;
 
-    if(A) {
+    if (A) {
         newnode=(PMNode *)AllocVec(((PMGLN *)A)->Length, MEMF_ANY);
-        if(newnode) {
+        if (newnode) {
             CopyMem(A, newnode, ((PMGLN *)A)->Length);
         }
     }

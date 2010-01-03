@@ -18,7 +18,7 @@ void PM_DrawBg(struct PM_Window *pw, int x, int y, int xb, int yb)
 {
 	int xa = x, ya = y;
 
-	if(pw->bg.BgArray)
+	if (pw->bg.BgArray)
 		{
 		WritePixelArray(pw->bg.BgArray, x, y,
 			pw->Width*3, pw->RPort, xa, ya,
@@ -82,7 +82,7 @@ void PM_Ghost(struct PM_Window *w, int x, int y, int xb, int yb, int pen)
 
 void ColourBox(struct PM_Window *w, int xa, int ya, int xb, int yb, int pen, int shine, int shade, BOOL selected)
 {
-	if(selected)
+	if (selected)
 		{
 		PM_DrawBox(w, xa, ya, xb, yb, shade, shine);
 		}
@@ -102,15 +102,15 @@ void ColourBox(struct PM_Window *w, int xa, int ya, int xb, int yb, int pen, int
 void PM_DI_SetTextPen(struct PM_Window *a, struct PopupMenu *pm)
 {
         SetAPen(a->RPort, TEXT(a->p));
-	if(pm->Flags&NPM_FILLTEXT)
+	if (pm->Flags&NPM_FILLTEXT)
 		SetAPen(a->RPort, FILL(a->p));
-	if(pm->Flags&NPM_SHADOWTEXT)
+	if (pm->Flags&NPM_SHADOWTEXT)
 		SetAPen(a->RPort, SHADOW(a->p));
-	if(pm->Flags&NPM_SHINETEXT)
+	if (pm->Flags&NPM_SHINETEXT)
 		SetAPen(a->RPort, SHINE(a->p));
-	if(pm->Flags&NPM_HILITETEXT)
+	if (pm->Flags&NPM_HILITETEXT)
 		SetAPen(a->RPort, HILITE(a->p));
-	if(pm->Flags&NPM_CUSTOMPEN)
+	if (pm->Flags&NPM_CUSTOMPEN)
 		SetAPen(a->RPort, pm->TextPen);
 
 	d1(KPrintF("%s/%s/%ld: dri_NumPens=%ld  FILL=%ld  SHADOW=%ld  SHINE=%ld  HILITE=%ld\n", __FILE__, __FUNC__, \
@@ -121,9 +121,9 @@ ULONG PM_RenderCheckMark(struct PM_Window *a, struct PopupMenu *pm, BOOL Selecte
 {
         ULONG xoff=0;
 
-        if(pm->Flags&NPM_CHECKIT) { // Should this item have a checkmark?
+        if (pm->Flags&NPM_CHECKIT) { // Should this item have a checkmark?
 
-                if(pm->Flags&NPM_CHECKED) {
+                if (pm->Flags&NPM_CHECKED) {
 			xoff=PM_Image_Draw(a,
 				pm->Exclude?PMIMG_EXCLUDE:PMIMG_CHECKMARK,
 				pm->Left+PM_Prefs->pmp_XSpace+1,
@@ -152,12 +152,12 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 	ULONG style, xoff;
 	STRPTR pmtitle=pm->TitleUnion.Title;
 
-	if(pm->Flags&NPM_HIDDEN) return 0;
+	if (pm->Flags&NPM_HIDDEN) return 0;
 
-	if(GET_TXTMODE(pm)==NPX_TXTLOCALE)
+	if (GET_TXTMODE(pm)==NPX_TXTLOCALE)
 		pmtitle=(STRPTR)CallHook(a->p->LocaleHook, (Object *)pm, (Object *)pm->TitleUnion.TitleID);
 
-	if(Selected)
+	if (Selected)
 		{
 		SetAPen(a->RPort, FILL(a->p));
 		PM_RectFill(a, pm->Left, pm->Top,
@@ -174,31 +174,31 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 		PM_DrawBg(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height);
 		}
 
-	if(pm->Flags&NPM_GROUP)
+	if (pm->Flags&NPM_GROUP)
 		{
 		struct PopupMenu *pmp=pm->SubGroup.Sub;
 
-		if(pmp)
+		if (pmp)
 			do {
 			PM_NewDrawItem(a, pmp, Selected, Disabled);
 			pmp=pmp->Next;
-			} while(pmp);
+			} while (pmp);
 		return 0;
 		}
 
 
-	if(pm->Flags&NPM_HBAR_BIT)
+	if (pm->Flags&NPM_HBAR_BIT)
 		{
 		PM_ShortSeparator(a, pm);
 		return TRUE;
 		}
-	else if(pm->Flags&NPM_WIDE_BAR_BIT)
+	else if (pm->Flags&NPM_WIDE_BAR_BIT)
 		{
 		PM_WideSeparator(a, pm);
 		return TRUE;
 		}
 
-	if(!Selected)
+	if (!Selected)
 		{ // Use RastPort Pen
 		PM_DI_SetTextPen(a, pm);
 		}
@@ -210,19 +210,20 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 
 	style = 0;
 
-	if(pm->Flags&NPM_UNDERLINEDTEXT) style|=FSF_UNDERLINED;
-	if(pm->Flags&NPM_BOLDTEXT) style|=FSF_BOLD;
-	if(pm->Flags&NPM_ITALICTEXT) style|=FSF_ITALIC;
+	if (pm->Flags&NPM_UNDERLINEDTEXT) style|=FSF_UNDERLINED;
+	if (pm->Flags&NPM_BOLDTEXT) style|=FSF_BOLD;
+	if (pm->Flags&NPM_ITALICTEXT) style|=FSF_ITALIC;
 
 	SetSoftStyle(a->RPort, style, ~0);
 
         xoff=PM_RenderCheckMark(a, pm, Selected);
+	d1(KPrintF("%s/%s/%ld: xoff=%ld\n", __FILE__, __FUNC__, __LINE__, xoff));
 
-	if(pm->Flags&NPM_COLOURBOX)
+	if (pm->Flags&NPM_COLOURBOX)
 		{
-		if(pm->Flags&NPM_CHECKIT)
+		if (pm->Flags&NPM_CHECKIT)
 			{
-			if(pm->CommKey)
+			if (pm->CommKey)
 				{
 				int x1=(a->Width-3*a->RPort->Font->tf_XSize-PM_Prefs->pmp_XSpace-a->p->BorderWidth)-a->RPort->Font->tf_XSize;
 
@@ -242,12 +243,13 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			{
 			ColourBox(a, pm->Left+PM_Prefs->pmp_XSpace, pm->Top+PM_Prefs->pmp_YSpace+1, pm->Left+3*a->RPort->Font->tf_XSize, pm->Top+pm->Height-PM_Prefs->pmp_YSpace-1, pm->CBox, SHINE(a->p), SHADOW(a->p), Selected);
 			xoff+=PM_Prefs->pmp_XSpace+3*a->RPort->Font->tf_XSize;
+			d1(KPrintF("%s/%s/%ld: xoff=%ld\n", __FILE__, __FUNC__, __LINE__, xoff));
 			}
 		}
 
-	if(!a->p->PullDown)
+	if (!a->p->PullDown)
 		{
-		if(pm->SubGroup.Sub)
+		if (pm->SubGroup.Sub)
 			{
 			PM_Image_Draw(a,
 				PMIMG_SUBMENU,
@@ -258,13 +260,13 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			}
 		}
 
-	if(Selected)
+	if (Selected)
 		{
-		if(pm->Flags&NPM_ISIMAGE)
+		if (pm->Flags&NPM_ISIMAGE)
 			{
-			if(pm->ImageUnion.Images[1])
+			if (pm->ImageUnion.Images[1])
 				{
-				if(pm->Flags&NPM_CENTERED)
+				if (pm->Flags&NPM_CENTERED)
 					{
 					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 					PM_DrawImage(a, pm->ImageUnion.Images[1],
@@ -280,7 +282,7 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			}
 		else
 			{
-			if(pm->ImageUnion.Images[1])
+			if (pm->ImageUnion.Images[1])
 				{
 				WORD ixoff;
 				ixoff=a->IconColumn/2-pm->ImageUnion.Images[1]->Width/2;
@@ -291,11 +293,11 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 		}
 	else
 		{
-		if(pm->Flags&NPM_ISIMAGE)
+		if (pm->Flags&NPM_ISIMAGE)
 			{
-			if(pm->ImageUnion.Images[0])
+			if (pm->ImageUnion.Images[0])
 				{
-				if(pm->Flags&NPM_CENTERED)
+				if (pm->Flags&NPM_CENTERED)
 					{
 					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 					PM_DrawImage(a, pm->ImageUnion.Images[0],
@@ -311,7 +313,7 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			}
 		else
 			{
-			if(pm->ImageUnion.Images[0])
+			if (pm->ImageUnion.Images[0])
 				{
 				WORD ixoff;
 				ixoff=a->IconColumn/2-pm->ImageUnion.Images[0]->Width/2;
@@ -321,36 +323,46 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			}
 		}
 
-	if(a->IconColumn)
+	if (a->IconColumn)
 		{
-		xoff+=a->IconColumn+PM_Prefs->pmp_Intermediate;
+		if (pm->Next && ((pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_DISABLED) && (pm->Next->Flags&NPM_WIDE_BAR)))
+			{
+			// Do not reserve space for icon column on menu titles
+			}
+		else
+			{
+			xoff+=a->IconColumn+PM_Prefs->pmp_Intermediate;
+			}
+		d1(KPrintF("%s/%s/%ld: xoff=%ld  IconColumn=%ld\n", __FILE__, __FUNC__, __LINE__, xoff, a->IconColumn));
 		}
 
-	if(pm->Flags&NPM_CENTERED)
+	if (pm->Flags&NPM_CENTERED)
 		{
                 int offs, tw;
 
                 tw=TextLength(a->RPort,pmtitle,strlen(pmtitle));
                 offs=pm->Width/2-tw/2;
 
-                if(xoff<offs) xoff=offs;
+		if (xoff<offs)
+			xoff=offs;
+		d1(KPrintF("%s/%s/%ld: tw=%ld  Width=%ld  offs=%ld  xoff=%ld\n", __FILE__, __FUNC__, __LINE__, tw, pm->Width, offs, xoff));
 		}
 
-	if((pm->Flags&NPM_DISABLED || Disabled) && !PM_Prefs->pmp_SeparatorBar)
+	if ((pm->Flags&NPM_DISABLED || Disabled) && !PM_Prefs->pmp_SeparatorBar)
 		{
                 SetAPen(a->RPort, BGSHINE(a->p));
                 PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
-                if(pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
+                if (pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
 		}
-	else if(pm->Flags&NPM_SHADOWED)
+	else if (pm->Flags&NPM_SHADOWED)
 		{
                 SetAPen(a->RPort, TEXTSHADOW(a->p));
                 PM_Move(a, pm->Left+xoff+1, YPosText(a, pm)+1);
-                if(pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
+                if (pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
 		}
-	else if(pm->Flags&NPM_OUTLINED)
+	else if (pm->Flags&NPM_OUTLINED)
 		{
-		if(pmtitle)
+		if (pmtitle)
 			{
 			SetAPen(a->RPort, TEXTOUTLINE(a->p));
 			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)-1);
@@ -373,9 +385,9 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			Text(a->RPort, pmtitle, strlen(pmtitle));
 			}
 		}
-	else if(pm->Flags&NPM_EMBOSSED)
+	else if (pm->Flags&NPM_EMBOSSED)
 		{
-		if(pmtitle)
+		if (pmtitle)
 			{
 			SetAPen(a->RPort, SHINE(a->p));
 			PM_Move(a, pm->Left+xoff-1, YPosText(a, pm)-1);
@@ -394,7 +406,7 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			}
 		}
 
-	if(!Selected)
+	if (!Selected)
 		{
                 PM_DI_SetTextPen(a, pm);
 		}
@@ -403,11 +415,11 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 		SetAPen(a->RPort, FTPEN(a->p));
 		}
 
-	if(pm->Flags&NPM_ISSELECTED)
+	if (pm->Flags&NPM_ISSELECTED)
 		{
-		if(pm->Flags&NPM_CHECKIT)
+		if (pm->Flags&NPM_CHECKIT)
 			{
-			if((!(pm->Flags&NPM_CHECKED) && pm->Flags&NPM_INITIAL_CHECKED) ||
+			if ((!(pm->Flags&NPM_CHECKED) && pm->Flags&NPM_INITIAL_CHECKED) ||
 				((pm->Flags&NPM_CHECKED) && !(pm->Flags&NPM_INITIAL_CHECKED)))
 				{
 				SetAPen(a->RPort, HILITE(a->p));
@@ -419,7 +431,7 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 			}
 		}
 
-	if(pm->CommKey)
+	if (pm->CommKey)
 		{
                 char x[2];
 
@@ -436,28 +448,28 @@ int PM_NewDrawItem(struct PM_Window *a, struct PopupMenu *pm, BOOL Selected, BOO
 		}
 
         PM_Move(a, pm->Left+xoff, YPosText(a, pm));
-	if((pm->Flags&NPM_DISABLED || Disabled) && !PM_Prefs->pmp_SeparatorBar) SetAPen(a->RPort, BGSHADOW(a->p));   // Set text colour to 'bgminus' if disabled
-        if(pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
+	if ((pm->Flags&NPM_DISABLED || Disabled) && !PM_Prefs->pmp_SeparatorBar) SetAPen(a->RPort, BGSHADOW(a->p));   // Set text colour to 'bgminus' if disabled
+        if (pmtitle) Text(a->RPort, pmtitle, strlen(pmtitle));
 
-	if(PM_Prefs->pmp_SelItemBorder && Selected)
+	if (PM_Prefs->pmp_SelItemBorder && Selected)
 		{
-		if(PM_Prefs->pmp_MenuBorder==MAGIC_FRAME)
+		if (PM_Prefs->pmp_MenuBorder==MAGIC_FRAME)
 			{
-			if(PM_Prefs->pmp_SelItemBorder==1) /* Raised */
+			if (PM_Prefs->pmp_SelItemBorder==1) /* Raised */
 				PM_DrawBoxMM2(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHINE(a->p), SHADOW(a->p), HALF(a->p));
 			else
 				PM_DrawBoxMM2(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p), SHINE(a->p), HALF(a->p));
 			}
 		else
 			{
-			if(PM_Prefs->pmp_SelItemBorder==1) /* Raised */
+			if (PM_Prefs->pmp_SelItemBorder==1) /* Raised */
 				PM_DrawBox(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHINE(a->p), SHADOW(a->p));
 			else
 				PM_DrawBox(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p), SHINE(a->p));
 			}
 		}
 
-	if(pm->Flags&NPM_DISABLED && PM_Prefs->pmp_SeparatorBar)
+	if (pm->Flags&NPM_DISABLED && PM_Prefs->pmp_SeparatorBar)
 		{
 		PM_Ghost(a, pm->Left, pm->Top, pm->Left+pm->Width, pm->Top+pm->Height, SHADOW(a->p));
 		}
@@ -546,8 +558,8 @@ void PM_OldSeparator(struct PM_Window *w, int x, int y, int x2, int shine, int s
 
 void PM_ShortSeparator(struct PM_Window *a, struct PopupMenu *pm)
 {
-    if(!PM_Prefs->pmp_SeparatorBar) {
-        if(PM_Prefs->pmp_MenuBorder==MAGIC_FRAME)
+    if (!PM_Prefs->pmp_SeparatorBar) {
+        if (PM_Prefs->pmp_MenuBorder==MAGIC_FRAME)
             PM_NewSeparator(a, BarLeft(a, pm), BarTop(a, pm), BarRight(a, pm), BGSHINE(a->p), BGSHADOW(a->p));
         else PM_NewSeparator(a, BarLeft(a, pm), BarTop(a, pm), BarRight(a, pm), SHINE(a->p), SHADOW(a->p));
     } else PM_OldSeparator(a, BarLeft(a, pm), BarTop(a, pm), BarRight(a, pm), SHINE(a->p), SHADOW(a->p));
@@ -555,10 +567,10 @@ void PM_ShortSeparator(struct PM_Window *a, struct PopupMenu *pm)
 
 void PM_WideSeparator(struct PM_Window *a, struct PopupMenu *pm)
 {
-    if(!PM_Prefs->pmp_SeparatorBar) {
-        if(PM_Prefs->pmp_MenuBorder==MAGIC_FRAME) {
+    if (!PM_Prefs->pmp_SeparatorBar) {
+        if (PM_Prefs->pmp_MenuBorder==MAGIC_FRAME) {
             PM_XENSeparatorHalf(a, 0, BarTop(a, pm), a->Width-2, SHINE(a->p), SHADOW(a->p), BGSHINE(a->p), BGSHADOW(a->p), HALF(a->p));
-        } else if(PM_Prefs->pmp_MenuBorder==DROPBOX_FRAME) {
+        } else if (PM_Prefs->pmp_MenuBorder==DROPBOX_FRAME) {
                 PM_Move(a, a->p->BorderWidth-1, BarTop(a, pm)-2);
                 SetAPen(a->RPort, SHINE(a->p));
             PM_Draw(a, a->Width-a->p->BorderWidth, BarTop(a, pm)-2);

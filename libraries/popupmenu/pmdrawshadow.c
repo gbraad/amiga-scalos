@@ -167,7 +167,7 @@ void PM_DrawShadow(struct PM_Window *w, int x, int y, int xb, int yb, UBYTE Type
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
-	if(!realshadow)
+	if (!realshadow)
 #endif /* AROS */
 		{
 		// A "real" shadow could not be drawn, or it was not desired.

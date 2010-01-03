@@ -23,11 +23,11 @@ M68KFUNC_P2(struct InputEvent *, myhandler,
     struct InputEvent *evnt = ev;
 
     do {
-        if(evnt->ie_Class == IECLASS_RAWKEY) {
+        if (evnt->ie_Class == IECLASS_RAWKEY) {
             struct PM_InpMsg *m;
 
             m = PM_Mem_Alloc(sizeof(struct PM_InpMsg));
-            if(m) {
+            if (m) {
                 m->msg.mn_Length = sizeof(struct PM_InpMsg);
                 m->msg.mn_ReplyPort = NULL;
                 m->Kind = 0;
@@ -59,27 +59,27 @@ M68KFUNC_P2(struct InputEvent *, myhandler,
 			    m->Kind = PM_MSG_DEBUGINFO;
 			    break;
                 }
-                if(m->Kind) PutMsg(port, (struct Message *)m);
+                if (m->Kind) PutMsg(port, (struct Message *)m);
                 else PM_Mem_Free(m);
             }
             evnt->ie_Class = 0;
         }
-        if(evnt->ie_Class == IECLASS_TIMER) {
+        if (evnt->ie_Class == IECLASS_TIMER) {
             struct PM_InpMsg *m;
 
             m = PM_Mem_Alloc(sizeof(struct PM_InpMsg));
-            if(m) {
+            if (m) {
                 m->msg.mn_Length = sizeof(struct PM_InpMsg);
                 m->msg.mn_ReplyPort = NULL;
                 m->Kind = PM_MSG_TIMER;
                 PutMsg(port, (struct Message *)m);
             }
         }
-        if(evnt->ie_Class == IECLASS_RAWMOUSE) {
+        if (evnt->ie_Class == IECLASS_RAWMOUSE) {
             struct PM_InpMsg *m;
 
             m = PM_Mem_Alloc(sizeof(struct PM_InpMsg));
-            if(m) {
+            if (m) {
                 m->msg.mn_Length = sizeof(struct PM_InpMsg);
                 m->msg.mn_ReplyPort = NULL;
                 m->Kind = PM_MSG_RAWMOUSE;
@@ -91,7 +91,7 @@ M68KFUNC_P2(struct InputEvent *, myhandler,
             evnt->ie_Code = IECODE_NOBUTTON;
         }
         evnt = evnt->ie_NextEvent;
-    } while(evnt);
+    } while (evnt);
 
     return ev;
 }
@@ -126,15 +126,15 @@ struct PM_InputHandler *PM_InstallHandler(int pri)
 	STATIC_PATCHFUNC(myhandler)
 
     pmh = PM_Mem_Alloc(sizeof(struct PM_InputHandler));
-    if(pmh) {
+    if (pmh) {
         pmh->mp = CreatePort(0,0);
-        if(pmh->mp) {
+        if (pmh->mp) {
             pmh->port = CreatePort(0,0);
-            if(pmh->port) {
+            if (pmh->port) {
                 pmh->ior = CreateStdIO(pmh->mp);
-                if(pmh->ior) {
+                if (pmh->ior) {
                     pmh->error = OpenDevice("input.device",0,(struct IORequest *)pmh->ior,0);
-                    if(!pmh->error) {
+                    if (!pmh->error) {
                         pmh->intr.is_Data = (APTR)pmh->port;
 			pmh->intr.is_Code = (VOID (*)()) PATCH_NEWFUNC(myhandler);
                         pmh->intr.is_Node.ln_Pri = pri;
@@ -162,10 +162,10 @@ void PM_RemoveHandler(struct PM_InputHandler *pmh)
 {
     struct PM_InpMsg *msg;
 
-    if(pmh->mp) {
-        if(pmh->port) {
-            if(pmh->ior) {
-                if(!pmh->error) {
+    if (pmh->mp) {
+        if (pmh->port) {
+            if (pmh->ior) {
+                if (!pmh->error) {
                     pmh->ior->io_Command = IND_REMHANDLER;
                     pmh->ior->io_Data = (APTR)&pmh->intr;
                     DoIO((struct IORequest *)pmh->ior);
@@ -174,7 +174,7 @@ void PM_RemoveHandler(struct PM_InputHandler *pmh)
                 }
                 DeleteStdIO(pmh->ior);
             }
-	    while((msg = (struct PM_InpMsg *)GetMsg(pmh->port))) {
+	    while ((msg = (struct PM_InpMsg *)GetMsg(pmh->port))) {
 		PM_Mem_Free(msg);
 	    }
             DeletePort(pmh->port);
@@ -198,12 +198,12 @@ void EZDeleteTimer(T_TIMEREQUEST *TimeRequest)
 {
     struct MsgPort *TimePort;
 
-    if(TimeRequest)
+    if (TimeRequest)
     {
-        if(TimeRequest->tr_node.io_Device)
+        if (TimeRequest->tr_node.io_Device)
             CloseDevice((struct IORequest *)TimeRequest);
 
-        if((TimePort = TimeRequest->tr_node.io_Message.mn_ReplyPort))
+        if ((TimePort = TimeRequest->tr_node.io_Message.mn_ReplyPort))
             DeletePort(TimePort);
 
         DeleteExtIO((struct IORequest *)TimeRequest);
@@ -215,17 +215,17 @@ T_TIMEREQUEST *EZCreateTimer(LONG Unit)
     struct MsgPort      *TimePort;
     T_TIMEREQUEST  *TimeRequest;
 
-    if(!(TimePort = (struct MsgPort *)CreatePort(NULL,0)))
+    if (!(TimePort = (struct MsgPort *)CreatePort(NULL,0)))
         return(NULL);
 
-    if(!(TimeRequest = (T_TIMEREQUEST *)CreateExtIO(TimePort,sizeof(T_TIMEREQUEST))))
+    if (!(TimeRequest = (T_TIMEREQUEST *)CreateExtIO(TimePort,sizeof(T_TIMEREQUEST))))
     {
         DeletePort(TimePort);
 
         return(NULL);
     }
 
-    if(OpenDevice(TIMERNAME, Unit, (struct IORequest *)TimeRequest, 0))
+    if (OpenDevice(TIMERNAME, Unit, (struct IORequest *)TimeRequest, 0))
     {
         DeleteExtIO((struct IORequest *)TimeRequest);
         DeletePort(TimePort);

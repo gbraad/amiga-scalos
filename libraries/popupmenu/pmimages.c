@@ -36,8 +36,8 @@ struct Image *MakeSysImage(struct PM_Root *p, ULONG image, ULONG ist)
 	UWORD TP[MAX_PENS];
 
 	CopyMem(p->DrawInfo,&dri,sizeof(struct DrawInfo));
-        if(dri.dri_Version>=2) {
-            if(ist==IST_INACTIVE) {
+        if (dri.dri_Version>=2) {
+            if (ist==IST_INACTIVE) {
                 TP[SHINEPEN] = p->DrawInfo->dri_Pens[SHINEPEN];
                 TP[SHADOWPEN]=PM_Pens_Get(PMPEN_SHADOW);
                 TP[BACKGROUNDPEN]=PM_Pens_Get(PMPEN_BG);
@@ -87,13 +87,13 @@ void PM_Image_Allocate(struct PM_Root *p)
 
 void PM_Image_Free(struct PM_Root *p)
 {
-	if(p->MenuImages[PMIMG_AMIGAKEY])
+	if (p->MenuImages[PMIMG_AMIGAKEY])
 		DisposeObject(p->MenuImages[PMIMG_AMIGAKEY]);
-	if(p->MenuImages[PMIMG_CHECKMARK])
+	if (p->MenuImages[PMIMG_CHECKMARK])
 		DisposeObject(p->MenuImages[PMIMG_CHECKMARK]);
-	if(p->MenuImages[PMIMG_EXCLUDE])
+	if (p->MenuImages[PMIMG_EXCLUDE])
 		DisposeObject(p->MenuImages[PMIMG_EXCLUDE]);
-	/*if(p->MenuImages[PMIMG_SUBMENU])
+	/*if (p->MenuImages[PMIMG_SUBMENU])
 		DisposeObject(p->MenuImages[PMIMG_SUBMENU]); */
 }
 
@@ -112,10 +112,10 @@ UWORD PM_Image_Draw(struct PM_Window *w, ULONG type, WORD l, struct DrawInfo *dr
 #endif
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
-	if(p->MenuImages[type])
+	if (p->MenuImages[type])
 		{
 		int y = item->Top + item->Height/2 - p->MenuImages[type]->Height/2;
-		if(l < 0)
+		if (l < 0)
 			l += item->Left + item->Width - p->MenuImages[type]->Width;
 
 		d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
@@ -131,14 +131,14 @@ UWORD PM_Image_Draw(struct PM_Window *w, ULONG type, WORD l, struct DrawInfo *dr
 
 UWORD PM_Image_Height(struct PM_Root *p, ULONG type, struct PopupMenu *item)
 {
-	if(p->MenuImages[type])
+	if (p->MenuImages[type])
 		return (UWORD) p->MenuImages[type]->Height;
 	return 0;
 }
 
 UWORD PM_Image_Width(struct PM_Root *p, ULONG type, struct PopupMenu *item)
 {
-	if(p->MenuImages[type])
+	if (p->MenuImages[type])
 		return (UWORD) p->MenuImages[type]->Width;
 	return 0;
 }

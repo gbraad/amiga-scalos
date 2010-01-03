@@ -142,7 +142,7 @@ static void ConvertPmPrefs(CONST_STRPTR prefsFileOld, CONST_STRPTR prefsFileNew)
 
 		PM_LoadPrefsFile(prefsFileOld, 0, &LoadedPrefs, &DefaultPrefs);
 
-		d2(KPrintF("%s/%s/%ld: pmp_Animation=%ld\n", __FILE__, __FUNC__, __LINE__, LoadedPrefs.pmp_Animation));
+		d1(KPrintF("%s/%s/%ld: pmp_Animation=%ld\n", __FILE__, __FUNC__, __LINE__, LoadedPrefs.pmp_Animation));
 
 		myPrefsHandle = AllocPrefsHandle("PopupMenuPrefs");
 		if (myPrefsHandle)
