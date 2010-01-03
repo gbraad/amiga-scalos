@@ -67,8 +67,8 @@ enum ObjectIndex
 	OBJNDX_Button_Normal,
 	OBJNDX_Button_Raised,
 	OBJNDX_Button_Recessed,
-	OBJNDX_Button_NewLook,
-	OBJNDX_Button_OldLook,
+	OBJNDX_CheckMark_NewLook,
+	OBJNDX_CheckMark_OldLook,
 
 	OBJNDX_Slider_HorizontalSpacing,
 	OBJNDX_Slider_VerticalSpacing,

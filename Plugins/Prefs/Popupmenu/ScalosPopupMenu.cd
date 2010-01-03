@@ -389,6 +389,30 @@ Old Look
 MSGID_SPACINGPAGE_TITLE (9900//)
 Spacing
 ;
+;
+MSGID_SPACINGPAGE_HORIZONTAL_SPACE (//)
+Horizontal inner spacing
+;
+;
+MSGID_SPACINGPAGE_VERTICAL_SPACE (//)
+Vertical spacing
+;
+;
+MSGID_SPACINGPAGE_HORIZONTAL (//)
+Horizontal outer spacing
+;
+;
+MSGID_SPACINGPAGE_VERTICAL_OFFSET (//)
+Vertical offset
+;
+;
+MSGID_SPACINGPAGE_INTERMEDIATE_SPACING (//)
+Intermediate spacing
+;
+;
+MSGID_SPACINGPAGE_TEXT_DISPLACEMENT (//)
+Text displacement
+;
 ;-----------------------------------------------------------
 ;
 MSGID_TEXTPAGE_TITLE (10000//)

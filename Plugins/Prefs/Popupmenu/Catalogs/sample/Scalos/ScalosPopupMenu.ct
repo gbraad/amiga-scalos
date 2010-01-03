@@ -502,6 +502,36 @@ MSGID_SPACINGPAGE_TITLE
 Spacing
 ;Spacing
 ;
+;
+MSGID_SPACINGPAGE_HORIZONTAL_SPACE
+Horizontal inner spacing
+;Horizontal inner spacing
+;
+;
+MSGID_SPACINGPAGE_VERTICAL_SPACE
+Vertical spacing
+;Vertical spacing
+;
+;
+MSGID_SPACINGPAGE_HORIZONTAL
+Horizontal outer spacing
+;Horizontal outer spacing
+;
+;
+MSGID_SPACINGPAGE_VERTICAL_OFFSET
+Vertical offset
+;Vertical offset
+;
+;
+MSGID_SPACINGPAGE_INTERMEDIATE_SPACING
+Intermediate spacing
+;Intermediate spacing
+;
+;
+MSGID_SPACINGPAGE_TEXT_DISPLACEMENT
+Text displacement
+;Text displacement
+;
 ;-----------------------------------------------------------
 ;
 MSGID_TEXTPAGE_TITLE

@@ -500,6 +500,36 @@ MSGID_SPACINGPAGE_TITLE
 Abstände
 ;Spacing
 ;
+;
+MSGID_SPACINGPAGE_HORIZONTAL_SPACE
+Horizontalabstand innen
+;Horizontal inner spacing
+;
+;
+MSGID_SPACINGPAGE_VERTICAL_SPACE
+Zeilenabstand
+;Vertical spacing
+;
+;
+MSGID_SPACINGPAGE_HORIZONTAL
+Horizontaler Rand
+;Horizontal outer spacing
+;
+;
+MSGID_SPACINGPAGE_VERTICAL_OFFSET
+Vertikaler Rand
+;Vertical offset
+;
+;
+MSGID_SPACINGPAGE_INTERMEDIATE_SPACING
+Zwischenraum
+;Intermediate spacing
+;
+;
+MSGID_SPACINGPAGE_TEXT_DISPLACEMENT
+Textversatz
+;Text displacement
+;
 ;-----------------------------------------------------------
 ;
 MSGID_TEXTPAGE_TITLE
