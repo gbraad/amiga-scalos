@@ -30,7 +30,7 @@ struct RastPort *PM_CpyRPort(struct RastPort *rp)
 	struct RastPort *rpc;
 
 	rpc=PM_Mem_Alloc(sizeof(struct RastPort));
-	if(rpc) {
+	if (rpc) {
 		CopyMem(rp, rpc, sizeof(struct RastPort));
 	}
 
@@ -172,11 +172,11 @@ static void PM_BlurPixelArray(struct RGB *Dest, const struct RGB *Src,
 //
 void PM_OffScreenBfr(struct PM_Window *bw)
 {
-	if(PM_Prefs->pmp_Animation) {
+	if (PM_Prefs->pmp_Animation) {
 	        bw->te.BMap=AllocBitMap(bw->Width, bw->Height, bw->Wnd->WScreen->RastPort.BitMap->Depth, BMF_MINPLANES, bw->Wnd->WScreen->RastPort.BitMap);
-        	if(bw->te.BMap) {
+        	if (bw->te.BMap) {
 			bw->te.RPort=PM_CpyRPort(&bw->Wnd->WScreen->RastPort);
-			if(bw->te.RPort) {
+			if (bw->te.RPort) {
 				bw->te.RPort->Layer = NULL; /* huuu! */
 				bw->te.RPort->BitMap = bw->te.BMap;
 			}
@@ -209,7 +209,7 @@ BOOL PM_OpenWindow(struct PM_Window *pw, int left, int top, int width, int heigh
 #endif /* WA_FrontWindow */
                 TAG_DONE);
 
-	if(pw->Wnd)
+	if (pw->Wnd)
 		{
 		pw->RPort = pw->Wnd->RPort;
 		d1(KPrintF("%s/%s/%ld: pw=%08lx  RPort=%08lx\n", __FILE__, __FUNC__, __LINE__, pw, pw->RPort));
@@ -234,14 +234,14 @@ BOOL PM_OpenWindow(struct PM_Window *pw, int left, int top, int width, int heigh
 //
 void PM_CloseWindow(struct PM_Window *bw)
 {
-	if(bw->bg.BgArray) PM_Mem_Free(bw->bg.BgArray);
+	if (bw->bg.BgArray) PM_Mem_Free(bw->bg.BgArray);
 #ifdef __AROS__
-	if(bw->te.RPort) FreeRastPort(bw->te.RPort);
+	if (bw->te.RPort) FreeRastPort(bw->te.RPort);
 #else	
-	if(bw->te.RPort) PM_Mem_Free(bw->te.RPort);
+	if (bw->te.RPort) PM_Mem_Free(bw->te.RPort);
 #endif
-	if(bw->te.BMap) FreeBitMap(bw->te.BMap);
-	if(bw->Wnd) CloseWindow(bw->Wnd);
+	if (bw->te.BMap) FreeBitMap(bw->te.BMap);
+	if (bw->Wnd) CloseWindow(bw->Wnd);
 
 	bw->bg.BgArray = NULL;
 	bw->te.RPort = NULL;
@@ -256,13 +256,13 @@ void PM_ResizeWindow(struct PM_Window *bw, int l, int t, int w, int h)
 {
 	struct Message *msg;
 
-	if(l==bw->Wnd->LeftEdge && t==bw->Wnd->TopEdge && w==bw->Width && h==bw->Height)
+	if (l==bw->Wnd->LeftEdge && t==bw->Wnd->TopEdge && w==bw->Width && h==bw->Height)
 		return;		// If no change
 
 	ModifyIDCMP(bw->Wnd, IDCMP_CLOSEWINDOW|IDCMP_NEWSIZE);
 	ChangeWindowBox(bw->Wnd, l, t, w, h);
 	WaitPort(bw->Wnd->UserPort);
-	while((msg=GetMsg(bw->Wnd->UserPort))) ReplyMsg(msg);
+	while ((msg=GetMsg(bw->Wnd->UserPort))) ReplyMsg(msg);
 	ModifyIDCMP(bw->Wnd, IDCMP_CLOSEWINDOW);
 
   //     	bw->Width=bw->wnd->Width;
@@ -288,9 +288,9 @@ BOOL PM_InsideWindows(int px, int py, struct PM_Window *wnd)
 
         w = wnd->Prev;
 
-	if(w) {
-		if(w->Selected) {
-			if(px > w->Wnd->LeftEdge + w->Selected->Left - 2 &&
+	if (w) {
+		if (w->Selected) {
+			if (px > w->Wnd->LeftEdge + w->Selected->Left - 2 &&
 			   px < w->Wnd->LeftEdge + w->Selected->Left + w->Selected->Width + 2 &&
 			   py > w->Wnd->TopEdge + w->Selected->Top - 2 &&
 			   py < w->Wnd->TopEdge + w->Selected->Top + w->Selected->Height + 2)
@@ -298,8 +298,8 @@ BOOL PM_InsideWindows(int px, int py, struct PM_Window *wnd)
 		}
 	}
 
-        while(w) {
-                if(x > w->Wnd->LeftEdge &&
+        while (w) {
+                if (x > w->Wnd->LeftEdge &&
 		   y >= w->Wnd->TopEdge &&
 		   x < w->Wnd->LeftEdge + w->Width &&
 		   y < w->Wnd->TopEdge + w->Height) {

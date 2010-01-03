@@ -51,10 +51,10 @@ void PM_HandleShadow(struct PM_Window *a)
 	int w=a->Width;
 	int h=a->Height;
 
-	if(!a->Shadowmap || !a->Topographic)
+	if (!a->Shadowmap || !a->Topographic)
 	return;	// Shadows not used
 
-	if((delta=PM_InitShadowList()))
+	if ((delta=PM_InitShadowList()))
 	{
 
 	//
@@ -120,7 +120,7 @@ void PM_HandleShadow(struct PM_Window *a)
 // PM_RenderMenu
 void PM_RenderMenu(struct PM_Window *a, BOOL MenuDisable, BOOL refresh)
 {
-	if(a->te.RPort && !refresh) {
+	if (a->te.RPort && !refresh) {
 		/* Off screen buffer present - draw into it instead */
 		/* (Unless it's a menu refresh) */
 		a->RPort = a->te.RPort;
@@ -135,7 +135,7 @@ void PM_RenderMenu(struct PM_Window *a, BOOL MenuDisable, BOOL refresh)
 
 	// Draw a frame around the menu
 
-	if(a->p->PullDown && a->FirstTime)
+	if (a->p->PullDown && a->FirstTime)
 		PM_DrawBox(a, 0, 0, a->Width-1, a->Height-1, SHINE(a->p), SHADOW(a->p));
 	else
 		PM_DrawPrefBox(a->p, a, 0, 0, a->Width-1, a->Height-1);
@@ -145,7 +145,7 @@ void PM_RenderMenu(struct PM_Window *a, BOOL MenuDisable, BOOL refresh)
 	{
 		struct Hook *menurenderhook = NULL;
 		GetGUIAttrs(NULL, a->p->DrawInfo, GUIA_MenuRenderHook, &menurenderhook, TAG_DONE); // V50
-		if(menurenderhook) {
+		if (menurenderhook) {
 			struct MenuRenderMsg rendermsg;
 			rendermsg.mrm_MethodID	= MR_MENUPANEL;
 			rendermsg.mrm_RastPort	= a->RPort;
@@ -171,7 +171,7 @@ void PM_RenderMenu(struct PM_Window *a, BOOL MenuDisable, BOOL refresh)
 
 	// Dither the menu, if disabled and if Old Style is selected
 
-	if(MenuDisable && PM_Prefs->pmp_SeparatorBar)
+	if (MenuDisable && PM_Prefs->pmp_SeparatorBar)
 		PM_Ghost(a, 0, 0, a->Width, a->Height, SHADOW(a->p));
 
 	/* Back to on-screen rendering */
@@ -180,36 +180,36 @@ void PM_RenderMenu(struct PM_Window *a, BOOL MenuDisable, BOOL refresh)
 
 void SelectItem(struct PM_Window *c, BOOL mdis, struct PopupMenuBase *PopupMenuBase)
 {
-    if(!(c->Selected->Flags & NPM_DISABLED) && !mdis) {
-        if(c->Selected->Flags & NPM_CHECKIT) {
-	    if(c->Selected->Flags & NPM_CHECKED) {
-                if(!(c->Selected->Flags & NPM_NOTOGGLE)) {
-                    if(c->Selected->Exclude) {
+    if (!(c->Selected->Flags & NPM_DISABLED) && !mdis) {
+        if (c->Selected->Flags & NPM_CHECKIT) {
+	    if (c->Selected->Flags & NPM_CHECKED) {
+                if (!(c->Selected->Flags & NPM_NOTOGGLE)) {
+                    if (c->Selected->Exclude) {
 			pm_AlterState(c->p->PM, c->Selected->Exclude, PMACT_DESELECT);
                     }
                     c->Selected->Flags&=~NPM_CHECKED;
                     c->Selected->Flags|=NPM_ISSELECTED;
-                    if(c->Selected->AutoSetPtr) *c->Selected->AutoSetPtr=FALSE;
-                    if(c->Selected->Exclude) {
+                    if (c->Selected->AutoSetPtr) *c->Selected->AutoSetPtr=FALSE;
+                    if (c->Selected->Exclude) {
                         PM_RenderMenu(c, FALSE, TRUE);
                     } else {
                         PM_NewDrawItem(c, c->Selected, TRUE, FALSE);
                     }
                 }
             } else {
-		if(c->Selected->Exclude) {
+		if (c->Selected->Exclude) {
 			pm_AlterState(c->p->PM, c->Selected->Exclude, PMACT_SELECT);
 		}
                 c->Selected->Flags|=NPM_CHECKED|NPM_ISSELECTED;
-                if(c->Selected->AutoSetPtr) *c->Selected->AutoSetPtr=TRUE;
-                if(c->Selected->Exclude) {
+                if (c->Selected->AutoSetPtr) *c->Selected->AutoSetPtr=TRUE;
+                if (c->Selected->Exclude) {
                     PM_RenderMenu(c, FALSE, TRUE);
                 } else {
                     PM_NewDrawItem(c, c->Selected, TRUE, FALSE);
                 }
             }
         } else {
-            if(c->Selected->Flags & NPM_ISSELECTED) c->Selected->Flags&=~NPM_ISSELECTED;
+            if (c->Selected->Flags & NPM_ISSELECTED) c->Selected->Flags&=~NPM_ISSELECTED;
             else c->Selected->Flags|=NPM_ISSELECTED;
             PM_NewDrawItem(c, c->Selected, TRUE, FALSE);
         }
@@ -228,27 +228,27 @@ BOOL PM_MBHit(struct PM_Window *c, struct PM_InpMsg *msg, BOOL mdis, struct Popu
 {
     UBYTE   whattodo=0;
 
-    if(PM_Prefs->pmp_Sticky) {
-        if(((msg->Code&IECODE_LBUTTON) || (msg->Code&IECODE_RBUTTON))) {
-            if((msg->Code&IECODE_UP_PREFIX) &&
+    if (PM_Prefs->pmp_Sticky) {
+        if (((msg->Code&IECODE_LBUTTON) || (msg->Code&IECODE_RBUTTON))) {
+            if ((msg->Code&IECODE_UP_PREFIX) &&
                 ((msg->Qual & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)) ||
                 (msg->Qual & (IEQUALIFIER_LEFTBUTTON|IEQUALIFIER_RBUTTON)))) {
-                    if(c->p->DoMultiSel) {
+                    if (c->p->DoMultiSel) {
                         whattodo=3;
                         c->p->DoneMulti=TRUE;
                     } else {
                         return FALSE;
                     }
             } else {
-                if(!(msg->Code&IECODE_UP_PREFIX)) {
+                if (!(msg->Code&IECODE_UP_PREFIX)) {
                     c->StickyFlag=TRUE;
                     return FALSE;
                 } else {
-                    if(c->StickyFlag) {
-                        if(!c->p->DoneMulti) {
+                    if (c->StickyFlag) {
+                        if (!c->p->DoneMulti) {
                             whattodo=1;
                         } else {
-                            if(c->Prev) c->Prev->Running=0L;
+                            if (c->Prev) c->Prev->Running=0L;
                             c->Running=0L;
                             return TRUE;
                         }
@@ -259,22 +259,22 @@ BOOL PM_MBHit(struct PM_Window *c, struct PM_InpMsg *msg, BOOL mdis, struct Popu
             return FALSE;
         }
     } else {
-        if(((msg->Code&IECODE_LBUTTON) || (msg->Code&IECODE_RBUTTON))) {
-            if((msg->Code&IECODE_UP_PREFIX) &&
+        if (((msg->Code&IECODE_LBUTTON) || (msg->Code&IECODE_RBUTTON))) {
+            if ((msg->Code&IECODE_UP_PREFIX) &&
                 ((msg->Qual & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)) ||
                 (msg->Qual & (IEQUALIFIER_LEFTBUTTON|IEQUALIFIER_RBUTTON)))) {
-                    if(c->p->DoMultiSel) {
+                    if (c->p->DoMultiSel) {
                         whattodo=3;
                         c->p->DoneMulti=TRUE;
                     } else {
                         return FALSE;
                     }
             } else {
-                if(msg->Code&IECODE_UP_PREFIX) {
-                    if(!c->p->DoneMulti) {
+                if (msg->Code&IECODE_UP_PREFIX) {
+                    if (!c->p->DoneMulti) {
                         whattodo=1;
                     } else {
-                        if(c->Prev) c->Prev->Running=0L;
+                        if (c->Prev) c->Prev->Running=0L;
                         c->Running=0L;
                         return TRUE;
                     }
@@ -283,18 +283,18 @@ BOOL PM_MBHit(struct PM_Window *c, struct PM_InpMsg *msg, BOOL mdis, struct Popu
         } else return FALSE;
     }
 
-    if(whattodo & 1) { // Select an item
-        if(c->Selected) {
+    if (whattodo & 1) { // Select an item
+        if (c->Selected) {
 	    SelectItem(c, mdis, PopupMenuBase);
         }
     }
 
-    if(whattodo==1) {   // Close if multiselect not requested
-        if(c->Prev) c->Prev->Running=0L;
+    if (whattodo==1) {   // Close if multiselect not requested
+        if (c->Prev) c->Prev->Running=0L;
         c->Running=0L;
     }
 
-    if(whattodo==0) return FALSE;
+    if (whattodo==0) return FALSE;
     else return TRUE;
 }
 
@@ -303,20 +303,20 @@ struct PopupMenu *PM_InsideItemBox(struct PM_Window *c, struct PopupMenu *pm, UL
 {
 	PopupMenu *tmppm;
 
-    while(pm) {
-        if(pm->SubGroup.Sub && (pm->Flags&NPM_GROUP)) {
+    while (pm) {
+        if (pm->SubGroup.Sub && (pm->Flags&NPM_GROUP)) {
             tmppm=PM_InsideItemBox(c, pm->SubGroup.Sub, mx, my);
-            if(tmppm) return tmppm;
-        } else if(!(pm->Flags&NPM_NOSELECT)) {
-            if(c->p->PullDown && c->FirstTime) {
-                if(my>=c->Wnd->TopEdge &&
+            if (tmppm) return tmppm;
+        } else if (!(pm->Flags&NPM_NOSELECT)) {
+            if (c->p->PullDown && c->FirstTime) {
+                if (my>=c->Wnd->TopEdge &&
                    my<=c->Wnd->TopEdge+pm->Top+pm->Height &&
                    mx>=c->Wnd->LeftEdge+pm->Left &&
                    mx<=c->Wnd->LeftEdge+pm->Left+pm->Width) {
                     return pm;
                 }
             } else {
-                if(my>=c->Wnd->TopEdge+pm->Top &&
+                if (my>=c->Wnd->TopEdge+pm->Top &&
                    my<=c->Wnd->TopEdge+pm->Top+pm->Height &&
                    mx>=c->Wnd->LeftEdge+pm->Left &&
                    mx<=c->Wnd->LeftEdge+pm->Left+pm->Width) {
@@ -337,7 +337,7 @@ struct PopupMenu *PM_InsideItemBox(struct PM_Window *c, struct PopupMenu *pm, UL
 //
 void PM_RedrawPrevSel(struct PM_Window *c)
 {
-        if(c->PrevSel) {
+        if (c->PrevSel) {
                 PM_NewDrawItem(c, c->PrevSel, FALSE, FALSE);
         }
 }
@@ -350,24 +350,24 @@ void PM_RedrawPrevSel(struct PM_Window *c)
 BOOL PM_MMove(struct PM_Window *c, struct PM_InpMsg *msg,
         ULONG wleft, ULONG wtop, ULONG mx, ULONG my, BOOL MenuDisable)
 {
-        if(c->Running && my>=c->Wnd->TopEdge && my<=c->Wnd->TopEdge+c->Height && mx>=c->Wnd->LeftEdge && mx<=c->Wnd->LeftEdge+c->Width) {
+        if (c->Running && my>=c->Wnd->TopEdge && my<=c->Wnd->TopEdge+c->Height && mx>=c->Wnd->LeftEdge && mx<=c->Wnd->LeftEdge+c->Width) {
                 c->PrevSel=c->Selected;
 
 	        c->Selected=PM_InsideItemBox(c, &c->PM, mx, my);
 
-        	if((c->PrevSel!=c->Selected)) {
+        	if ((c->PrevSel!=c->Selected)) {
 			c->p->Subtimer=0;
-	                if(c->PrevSel) {
-        	                if(!MenuDisable) PM_RedrawPrevSel(c);
+	                if (c->PrevSel) {
+        	                if (!MenuDisable) PM_RedrawPrevSel(c);
                 	        c->PrevSel=0L;
 	                }
-        	        if(c->Selected) {
-                	        if(!MenuDisable) PM_NewDrawItem(c, c->Selected, TRUE, MenuDisable);
+        	        if (c->Selected) {
+                	        if (!MenuDisable) PM_NewDrawItem(c, c->Selected, TRUE, MenuDisable);
 	                }
 		}
         } else {
-                if(c->Selected) {
-                        if(!MenuDisable) PM_NewDrawItem(c, c->Selected, FALSE, MenuDisable);
+                if (c->Selected) {
+                        if (!MenuDisable) PM_NewDrawItem(c, c->Selected, FALSE, MenuDisable);
                         c->Selected=0L;
                 }
                 return FALSE;
@@ -391,7 +391,7 @@ BOOL PM_OpenPopupWindow(struct PM_Window *a)
 
 #if 0
 #ifndef __AROS__
-	if( IntuitionBase->LibNode.lib_Version >= 50 ) {
+	if ( IntuitionBase->LibNode.lib_Version >= 50 ) {
 		GetGUIAttrs(NULL, a->p->DrawInfo, GUIA_MenuDropShadows, &shadows, TAG_DONE); // V50 !!
 	}
 #endif
@@ -399,47 +399,47 @@ BOOL PM_OpenPopupWindow(struct PM_Window *a)
 
 	PMPM_LayoutMenu(a);
 
-	if(!shadows) {
+	if (!shadows) {
 		a->p->ShadowHeight=0;
 	        a->p->ShadowWidth=0;
 	}
 
-	if(a->FirstTime) {
+	if (a->FirstTime) {
         	// The first menu may be affected by some special parameters
 		// set through PM_OpenPopupMenu()
-        	if(a->p->MenuWidth>a->Width) a->Width=a->p->MenuWidth;
-	        if(a->p->MenuHeight>a->Height) a->Height=a->p->MenuHeight;
-        	if(a->p->MenuRight) a->Wnd->MouseX=a->p->MenuRight-a->Width;
-	        if(a->p->MenuBottom) a->Wnd->MouseY=a->p->MenuBottom-a->Height;
-        	if(a->p->MenuCenter) {
+        	if (a->p->MenuWidth>a->Width) a->Width=a->p->MenuWidth;
+	        if (a->p->MenuHeight>a->Height) a->Height=a->p->MenuHeight;
+        	if (a->p->MenuRight) a->Wnd->MouseX=a->p->MenuRight-a->Width;
+	        if (a->p->MenuBottom) a->Wnd->MouseY=a->p->MenuBottom-a->Height;
+        	if (a->p->MenuCenter) {
 	        	a->Wnd->MouseX=(a->p->RootWnd->WScreen->Width/2)-a->Width/2;
         		a->Wnd->MouseY=(a->p->RootWnd->WScreen->Height/2)-a->Height/2;
 	        }
 	}
 
-	if(a->FirstTime && a->p->PullDown) {
+	if (a->FirstTime && a->p->PullDown) {
 		// A pulldown menu will be horizontally laid out
-        	if(!a->Wnd)
+        	if (!a->Wnd)
 	            PM_OpenWindow(a, a->MenuX, a->MenuY, a->Width+1, a->Height+1, a->p->RootWnd->WScreen);
         	else
 	            PM_ResizeWindow(a, a->MenuX, a->MenuY, a->Width+1, a->Height+1);
 	} else {
-	        if(!a->Wnd) {
+	        if (!a->Wnd) {
 			WORD mx, my;
 
 			mx = a->MenuX;
 			my = a->MenuY;
 
-	            if(mx+a->Width > a->p->RootWnd->WScreen->Width) {
+	            if (mx+a->Width > a->p->RootWnd->WScreen->Width) {
 			// If we're too close to the right edge, open menus to the left hereafter.
                 	a->ReverseDirection=TRUE;
 	            }
-        	    if(a->AltXPos-a->Width < 0) {
+        	    if (a->AltXPos-a->Width < 0) {
 			// If we're too close to the left edge, open menus to the right (default).
 	                a->ReverseDirection=FALSE;
         	    }
 
-	            if(!a->ReverseDirection) {
+	            if (!a->ReverseDirection) {
         	        PM_OpenWindow(a, mx, my, a->Width+(a->p->ShadowWidth+a->MenuLevel*2)+1, a->Height+(a->p->ShadowHeight+a->MenuLevel*2)+1, a->p->RootWnd->WScreen);
 	            } else {
         	        PM_OpenWindow(a, a->AltXPos-a->Width, my, a->Width+(a->p->ShadowWidth+a->MenuLevel*2)+1, a->Height+(a->p->ShadowHeight+a->MenuLevel*2)+1, a->p->RootWnd->WScreen);
@@ -449,11 +449,11 @@ BOOL PM_OpenPopupWindow(struct PM_Window *a)
         	}
 	}
 
-	if(a->Wnd)
+	if (a->Wnd)
 		{
 	        PM_RenderMenu(a, a->MenuDisabled, FALSE);
 
-		if(a->te.BMap)
+		if (a->te.BMap)
 			{
 			// If there is a TE (transition effects) bitmap.
 
@@ -466,7 +466,7 @@ BOOL PM_OpenPopupWindow(struct PM_Window *a)
 			w = a->Wnd->Width-1;
 			h = a->Wnd->Height-1;
 
-			if(!(a->p->PullDown && a->FirstTime)) {
+			if (!(a->p->PullDown && a->FirstTime)) {
 				w-=a->p->ShadowWidth+a->MenuLevel*2;
 				h-=a->p->ShadowHeight+a->MenuLevel*2;
 			}
@@ -496,9 +496,9 @@ BOOL PM_OpenPopupWindow(struct PM_Window *a)
 			}
 
 		// Handle shadows
-		if(shadows)
+		if (shadows)
 			{
-			if(!(a->p->PullDown && a->FirstTime))
+			if (!(a->p->PullDown && a->FirstTime))
 				{
 				PM_HandleShadow(a);
 				}
@@ -514,22 +514,22 @@ struct PM_Window *PM_SetupSubWindow(struct PM_Window *parent, struct PM_Root *p,
 	struct PM_Window *newwin;
 
 	newwin=PM_Mem_Alloc(sizeof(struct PM_Window));
-	if(newwin) {
-		if(parent) {
+	if (newwin) {
+		if (parent) {
 			parent->WasSelected = parent->Selected;
 			newwin->ReverseDirection = parent->ReverseDirection;
 			newwin->Topographic = PM_CopyList(parent->Topographic);
 			newwin->Shadowmap = PM_CopyList(parent->Shadowmap);
 
-			if((parent->Selected->Flags & NPM_DISABLED) || parent->MenuDisabled)
+			if ((parent->Selected->Flags & NPM_DISABLED) || parent->MenuDisabled)
 				newwin->MenuDisabled = TRUE;
 		} else {
 			newwin->ReverseDirection = 0;
-			if(PM_Prefs->pmp_Flags & PMP_FLAGS_SHADOWS)
+			if (PM_Prefs->pmp_Flags & PMP_FLAGS_SHADOWS)
 				{
 				newwin->Topographic = PM_InitTopographicList();
 				newwin->Shadowmap = PM_InitShadowList();
-				if(newwin->Topographic)
+				if (newwin->Topographic)
 					PM_AddTopographicRegion(newwin->Topographic, 0, 0, 5000, 5000, 0);
 				}
 		}
@@ -543,15 +543,15 @@ struct PM_Window *PM_SetupSubWindow(struct PM_Window *parent, struct PM_Root *p,
 		newwin->Prev = parent;
 		newwin->p = p;
 
-		if(parent) {
-			if(p->PullDown && parent->FirstTime) {
+		if (parent) {
+			if (p->PullDown && parent->FirstTime) {
 				newwin->MenuX = parent->WasSelected->Left + parent->Wnd->LeftEdge - 1;
 				newwin->MenuY = parent->Height + 1 + parent->Wnd->TopEdge - 1;
 				newwin->AltXPos = parent->WasSelected->Left + parent ->Wnd->LeftEdge;
 			} else {
 				newwin->MenuX = (int)(parent->WasSelected->Width - parent->WasSelected->Width / 3) + parent->Wnd->LeftEdge + parent->WasSelected->Left;
 
-				if(newwin->MenuX & 1)		// Prevents interference in dithered shadows
+				if (newwin->MenuX & 1)		// Prevents interference in dithered shadows
 					newwin->MenuX += 1;
 
 				newwin->MenuY = YAPosSelBar(parent, parent->WasSelected) - 5 + parent->Wnd->TopEdge;
@@ -559,9 +559,9 @@ struct PM_Window *PM_SetupSubWindow(struct PM_Window *parent, struct PM_Root *p,
 			}
 
 			newwin->MenuLevel = parent->MenuLevel + 1;
-			if(newwin->MenuLevel>4) newwin->MenuLevel = 4;
+			if (newwin->MenuLevel>4) newwin->MenuLevel = 4;
 
-			if(parent->SubMenuParent->SubConstruct) {
+			if (parent->SubMenuParent->SubConstruct) {
 				newwin->PM.SubGroup.Sub = (struct PopupMenu *)CallHook(parent->SubMenuParent->SubConstruct, (Object *)parent->Selected, parent);
 			}
 		} else {
@@ -572,7 +572,7 @@ struct PM_Window *PM_SetupSubWindow(struct PM_Window *parent, struct PM_Root *p,
 			return newwin;
 		}
 
-		if(newwin->PM.SubGroup.Sub)
+		if (newwin->PM.SubGroup.Sub)
 			return newwin;
 
 		// Constructor hook cancelled the operation, we must tidy up a bit...
@@ -584,22 +584,22 @@ struct PM_Window *PM_SetupSubWindow(struct PM_Window *parent, struct PM_Root *p,
 
 void PM_FreeSubWindow(struct PM_Window *parent, struct PM_Window *window)
 {
-	if(window) {
-		if(parent) {
-			if(parent->SubMenuParent->SubDestruct) {
+	if (window) {
+		if (parent) {
+			if (parent->SubMenuParent->SubDestruct) {
 				CallHook(parent->SubMenuParent->SubDestruct, (Object *)parent->SubMenuParent);
 			}
 		}
 
-		if(window->Topographic)
+		if (window->Topographic)
 			PM_FreeTopographicList(window->Topographic);
-		if(window->Shadowmap)
+		if (window->Shadowmap)
 			PM_FreeShadowList(window->Shadowmap);
 
 		PM_CloseWindow(window);
 		PM_Mem_Free(window);
 	}
-	if(parent)
+	if (parent)
 		parent->SubMenuToOpen = 0L;
 }
 
@@ -607,31 +607,31 @@ void PM_SelectNext(struct PM_Window *a)
 {
         BOOL found=FALSE;
 	a->Selected=PM_FindNextSelectable(a, a->PM.SubGroup.Sub, &found);
-	if(a->Selected==NULL) a->Selected=PM_FindFirstSelectable(a->PM.SubGroup.Sub);
+	if (a->Selected==NULL) a->Selected=PM_FindFirstSelectable(a->PM.SubGroup.Sub);
 }
 
 void PM_SelectPrev(struct PM_Window *a)
 {
         BOOL found=FALSE;
 	a->Selected=PM_FindPrevSelectable(a, a->PM.SubGroup.Sub, &found);
-        if(!a->Selected)
+        if (!a->Selected)
 		a->Selected=PM_FindLastSelectable(a->PM.SubGroup.Sub);
 }
 
  APTR PM_DoPopup(struct PM_Window *a, struct PopupMenuBase *PopupMenuBase)
 {
-    if(PM_OpenPopupWindow(a)) {
+    if (PM_OpenPopupWindow(a)) {
         BOOL halt;
         BOOL keymode=FALSE;
 
-        while(a->Running && (a->p->TimeOut<2)) {
+        while (a->Running && (a->p->TimeOut<2)) {
             struct PM_InpMsg *msg;
             ULONG s;
 
             s=Wait(1L << a->p->pmh->port->mp_SigBit | 1L << a->p->tport->mp_SigBit);
 
-            if(s & (1L << a->p->tport->mp_SigBit)) {
-                if(GetMsg(a->p->tport)) {
+            if (s & (1L << a->p->tport->mp_SigBit)) {
+                if (GetMsg(a->p->tport)) {
                     a->p->treq->tr_node.io_Command = TR_ADDREQUEST;
                     a->p->treq->tr_time.tv_secs=0;
                     a->p->treq->tr_time.tv_micro=200000;
@@ -642,29 +642,29 @@ void PM_SelectPrev(struct PM_Window *a)
 
             halt=FALSE;
 
-            if(s & (1L << a->p->pmh->port->mp_SigBit)) {
-                while((msg=(struct PM_InpMsg *)GetMsg(a->p->pmh->port))) {
+            if (s & (1L << a->p->pmh->port->mp_SigBit)) {
+                while ((msg=(struct PM_InpMsg *)GetMsg(a->p->pmh->port))) {
                     switch(msg->Kind) {
                         case PM_MSG_RAWMOUSE:
                             keymode=FALSE;
-                            if(msg->Code!=IECODE_NOBUTTON) {
+                            if (msg->Code!=IECODE_NOBUTTON) {
 				PM_MBHit(a, msg, a->MenuDisabled, PopupMenuBase);
                                 break;
                             } else {
-                                if(!PM_MMove(a, msg, 0, 0, a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a->MenuDisabled)) {
-                                    if(PM_InsideWindows(a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a)) {
+                                if (!PM_MMove(a, msg, 0, 0, a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a->MenuDisabled)) {
+                                    if (PM_InsideWindows(a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a)) {
                                         a->Running=0L;
-                                        if(a->Prev) a->Prev->Running=TRUE;
+                                        if (a->Prev) a->Prev->Running=TRUE;
                                     }
                                 }
                             }
 
                         case PM_MSG_TIMER:
-                            if(a->p->TimeOut>0) a->p->TimeOut--;
-			    if(msg->Kind==PM_MSG_TIMER || a->p->Subtimer==0) {
+                            if (a->p->TimeOut>0) a->p->TimeOut--;
+			    if (msg->Kind==PM_MSG_TIMER || a->p->Subtimer==0) {
 				a->p->Subtimer++;
-				if(a->Selected && (a->p->Subtimer > PM_Prefs->pmp_SubMenuDelay) && !keymode) {
-				    if(a->Selected->SubGroup.Sub || a->Selected->SubConstruct) {
+				if (a->Selected && (a->p->Subtimer > PM_Prefs->pmp_SubMenuDelay) && !keymode) {
+				    if (a->Selected->SubGroup.Sub || a->Selected->SubConstruct) {
                                         a->SubMenuToOpen=a->Selected->SubGroup.Sub;
                                         a->SubMenuParent=a->Selected;
 
@@ -679,7 +679,7 @@ void PM_SelectPrev(struct PM_Window *a)
                             a->PrevSel=a->Selected;
                             PM_RedrawPrevSel(a);
                             PM_SelectNext(a);
-                            if(a->Selected) PM_NewDrawItem(a, a->Selected, TRUE, FALSE);
+                            if (a->Selected) PM_NewDrawItem(a, a->Selected, TRUE, FALSE);
                             break;
 
                         case PM_MSG_UP:
@@ -687,23 +687,23 @@ void PM_SelectPrev(struct PM_Window *a)
                             a->PrevSel=a->Selected;
                             PM_RedrawPrevSel(a);
                             PM_SelectPrev(a);
-                            if(a->Selected) PM_NewDrawItem(a, a->Selected, TRUE, FALSE);
+                            if (a->Selected) PM_NewDrawItem(a, a->Selected, TRUE, FALSE);
                             break;
 
                         case PM_MSG_MULTISELECT:
                         case PM_MSG_SELECT:
-                            if(a->Selected) {
-				if(!a->Selected->SubGroup.Sub && !a->Selected->SubConstruct) {
+                            if (a->Selected) {
+				if (!a->Selected->SubGroup.Sub && !a->Selected->SubConstruct) {
 				    SelectItem(a, FALSE, PopupMenuBase);
-                                    if(msg->Kind==PM_MSG_SELECT) {
+                                    if (msg->Kind==PM_MSG_SELECT) {
                                         a->Running=0;
-                                        if(a->Prev) a->Prev->Running=FALSE;
+                                        if (a->Prev) a->Prev->Running=FALSE;
                                     }
                                 }
                             }
                         case PM_MSG_OPENSUB:
-                            if(a->Selected) {
-				if(a->Selected->SubGroup.Sub || a->Selected->SubConstruct) {
+                            if (a->Selected) {
+				if (a->Selected->SubGroup.Sub || a->Selected->SubConstruct) {
                                     a->SubMenuToOpen=a->Selected->SubGroup.Sub;
                                     a->SubMenuParent=a->Selected;
 
@@ -714,7 +714,7 @@ void PM_SelectPrev(struct PM_Window *a)
 
                         case PM_MSG_CLOSESUB:
                             a->Running=0;
-                            if(a->Prev) a->Prev->Running=TRUE;
+                            if (a->Prev) a->Prev->Running=TRUE;
                             halt=TRUE;
                             break;
 
@@ -725,32 +725,32 @@ void PM_SelectPrev(struct PM_Window *a)
                     }
                     PM_Mem_Free(msg);
 
-                    if(halt) break;
+                    if (halt) break;
                 }
             }
 
-            if(a->SubMenuToOpen) {
+            if (a->SubMenuToOpen) {
                 struct Task *tsk;
                 tsk=FindTask(NULL);
-                if((UBYTE *)tsk->tc_SPReg<((UBYTE *)tsk->tc_SPLower)+1024) {
+                if ((UBYTE *)tsk->tc_SPReg<((UBYTE *)tsk->tc_SPLower)+1024) {
                     DisplayBeep(NULL);
 #if 0
-                } else if((a->NextWindow = PM_SetupSubWindow(a, p, a->SubMenuToOpen))) {
+                } else if ((a->NextWindow = PM_SetupSubWindow(a, p, a->SubMenuToOpen))) {
 #else
 #if !defined(__SASC)
 	    	#warning "CHECKME: trying to avoid global p"
 #endif /* !defined(__SASC) */
-                } else if((a->NextWindow = PM_SetupSubWindow(a, a->p, a->SubMenuToOpen))) {
+                } else if ((a->NextWindow = PM_SetupSubWindow(a, a->p, a->SubMenuToOpen))) {
 #endif
 		    PM_DoPopup(a->NextWindow, PopupMenuBase);
 
-                    if(a->Prev) a->Prev->Running = FALSE;
+                    if (a->Prev) a->Prev->Running = FALSE;
 
-                    if(!keymode) {
-                        if(!PM_MMove(a, 0, 0, 0, a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a->MenuDisabled)) {
-                            if(PM_InsideWindows(a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a)) {
+                    if (!keymode) {
+                        if (!PM_MMove(a, 0, 0, 0, a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a->MenuDisabled)) {
+                            if (PM_InsideWindows(a->Wnd->WScreen->MouseX, a->Wnd->WScreen->MouseY, a)) {
                                 a->Running = 0L;
-                                if(a->Prev) a->Prev->Running = TRUE;
+                                if (a->Prev) a->Prev->Running = TRUE;
                             }
                         }
                     }
@@ -772,15 +772,15 @@ void PM_SelectPrev(struct PM_Window *a)
 //
 APTR PM_DoHint(struct PM_Window *a, struct PopupMenuBase *PopupMenuBase)
 {
-    if(PM_OpenPopupWindow(a)) {
-        while(a->Running && (a->p->TimeOut<2)) {
+    if (PM_OpenPopupWindow(a)) {
+        while (a->Running && (a->p->TimeOut<2)) {
             struct PM_InpMsg *msg;
             ULONG s;
 
             s=Wait(1L << a->p->pmh->port->mp_SigBit | 1L << a->p->tport->mp_SigBit);
 
-            if(s & (1L << a->p->tport->mp_SigBit)) {
-                if(GetMsg(a->p->tport)) {
+            if (s & (1L << a->p->tport->mp_SigBit)) {
+                if (GetMsg(a->p->tport)) {
                     a->p->treq->tr_node.io_Command = TR_ADDREQUEST;
                     a->p->treq->tr_time.tv_secs=0;
                     a->p->treq->tr_time.tv_micro=200000;
@@ -789,11 +789,11 @@ APTR PM_DoHint(struct PM_Window *a, struct PopupMenuBase *PopupMenuBase)
                 }
             }
 
-            if(s & (1L << a->p->pmh->port->mp_SigBit)) {
-                while((msg=(struct PM_InpMsg *)GetMsg(a->p->pmh->port))) {
+            if (s & (1L << a->p->pmh->port->mp_SigBit)) {
+                while ((msg=(struct PM_InpMsg *)GetMsg(a->p->pmh->port))) {
                     switch(msg->Kind) {
                         case PM_MSG_TIMER:
-                            if(a->p->TimeOut>0) a->p->TimeOut--;
+                            if (a->p->TimeOut>0) a->p->TimeOut--;
                             break;
                         default:
                             a->Running=0L;
@@ -833,11 +833,11 @@ LIBFUNC_P5(APTR, LIBPM_FilterIMsgA,
         struct Hook             *MenuHandler=NULL;
         BOOL                    autpd = FALSE, rawkey = FALSE;
 
-	if(!pm) return 0L;
-	if(!im) return 0L;
+	if (!pm) return 0L;
+	if (!im) return 0L;
 
         tstate = tags;
-        while((tag=NextTagItem(&tstate))) {
+        while ((tag=NextTagItem(&tstate))) {
                 switch(tag->ti_Tag) {
                         case PM_MenuHandler:
                                 MenuHandler=(struct Hook *)tag->ti_Data;
@@ -851,15 +851,15 @@ LIBFUNC_P5(APTR, LIBPM_FilterIMsgA,
                 }
         }
 
-        if(im->Class==IDCMP_MOUSEBUTTONS) {
-                if(autpd) {
-                        if(im->Code==MENUDOWN || im->Code==MENUUP) {
+        if (im->Class==IDCMP_MOUSEBUTTONS) {
+                if (autpd) {
+                        if (im->Code==MENUDOWN || im->Code==MENUUP) {
                                 struct TagItem  opmtags[6];
 
                                 opmtags[0].ti_Tag=PM_Menu;              opmtags[0].ti_Data=(ULONG)pm;
                                 opmtags[1].ti_Tag=PM_Code;              opmtags[1].ti_Data=im->Code;
                                 opmtags[2].ti_Tag=PM_PullDown;          opmtags[2].ti_Data=TRUE;
-                                if(MenuHandler) {
+                                if (MenuHandler) {
                                         opmtags[3].ti_Tag=PM_MenuHandler;       opmtags[3].ti_Data=(ULONG)MenuHandler;
                                 } else {
                                         opmtags[3].ti_Tag=PM_Dummy;             opmtags[3].ti_Data=0;
@@ -870,52 +870,52 @@ LIBFUNC_P5(APTR, LIBPM_FilterIMsgA,
 				return pm_OpenPopupMenuA(w, opmtags, PopupMenuBase);
                         }
                 }
-        } else if(im->Class==IDCMP_VANILLAKEY && !rawkey) {
-                if(im->Qualifier&IEQUALIFIER_RCOMMAND) {
+        } else if (im->Class==IDCMP_VANILLAKEY && !rawkey) {
+                if (im->Qualifier&IEQUALIFIER_RCOMMAND) {
                         struct PopupMenu *p;
 
                         p=PM_FindItemCommKey(pm, im->Code);
-                        if(p) {
-                                if(!(p->Flags & NPM_DISABLED)) {
-                                        if(p->Flags & NPM_CHECKIT) {
-                                                if(p->Flags & NPM_CHECKED) {
+                        if (p) {
+                                if (!(p->Flags & NPM_DISABLED)) {
+                                        if (p->Flags & NPM_CHECKIT) {
+                                                if (p->Flags & NPM_CHECKED) {
                                                         p->Flags&=~NPM_CHECKED;
-                                                        if(p->Exclude)
+                                                        if (p->Exclude)
 								pm_AlterState(pm, p->Exclude, PMACT_DESELECT);
-                                                        if(p->AutoSetPtr) *p->AutoSetPtr=FALSE;
+                                                        if (p->AutoSetPtr) *p->AutoSetPtr=FALSE;
                                                 } else {
-                                                        if(p->Exclude)
+                                                        if (p->Exclude)
 								pm_AlterState(pm, p->Exclude, PMACT_SELECT);
                                                         p->Flags|=NPM_CHECKED;
-                                                        if(p->AutoSetPtr) *p->AutoSetPtr=TRUE;
+                                                        if (p->AutoSetPtr) *p->AutoSetPtr=TRUE;
                                                 }
                                         }
-        	                        if(MenuHandler) CallHook(MenuHandler, (Object *)p);
+        	                        if (MenuHandler) CallHook(MenuHandler, (Object *)p);
 	                                return p->UserData;
                                 }
                         }
                 }
-        } else if(im->Class==IDCMP_RAWKEY && rawkey) {
-                if(im->Qualifier&IEQUALIFIER_RCOMMAND) {
+        } else if (im->Class==IDCMP_RAWKEY && rawkey) {
+                if (im->Qualifier&IEQUALIFIER_RCOMMAND) {
                         struct PopupMenu *p;
 
                         p=PM_FindItemCommKey(pm, im->Code);
-                        if(p) {
-                                if(!(p->Flags & NPM_DISABLED)) {
-                                        if(p->Flags & NPM_CHECKIT) {
-                                                if(p->Flags & NPM_CHECKED) {
+                        if (p) {
+                                if (!(p->Flags & NPM_DISABLED)) {
+                                        if (p->Flags & NPM_CHECKIT) {
+                                                if (p->Flags & NPM_CHECKED) {
                                                         p->Flags&=~NPM_CHECKED;
-                                                        if(p->Exclude)
+                                                        if (p->Exclude)
 								pm_AlterState(pm, p->Exclude, PMACT_DESELECT);
-                                                        if(p->AutoSetPtr) *p->AutoSetPtr=FALSE;
+                                                        if (p->AutoSetPtr) *p->AutoSetPtr=FALSE;
                                                 } else {
-                                                        if(p->Exclude)
+                                                        if (p->Exclude)
 								pm_AlterState(pm, p->Exclude, PMACT_SELECT);
                                                         p->Flags|=NPM_CHECKED;
-                                                        if(p->AutoSetPtr) *p->AutoSetPtr=TRUE;
+                                                        if (p->AutoSetPtr) *p->AutoSetPtr=TRUE;
                                                 }
                                         }
-        	                        if(MenuHandler) CallHook(MenuHandler, (Object *)p);
+        	                        if (MenuHandler) CallHook(MenuHandler, (Object *)p);
 	                                return p->UserData;
                                 }
                         }
@@ -932,21 +932,21 @@ void PM_DoSelected(struct PM_Root *p, struct PopupMenu *pm)
 {
         struct PopupMenu *z=pm;
 
-        while(z) {
-                if(z->Flags&NPM_ISSELECTED) {
-                        if(p->DoMultiSel) CallHook(p->MenuHandler, (Object *)z, 0);
+        while (z) {
+                if (z->Flags&NPM_ISSELECTED) {
+                        if (p->DoMultiSel) CallHook(p->MenuHandler, (Object *)z, 0);
                         z->Flags&=~NPM_ISSELECTED;
-                        if(z->Flags&NPM_CHECKED)
+                        if (z->Flags&NPM_CHECKED)
                             z->Flags|=NPM_INITIAL_CHECKED;
                         else
                             z->Flags&=~NPM_INITIAL_CHECKED;
                 }
-                if(z->Flags&NPM_CHECKED)
+                if (z->Flags&NPM_CHECKED)
                         z->Flags|=NPM_INITIAL_CHECKED;
                 else
                         z->Flags&=~NPM_INITIAL_CHECKED;
 
-                if(z->SubGroup.Sub) PM_DoSelected(p, z->SubGroup.Sub);
+                if (z->SubGroup.Sub) PM_DoSelected(p, z->SubGroup.Sub);
                 z=z->Next;
         }
 }
@@ -977,7 +977,7 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
     	struct PM_Root	    	*p;
 #endif
 
-	if(!prevwnd) {
+	if (!prevwnd) {
         	prevwnd=&FakeWnd;
         	FakeWnd.LeftEdge=0;
         	FakeWnd.TopEdge=0;
@@ -986,13 +986,13 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
     	}
 
 	p=PM_AllocPMRoot(prevwnd);
-        if(p) {
+        if (p) {
                 p->RootWnd = prevwnd;
 		p->Scr = prevwnd->WScreen;
 
                 p->pmh=PM_InstallHandler(127);
 
-		if(p->pmh)
+		if (p->pmh)
 			{
 			PM_Prefs_Load(PMP_PATH_OLD, PMP_PATH_NEW);
 
@@ -1000,7 +1000,7 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
             		p->RButton=TRUE; // default
 
                         tstate = tags;
-                        while((tag = NextTagItem(&tstate)) && !shut_down) {
+                        while ((tag = NextTagItem(&tstate)) && !shut_down) {
                                 switch(tag->ti_Tag) {
                                     case PM_ForceFont:
                                         p->MenuFont=(struct TextFont *)tag->ti_Data;
@@ -1009,14 +1009,14 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
 					p->LocaleHook=(struct Hook *)tag->ti_Data;
 					break;
                                     case PM_Code:
-                                        if(tag->ti_Data & IECODE_RBUTTON) p->RButton=TRUE;
-                                        if(tag->ti_Data & IECODE_LBUTTON) p->LButton=TRUE;
-                                        if((tag->ti_Data & IECODE_UP_PREFIX)) {
+                                        if (tag->ti_Data & IECODE_RBUTTON) p->RButton=TRUE;
+                                        if (tag->ti_Data & IECODE_LBUTTON) p->LButton=TRUE;
+                                        if ((tag->ti_Data & IECODE_UP_PREFIX)) {
                                         	shut_down=TRUE;
                                         }
                                         break;
                                     case PM_UseLMB:
-                                        if(tag->ti_Data) p->LButton = TRUE;
+                                        if (tag->ti_Data) p->LButton = TRUE;
                                         p->RButton = FALSE;
                                         break;
                                     case PM_CenterScreen:
@@ -1041,27 +1041,27 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
                                         p->RootMenu->MenuY = tag->ti_Data+prevwnd->TopEdge;
                                         break;
                                     case PM_Menu:
-                                        if(tag->ti_Data) {
+                                        if (tag->ti_Data) {
                                         	p->PM = (struct PopupMenu *)tag->ti_Data;
                                         }
                                         break;
                                     case PM_PullDown:
-                                        if(PM_Prefs->pmp_PulldownPos == PMP_PD_MOUSE) { // Popup pulldowns?
+                                        if (PM_Prefs->pmp_PulldownPos == PMP_PD_MOUSE) { // Popup pulldowns?
                                             p->PullDown = tag->ti_Data;
-                                        } /*else if(PM_Prefs->Popup == 2) { // pos dependent
-                                            if(PM_Prefs->WinBar) {
-                                                if(prevwnd->LeftEdge<prevwnd->WScreen->MouseX &&
+                                        } /*else if (PM_Prefs->Popup == 2) { // pos dependent
+                                            if (PM_Prefs->WinBar) {
+                                                if (prevwnd->LeftEdge<prevwnd->WScreen->MouseX &&
                                                    prevwnd->TopEdge<prevwnd->WScreen->MouseY &&
                                                    prevwnd->LeftEdge+prevwnd->Width>prevwnd->WScreen->MouseX &&
                                                    prevwnd->TopEdge+prevwnd->BorderTop>prevwnd->WScreen->MouseY) {
                                    			p->PullDown = tag->ti_Data;
                                                 }
-                                            } else if(prevwnd->WScreen->MouseY < prevwnd->WScreen->BarHeight) {
+                                            } else if (prevwnd->WScreen->MouseY < prevwnd->WScreen->BarHeight) {
                                                         p->PullDown = tag->ti_Data;
                                             }
                                         }*/
 
-                                        if(p->PullDown) {   // Put pulldowns at screen top-left
+                                        if (p->PullDown) {   // Put pulldowns at screen top-left
                                         	p->RootMenu->MenuX = 0;
                                         	p->RootMenu->MenuY = 0;
                                         	p->RootMenu->MenuLevel = -1;   // Right shadow-size
@@ -1080,7 +1080,7 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
                                 }
                         }
 
-                        if(!shut_down) {
+                        if (!shut_down) {
 
 		                switch(PM_Prefs->pmp_MenuBorder) {
 		                    case BUTTON_FRAME:
@@ -1100,11 +1100,11 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
 		                        break;
 				}
 
-                                if(p->DrawInfo) {
-					if(!p->MenuFont) p->MenuFont=p->DrawInfo->dri_Font;
+                                if (p->DrawInfo) {
+					if (!p->MenuFont) p->MenuFont=p->DrawInfo->dri_Font;
                                 }
 
-				if(!p->MenuFont) p->MenuFont=(struct TextFont *)prevwnd->WScreen->Font;
+				if (!p->MenuFont) p->MenuFont=(struct TextFont *)prevwnd->WScreen->Font;
 
 				p->RootMenu->PM.SubGroup.Sub = p->PM;
 
@@ -1115,7 +1115,7 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
 #else
 				p->treq=EZCreateTimer(0);
 #endif
-                                if(p->treq) {
+                                if (p->treq) {
                                     p->treq->tr_time.tv_secs=0;
                                         p->treq->tr_time.tv_micro=200000;
 
@@ -1125,20 +1125,20 @@ static APTR pm_OpenPopupMenuA(struct Window *prevwnd, struct TagItem *tags, stru
                                         SendIO((struct IORequest *)p->treq);
                                 }
 
-				if(p->HintBox)
+				if (p->HintBox)
 					PM_DoHint(p->RootMenu, PopupMenuBase);
 				else
 					PM_DoPopup(p->RootMenu, PopupMenuBase);
 
-                                if(p->treq) {
+                                if (p->treq) {
 					AbortIO((struct IORequest *)p->treq);
 					WaitIO((struct IORequest *)p->treq);
 					EZDeleteTimer(p->treq);
                                 }
 
-                        } /* if(!shut_down) */
+                        } /* if (!shut_down) */
 
-                        if(p->DrawInfo) FreeScreenDrawInfo(prevwnd->WScreen, p->DrawInfo);
+                        if (p->DrawInfo) FreeScreenDrawInfo(prevwnd->WScreen, p->DrawInfo);
 
                         ret = p->ReturnCode;
 
@@ -1176,10 +1176,10 @@ LIBFUNC_P3(LONG, LIBPM_InsertMenuItemA,
 
 	(void) l;
 
-    if(!base) return 0;
+    if (!base) return 0;
 
     tstate = tags;
-    while((tag=NextTagItem(&tstate))) {
+    while ((tag=NextTagItem(&tstate))) {
         switch(tag->ti_Tag) {
             case PM_Insert_Before:
             case PM_Insert_After:
@@ -1200,12 +1200,12 @@ LIBFUNC_P3(LONG, LIBPM_InsertMenuItemA,
                 pointer=(struct PopupMenu *)PM_FindBeforeID(base, tag->ti_Data);
                 break;
             case PM_Insert_Item:
-                if(tag->ti_Data && pointer) {
+                if (tag->ti_Data && pointer) {
 
                     switch(method) {
                         case PM_Insert_Last:
                             pm=PM_FindLast(base);
-                            if(pm) pm->Next=(struct PopupMenu *)tag->ti_Data;
+                            if (pm) pm->Next=(struct PopupMenu *)tag->ti_Data;
                             break;
                         case PM_Insert_First:   // Relies on first itm being hdr (invis itm)
                             pm=base->Next;
@@ -1214,7 +1214,7 @@ LIBFUNC_P3(LONG, LIBPM_InsertMenuItemA,
                             break;
                         case PM_Insert_Before:
                             pm=PM_FindBefore(base, pointer);
-                            if(pm) {
+                            if (pm) {
                                 pm->Next=(struct PopupMenu *)tag->ti_Data;
                                 pm->Next->Next=pointer;
                             }
@@ -1228,7 +1228,7 @@ LIBFUNC_P3(LONG, LIBPM_InsertMenuItemA,
                             break;
                         case PM_InsertSub_Last:
                             pm=PM_FindLast(pointer);
-                            if(pm) pm->Next=(struct PopupMenu *)tag->ti_Data;
+                            if (pm) pm->Next=(struct PopupMenu *)tag->ti_Data;
                             break;
                         case PM_InsertSub_First:
 			    pm=pointer->SubGroup.Sub;
@@ -1237,7 +1237,7 @@ LIBFUNC_P3(LONG, LIBPM_InsertMenuItemA,
                             break;
                         case PM_InsertSub_Sorted:
                             pm=PM_FindSortedInsertPoint(base, pointer);
-                            if(pm) {
+                            if (pm) {
                                 pm->Next=(struct PopupMenu *)tag->ti_Data;
                                 pm->Next->Next=pointer;
                             }
@@ -1271,9 +1271,9 @@ LIBFUNC_P3(APTR, LIBPM_RemoveMenuItem,
 
     pm=base;
 
-    if(pm) do {
-        if(pm==item) {
-            if(prev) {
+    if (pm) do {
+        if (pm==item) {
+            if (prev) {
                 prev->Next=item->Next;
                 item->Next=NULL;
                 return item;
@@ -1283,7 +1283,7 @@ LIBFUNC_P3(APTR, LIBPM_RemoveMenuItem,
         }
         prev=pm;
         pm=pm->Next;
-    } while(pm);
+    } while (pm);
 
     return NULL;
 }
@@ -1301,15 +1301,15 @@ LIBFUNC_P2(BOOL, LIBPM_AbortHook,
 
 	(void) l;
 
-    if(mx>=a->Selected->Left && mx<=a->Selected->Left+a->Selected->Width &&
+    if (mx>=a->Selected->Left && mx<=a->Selected->Left+a->Selected->Width &&
        my>=a->Selected->Top && my<=a->Selected->Top+a->Selected->Height) {
 
-        if(a->NextWindow) {
-	    if(a->Selected->SubGroup.Sub) {
+        if (a->NextWindow) {
+	    if (a->Selected->SubGroup.Sub) {
                 ULONG m;
                 a->NextWindow->PM.SubGroup.Sub=a->Selected->SubGroup.Sub;
 		CurrentTime(&a->p->Secs, &m);
-		if(m - a->p->Micros > 60000)    /* Update only every 60th millisecond */
+		if (m - a->p->Micros > 60000)    /* Update only every 60th millisecond */
                     PM_OpenPopupWindow(a->NextWindow);
                 a->p->Micros=m;
             }
@@ -1340,8 +1340,8 @@ LIBFUNC_P1(STRPTR, LIBPM_GetVersion,
 
 	(void) l;
 
-    if(CyberGfx) PM_StrCat(version, "\nGraphics card environment found and utilized.");
-    if(V40Gfx) PM_StrCat(version, "\nOS3.1 graphics.library found and utilized.");
+    if (CyberGfx) PM_StrCat(version, "\nGraphics card environment found and utilized.");
+    if (V40Gfx) PM_StrCat(version, "\nOS3.1 graphics.library found and utilized.");
 
     return version;
 }

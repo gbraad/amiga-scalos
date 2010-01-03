@@ -19,24 +19,24 @@ struct PopupMenu *PM_FindNextSelectable(struct PM_Window *a, struct PopupMenu *p
 {
         struct PopupMenu *tmp;
 
-        if(pm) do {
-                if(pm->Flags&NPM_GROUP) {
+        if (pm) do {
+                if (pm->Flags&NPM_GROUP) {
 			tmp=PM_FindNextSelectable(a, pm->SubGroup.Sub, found);
-                        if(tmp) {
-                                if(*found)
+                        if (tmp) {
+                                if (*found)
                                         return tmp;
                         }
                 }
 
-                if(!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN) && *found)
+                if (!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN) && *found)
                         return pm;
 
-                if(pm==a->Selected) {
+                if (pm==a->Selected) {
                         *found=TRUE;
                 }
 
                 pm=pm->Next;
-        } while(pm);
+        } while (pm);
 
         return NULL;
 }
@@ -46,19 +46,19 @@ struct PopupMenu *PM_FindFirstSelectable(struct PopupMenu *pm)
 {
         struct PopupMenu *tmp;
 
-        if(pm) do {
-                if(pm->Flags&NPM_GROUP) {
+        if (pm) do {
+                if (pm->Flags&NPM_GROUP) {
                         tmp=PM_FindFirstSelectable(pm->SubGroup.Sub);
-                        if(tmp) {
+                        if (tmp) {
                                 return tmp;
                         }
                 }
 
-                if(!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN))
+                if (!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN))
                         return pm;
 
                 pm=pm->Next;
-        } while(pm);
+        } while (pm);
 
         return NULL;
 }
@@ -69,25 +69,25 @@ struct PopupMenu *PM_FindPrevSelectable(struct PM_Window *a, struct PopupMenu *p
 {
         struct PopupMenu *prv=NULL, *tmp;
 
-        if(pm) do {
-                if(pm->Flags&NPM_GROUP) {
+        if (pm) do {
+                if (pm->Flags&NPM_GROUP) {
                         tmp=PM_FindPrevSelectable(a, pm->SubGroup.Sub, found);
-                        if(tmp) {
-                                if(*found)
+                        if (tmp) {
+                                if (*found)
                                         return tmp;
                                 prv=tmp;
-                        } else if(*found)
+                        } else if (*found)
                                 return prv;
                 }
 
-                if(pm==a->Selected) {
+                if (pm==a->Selected) {
                         *found=TRUE;
                         return prv;
                 }
-                if(!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN))
+                if (!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN))
                         prv=pm;
                 pm=pm->Next;
-        } while(pm);
+        } while (pm);
 
         return prv;
 }
@@ -97,17 +97,17 @@ struct PopupMenu *PM_FindLastSelectable(struct PopupMenu *pm)
 {
         struct PopupMenu *prv=NULL, *tmp;
 
-        if(pm) do {
-                if(pm->Flags&NPM_GROUP) {
+        if (pm) do {
+                if (pm->Flags&NPM_GROUP) {
                         tmp=PM_FindLastSelectable(pm->SubGroup.Sub);
-                        if(tmp) {
+                        if (tmp) {
                                 prv=tmp;
                         }
-                } else if(!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN))
+                } else if (!(pm->Flags&NPM_NOSELECT) && !(pm->Flags&NPM_HIDDEN))
                         prv=pm;
 
                 pm=pm->Next;
-        } while(pm);
+        } while (pm);
 
         return prv;
 }
@@ -117,11 +117,11 @@ struct PopupMenu *PM_FindID(struct PopupMenu *base, ULONG ID)
 {
         struct PopupMenu *pm=base,*xm;
 
-        while(pm) {
-                if(pm->ID==ID) return pm;
-                if(pm->SubGroup.Sub) {
+        while (pm) {
+                if (pm->ID==ID) return pm;
+                if (pm->SubGroup.Sub) {
                         xm=PM_FindID(pm->SubGroup.Sub, ID);
-                        if(xm) return xm;
+                        if (xm) return xm;
                 }
                 pm=pm->Next;
         }
@@ -133,11 +133,11 @@ struct PopupMenu *PM_FindBeforeID(struct PopupMenu *pm, ULONG ID)
 {
         struct PopupMenu *prev=pm,*xm;
 
-        while(pm) {
-                if(pm->ID==ID) return prev;
-                if(pm->SubGroup.Sub) {
+        while (pm) {
+                if (pm->ID==ID) return prev;
+                if (pm->SubGroup.Sub) {
                         xm=PM_FindBeforeID(pm->SubGroup.Sub, ID);
-                        if(xm) return xm;
+                        if (xm) return xm;
                 }
         		prev=pm;
                 pm=pm->Next;
@@ -150,11 +150,11 @@ struct PopupMenu *PM_FindBefore(struct PopupMenu *pm, struct PopupMenu *fm)
 {
         struct PopupMenu *prev=pm,*xm;
 
-        while(pm) {
-                if(pm==fm) return prev;
-                if(pm->SubGroup.Sub) {
+        while (pm) {
+                if (pm==fm) return prev;
+                if (pm->SubGroup.Sub) {
                         xm=PM_FindBefore(pm->SubGroup.Sub, fm);
-                        if(xm) return xm;
+                        if (xm) return xm;
                 }
         		prev=pm;
                 pm=pm->Next;
@@ -167,8 +167,8 @@ struct PopupMenu *PM_FindSortedInsertPoint(struct PopupMenu *pm, struct PopupMen
 {
         struct PopupMenu *prev=pm;
 
-        while(pm) {
-		if(PM_String_Compare(pm->TitleUnion.Title, fm->TitleUnion.Title) < 0)
+        while (pm) {
+		if (PM_String_Compare(pm->TitleUnion.Title, fm->TitleUnion.Title) < 0)
                 	return prev;
         		prev=pm;
                 pm=pm->Next;
@@ -181,8 +181,8 @@ struct PopupMenu *PM_FindLast(struct PopupMenu *base)
 {
     struct PopupMenu *pm=base;
 
-    while(pm) {
-                if(pm->Next==NULL) return pm;
+    while (pm) {
+                if (pm->Next==NULL) return pm;
                 pm=pm->Next;
     }
 
@@ -194,12 +194,12 @@ struct PopupMenu *PM_FindItemCommKey(struct PopupMenu *base, UBYTE key)
 {
         struct PopupMenu *pm=base,*xm;
 
-        while(pm) {
-        		if(ToUpper((UBYTE)pm->CommKey)==ToUpper(key)) return pm;
+        while (pm) {
+        		if (ToUpper((UBYTE)pm->CommKey)==ToUpper(key)) return pm;
 
-                if(pm->SubGroup.Sub) {
+                if (pm->SubGroup.Sub) {
                         xm=PM_FindItemCommKey(pm->SubGroup.Sub, key);
-                        if(xm) return xm;
+                        if (xm) return xm;
                 }
                 pm=pm->Next;
         }
@@ -214,7 +214,7 @@ LIBFUNC_P3(struct PopupMenu *, LIBPM_FindItem,
 {
 	(void) l;
 
-    if(!menu) return NULL;
+    if (!menu) return NULL;
         return PM_FindID(menu, ID);
 }
 LIBFUNC_END
@@ -233,8 +233,8 @@ LIBFUNC_P3(BOOL, LIBPM_ItemChecked,
 
         p=PM_FindID(pm, ID);
 
-        if(p) {
-                if(p->Flags&NPM_CHECKED) return TRUE;
+        if (p) {
+                if (p->Flags&NPM_CHECKED) return TRUE;
                 return FALSE;
         }
         return -5L;
@@ -262,30 +262,30 @@ void pm_AlterState(struct PopupMenu *base, struct PM_IDLst *ids, UWORD action)
 {
         struct PopupMenu *pm;
         struct PM_IDLst *id=ids;
-        while(id) {
+        while (id) {
                 pm=PM_FindID(base, id->ID);
-                if(pm) {
-                        if(action==PMACT_SELECT) {
-                                if(id->Kind==IDKND_REFLECT) {
+                if (pm) {
+                        if (action==PMACT_SELECT) {
+                                if (id->Kind==IDKND_REFLECT) {
                                         pm->Flags|=NPM_CHECKED|NPM_ISSELECTED;
-                                        if(pm->AutoSetPtr) *pm->AutoSetPtr=TRUE;
-                                } else if(id->Kind==IDKND_INVERSE) {
+                                        if (pm->AutoSetPtr) *pm->AutoSetPtr=TRUE;
+                                } else if (id->Kind==IDKND_INVERSE) {
                                         pm->Flags&=~(NPM_CHECKED|NPM_ISSELECTED);
-                                        if(pm->AutoSetPtr) *pm->AutoSetPtr=FALSE;
-                                } else if(id->Kind==IDKND_INCLUDE) {
+                                        if (pm->AutoSetPtr) *pm->AutoSetPtr=FALSE;
+                                } else if (id->Kind==IDKND_INCLUDE) {
                                         pm->Flags|=NPM_CHECKED|NPM_ISSELECTED;
-                                        if(pm->AutoSetPtr) *pm->AutoSetPtr=TRUE;
-                                } else if(id->Kind==IDKND_EXCLUDE) {
+                                        if (pm->AutoSetPtr) *pm->AutoSetPtr=TRUE;
+                                } else if (id->Kind==IDKND_EXCLUDE) {
                                         pm->Flags&=~(NPM_CHECKED|NPM_ISSELECTED);
-                                        if(pm->AutoSetPtr) *pm->AutoSetPtr=FALSE;
+                                        if (pm->AutoSetPtr) *pm->AutoSetPtr=FALSE;
                                 }
-                        } else  if(action==PMACT_DESELECT) {
-                                if(id->Kind==IDKND_INVERSE) {
+                        } else  if (action==PMACT_DESELECT) {
+                                if (id->Kind==IDKND_INVERSE) {
                                         pm->Flags|=NPM_CHECKED|NPM_ISSELECTED;
-                                        if(pm->AutoSetPtr) *pm->AutoSetPtr=TRUE;
-                                } else if(id->Kind==IDKND_REFLECT) {
+                                        if (pm->AutoSetPtr) *pm->AutoSetPtr=TRUE;
+                                } else if (id->Kind==IDKND_REFLECT) {
                                         pm->Flags&=~(NPM_CHECKED|NPM_ISSELECTED);
-                                        if(pm->AutoSetPtr) *pm->AutoSetPtr=FALSE;
+                                        if (pm->AutoSetPtr) *pm->AutoSetPtr=FALSE;
                                 }
                         }
                 }

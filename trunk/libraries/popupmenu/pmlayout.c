@@ -14,12 +14,12 @@ UWORD PM_ItemHeight(struct PM_Window *a, struct PopupMenu *pm)
 {
         UWORD r,fonty=a->p->MenuFont->tf_YSize;
 
-	if(pm->Flags&NPM_HBAR_BIT)
+	if (pm->Flags&NPM_HBAR_BIT)
 		{
 		r=(UWORD)(PM_Prefs->pmp_YSpace*2+5);
 		pm->Flags|=NPM_FIXEDSIZE;
 		}
-	else if(pm->Flags&NPM_WIDE_BAR_BIT)
+	else if (pm->Flags&NPM_WIDE_BAR_BIT)
 		{
 		r=(UWORD)(PM_Prefs->pmp_YOffset*2+5);
 		pm->Flags|=NPM_FIXEDSIZE;
@@ -35,24 +35,24 @@ UWORD PM_ItemHeight(struct PM_Window *a, struct PopupMenu *pm)
 			}
 		if (pm->ImageUnion.Images[1])
 			{
-			if(pm->ImageUnion.Images[1]->Height>r)
+			if (pm->ImageUnion.Images[1]->Height>r)
 				r=(UWORD)pm->ImageUnion.Images[1]->Height+1;
 			}
 
-		if(pm->SubGroup.Sub)
+		if (pm->SubGroup.Sub)
 			{
 			UBYTE x=PM_Image_Height(a->p, PMIMG_SUBMENU, pm);
-			if(x>r) r=x;
+			if (x>r) r=x;
 			}
-		else if(pm->Flags&NPM_CHECKIT)
+		else if (pm->Flags&NPM_CHECKIT)
 			{
 			UBYTE x=PM_Image_Height(a->p, pm->Exclude?PMIMG_EXCLUDE:PMIMG_CHECKMARK, pm);
-			if(x>r) r=x;
+			if (x>r) r=x;
 			}
-		if(pm->CommKey!=0)
+		if (pm->CommKey!=0)
 			{
 			UBYTE x=PM_Image_Height(a->p, PMIMG_AMIGAKEY, pm);
-			if(x>r) r=x;
+			if (x>r) r=x;
 			}
 
 		r+=(UWORD)PM_Prefs->pmp_YSpace*2; // *2
@@ -70,49 +70,49 @@ UWORD PM_ItemWidth(struct PM_Window *a, struct PopupMenu *pm)
         CopyMem(a->p->RootWnd->RPort, &tmprp, sizeof(struct RastPort));
         tmprp.Font=a->p->MenuFont;
 
-	if(pm->TitleUnion.Title)
+	if (pm->TitleUnion.Title)
 		{
-		if(GET_TXTMODE(pm)==NPX_TXTBOOPSI)
+		if (GET_TXTMODE(pm)==NPX_TXTBOOPSI)
 			{
 			}
 		else
 			{
 			STRPTR title=pm->TitleUnion.Title;
 
-			if(GET_TXTMODE(pm)==NPX_TXTLOCALE)
+			if (GET_TXTMODE(pm)==NPX_TXTLOCALE)
 				title=(STRPTR)CallHook(a->p->LocaleHook, (Object *)pm, pm->TitleUnion.TitleID, 123);
 
-			if(title)
+			if (title)
 				tmp=TextLength(&tmprp,title,strlen(title));
 			}
 		}
 
-	if(pm->Flags&NPM_CHECKIT)
+	if (pm->Flags&NPM_CHECKIT)
 		{
 		tmp+=PM_Image_Width(a->p, pm->Exclude?PMIMG_EXCLUDE:PMIMG_CHECKMARK, pm);
 		tmp+=PM_Prefs->pmp_Intermediate;
 		}
-	else if(pm->SubGroup.Sub && (a->p->PullDown==0) && (pm->Layout==0))
+	else if (pm->SubGroup.Sub && (a->p->PullDown==0) && (pm->Layout==0))
 		{
 		tmp+=PM_Image_Width(a->p, PMIMG_SUBMENU, pm);
 		tmp+=PM_Prefs->pmp_Intermediate;
 		}
 
-	if(pm->CommKey!=0)
+	if (pm->CommKey!=0)
 		{
 		tmp+=PM_Image_Width(a->p, PMIMG_AMIGAKEY, pm);
 		tmp+=PM_Prefs->pmp_Intermediate+fontx*4;
 		}
 
-	if(pm->Flags&NPM_ISIMAGE)
+	if (pm->Flags&NPM_ISIMAGE)
 		{
-		if(pm->ImageUnion.Images[0])
+		if (pm->ImageUnion.Images[0])
 			img=pm->ImageUnion.Images[0]->Width;
-		if(pm->ImageUnion.Images[1])
-			if(pm->ImageUnion.Images[1]->Width>img)
+		if (pm->ImageUnion.Images[1])
+			if (pm->ImageUnion.Images[1]->Width>img)
 				img=pm->ImageUnion.Images[1]->Width;
 
-		if(img>tmp)
+		if (img>tmp)
 			tmp=img;
 		}
 	else
@@ -121,29 +121,29 @@ UWORD PM_ItemWidth(struct PM_Window *a, struct PopupMenu *pm)
 
 		// Hitta den största
 
-		if(!img)
+		if (!img)
 			{
 			img=pm->ImageUnion.Images[1];
 			}
-		else if(pm->ImageUnion.Images[1])
+		else if (pm->ImageUnion.Images[1])
 			{
-			if(img->Width<pm->ImageUnion.Images[1]->Width)
+			if (img->Width<pm->ImageUnion.Images[1]->Width)
 				img=pm->ImageUnion.Images[1];
 			}
-		if(img)
+		if (img)
 			{
 			tmp+=PM_Prefs->pmp_Intermediate;
 
 			icn=img->Width+PM_Prefs->pmp_Intermediate;
 
-			if(icn>a->IconColumn)
+			if (icn>a->IconColumn)
 				a->IconColumn=icn;
 			}
 		}
 
-	if(pm->Flags&NPM_COLOURBOX)
+	if (pm->Flags&NPM_COLOURBOX)
 		{
-		if(!tmp)
+		if (!tmp)
 			{  // If there's no other stuff in the item, no intermediate spacing is req'd
 			tmp+=fontx*3;
 			tmp-=PM_Prefs->pmp_XSpace+2;    // Must be like this for some unknow reason...
@@ -169,11 +169,11 @@ void PM_CalcItemSize(struct PM_Window *a, struct PopupMenu *pm)
     pm->Width=0;
     pm->Height=0;
 
-    if(pm->Flags & NPM_HIDDEN) {
+    if (pm->Flags & NPM_HIDDEN) {
         return;
     }
 
-    if(pm->Flags & NPM_GROUP) {
+    if (pm->Flags & NPM_GROUP) {
         //
         // Calculate minimum size for each item.
         // Calculate total size for the group.
@@ -182,24 +182,24 @@ void PM_CalcItemSize(struct PM_Window *a, struct PopupMenu *pm)
         p=pm->SubGroup.Sub;
         tmpw=1;
         tmph=1;
-        if(p) do {
+        if (p) do {
             PM_CalcItemSize(a, p);
 
-            if(!(p->Flags & NPM_HIDDEN)) {
-                if(pm->Layout==PML_Vertical) {
+            if (!(p->Flags & NPM_HIDDEN)) {
+                if (pm->Layout==PML_Vertical) {
                     tmph+=p->Height;
-                    if(p->Width>tmpw) tmpw=p->Width;
+                    if (p->Width>tmpw) tmpw=p->Width;
                 }
 
-                if(pm->Layout==PML_Horizontal) {
+                if (pm->Layout==PML_Horizontal) {
                     tmpw+=p->Width;
-                    if(p->Height>tmph) tmph=p->Height;
+                    if (p->Height>tmph) tmph=p->Height;
                 }
             
             }
 
             p=p->Next;
-        } while(p);
+        } while (p);
     } else {
 	struct PopupMenu *tmppm;
 
@@ -207,8 +207,8 @@ void PM_CalcItemSize(struct PM_Window *a, struct PopupMenu *pm)
 
         tmppm=pm;
 
-        if(pm->Next) {
-            if((tmppm->Flags&NPM_NOSELECT) && (tmppm->Flags&NPM_SHADOWED) && !(tmppm->Flags&NPM_DISABLED) && (tmppm->Next->Flags&NPM_WIDE_BAR)) {
+        if (pm->Next) {
+            if ((tmppm->Flags&NPM_NOSELECT) && (tmppm->Flags&NPM_SHADOWED) && !(tmppm->Flags&NPM_DISABLED) && (tmppm->Next->Flags&NPM_WIDE_BAR)) {
                 //PATCH(TP_CENTER, NPM_CENTERED);
 
                 PATCH(PMP_TITLE_UNDERLINE, NPM_UNDERLINEDTEXT);
@@ -226,7 +226,7 @@ void PM_CalcItemSize(struct PM_Window *a, struct PopupMenu *pm)
 	}
         
 
-        if(!patched) {
+        if (!patched) {
             //TPATCH(TP_CENTER, NPM_CENTERED);
 
             TPATCH(PMP_TEXT_UNDERLINE, NPM_UNDERLINEDTEXT);
@@ -256,7 +256,7 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
 
     // Is this a group? If not, return.
 
-    if(!(pm->Flags & NPM_GROUP))
+    if (!(pm->Flags & NPM_GROUP))
         return;
 
     // Set up group offset
@@ -274,9 +274,9 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
             //
             tw=0;
             p=pm->SubGroup.Sub;
-            while(p) {
+            while (p) {
                 p->Flags&=~NPM_MINSIZE;
-                if(!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE)) {
+                if (!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE)) {
                     tw++;
                 }
                 p=p->Next;
@@ -300,8 +300,8 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
                 // result in.
                 tsz=pm->Height;
                 p=pm->SubGroup.Sub;
-                while(p) {
-                    if(!(p->Flags & NPM_HIDDEN) && (p->Flags&NPM_FIXEDSIZE || p->Flags&NPM_MINSIZE))
+                while (p) {
+                    if (!(p->Flags & NPM_HIDDEN) && (p->Flags&NPM_FIXEDSIZE || p->Flags&NPM_MINSIZE))
                         tsz-=p->Height;
                     p=p->Next;
                 }
@@ -314,13 +314,13 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
                 // (Until all remaining items can share the available space
                 // equally)
                 p=pm->SubGroup.Sub;
-                while(p) {
-                    if(!(p->Flags & NPM_HIDDEN)) {
-                        if(!(p->Flags & NPM_FIXEDSIZE) && !(p->Flags & NPM_MINSIZE)) {
-                            if(tw) tmp=tsz/tw;
+                while (p) {
+                    if (!(p->Flags & NPM_HIDDEN)) {
+                        if (!(p->Flags & NPM_FIXEDSIZE) && !(p->Flags & NPM_MINSIZE)) {
+                            if (tw) tmp=tsz/tw;
                             else tmp=0;
 
-                            if(tmp<p->Height) {
+                            if (tmp<p->Height) {
                                 p->Flags|=NPM_MINSIZE;
                                 //kprintf("LAYOUT: Removed item %s (%ld > %ld)\n", p->Title, p->Height, tmp);
                                 tw--;
@@ -332,7 +332,7 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
 
                     p=p->Next;
                 }
-            } while(restart);
+            } while (restart);
 
             //kprintf("LAYOUT: Remaining vertical size %ld\n", tsz);
             //kprintf("LAYOUT: Remaining vertical weight %ld\n", tw);
@@ -343,12 +343,12 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
             //
 
             p=pm->SubGroup.Sub;
-            while(p) {
+            while (p) {
 
                 p->Width=pm->Width;
 
-                if(!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE) && !(p->Flags&NPM_MINSIZE)) {
-                    if(tw) {
+                if (!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE) && !(p->Flags&NPM_MINSIZE)) {
+                    if (tw) {
                         p->Height=tsz/tw;   // Assign height
 
                         tsz-=p->Height;     // This will avoid leaving an empty space at the end of a group,
@@ -371,9 +371,9 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
             //
             tw=0;
             p=pm->SubGroup.Sub;
-            while(p) {
+            while (p) {
                 p->Flags&=~NPM_MINSIZE;
-                if(!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE)) {
+                if (!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE)) {
                     tw++;
                 }
                 p=p->Next;
@@ -384,20 +384,20 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
                 
                 tsz=pm->Width;
                 p=pm->SubGroup.Sub;
-                while(p) {
-                    if(!(p->Flags & NPM_HIDDEN) && (p->Flags&NPM_FIXEDSIZE || p->Flags&NPM_MINSIZE))
+                while (p) {
+                    if (!(p->Flags & NPM_HIDDEN) && (p->Flags&NPM_FIXEDSIZE || p->Flags&NPM_MINSIZE))
                         tsz-=p->Width;
                     p=p->Next;
                 }
 
                 p=pm->SubGroup.Sub;
-                while(p) {
-                    if(!(p->Flags & NPM_HIDDEN)) {
-                        if(!(p->Flags & NPM_FIXEDSIZE) && !(p->Flags & NPM_MINSIZE)) {
-                            if(tw) tmp=tsz/tw;
+                while (p) {
+                    if (!(p->Flags & NPM_HIDDEN)) {
+                        if (!(p->Flags & NPM_FIXEDSIZE) && !(p->Flags & NPM_MINSIZE)) {
+                            if (tw) tmp=tsz/tw;
                             else tmp=0;
 
-                            if(tmp<p->Width) {
+                            if (tmp<p->Width) {
                                 p->Flags|=NPM_MINSIZE;
                                 tw--;
                                 restart=TRUE;
@@ -407,15 +407,15 @@ void PM_LayoutGroup(struct PM_Window *a, struct PopupMenu *pm)
 
                     p=p->Next;
                 }
-            } while(restart);
+            } while (restart);
 
             p=pm->SubGroup.Sub;
-            while(p) {
+            while (p) {
 
                 p->Height=pm->Height;
 
-                if(!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE) && !(p->Flags&NPM_MINSIZE)) {
-                    if(tw) {
+                if (!(p->Flags & NPM_HIDDEN) && !(p->Flags&NPM_FIXEDSIZE) && !(p->Flags&NPM_MINSIZE)) {
+                    if (tw) {
                         p->Width=tsz/tw;    // Assign height
 
                         tsz-=p->Width;      // This will avoid leaving an empty space at the end of a group,
@@ -454,18 +454,18 @@ void PMPM_LayoutMenu(struct PM_Window *a)
 
     // Adjust for pulldowns
 
-    if(a->p->PullDown) {
+    if (a->p->PullDown) {
 
-        if(a->p->RootWnd->BorderTop<10) wb=FALSE;
+        if (a->p->RootWnd->BorderTop<10) wb=FALSE;
 
         a->PM.Left=1;
             a->PM.Top=1;
 
-        if(wb) {
+        if (wb) {
             a->PM.Height=a->p->RootWnd->BorderTop - 3;
         }
 
-        if(!wb) {
+        if (!wb) {
                 a->PM.Height=a->p->RootWnd->WScreen->BarHeight - 2;
         }
     }
@@ -481,19 +481,19 @@ void PMPM_LayoutMenu(struct PM_Window *a)
 
     // Adjust for pulldowns
 
-    if(a->p->PullDown) {
+    if (a->p->PullDown) {
 
-        if(wb) {
+        if (wb) {
             a->Height=a->p->RootWnd->BorderTop;
         }
 
-        if(!wb) {
+        if (!wb) {
                 a->Height=a->p->RootWnd->WScreen->BarHeight+1;
         }
 
-            if(wb) {
+            if (wb) {
                 a->Width+=2;        // 2 * borderwidth
-            if(a->Width<a->p->RootWnd->Width-1) {
+            if (a->Width<a->p->RootWnd->Width-1) {
                 a->Width=a->p->RootWnd->Width-1;
             }
         } else {

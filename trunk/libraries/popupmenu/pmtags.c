@@ -30,16 +30,16 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
     struct TagItem *tag, *tstate;
     LONG count=0;
 
-    if(!p) return 0;
+    if (!p) return 0;
 
     tstate = tags;
-    while((tag=NextTagItem(&tstate))) {
+    while ((tag=NextTagItem(&tstate))) {
         switch(tag->ti_Tag) {
             case PM_Title:
                 PM_FreeTitle(p);
-                if(tag->ti_Data) {
+                if (tag->ti_Data) {
 		    p->TitleUnion.Title=PM_Mem_Alloc(strlen((STRPTR)tag->ti_Data)+1);
-		    if(p->TitleUnion.Title) {
+		    if (p->TitleUnion.Title) {
 			strcpy(p->TitleUnion.Title, (STRPTR)tag->ti_Data);
                         count++;
                     } else {
@@ -61,18 +61,18 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
                 count++;
                 break;
             case PM_UserData:
-                if((p->Flags&NPM_UDATASTRING) && p->UserData)
+                if ((p->Flags&NPM_UDATASTRING) && p->UserData)
                     PM_Mem_Free(p->UserData);
                 p->Flags&=~(NPM_UDATASTRING);
                 p->UserData=(APTR)tag->ti_Data;
                 count++;
                 break;
             case PM_UserDataString:
-                if((p->Flags&NPM_UDATASTRING) && p->UserData)
+                if ((p->Flags&NPM_UDATASTRING) && p->UserData)
                     PM_Mem_Free(p->UserData);
                 p->Flags|=NPM_UDATASTRING;
                 p->UserData=PM_Mem_Alloc(strlen((STRPTR)tag->ti_Data)+1);
-                if(p->UserData) {
+                if (p->UserData) {
                     strcpy(p->UserData, (STRPTR)tag->ti_Data);
                     count++;
                 }
@@ -83,7 +83,7 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
                 break;
             case PM_Sub:
                 count++;
-		if(p->SubGroup.Sub)
+		if (p->SubGroup.Sub)
 			pm_FreePopupMenu(p->SubGroup.Sub, PopupMenuBase);
                 p->SubGroup.Sub=(struct PopupMenu *)tag->ti_Data;
                 p->Flags&=~NPM_GROUP;
@@ -91,16 +91,16 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
                 break;
             case PM_Members:
                 count++;
-		if(p->SubGroup.Sub)
+		if (p->SubGroup.Sub)
 			pm_FreePopupMenu(p->SubGroup.Sub, PopupMenuBase);
                 p->SubGroup.Sub=(struct PopupMenu *)tag->ti_Data;
-                if(p->Layout==0) p->Layout=PML_Horizontal;
+                if (p->Layout==0) p->Layout=PML_Horizontal;
                 p->Flags|=NPM_GROUP;
                 break;
             case PM_LayoutMode:
                 count++;
                 p->Layout=tag->ti_Data;
-                if(tag->ti_Data) {
+                if (tag->ti_Data) {
                     p->Flags|=NPM_GROUP;
                 } else {
                     p->Flags&=~NPM_GROUP;
@@ -112,7 +112,7 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
                 break;
             case PM_NoSelect:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_NOSELECT;
+                if (tag->ti_Data) p->Flags|=NPM_NOSELECT;
                 else {
                     p->Flags&=~NPM_NOSELECT;
                     p->Flags|=NPM_SELECTABLE;
@@ -120,99 +120,99 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
                 break;
             case PM_FillPen:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_FILLTEXT;
+                if (tag->ti_Data) p->Flags|=NPM_FILLTEXT;
                 else p->Flags&=~NPM_FILLTEXT;
                 break;
             case PM_ShadowPen:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_SHADOWTEXT;
+                if (tag->ti_Data) p->Flags|=NPM_SHADOWTEXT;
                 else p->Flags&=~NPM_SHADOWTEXT;
                 break;
             case PM_ShinePen:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_SHINETEXT;
+                if (tag->ti_Data) p->Flags|=NPM_SHINETEXT;
                 else p->Flags&=~NPM_SHINETEXT;
                 break;
             case PM_Checkit:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_CHECKIT;
+                if (tag->ti_Data) p->Flags|=NPM_CHECKIT;
                 else p->Flags&=~NPM_CHECKIT;
                 break;
             case PM_Checked:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_CHECKED|NPM_INITIAL_CHECKED;
+                if (tag->ti_Data) p->Flags|=NPM_CHECKED|NPM_INITIAL_CHECKED;
                 else p->Flags&=~(NPM_CHECKED|NPM_INITIAL_CHECKED);
                 break;
             case PM_Italic:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_ITALICTEXT;
+                if (tag->ti_Data) p->Flags|=NPM_ITALICTEXT;
                 else p->Flags&=~NPM_ITALICTEXT;
                 break;
             case PM_Bold:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_BOLDTEXT;
+                if (tag->ti_Data) p->Flags|=NPM_BOLDTEXT;
                 else p->Flags&=~NPM_BOLDTEXT;
                 break;
             case PM_Underlined:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_UNDERLINEDTEXT;
+                if (tag->ti_Data) p->Flags|=NPM_UNDERLINEDTEXT;
                 else p->Flags&=~NPM_UNDERLINEDTEXT;
                 break;
             case PM_TitleBar:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_HBAR;
+                if (tag->ti_Data) p->Flags|=NPM_HBAR;
                 else p->Flags&=~NPM_HBAR;
                 break;
             case PM_WideTitleBar:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_WIDE_BAR;
+                if (tag->ti_Data) p->Flags|=NPM_WIDE_BAR;
                 else p->Flags&=~NPM_WIDE_BAR;
                 break;
             case PM_ExcludeShared:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_EXCLUDE_SHARED;
+                if (tag->ti_Data) p->Flags|=NPM_EXCLUDE_SHARED;
                 else p->Flags&=~NPM_EXCLUDE_SHARED;
                 break;
             case PM_Exclude:
                 count++;
-                if(p->Exclude && !(p->Flags&NPM_EXCLUDE_SHARED))
+                if (p->Exclude && !(p->Flags&NPM_EXCLUDE_SHARED))
 		    FreeIDList(p->Exclude);
-                if(tag->ti_Data) p->Exclude=(struct PM_IDLst *)tag->ti_Data;
+                if (tag->ti_Data) p->Exclude=(struct PM_IDLst *)tag->ti_Data;
                 break;
             case PM_Disabled:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_DISABLED|NPM_NOSELECT;
+                if (tag->ti_Data) p->Flags|=NPM_DISABLED|NPM_NOSELECT;
                 else p->Flags&=~(NPM_DISABLED|NPM_NOSELECT);
                 break;
             case PM_ImageSelected:
                 count++;
                 p->ImageUnion.Images[1]=(struct Image *)tag->ti_Data;
-		if(!p->ImageUnion.Images[0]) p->ImageUnion.Images[0] = p->ImageUnion.Images[1];
+		if (!p->ImageUnion.Images[0]) p->ImageUnion.Images[0] = p->ImageUnion.Images[1];
                 p->Flags|=NPM_ISIMAGE;
                 break;
             case PM_ImageUnselected:
                 count++;
 		p->ImageUnion.Images[0] = (struct Image *)tag->ti_Data;
-		if(!p->ImageUnion.Images[1]) p->ImageUnion.Images[1] = p->ImageUnion.Images[0];
+		if (!p->ImageUnion.Images[1]) p->ImageUnion.Images[1] = p->ImageUnion.Images[0];
                 p->Flags|=NPM_ISIMAGE;
                 break;
             case PM_IconSelected:
                 count++;
                 p->ImageUnion.Images[1]=(struct Image *)tag->ti_Data;
-                if(!p->ImageUnion.Images[0]) p->ImageUnion.Images[0]=p->ImageUnion.Images[1];
+                if (!p->ImageUnion.Images[0]) p->ImageUnion.Images[0]=p->ImageUnion.Images[1];
                 p->Flags&=~NPM_ISIMAGE;
                 break;
             case PM_IconUnselected:
                 count++;
                 p->ImageUnion.Images[0]=(struct Image *)tag->ti_Data;
-                if(!p->ImageUnion.Images[1]) p->ImageUnion.Images[1]=p->ImageUnion.Images[0];
+                if (!p->ImageUnion.Images[1]) p->ImageUnion.Images[1]=p->ImageUnion.Images[0];
                 p->Flags&=~NPM_ISIMAGE;
                 break;
             case PM_AutoStore:
                 count++;
                 p->AutoSetPtr=(BOOL *)tag->ti_Data;
-                if(p->AutoSetPtr) {
-                    if(*p->AutoSetPtr) p->Flags|=NPM_CHECKED;
+                if (p->AutoSetPtr) {
+                    if (*p->AutoSetPtr) p->Flags|=NPM_CHECKED;
                     else p->Flags&=~NPM_CHECKED;
                 }
                 break;
@@ -223,17 +223,17 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
                 break;
             case PM_Shadowed:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_SHADOWED;
+                if (tag->ti_Data) p->Flags|=NPM_SHADOWED;
                 else p->Flags&=~NPM_SHADOWED;
                 break;
             case PM_Center:
                 count++;
-                if(tag->ti_Data) p->Flags|=NPM_CENTERED;
+                if (tag->ti_Data) p->Flags|=NPM_CENTERED;
                 else p->Flags&=~NPM_CENTERED;
                 break;
             case PM_CommKey:
                 count++;
-                if(tag->ti_Data) p->CommKey=((char *)tag->ti_Data)[0];
+                if (tag->ti_Data) p->CommKey=((char *)tag->ti_Data)[0];
                 break;
             case PM_ColourBox:
                 count++;
@@ -249,12 +249,12 @@ LONG pm_SetItemAttrsA(struct PopupMenu *p, struct TagItem *tags, struct PopupMen
                 count++;
                                 break;
             case PM_Hidden:
-                if(tag->ti_Data) p->Flags|=NPM_HIDDEN;
+                if (tag->ti_Data) p->Flags|=NPM_HIDDEN;
                 else p->Flags&=~NPM_HIDDEN;
                 count++;
                 break;
             case PM_Toggle:
-                if(tag->ti_Data) p->Flags&=~NPM_NOTOGGLE;
+                if (tag->ti_Data) p->Flags&=~NPM_NOTOGGLE;
                 else p->Flags|=NPM_NOTOGGLE;
                 count++;
                 break;
@@ -277,25 +277,25 @@ LIBFUNC_P3(LONG, LIBPM_GetItemAttrsA,
 
 	(void) PopupMenuBase;
 
-    if(!p) return 0;
+    if (!p) return 0;
 
     tstate = tags;
-    while((tag=NextTagItem(&tstate))) {
+    while ((tag=NextTagItem(&tstate))) {
         switch(tag->ti_Tag) {
             case PM_Title:
-                if(GET_TXTMODE(p)==0) {
+                if (GET_TXTMODE(p)==0) {
 		    *((STRPTR *)tag->ti_Data)=p->TitleUnion.Title;
                     count++;
                 }
                 break;
             case PM_TitleID:
-                if(GET_TXTMODE(p)==NPX_TXTLOCALE) {
+                if (GET_TXTMODE(p)==NPX_TXTLOCALE) {
 		    *((ULONG *)tag->ti_Data)=p->TitleUnion.TitleID;
                     count++;
                 }
                 break;
             case PM_Object:
-                if(GET_TXTMODE(p)==NPX_TXTBOOPSI) {
+                if (GET_TXTMODE(p)==NPX_TXTBOOPSI) {
 		    *((Object **)tag->ti_Data)=p->TitleUnion.Boopsi;
                     count++;
                 }
@@ -323,62 +323,62 @@ LIBFUNC_P3(LONG, LIBPM_GetItemAttrsA,
                 break;
             case PM_NoSelect:
                 count++;
-                if(p->Flags&NPM_NOSELECT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_NOSELECT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_FillPen:
                 count++;
-                if(p->Flags&NPM_FILLTEXT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_FILLTEXT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_ShadowPen:
                 count++;
-                if(p->Flags&NPM_SHADOWTEXT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_SHADOWTEXT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_ShinePen:
                 count++;
-                if(p->Flags&NPM_SHINETEXT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_SHINETEXT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_Checkit:
                 count++;
-                if(p->Flags&NPM_CHECKIT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_CHECKIT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_Checked:
                 count++;
-                if(p->Flags&NPM_CHECKED) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_CHECKED) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_Italic:
                 count++;
-                if(p->Flags&NPM_ITALICTEXT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_ITALICTEXT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_Bold:
                 count++;
-                if(p->Flags&NPM_BOLDTEXT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_BOLDTEXT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_Underlined:
                 count++;
-                if(p->Flags&NPM_UNDERLINEDTEXT) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_UNDERLINEDTEXT) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_TitleBar:
                 count++;
-                if(p->Flags&NPM_HBAR) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_HBAR) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_WideTitleBar:
                 count++;
-                if(p->Flags&NPM_WIDE_BAR) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_WIDE_BAR) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_ExcludeShared:
                 count++;
-                if(p->Flags&NPM_EXCLUDE_SHARED) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_EXCLUDE_SHARED) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_Exclude:
@@ -387,7 +387,7 @@ LIBFUNC_P3(LONG, LIBPM_GetItemAttrsA,
                 break;
             case PM_Disabled:
                 count++;
-                if(p->Flags&NPM_DISABLED) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_DISABLED) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_ImageSelected:
@@ -409,12 +409,12 @@ LIBFUNC_P3(LONG, LIBPM_GetItemAttrsA,
                 *((ULONG *)tag->ti_Data)=p->TextPen;
                 break;
             case PM_Shadowed:
-                if(p->Flags&NPM_SHADOWED) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_SHADOWED) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 count++;
                 break;
             case PM_Center:
-                if(p->Flags&NPM_CENTERED) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_CENTERED) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 count++;
                 break;
@@ -424,12 +424,12 @@ LIBFUNC_P3(LONG, LIBPM_GetItemAttrsA,
                 break;
             case PM_Hidden:
                 count++;
-                if(p->Flags&NPM_HIDDEN) *((BOOL *)tag->ti_Data)=TRUE;
+                if (p->Flags&NPM_HIDDEN) *((BOOL *)tag->ti_Data)=TRUE;
                 else *((BOOL *)tag->ti_Data)=FALSE;
                 break;
             case PM_Toggle:
                 count++;
-                if(p->Flags&NPM_NOTOGGLE) *((BOOL *)tag->ti_Data)=FALSE;
+                if (p->Flags&NPM_NOTOGGLE) *((BOOL *)tag->ti_Data)=FALSE;
                 else *((BOOL *)tag->ti_Data)=TRUE;
                 break;
         }
