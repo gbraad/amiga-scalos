@@ -1640,7 +1640,7 @@ BOOL ChangedMenuPrefs(struct MainTask *mt)
 
 		ScalosReleaseSemaphore(&ParseMenuListSemaphore);
 
-		ReadMenuPrefs();	// updated MenuPrefsCRC
+		ReadMenuPrefs();	// updates MenuPrefsCRC
 
 		d1(kprintf("%s/%s/%ld: MainNewMenu=%08lx\n", __FILE__, __FUNC__, __LINE__, MainNewMenu));
 
