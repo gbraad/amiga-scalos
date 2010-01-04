@@ -91,8 +91,10 @@ static struct DevListEntry *CreateDevListEntry(const struct DosList *dlist);
 static void DeleteDevListEntry(struct DevListEntry *dle);
 static void CreateDeviceIcons(struct DevListClassInstance *inst, struct ScaDeviceIcon **diList);
 static void RemoveObsoleteEntries(struct DevListClassInstance *inst);
-static struct ScaDeviceIcon *CreateIconFromDle(struct DevListEntry *dle, struct ScaDeviceIcon **diList);
+static struct ScaDeviceIcon *CreateIconFromDle(struct DevListEntry *dle,
+	struct ScaDeviceIcon **diList, struct DosList *origDlist);
 static void SendInfoPacket(struct DevListClassInstance *inst, struct DevListEntry *dle);
+static BOOL VerifyDosListEntry(struct DosList *dlStart, const struct DosList *dlTest);
 
 //----------------------------------------------------------------------------
 
@@ -264,31 +266,31 @@ static ULONG DevListClass_Generate(Class *cl, Object *o, Msg msg)
 			CheckAddDosListEntry(inst, dlist);
 			}
 
-		UnLockDosList(LDF_VOLUMES | LDF_DEVICES | LDF_READ);
-		}
+		RemoveObsoleteEntries(inst);
 
-	RemoveObsoleteEntries(inst);
-
-	for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
-		dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
-		dle = (struct DevListEntry *) dle->dle_Node.ln_Succ)
-		{
-		d1(kprintf("%s/%s/%ld: dle=%08lx  dle_DeviceName=%08lx <%s>  dle_VolumeName=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
-			dle, dle->dle_DeviceName, dle->dle_DeviceName ? dle->dle_DeviceName : (STRPTR) "",\
-			dle->dle_VolumeName, dle->dle_VolumeName ? dle->dle_VolumeName : (STRPTR) ""));
-
-		if (dle->dle_DeviceName)
+		for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
+			dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
+			dle = (struct DevListEntry *) dle->dle_Node.ln_Succ)
 			{
-			switch (dle->dle_State)
+			d1(kprintf("%s/%s/%ld: dle=%08lx  dle_DeviceName=%08lx <%s>  dle_VolumeName=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
+				dle, dle->dle_DeviceName, dle->dle_DeviceName ? dle->dle_DeviceName : (STRPTR) "",\
+				dle->dle_VolumeName, dle->dle_VolumeName ? dle->dle_VolumeName : (STRPTR) ""));
+
+			if (dle->dle_DeviceName)
 				{
-			case DLE_Initial:
-			case DLE_InfoFinished:
-				SendInfoPacket(inst, dle);
-				break;
-			default:
-				break;
+				switch (dle->dle_State)
+					{
+				case DLE_Initial:
+				case DLE_InfoFinished:
+					SendInfoPacket(inst, dle);
+					break;
+				default:
+					break;
+					}
 				}
 			}
+
+		UnLockDosList(LDF_VOLUMES | LDF_DEVICES | LDF_READ);
 		}
 
 	// now handle all device icons whose handlers were able to reply in time
@@ -447,36 +449,49 @@ static void CheckAddDosListEntry(struct DevListClassInstance *inst, struct DosLi
 
 static void HandleRepliedPackets(Object *o, struct DevListClassInstance *inst, struct ScaDeviceIcon **diList)
 {
-	struct StandardPacket *pkt;
+	struct DosList *origDlist;
 
-	do	{
-		pkt = (struct StandardPacket *) GetMsg(inst->dlci_ReplyPort);
-		if (pkt)
-			{
-			struct DevListEntry *dle;
+	origDlist = AttemptLockDosList(LDF_VOLUMES | LDF_DEVICES | LDF_READ);
 
-			d1(kprintf("%s/%s/%ld: pkt=%08lx  Res1=%08lx\n", __FILE__, __FUNC__, __LINE__, pkt, pkt->sp_Pkt.dp_Res1));
+	// work around bug in AttemptLockDosList()
+	if ((struct DosList *) 0x00000001 == origDlist)
+		origDlist = NULL;
 
-			for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
-				dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
-				dle = (struct DevListEntry *) dle->dle_Node.ln_Succ)
+	if (origDlist)
+		{
+		struct StandardPacket *pkt;
+
+		do	{
+			pkt = (struct StandardPacket *) GetMsg(inst->dlci_ReplyPort);
+			if (pkt)
 				{
-				if (pkt->sp_Pkt.dp_Arg1 == MKBADDR(dle->dle_InfoData))
+				struct DevListEntry *dle;
+
+				d1(kprintf("%s/%s/%ld: pkt=%08lx  Res1=%08lx\n", __FILE__, __FUNC__, __LINE__, pkt, pkt->sp_Pkt.dp_Res1));
+
+				for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
+					dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
+					dle = (struct DevListEntry *) dle->dle_Node.ln_Succ)
 					{
-					d1(kprintf("%s/%s/%ld: di=%08lx  <%s>  disktype=%08lx\n", \
-						__FILE__, __FUNC__, __LINE__, dle, dle->dle_DeviceName, dle->dle_InfoData->id_DiskType));
+					if (pkt->sp_Pkt.dp_Arg1 == MKBADDR(dle->dle_InfoData))
+						{
+						d1(kprintf("%s/%s/%ld: di=%08lx  <%s>  disktype=%08lx\n", \
+							__FILE__, __FUNC__, __LINE__, dle, dle->dle_DeviceName, dle->dle_InfoData->id_DiskType));
 
-					if (!pkt->sp_Pkt.dp_Res1)
-						dle->dle_InfoData->id_DiskType = ID_NO_DISK_PRESENT;
+						if (!pkt->sp_Pkt.dp_Res1)
+							dle->dle_InfoData->id_DiskType = ID_NO_DISK_PRESENT;
 
-					dle->dle_State = DLE_InfoFinished;
-					dle->dle_WaitCount = 0;
+						dle->dle_State = DLE_InfoFinished;
+						dle->dle_WaitCount = 0;
 
-					CreateIconFromDle(dle, diList);
+						CreateIconFromDle(dle, diList, origDlist);
+						}
 					}
 				}
-			}
-		} while (pkt);
+			} while (pkt);
+
+		UnLockDosList(LDF_VOLUMES | LDF_DEVICES | LDF_READ);
+		}
 }
 
 
@@ -552,26 +567,38 @@ static void DeleteDevListEntry(struct DevListEntry *dle)
 
 static void CreateDeviceIcons(struct DevListClassInstance *inst, struct ScaDeviceIcon **diList)
 {
-	struct DevListEntry *dle;
+	struct DosList *origDlist;
 
-	d1(kprintf("%s/%s/%ld: pkt=%08lx  Res1=%08lx\n", __FILE__, __FUNC__, __LINE__, pkt, pkt->sp_Pkt.dp_Res1));
+	origDlist = AttemptLockDosList(LDF_VOLUMES | LDF_DEVICES | LDF_READ);
 
-	for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
-		dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
-		dle = (struct DevListEntry *) dle->dle_Node.ln_Succ)
+	// work around bug in AttemptLockDosList()
+	if ((struct DosList *) 0x00000001 == origDlist)
+		origDlist = NULL;
+
+	if (origDlist)
 		{
-		switch (dle->dle_State)
+		struct DevListEntry *dle;
+
+		d1(kprintf("%s/%s/%ld: pkt=%08lx  Res1=%08lx\n", __FILE__, __FUNC__, __LINE__, pkt, pkt->sp_Pkt.dp_Res1));
+
+		for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
+			dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
+			dle = (struct DevListEntry *) dle->dle_Node.ln_Succ)
 			{
-		case DLE_InfoFinished:
-			CreateIconFromDle(dle, diList);
-			break;
-		case DLE_WaitInfo2:
-			if (dle->dle_WaitCount < 2)
-				CreateIconFromDle(dle, diList);
-			break;
-		default:
-			break;
+			switch (dle->dle_State)
+				{
+			case DLE_InfoFinished:
+				CreateIconFromDle(dle, diList, origDlist);
+				break;
+			case DLE_WaitInfo2:
+				if (dle->dle_WaitCount < 2)
+					CreateIconFromDle(dle, diList, origDlist);
+				break;
+			default:
+				break;
+				}
 			}
+		UnLockDosList(LDF_VOLUMES | LDF_DEVICES | LDF_READ);
 		}
 }
 
@@ -604,7 +631,8 @@ static void RemoveObsoleteEntries(struct DevListClassInstance *inst)
 }
 
 
-static struct ScaDeviceIcon *CreateIconFromDle(struct DevListEntry *dle, struct ScaDeviceIcon **diList)
+static struct ScaDeviceIcon *CreateIconFromDle(struct DevListEntry *dle,
+	struct ScaDeviceIcon **diList, struct DosList *origDlist)
 {
 	struct ScaDeviceIcon *di = NULL;
 
@@ -629,16 +657,21 @@ static struct ScaDeviceIcon *CreateIconFromDle(struct DevListEntry *dle, struct 
 				di->di_Handler = dle->dle_Handler;
 
 				dlist = BADDR(di->di_Info->id_VolumeNode);
-				if (dlist && dlist->dol_Name)
+				d1(kprintf("%s/%s/%ld: dlist=%08lx\n", __FILE__, __FUNC__, __LINE__, dlist));
+
+				if (VerifyDosListEntry(origDlist, dlist) && dlist->dol_Name)
 					{
 					// Update volume name from DosList entry pointed to by InfoData
+					d1(kprintf("%s/%s/%ld: dol_Name=%08lx\n", __FILE__, __FUNC__, __LINE__, dlist->dol_Name));
 					if (dle->dle_VolumeName)
 						ScalosFree(dle->dle_VolumeName);
 
 					dle->dle_VolumeName = AllocCopyBString(dlist->dol_Name);
 					}
 
+				d1(kprintf("%s/%s/%ld: dlist=%08lx\n", __FILE__, __FUNC__, __LINE__, dlist));
 				di->di_Volume = AllocCopyAString(dle->dle_VolumeName);
+				d1(kprintf("%s/%s/%ld: dlist=%08lx\n", __FILE__, __FUNC__, __LINE__, dlist));
 				di->di_Device = AllocCopyAString(dle->dle_DeviceName);
 
 				d1(kprintf("%s/%s/%ld: di=%08lx  Device=<%s>  Volume=<%s> DiskType=%08lx\n", \
@@ -702,5 +735,22 @@ static void SendInfoPacket(struct DevListClassInstance *inst, struct DevListEntr
 	if (DeviceName)
 		FreeCopyString(DeviceName);
 }
+
+
+static BOOL VerifyDosListEntry(struct DosList *dlStart, const struct DosList *dlTest)
+{
+	while (dlStart)
+		{
+		if (dlTest == dlStart)
+			return TRUE;
+
+		dlStart = NextDosEntry(dlStart, LDF_VOLUMES | LDF_DEVICES | LDF_READ);
+		}
+
+	d1(KPrintF("%s/%s/%ld: not found: dlTest=%08lx\n", __FILE__, __FUNC__, __LINE__, dlTest));
+
+	return FALSE;	// dlTest not found!
+}
+
 
 
