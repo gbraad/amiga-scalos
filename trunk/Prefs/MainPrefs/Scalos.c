@@ -6529,44 +6529,44 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 
 					Child, HVSpace,
 
-					Child, ColGroup(4),
+					Child, ColGroup(2),
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_SHORTHELP),
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_LEFT)),
-						Child, app->Obj[CLEANLEFT] = BetterStringObject,
-							StringFrame,
+						Child, app->Obj[SLIDER_CLEANLEFT] = SliderObject,
 							MUIA_CycleChain, TRUE,
-							MUIA_String_Integer, 5,
-							MUIA_String_Accept, "0123456789",
-							MUIA_String_AdvanceOnCR, TRUE,
-							End, //BetterString
+							MUIA_Numeric_Min, 0,
+							MUIA_Numeric_Max, 20,
+							MUIA_Numeric_Value, 5,
+							MUIA_Slider_Horiz, TRUE,
+							End, //SliderObject
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_TOP)),
-						Child, app->Obj[CLEANTOP] = BetterStringObject,
-							StringFrame,
+						Child, app->Obj[SLIDER_CLEANTOP] = SliderObject,
 							MUIA_CycleChain, TRUE,
-							MUIA_String_Integer, 5,
-							MUIA_String_Accept, "0123456789",
-							MUIA_String_AdvanceOnCR, TRUE,
-							End, //BetterString
+							MUIA_Numeric_Min, 0,
+							MUIA_Numeric_Max, 20,
+							MUIA_Numeric_Value, 5,
+							MUIA_Slider_Horiz, TRUE,
+							End, //SliderObject
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_XSKIP)),
-						Child, app->Obj[CLEANXSKIP] = BetterStringObject,
-							StringFrame,
+						Child, app->Obj[SLIDER_CLEANXSKIP] = SliderObject,
 							MUIA_CycleChain, TRUE,
-							MUIA_String_Integer, 5,
-							MUIA_String_Accept, "0123456789",
-							MUIA_String_AdvanceOnCR, TRUE,
-							End, //BetterString
+							MUIA_Numeric_Min, 0,
+							MUIA_Numeric_Max, 20,
+							MUIA_Numeric_Value, 5,
+							MUIA_Slider_Horiz, TRUE,
+							End, //SliderObject
 
 						Child, Label((ULONG) GetLocString(MSGID_WINDOWPAGE_CLEANUPSPACE_YSKIP)),
-						Child, app->Obj[CLEANYSKIP] = BetterStringObject,
-							StringFrame,
+						Child, app->Obj[SLIDER_CLEANYSKIP] = SliderObject,
 							MUIA_CycleChain, TRUE,
-							MUIA_String_Integer, 5,
-							MUIA_String_Accept, "0123456789",
-							MUIA_String_AdvanceOnCR, TRUE,
-							End, //BetterString
+							MUIA_Numeric_Min, 0,
+							MUIA_Numeric_Max, 20,
+							MUIA_Numeric_Value, 5,
+							MUIA_Slider_Horiz, TRUE,
+							End, //SliderObject
 					End, //ColGroup
 
 					Child, HVSpace,
@@ -6701,6 +6701,8 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 								Child, HVSpace,
 								End, //VGroup
 							Child, app->Obj[TEXTEDITOR_CONTROLBARGADGETS_BROWSER_HELPTEXT] = TextEditorObject,
+								TextFrame,
+								MUIA_Background, MUII_TextBack,
 								MUIA_CycleChain, TRUE,
 								MUIA_Disabled, TRUE,
 								MUIA_TextEditor_Contents, "",
@@ -6863,6 +6865,8 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 								Child, HVSpace,
 								End, //VGroup
 							Child, app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT] = TextEditorObject,
+								TextFrame,
+								MUIA_Background, MUII_TextBack,
 								MUIA_CycleChain, TRUE,
 								MUIA_Disabled, TRUE,
 								MUIA_TextEditor_Contents, "",
