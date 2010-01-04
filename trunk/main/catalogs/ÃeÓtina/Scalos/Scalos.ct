@@ -1038,6 +1038,26 @@ MSGID_FILETRANSFER_DETAILS_SPEED
 Average Speed: %s/s
 ;Average Speed: %s/s
 ;
+;+++translateme+++
+MSGID_REQUEST_SCALOS_ALREADY_RUNNING
+There is already one instance of Scalos running!\n\
+Probably you use Scalos as Workbench replacement?\n\
+From original Workbench, you may start Scalos with this icon.
+;There is already one instance of Scalos running!\n\
+;Probably you use Scalos as Workbench replacement?\n\
+;From original Workbench, you may start Scalos with this icon.
+;
+;+++translateme+++
+MSGID_READMENUPREFS_FAIL
+Scalos failed to read your\n\
+menu preferences: %s\n\
+Due to this error, you won't have any menus available.\n\
+Please use Scalos Menu Preferences to create preferences!
+;Scalos failed to read your\n\
+;menu preferences: %s\n\
+;Due to this error, you won't have any menus available.\n\
+;Please use Scalos Menu Preferences to create preferences!
+;
 ; ==============================================
 ;+++translateme+++
 MSGID_DROPMENU_DROPMENUTITLE
