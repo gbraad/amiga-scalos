@@ -1263,6 +1263,28 @@ MSGID_FILETRANSFER_DETAILS_SPEED
 Durchschnittsgeschwindigkeit: %s/s
 ;Average Speed: %s/s
 ;
+;
+MSGID_REQUEST_SCALOS_ALREADY_RUNNING
+Scalos läuft bereits auf Ihrer Maschine!\n\
+Betreiben Sie Scalos als Workbench-Ersatz?\n\
+Mit diesem Piktogramm können Sie Scalos nur\n\
+von der originalen Workbench starten.
+;There is already one instance of Scalos running!\n\
+;Probably you use Scalos as Workbench replacement?\n\
+;From original Workbench, you may start Scalos with this icon.
+;
+;
+MSGID_READMENUPREFS_FAIL
+Scalos konnte Ihre Menükonfiguration leider\n\
+nicht lesen%s\n\
+Wegen dieses Fehlers stehen Ihnen leider keine Menüs zur Verfügung.\n\
+Bitte nutzen Sie den \"Scalos Menu\" Voreinsteller,\n\
+um eine geeignete Menükonfiguration zu erstellen!
+;Scalos failed to read your\n\
+;menu preferences: %s\n\
+;Due to this error, you won't have any menus available.\n\
+;Please use Scalos Menu Preferences to create preferences!
+;
 ; ==============================================
 ;
 MSGID_DROPMENU_DROPMENUTITLE

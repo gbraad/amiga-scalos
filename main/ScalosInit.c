@@ -1154,6 +1154,7 @@ static void ScalosMain(LONG *ArgArray)
 	TRACE_AMITHLON(__LINE__);
 
 	do	{
+		ULONG rc;
 		ULONG UnAllocatedPens;
 		struct PatternNode *patNode;
 		struct Node *libNode;
@@ -1177,17 +1178,6 @@ static void ScalosMain(LONG *ArgArray)
 		}
 
 		LINE_TRACE;
-
-		libNode = FindName(&SysBase->LibList, SCALOSNAME);
-
-		d1(kprintf("%s/%s/%ld: another Scalos instance .. libNode=%08lx\n", __FILE__, __FUNC__, __LINE__, libNode));
-		if (libNode)
-			{
-			// abort if Scalos already running
-			break;
-			}
-
-		TRACE_AMITHLON(__LINE__);
 
 		if (!MemoryInit())
 			break;
@@ -1222,8 +1212,20 @@ static void ScalosMain(LONG *ArgArray)
 		if (NULL == MainWindowTask->mwt.iwt_WindowTask.wt_IconSemaphore)
 			break;
 
+		LINE_TRACE;
+
 		if (!OpenLibraries())
 			break;
+
+		libNode = FindName(&SysBase->LibList, SCALOSNAME);
+
+		d1(kprintf("%s/%s/%ld: another Scalos instance .. libNode=%08lx\n", __FILE__, __FUNC__, __LINE__, libNode));
+		if (libNode)
+			{
+			// abort if Scalos already running
+			(void) UseRequest(NULL, MSGID_REQUEST_SCALOS_ALREADY_RUNNING, MSGID_OKNAME, NULL);
+			break;
+			}
 
 		LINE_TRACE;
 
@@ -1552,7 +1554,17 @@ static void ScalosMain(LONG *ArgArray)
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		ReadMenuPrefs();
+		rc = ReadMenuPrefs();
+		if (RETURN_OK != rc)
+			{
+			char ErrorText[100];
+
+			(void) Fault(rc, (STRPTR) "", ErrorText, sizeof(ErrorText));
+
+			(void) UseRequestArgs(NULL, MSGID_READMENUPREFS_FAIL, MSGID_OKNAME,
+				1, ErrorText);
+
+			}
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
