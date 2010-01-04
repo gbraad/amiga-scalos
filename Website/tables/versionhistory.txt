@@ -1,4 +1,19 @@
 V41.7
+Bugfix: improved DosList locking fixed occasional crash when volumes/devices go away
+Improvement: requester informs user if Scalos is run a second time
+Improvement: requesters informs user if menu preferences cannot be read
+Bugfix: corrected problems with text window striping and window resizing under MorphOS
+Bugfix: with &quot;apply to all selected icons&quot; enabled, popup menu selection always was applied to one icon less than selected
+Improvement: information.module: added Undo/Redo support for object renaming
+Bugfix: information.module: for text windows, icons are not displayed correctly
+Improvement: Updated sqlite3.library to SQLite3 V3.6.21
+Improvement: Upgraded libpng to 1.2.41 (68k)
+Bugfix: worked around a possible GCC bug that caused filetypes prefs to crash on AmigaOS4 when trying to edit an attribute
+Bugfix: In pattern preferences, separate preview right of listview was broken
+Improvement: eliminated separate Rename.module for rename-in-place. Now there is only one Rename.module, rename-in-place can be activated by setting an environment variable &quot;Scalos/RENAMEINPLACE&quot; to any value (e.g. &quot;setenv save Scalos/RENAMEINPLACE 1&quot;)
+Improvement: Updated sqlite3.library to SQLite3 V3.6.20.
+Bugfix: Highlighting window gadgets when mouse pointer was moved over them didn't work with AmigaOS4
+Bugfix: On MorphOS 2.x, main menu entries were never disabled.
 Bugfix: suppress system requester when relabelling a volume
 Bugfix: corrected location of rename gadget for RenameInPlace
 Improvement: Updated sqlite3.library to SQLite3 V3.6.19

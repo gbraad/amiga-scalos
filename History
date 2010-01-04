@@ -2690,7 +2690,7 @@ Additions/changes:
 				  then existing file is renamed to Persistant_Windows-old, and
 				  if everything worked, new file is renamed to Persistant_Windows
 				  and old file Persistant_Windows-old is deleted.
- 39.24	20090712	jl	- Improvement: plugin now automatically reconizes when Scalos has
+ 39.24	20090712	jl	- Improvement: plugin now automatically recognizes when Scalos has
 				  finished starting up, and will start re-opening windows.
 				  Preferences variable "StartDelay_Seconds" is no longer used.
  39.23	20090107	jl	- Improvement: Plugin is now able to store size and

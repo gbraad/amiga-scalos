@@ -1,3 +1,9 @@
+V39.22
+Bugfix: in non-emulation mode, an allocated signal was never freed
+
+V39.21
+Improvement: Added support for &quot;HELP PROMPT&quot;
+
 V39.20
 Bugfix: &quot;menu invoke&quot; always required a window, even for menu commands that do not work on windows, like &quot;WORKBENCH.ABOUT&quot;
 
