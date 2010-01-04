@@ -865,26 +865,33 @@ BOOL IsShowAllType(UWORD ShowType)
 
 void ScalosEndNotify(struct NotifyRequest *nr)
 {
+	d1(KPrintF("%s/%s/%ld: START  nr=%08lx\n", __FILE__, __FUNC__, __LINE__, nr));
 	if (nr)
 		{
+#if defined(__MORPHOS__)
+		struct MsgPort *DummyPort = NULL;
 		struct MsgPort *NotifyPort = NULL;
 
-#if defined(__MORPHOS__)
+		d1(KPrintF("%s/%s/%ld: nr_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, nr->nr_Name));
+
 		Forbid();
 
 		if (nr->nr_Flags & NRF_SEND_MESSAGE)
 			{
 			NotifyPort = nr->nr_stuff.nr_Msg.nr_Port;
 
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 			if (!IsListEmpty(&NotifyPort->mp_MsgList))
 				{
-				struct MsgPort *DummyPort = CreateMsgPort();
+				DummyPort = CreateMsgPort();
 
 				if (DummyPort)
 					{
 					struct Node *MsgNode, *NextNode;
 
 					nr->nr_stuff.nr_Msg.nr_Port = DummyPort;
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 					for (MsgNode = NotifyPort->mp_MsgList.lh_Head;
 						nr->nr_MsgCount && MsgNode != (struct Node *) &NotifyPort->mp_MsgList.lh_Tail;
@@ -894,27 +901,59 @@ void ScalosEndNotify(struct NotifyRequest *nr)
 
 						NextNode = MsgNode->ln_Succ;
 
+						d1(KPrintF("%s/%s/%ld: nMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, nMsg));
+
 						if (NOTIFY_CLASS == nMsg->nm_Class
 							&& NOTIFY_CODE == nMsg->nm_Code
 							&& nr == nMsg->nm_NReq)
 							{
+							d1(KPrintF("%s/%s/%ld: nMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, nMsg));
 							Remove(MsgNode);
 							ReplyMsg((struct Message *) MsgNode);
+							d1(KPrintF("%s/%s/%ld: nMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, nMsg));
 							}
 						}
-					DeleteMsgPort(DummyPort);
+
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 					}
 				}
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			}
 
 		Permit();
 #endif /* __MORPHOS__ */
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		EndNotify(nr);
 
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+#if defined(__MORPHOS__)
 		if (NotifyPort)
 			nr->nr_stuff.nr_Msg.nr_Port = NotifyPort;
+		if (DummyPort)
+			{
+			struct NotifyMessage *nMsg;
+
+			while ((nMsg = (struct NotifyMessage *) GetMsg(DummyPort)))
+				{
+				d1(KPrintF("%s/%s/%ld: nMsg=%08lx  nm_Class=%08lx  nm_Code=%04lx\n", __FILE__, __FUNC__, __LINE__, nMsg, nMsg->nm_Class, nMsg->nm_Code));
+
+				if (NOTIFY_CLASS == nMsg->nm_Class
+					&& NOTIFY_CODE == nMsg->nm_Code
+					&& nr == nMsg->nm_NReq)
+					{
+					d1(KPrintF("%s/%s/%ld: nMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, nMsg));
+					ReplyMsg(&nMsg->nm_ExecMessage);
+					d1(KPrintF("%s/%s/%ld: nMsg=%08lx\n", __FILE__, __FUNC__, __LINE__, nMsg));
+					}
+				}
+
+			DeleteMsgPort(DummyPort);
+			}
+#endif /* __MORPHOS__ */
 		}
+	d1(KPrintF("%s/%s/%ld: END  nr=%08lx\n", __FILE__, __FUNC__, __LINE__, nr));
 }
 
 // ----------------------------------------------------------
