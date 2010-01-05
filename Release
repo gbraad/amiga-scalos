@@ -114,6 +114,7 @@ say "Copying Modules..."
 'copy Modules/Information.MUI/Information.module "RAM:ScalosBeta/modules/" clone quiet'
 'copy Modules/NewDrawer.MUI/NewDrawer.module "RAM:ScalosBeta/modules/" clone quiet'
 'copy Modules/Rename.MUI/Rename.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Updater.MUI/Updater.module "RAM:ScalosBeta/modules/" clone quiet'
 
 
 say "Copying Libraries..."
