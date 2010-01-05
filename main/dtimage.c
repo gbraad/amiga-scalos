@@ -65,6 +65,7 @@ static BOOL DtImageCreateAlpha(struct DatatypesImage *dti);
 // local data items :
 
 static struct List DataTypesImageList;
+static BOOL Initialized = FALSE;
 
 //----------------------------------------------------------------------------
 
@@ -74,18 +75,23 @@ BOOL InitDataTypesImage(void)
 
 	CleanupTempFiles();
 
+	Initialized = TRUE;
+
 	return TRUE;
 }
 
 
 void CleanupDataTypesImage(void)
 {
-	struct DatatypesImage *dti;
-
-	while ((dti = (struct DatatypesImage *) RemHead(&DataTypesImageList)))
+	if (Initialized)
 		{
-		d1(kprintf("%s/%s/%ld: Freeing dti(%lx)\n", __FILE__, __FUNC__, __LINE__, dti));
-		FreeDatatypesImage(dti);
+		struct DatatypesImage *dti;
+
+		while ((dti = (struct DatatypesImage *) RemHead(&DataTypesImageList)))
+			{
+			d1(kprintf("%s/%s/%ld: Freeing dti(%lx)\n", __FILE__, __FUNC__, __LINE__, dti));
+			FreeDatatypesImage(dti);
+			}
 		}
 }
 
