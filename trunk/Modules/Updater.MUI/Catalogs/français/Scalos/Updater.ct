@@ -498,3 +498,47 @@ ne soit plus en mémoire et essayez de nouveau.
 ;is flushed from memory and try again.
 ;
 ;-----------------------------------------------------------
+;+++translateme+++
+MSGID_AMISSL_LIBOPEN_FAIL_AMISSLMASTER
+Failed to open amisslmaster.library
+;Failed to open amisslmaster.library
+;
+;+++translateme+++
+MSGID_AMISSL_FAIL_INITAMISSLMASTER
+InitAmiSSLMaster failed, probably your AmiSSL installation is too old
+;InitAmiSSLMaster failed, probably your AmiSSL installation is too old
+;
+;+++translateme+++
+MSGID_AMISSL_FAIL_OPENAMISSL
+OpenAmiSSL failed
+;OpenAmiSSL failed
+;
+;+++translateme+++
+MSGID_AMISSL_FAIL_AMISSL_INTERFACE
+Couldn't get AmiSSL interface
+;Couldn't get AmiSSL interface
+;
+;+++translateme+++
+MSGID_AMISSL_FAIL_AMISSLMASTER_INTERFACE
+Couldn't get AmiSSLMaster interface
+;Couldn't get AmiSSLMaster interface
+;
+;+++translateme+++
+MSGID_AMISSL_FAIL_INITAMISSL
+InitAmiSSL failed
+;InitAmiSSL failed
+;
+;+++translateme+++
+MSGID_AMISSL_FAIL_REQ_FORMAT
+Could not initialize AmiSSL:\n\
+%s\n\
+Sorry, but Updater needs a working AmiSSL V3 installation\n\
+(http://www.heightanxiety.com/AmiSSL)/\n\
+to verify the signatures of the downloaded files.
+;Could not initialize AmiSSL:\n\
+;%s\n\
+;Sorry, but Updater needs a working AmiSSL V3 installation\n\
+;(http://www.heightanxiety.com/AmiSSL)/\n\
+;to verify the signatures of the downloaded files.
+;
+;-----------------------------------------------------------
