@@ -277,49 +277,13 @@ static const LONG StopChunkList[] =
 	ID_PREF, ID_PMNU,
 	};
 
-static STRPTR ColorNames[] =
-	{
-	(STRPTR) MSGID_COLORNAME_TEXT,
-	(STRPTR) MSGID_COLORNAME_BRIGHT_EDGES,
-	(STRPTR) MSGID_COLORNAME_DARK_EDGES,
-	(STRPTR) MSGID_COLORNAME_ACTIVE_ITEM_BG,
-	(STRPTR) MSGID_COLORNAME_ACTIVE_ITEM_TEXT,
-	(STRPTR) MSGID_COLORNAME_BACKGROUND,
-	(STRPTR) MSGID_COLORNAME_MENUTITLES,
-	(STRPTR) MSGID_COLORNAME_TEXT_SHADOW,
-	NULL
-	};
-
-static STRPTR ColourMatchingPrecisionNames[] =
-	{
-	(STRPTR) MSGID_COLORMATCHING_EXACT,
-	(STRPTR) MSGID_COLORMATCHING_IMAGE,
-	(STRPTR) MSGID_COLORMATCHING_ICON,
-	(STRPTR) MSGID_COLORMATCHING_GUI,
-	NULL
-	};
-
 static STRPTR PrefsPageNames[] =
 	{
-//	  (STRPTR) MSGID_PREFSPAGES_COLOURS,
 	(STRPTR) MSGID_PREFSPAGES_MISC,
-//	  (STRPTR) MSGID_PREFSPAGES_IMAGES,
 	(STRPTR) MSGID_PREFSPAGES_BORDERS,
 	(STRPTR) MSGID_PREFSPAGES_SPACING,
 	(STRPTR) MSGID_PREFSPAGES_TEXT,
-//	  (STRPTR) MSGID_PREFSPAGES_PULLDOWN,
 	(STRPTR) MSGID_PREFSPAGES_TRANSPARENCY,
-//	  (STRPTR) MSGID_PREFSPAGES_ADVANCED,
-	NULL
-	};
-
-static STRPTR ImageSetNames[] =
-	{
-	(STRPTR) MSGID_IMAGESET_SYSTEM,
-	(STRPTR) MSGID_IMAGESET_MAGICMENU_8,
-	(STRPTR) MSGID_IMAGESET_MAGICMENU_11,
-	(STRPTR) MSGID_IMAGESET_USER,
-	(STRPTR) MSGID_IMAGESET_NONE,
 	NULL
 	};
 
@@ -665,34 +629,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 		Child, RegisterObject,
 			MUIA_Register_Titles, PrefsPageNames,
 			MUIA_CycleChain, TRUE,
-/*
-			//------ Colours ----------------------
-			Child, VGroup,
-				MUIA_Background, MUII_RegisterBack,
-				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_COLOURSPAGE_TITLE),
 
-				Child, HGroup,
-					Child, inst->mpb_Objects[OBJNDX_Listview_ColorNames] = ListviewObject,
-						InputListFrame,
-						MUIA_CycleChain, TRUE,
-						MUIA_Listview_List, ListObject,
-							MUIA_List_SourceArray, ColorNames,
-							End, //ListObject
-						End, //ListviewObject
-
-					Child, ColoradjustObject,
-						End, //ColoradjustObject
-					End, //HGroup
-
-				Child, HGroup,
-					Child, HVSpace,
-					Child, inst->mpb_Objects[OBJNDX_CheckMark_UseDrawInfoPens] = CheckMarkHelp(TRUE, MSGID_COLOURSPAGE_USE_DRAWINFO_PENS_SHORTHELP),
-					Child, LLabel1((ULONG) GetLocString(MSGID_COLOURSPAGE_USE_DRAWINFO_PENS)),
-					Child, HVSpace,
-					End, //HGroup
-				
-				End, //VGroup
-*/
 			//------ Misc. ----------------------
 			Child, VGroup,
 				MUIA_Background, MUII_RegisterBack,
@@ -704,8 +641,8 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_DELAY_SUBMENUS)),
 					Child, inst->mpb_Objects[OBJNDX_Slider_DelaySubMenus] = SliderObject,
 						MUIA_CycleChain, TRUE,
-						MUIA_Numeric_Min, 0,
-						MUIA_Numeric_Max, 10,
+						MUIA_Slider_Min, 0,
+						MUIA_Slider_Max, 10,
 						MUIA_Slider_Horiz, TRUE,
 						MUIA_Numeric_Value, 0,
 						End, //SliderObject
@@ -746,8 +683,8 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 					Child, HVSpace,
 					Child, HVSpace,
 
-					Child, inst->mpb_Objects[OBJNDX_CheckMark_RealShadows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP),
-					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_REALSHADOWS)),
+					Child, inst->mpb_Objects[OBJNDX_CheckMark_RealShadows] = CheckMarkHelp(TRUE, MSGID_MISCPAGE_REALSHADOWS_SHORTHELP),
+					Child, LLabel1((ULONG) GetLocString(MSGID_MISCPAGE_REALSHADOWS)),
 
 					Child, HVSpace,
 					Child, HVSpace,
@@ -760,34 +697,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 
 				Child, HVSpace,
 				End, //VGroup
-/*
-			//------ Images ----------------------
-			Child, VGroup,
-				MUIA_Background, MUII_RegisterBack,
-				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_IMAGESPAGE_TITLE),
 
-				Child, HVSpace,
-
-				Child, inst->mpb_Objects[OBJNDX_Cycle_ImageSet] = CycleObject,
-					MUIA_CycleChain, TRUE,
-					MUIA_Cycle_Entries, ImageSetNames,
-					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_IMAGEPAGE_IMAGESET_SHORTHELP),
-					End, //Cycle
-
-				Child, HVSpace,
-
-				Child, inst->mpb_Objects[OBJNDX_PopAsl_LoadImageSet] = PopaslObject,
-					MUIA_CycleChain, TRUE,
-					MUIA_ShortHelp, GetLocString(MSGID_POPASL_LOADIMAGESET_SHORTHELP),
-					MUIA_Popasl_Type, ASL_FileRequest,
-//					  MUIA_Popasl_StartHook, &inst->mpb_Hooks[HOOKNDX_ImagePopAslFileStart],
-					MUIA_Popstring_String, MUI_MakeObject(MUIO_String, NULL, 256),
-					MUIA_Popstring_Button, PopButton(MUII_PopFile),
-					End, //PopaslObject
-
-				Child, HVSpace,
-				End, //VGroup
-*/
 			//------ Borders ----------------------
 			Child, VGroup,
 				MUIA_Background, MUII_RegisterBack,
@@ -1113,42 +1023,7 @@ static Object *CreatePrefsGroup(struct PopupMenuPrefsInst *inst)
 				Child, HVSpace,
 
 				End, //VGroup
-/*
-			//------ Advanced ----------------------
-			Child, VGroup,
-				MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_TITLE),
-				MUIA_Background, MUII_RegisterBack,
 
-				Child, HVSpace,
-
-				Child, HGroup,
-					Child, Label1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION)),
-					Child, inst->mpb_Objects[OBJNDX_Cycle_ColourPrecision] = CycleObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Cycle_Entries, ColourMatchingPrecisionNames,
-						End, //CycleObject
-					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION_SHORTHELP),
-					End, //HGroup
-
-				Child, HVSpace,
-
-				Child, ColGroup(3),
-					Child, inst->mpb_Objects[OBJNDX_CheckMark_UseWindows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_USE_WINDOWS_SHORTHELP),
-					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_USE_WINDOWS)),
-
-					Child, HVSpace,
-
-					Child, inst->mpb_Objects[OBJNDX_CheckMark_RealShadows] = CheckMarkHelp(TRUE, MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP),
-					Child, LLabel1((ULONG) GetLocString(MSGID_ADVANCEDPAGE_REALSHADOWS)),
-
-					Child, HVSpace,
-
-					End, //ColGroup
-
-				Child, HVSpace,
-
-				End, //VGroup
-*/
                         End, //RegisterObject
 
 		End; //VGroup
@@ -2352,9 +2227,6 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 			}
 
 		TranslateStringArray(PrefsPageNames);
-		TranslateStringArray(ColorNames);
-		TranslateStringArray(ColourMatchingPrecisionNames);
-		TranslateStringArray(ImageSetNames);
 		TranslateStringArray(AnimationNames);
 		}
 
