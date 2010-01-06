@@ -561,3 +561,47 @@ schließen sie alle MUI Programme und probieren es erneut.
 ;is flushed from memory and try again.
 ;
 ;-----------------------------------------------------------
+;
+MSGID_AMISSL_LIBOPEN_FAIL_AMISSLMASTER
+Konnte amisslmaster.library nicht öffnen
+;Failed to open amisslmaster.library
+;
+;
+MSGID_AMISSL_FAIL_INITAMISSLMASTER
+InitAmiSSLMaster klappt nicht, eventuell ist Ihre AmiSSL-Installation zu alt
+;InitAmiSSLMaster failed, probably your AmiSSL installation is too old
+;
+;
+MSGID_AMISSL_FAIL_OPENAMISSL
+OpenAmiSSL klappt nicht
+;OpenAmiSSL failed
+;
+;
+MSGID_AMISSL_FAIL_AMISSL_INTERFACE
+Konnte kein Interface für AmiSSL bekommen
+;Couldn't get AmiSSL interface
+;
+;
+MSGID_AMISSL_FAIL_AMISSLMASTER_INTERFACE
+Konnte kein Interface für AmiSSLMaster bekommen
+;Couldn't get AmiSSLMaster interface
+;
+;
+MSGID_AMISSL_FAIL_INITAMISSL
+InitAmiSSL klappt nicht
+;InitAmiSSL failed
+;
+;
+MSGID_AMISSL_FAIL_REQ_FORMAT
+Konnte AmiSSL nicht initialisieren:\n\
+%s\n\
+Leider benötigt der Aktualisierer eine funktionierende AmiSSL V3 Installation\n\
+(http://www.heightanxiety.com/AmiSSL)/\n\
+zur Prüfung der Signaturen der heruntergeladenen Dateien.
+;Could not initialize AmiSSL:\n\
+;%s\n\
+;Sorry, but Updater needs a working AmiSSL V3 installation\n\
+;(http://www.heightanxiety.com/AmiSSL)/\n\
+;to verify the signatures of the downloaded files.
+;
+;-----------------------------------------------------------

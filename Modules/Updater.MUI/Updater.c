@@ -141,6 +141,7 @@ struct MUIP_ScalosPrefs_MCCList
 // local functions
 
 static BOOL init(void);
+static BOOL MyInitAmiSSL(void);
 static void fail(APTR APP_Main, CONST_STRPTR str, int rc);
 static BOOL OpenLibraries(CONST_STRPTR LibName);
 static void CloseLibraries(void);
@@ -927,23 +928,9 @@ static BOOL init(void)
 
 	TranslateNewMenu(NewContextMenuComponents);
 
-	if (!InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
-		fail(NULL, "AmiSSL version is too old!", 20);
-
-	AmiSSLBase = OpenAmiSSL();
-	if (NULL == AmiSSLBase)
-		fail(NULL, "Couldn't open AmiSSL!", 20);
-
-#ifdef __amigaos4__
-	IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase, "main", 1, NULL);
-	if (NULL == IAmiSSL)
-		fail(NULL, "Couldn't get AmiSSL interface!", 20);
-#endif //__amigaos4__
-
-	if (0 != InitAmiSSL(AmiSSL_ErrNoPtr, (ULONG) &errno,
-			    TAG_END))
+	if (!MyInitAmiSSL())
 		{
-		fail(NULL, "Couldn't initialize AmiSSL!", 20);
+		fail(NULL, "No AmiSSL", 20);
 		}
 
 	ScalosPubKeyRSA	= GetScalosPublicKey();
@@ -953,6 +940,72 @@ static BOOL init(void)
 		}
 
 	return TRUE;
+}
+
+//----------------------------------------------------------------------------
+
+static BOOL MyInitAmiSSL(void)
+{
+	BOOL Success = FALSE;
+	ULONG ErrMsgID;
+
+	do	{
+		AmiSSLMasterBase = OpenLibrary("amisslmaster.library", AMISSLMASTER_MIN_VERSION);
+		if (NULL == AmiSSLMasterBase)
+			{
+			ErrMsgID = MSGID_AMISSL_LIBOPEN_FAIL_AMISSLMASTER;
+			break;
+			}
+#ifdef __amigaos4__
+		IAmiSSLMaster = (struct AmiSSLMasterIFace *)GetInterface(AmiSSLMasterBase, "main", 1, NULL);
+		if (NULL == IAmiSSLMaster)
+			{
+			ErrMsgID = MSGID_AMISSL_FAIL_AMISSLMASTER_INTERFACE;
+			break;
+			}
+#endif //__amigaos4__
+
+		if (!InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
+			{
+			ErrMsgID = MSGID_AMISSL_FAIL_INITAMISSLMASTER;
+			break;
+			}
+
+		AmiSSLBase = OpenAmiSSL();
+		if (NULL == AmiSSLBase)
+			{
+			ErrMsgID = MSGID_AMISSL_FAIL_OPENAMISSL;
+			break;
+			}
+
+#ifdef __amigaos4__
+		IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase, "main", 1, NULL);
+		if (NULL == IAmiSSL)
+			{
+			ErrMsgID = MSGID_AMISSL_FAIL_AMISSL_INTERFACE;
+			break;
+			}
+#endif //__amigaos4__
+
+		if (0 != InitAmiSSL(AmiSSL_ErrNoPtr, (ULONG) &errno,
+				    TAG_END))
+			{
+			ErrMsgID = MSGID_AMISSL_FAIL_INITAMISSL;
+			break;
+			}
+
+		Success = TRUE;
+		} while (0);
+
+	if (!Success)
+		{
+		MUI_Request(APP_Main, WIN_Main, 0, NULL,
+			GetLocString(MSGID_ABOUTREQOK),
+			GetLocString(MSGID_AMISSL_FAIL_REQ_FORMAT),
+			GetLocString(ErrMsgID));
+		}
+
+	return Success;
 }
 
 //----------------------------------------------------------------------------
@@ -1056,17 +1109,6 @@ static BOOL OpenLibraries(CONST_STRPTR LibName)
 #ifdef __amigaos4__
 	ITimer = (struct TimerIFace *)GetInterface((struct Library *)TimerBase, "main", 1, NULL);
 	if (NULL == ITimer)
-		return FALSE;
-#endif //__amigaos4__
-
-
-	LibName = "amisslmaster.library";
-	AmiSSLMasterBase = OpenLibrary(LibName, AMISSLMASTER_MIN_VERSION);
-	if (NULL == AmiSSLMasterBase)
-		return FALSE;
-#ifdef __amigaos4__
-	IAmiSSLMaster = (struct AmiSSLMasterIFace *)GetInterface(AmiSSLMasterBase, "main", 1, NULL);
-	if (NULL == IAmiSSLMaster)
 		return FALSE;
 #endif //__amigaos4__
 

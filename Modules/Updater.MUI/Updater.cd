@@ -441,3 +441,36 @@ is flushed from memory and try again.
 ;
 ;-----------------------------------------------------------
 ;
+MSGID_AMISSL_LIBOPEN_FAIL_AMISSLMASTER (6100//)
+Failed to open amisslmaster.library
+;
+;
+MSGID_AMISSL_FAIL_INITAMISSLMASTER (//)
+InitAmiSSLMaster failed, probably your AmiSSL installation is too old
+;
+;
+MSGID_AMISSL_FAIL_OPENAMISSL (//)
+OpenAmiSSL failed
+;
+;
+MSGID_AMISSL_FAIL_AMISSL_INTERFACE (//)
+Couldn't get AmiSSL interface
+;
+;
+MSGID_AMISSL_FAIL_AMISSLMASTER_INTERFACE (//)
+Couldn't get AmiSSLMaster interface
+;
+;
+MSGID_AMISSL_FAIL_INITAMISSL (//)
+InitAmiSSL failed
+;
+;
+MSGID_AMISSL_FAIL_REQ_FORMAT (//)
+Could not initialize AmiSSL:\n\
+%s\n\
+Sorry, but Updater needs a working AmiSSL V3 installation\n\
+(http://www.heightanxiety.com/AmiSSL)/\n\
+to verify the signatures of the downloaded files.
+;
+;-----------------------------------------------------------
+;
