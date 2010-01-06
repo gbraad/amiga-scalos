@@ -1,8 +1,7 @@
 ; ScalosPopupMenu.ct
 ; $Date$
 ; $Revision$
-; $Id$
-## version $VER: ScalosPopupMenu.catalog 40.1 (26 Nov 2006 18:45:34)
+## version $VER: ScalosPopupMenu.catalog 40.1 (10 Jan 2010 14:32:34)
 ## codeset 0s
 ## language français
 ;
@@ -132,7 +131,7 @@ MSGID_ABOUTREQFORMAT
 ;© 2006%s The Scalos Team
 ;
 ;---------------------------------------------
-;
+;+++translateme+++
 MSGID_SHORTHELP_SAVEBUTTON
 Press this button to save \n\
 the current settings to\n\
@@ -143,7 +142,7 @@ and make changes permanent.
 ;\"ENVARC:sys/PopupMenu.prefs\"\n\
 ;and make changes permanent.
 ;
-;
+;+++translateme+++
 MSGID_SHORTHELP_USEBUTTON
 Press this button to save \n\
 the current settings to\n\
@@ -154,7 +153,7 @@ and keep settings until reboot.
 ;\"ENV:sys/PopupMenu.prefs\"\n\
 ;and keep settings until reboot.
 ;
-;
+;+++translateme+++
 MSGID_SHORTHELP_CANCELBUTTON
 Press this button to abort \n\
 and forget all changes.
@@ -162,7 +161,7 @@ and forget all changes.
 ;and forget all changes.
 ;
 ;---------------------------------------------
-;
+;+++translateme+++
 MSGID_REQTITLE_SAVEERROR
 Error writing PopupMenu preferences\n\
 file \"%s\"\n\
@@ -171,7 +170,7 @@ file \"%s\"\n\
 ;file \"%s\"\n\
 ;%s
 ;
-;
+;+++translateme+++
 MSGID_REQTITLE_READERROR
 Error reading PopupMenu preferences\n\
 file \"%s\"\n\
@@ -181,12 +180,12 @@ file \"%s\"\n\
 ;%s
 ;
 ;---------------------------------------------
-;
+;+++translateme+++
 MSGID_POPUP_ASLTITLE_MENUPLUGIN
 Select Scalos PopupMenu prefs
 ;Select Scalos PopupMenu prefs
 ;
-;
+;+++translateme+++
 MSGID_SHORTHELP_LAMP_CHANGED
 This lamp indicator changes from \033bOff\033n\n\
 to \033bOk\033n when the settings have been\n\
@@ -196,7 +195,7 @@ modified since initial loading.
 ;modified since initial loading.
 ;
 ;-----------------------------------------------------------
-;
+;+++translateme+++
 MSGID_STARTUP_FAILURE
 Scalos PopupMenu Prefs startup failed
 ;Scalos PopupMenu Prefs startup failed
@@ -206,14 +205,14 @@ MSGID_STARTUP_RETRY_QUIT_GAD
 Recommencer|Quitter
 ;Try again|Quit
 ;
-;
+;+++translateme+++
 MSGID_STARTUP_MCC_NOT_FOUND
 Couldn't open MUI custom class '%s' V%lu.%lu.\n\
 The class is not installed.
 ;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
 ;The class is not installed.
 ;
-;
+;+++translateme+++
 MSGID_STARTUP_OLD_MCC
 Couldn't open MUI custom class '%s' V%lu.%lu.\n\
 \n\
@@ -222,7 +221,7 @@ Currently installed is V%lu.%lu, please upgrade!
 ;\n\
 ;Currently installed is V%lu.%lu, please upgrade!
 ;
-;
+;+++translateme+++
 MSGID_STARTUP_MCC_IN_USE
 Couldn't open MUI custom class '%s' V%lu.%lu.\n\
 %lu.%lu is currently in use by other applications.\n\
@@ -239,19 +238,9 @@ is flushed from memory and try again.
 ;
 ;-----------------------------------------------------------
 ;
-MSGID_PREFSPAGES_COLOURS
-Couleurs
-;Colours
-;
-;
 MSGID_PREFSPAGES_MISC
 Divers.
 ;Misc.
-;
-;
-MSGID_PREFSPAGES_IMAGES
-Images
-;Images
 ;
 ;
 MSGID_PREFSPAGES_BORDERS
@@ -269,75 +258,9 @@ Texte
 ;Text
 ;
 ;
-MSGID_PREFSPAGES_PULLDOWN
-Pulldown
-;Pulldown
-;
-;
-MSGID_PREFSPAGES_ADVANCED
-Avançé
-;Advanced
-;
-;
 MSGID_PREFSPAGES_TRANSPARENCY
 Transparence
 ;Transparency
-;
-;-----------------------------------------------------------
-;
-MSGID_COLOURSPAGE_TITLE
-Couleurs
-;Colours
-;
-;
-MSGID_COLOURSPAGE_USE_DRAWINFO_PENS
-Utiliser les couleurs du système ?
-;Use DrawInfo Pens?
-;
-;
-MSGID_COLOURSPAGE_USE_DRAWINFO_PENS_SHORTHELP
-N'Utiliser que les couleurs du système. 
-;...
-;
-;
-MSGID_COLORNAME_TEXT
-Texte
-;Text
-;
-;
-MSGID_COLORNAME_BRIGHT_EDGES
-Arrêtes éclairées
-;Bright Edges
-;
-;
-MSGID_COLORNAME_DARK_EDGES
-Arrêtes sombres
-;Dark Edges
-;
-;
-MSGID_COLORNAME_ACTIVE_ITEM_BG
-Fond activé
-;Active Item Background
-;
-;
-MSGID_COLORNAME_ACTIVE_ITEM_TEXT
-Texte activé
-;Active Item Text
-;
-;
-MSGID_COLORNAME_BACKGROUND
-Arrière-plan
-;Background
-;
-;
-MSGID_COLORNAME_MENUTITLES
-Titre des menus
-;Menu Titles
-;
-;
-MSGID_COLORNAME_TEXT_SHADOW
-Texte Fantôme/Entouré
-;Text Shadow/Outline
 ;
 ;-----------------------------------------------------------
 ;
@@ -353,7 +276,8 @@ Type :
 ;
 MSGID_MISCPAGE_ANIMATION_TYPE_SHORTHELP
 Choix du type d'animation.
-;...
+;Select the type of animation\n\
+;used to open the popup menu.
 ;
 ;
 MSGID_MISCPAGE_ANIMATION
@@ -365,30 +289,54 @@ MSGID_MISCPAGE_DELAY_SUBMENUS
 Délai des sous-menus :
 ;Delay for submenus:
 ;
-;
+;+++translateme+++
 MSGID_MISCPAGE_DELAY_SUBMENUS_SHORTHELP
-...
-;...
+Here you can adjust how long it will take\n\
+until the submenu opens when you move the\n\
+mouse of the submenu item.
+;Here you can adjust how long it will take\n\
+;until the submenu opens when you move the\n\
+;mouse of the submenu item.
 ;
 ;
 MSGID_MISCPAGE_MENUSHADOWS
 Menu ombragés ?
 ;Menu Shadows?
 ;
-;
+;+++translateme+++
 MSGID_MISCPAGE_MENUSHADOWS_SHORTHELP
-...
-;...
+Select here whether popup menus\n\
+will have a drop-shadow.
+;Select here whether popup menus\n\
+;will have a drop-shadow.
 ;
-;
+;+++translateme+++
 MSGID_MISCPAGE_STICKY
 Sticky ?
 ;Sticky?
 ;
-;
+;+++translateme+++
 MSGID_MISCPAGE_STICKY_SHORTHELP
-...
-;...
+Select here whether popup menus will behave sticky,\n\
+i.e. will stay  open after you release the right mouse\n\
+button.
+;Select here whether popup menus will behave sticky,\n\
+;i.e. will stay  open after you release the right mouse\n\
+;button.
+;
+;
+MSGID_MISCPAGE_REALSHADOWS
+Ombres réelles ?
+;Real Shadows?
+;
+;+++translateme+++
+MSGID_MISCPAGE_REALSHADOWS_SHORTHELP
+If selected, realistic and translucent dropshadows\n\
+are drawn (required graphics board and hi-colour\n\
+or true-colour screen).
+;If selected, realistic and translucent dropshadows\n\
+;are drawn (required graphics board and hi-colour\n\
+;or true-colour screen).
 ;
 ;
 MSGID_ANIMATION_NONE
@@ -409,47 +357,6 @@ Fondu
 MSGID_ANIMATION_EXPLODE
 Explosion
 ;Explode
-;
-;-----------------------------------------------------------
-;
-MSGID_IMAGESPAGE_TITLE
-Images
-;Images
-;
-;
-MSGID_POPASL_LOADIMAGESET_SHORTHELP
-...
-;...
-;
-;
-MSGID_IMAGEPAGE_IMAGESET_SHORTHELP
-...
-;...
-;
-;
-MSGID_IMAGESET_SYSTEM
-Systême
-;System
-;
-;
-MSGID_IMAGESET_MAGICMENU_8
-MagicMenu2 8 pixels
-;MagicMenu2 8 pixels
-;
-;
-MSGID_IMAGESET_MAGICMENU_11
-MagicMenu2 11 pixels
-;MagicMenu2 11 pixels
-;
-;
-MSGID_IMAGESET_USER
-<Utilisateur>
-;<User>
-;
-;
-MSGID_IMAGESET_NONE
-Sans images
-;No images
 ;
 ;-----------------------------------------------------------
 ;
@@ -503,32 +410,32 @@ MSGID_SPACINGPAGE_TITLE
 Espacement
 ;Spacing
 ;
-;
+;+++translateme+++
 MSGID_SPACINGPAGE_HORIZONTAL_SPACE
 Horizontal inner spacing
 ;Horizontal inner spacing
 ;
-;
+;+++translateme+++
 MSGID_SPACINGPAGE_VERTICAL_SPACE
 Vertical spacing
 ;Vertical spacing
 ;
-;
+;+++translateme+++
 MSGID_SPACINGPAGE_HORIZONTAL
 Horizontal outer spacing
 ;Horizontal outer spacing
 ;
-;
+;+++translateme+++
 MSGID_SPACINGPAGE_VERTICAL_OFFSET
 Vertical offset
 ;Vertical offset
 ;
-;
+;+++translateme+++
 MSGID_SPACINGPAGE_INTERMEDIATE_SPACING
 Intermediate spacing
 ;Intermediate spacing
 ;
-;
+;+++translateme+++
 MSGID_SPACINGPAGE_TEXT_DISPLACEMENT
 Text displacement
 ;Text displacement
@@ -554,186 +461,120 @@ MSGID_TEXTPAGE_MENUTITLES_ITALIC
 \033iItalique ?\033n
 ;\033iItalic?\033n
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUTITLES_ITALIC_SHORTHELP
-...
-;...
+If checked, menu titles will be drawn \033iitalic\033n.
+;If checked, menu titles will be drawn \033iitalic\033n.
 ;
 ;
 MSGID_TEXTPAGE_MENUTITLES_SHADOWED
 Ombré ?
 ;Shadowed?
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUTITLES_SHADOWED_SHORTHELP
-...
-;...
+If checked, menu titles will be drawn shadowed.
+;If checked, menu titles will be drawn shadowed.
 ;
 ;
 MSGID_TEXTPAGE_MENUTITLES_UNDERLINED
 \033uSousligné ?\033n
 ;\033uUnderlined?\033n
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUTITLES_UNDERLINED_SHORTHELP
-...
-;...
+If checked, menu titles will be drawn \033uunderlined\033n.
+;If checked, menu titles will be drawn \033uunderlined\033n.
 ;
 ;
 MSGID_TEXTPAGE_MENUTITLES_OUTLINED
 Entouré ?
 ;Outlined?
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUTITLES_OUTLINED_SHORTHELP
-...
-;...
+If checked, menu titles will be drawn outlined.
+;If checked, menu titles will be drawn outlined.
 ;
 ;
 MSGID_TEXTPAGE_MENUTITLES_BOLD
 \033bGras ?\033n
 ;\033bBold?\033n
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUTITLES_BOLD_SHORTHELP
-...
-;...
+If checked, menu titles will be drawn \033bbold\033n.
+;If checked, menu titles will be drawn \033bbold\033n.
 ;
 ;
 MSGID_TEXTPAGE_MENUTITLES_EMBOSSED
 En relief ?
 ;Embossed?
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUTITLES_EMBOSSED_SHORTHELP
-...
-;...
+If checked, menu titles will be drawn embossed.
+;If checked, menu titles will be drawn embossed.
 ;
 ;
 MSGID_TEXTPAGE_MENUITEMS_ITALIC
 \033iItalique ?\033n
 ;\033iItalic?\033n
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUITEMS_ITALIC_SHORTHELP
-...
-;...
+If checked, menu items will be drawn \033iitalic\033n.
+;If checked, menu items will be drawn \033iitalic\033n.
 ;
 ;
 MSGID_TEXTPAGE_MENUITEMS_SHADOWED
 Ombré ?
 ;Shadowed?
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUITEMS_SHADOWED_SHORTHELP
-...
-;...
+If checked, menu items will be drawn shadowed.
+;If checked, menu items will be drawn shadowed.
 ;
 ;
 MSGID_TEXTPAGE_MENUITEMS_UNDERLINED
 \033uSousligné ?\033n
 ;\033uUnderlined?\033n
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUITEMS_UNDERLINED_SHORTHELP
-...
-;...
+If checked, menu items  will be drawn \033uunderlined\033n.
+;If checked, menu items  will be drawn \033uunderlined\033n.
 ;
 ;
 MSGID_TEXTPAGE_MENUITEMS_OUTLINED
 Entouré ?
 ;Outlined?
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUITEMS_OUTLINED_SHORTHELP
-...
-;...
+If checked, menu items will be drawn outlined.
+;If checked, menu items will be drawn outlined.
 ;
 ;
 MSGID_TEXTPAGE_MENUITEMS_BOLD
 \033bGras ?\033n
 ;\033bBold?\033n
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUITEMS_BOLD_SHORTHELP
-...
-;...
+If checked, menu items will be drawn \033bbold\033n.
+;If checked, menu items will be drawn \033bbold\033n.
 ;
 ;
 MSGID_TEXTPAGE_MENUITEMS_EMBOSSED
 En relief ?
 ;Embossed?
 ;
-;
+;+++translateme+++
 MSGID_TEXTPAGE_MENUITEMS_EMBOSSED_SHORTHELP
-...
-;...
-;
-;-----------------------------------------------------------
-;
-MSGID_ADVANCEDPAGE_TITLE
-Options avancées
-;Advanced settings
-;
-;
-MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION
-Couleur correspondant à la précision :
-;Colour matching precision:
-;
-;
-MSGID_ADVANCEDPAGE_COLOUR_MATCHING_PRECISION_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_USE_WINDOWS
-Utilise les fenêtres ?
-;Use windows?
-;
-;
-MSGID_ADVANCEDPAGE_USE_WINDOWS_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_REALSHADOWS
-Ombres réelles ?
-;Real Shadows?
-;
-;
-MSGID_ADVANCEDPAGE_REALSHADOWS_SHORTHELP
-...
-;...
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_INTENSITY
-Intensité de l'ombre
-;Shadow Intensity
-;
-;
-MSGID_COLORMATCHING_EXACT
-Exacte
-;Exact
-;
-;
-MSGID_COLORMATCHING_IMAGE
-Image
-;Image
-;
-;
-MSGID_COLORMATCHING_ICON
-Icône
-;Icon
-;
-;
-MSGID_COLORMATCHING_GUI
-GUI
-;GUI
-;
-;
-MSGID_ADVANCEDPAGE_SHADOW_NUMERIC_FORMAT
-%5ld %%
-;%5ld %%
+If checked, menu items will be drawn embossed.
+;If checked, menu items will be drawn embossed.
 ;
 ;-----------------------------------------------------------
 ;
@@ -756,10 +597,12 @@ MSGID_TRANSPARENCYPAGE_BLUR
 Estomper
 ;Blur
 ;
-;
+;+++translateme+++
 MSGID_TRANSPARENCYPAGE_BLUR_SHORTHELP
-...
-;...
+Here you can adjust the degree of blurring which is aplied\n\
+to the background shining through transparent popup menus.
+;Here you can adjust the degree of blurring which is aplied\n\
+;to the background shining through transparent popup menus.
 ;
 ;
 MSGID_TRANSPARENCYPAGE_BLUR_NUMERIC_FORMAT
@@ -771,10 +614,12 @@ MSGID_TRANSPARENCYPAGE_ENABLE
 Transparent Menus?
 ;Transparent Menus?
 ;
-;
+;+++translateme+++
 MSGID_TRANSPARENCYPAGE_ENABLE_SHORTHELP
-...
-;...
+If checked, popup menus are transparent, with\n\
+the contents behind shining through.
+;If checked, popup menus are transparent, with\n\
+;the contents behind shining through.
 ;
 ;-----------------------------------------------------------
 ;
