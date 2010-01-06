@@ -99,6 +99,7 @@ say "Copying Preferences..."
 'copy Plugins/Prefs/Palette/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
 'copy Plugins/Prefs/Pattern/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
 'copy Plugins/Prefs/Menu/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+'copy Plugins/Prefs/Popupmenu/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
 
 
 say "Copying Modules..."
@@ -182,7 +183,7 @@ say "Copying Plugins..."
 'copy Plugins/Preview/JpegPicture/#?.pvplugin "RAM:ScalosBeta/Plugins/Preview/" clone quiet'
 'copy Plugins/Preview/Video/#?.pvplugin "RAM:ScalosBeta/Plugins/Preview/" clone quiet'
 
-say "Copying Foreign catalogs..."
+say "Copying Language catalogs..."
 
 'copy main/catalogs/deutsch/Scalos/#?.catalog 						"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/" clone quiet'
 'copy Plugins/FileTypes/DrawerContents/Catalogs/deutsch/Scalos/#?.catalog 		"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/" clone quiet'
@@ -194,6 +195,7 @@ say "Copying Foreign catalogs..."
 'copy Prefs/Pattern/Catalogs/deutsch/Scalos/#?.catalog 					"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/" clone quiet'
 'copy Plugins/FileTypes/ExifPicture/Catalogs/deutsch/Scalos/#?.catalog    		"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/" clone quiet'
 'copy Plugins/FileTypes/DrawerContents/Catalogs/deutsch/Scalos/#?.catalog  		"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/" clone quiet'
+'copy Plugins/Prefs/Popupmenu/Catalogs/deutsch/Scalos/#?.catalog			"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/" clone quiet'
 'copy Modules/Delete.MUI/Source/Catalogs/deutsch/Scalos/#?.catalog       		"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/"  clone quiet'
 'copy Modules/Execute_Command.MUI/Catalogs/deutsch/Scalos/#?.catalog   			"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/"  clone quiet'
 'copy Modules/IconProperties.MUI/Catalogs/deutsch/Scalos/#?.catalog     		"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/"  clone quiet'
@@ -204,6 +206,7 @@ say "Copying Foreign catalogs..."
 'copy Modules/Exchange.MUI/Catalogs/deutsch/Scalos/#?.catalog      			"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/"  clone quiet'
 'copy Modules/Find.MUI/Catalogs/deutsch/Scalos/#?.catalog      				"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/"  clone quiet'
 'copy Modules/WindowProperties.MUI/Catalogs/deutsch/Scalos/#?.catalog 			"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/"  clone quiet'
+'copy Modules/Updater.MUI/Catalogs/deutsch/Scalos/#?.catalog 				"RAM:ScalosBeta/catalogs/' || LangGerman || '/Scalos/"  clone quiet'
 
 'copy main/catalogs/français/Scalos/#?.catalog 						"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Plugins/FileTypes/DrawerContents/Catalogs/français/Scalos/#?.catalog 		"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
@@ -215,6 +218,7 @@ say "Copying Foreign catalogs..."
 'copy Prefs/Pattern/Catalogs/français/Scalos/#?.catalog 				"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Plugins/FileTypes/ExifPicture/Catalogs/français/Scalos/#?.catalog			"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Plugins/FileTypes/DrawerContents/Catalogs/français/Scalos/#?.catalog		"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
+'copy Plugins/Prefs/Popupmenu/Catalogs/français/Scalos/#?.catalog			"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Modules/Delete.MUI/Source/Catalogs/français/Scalos/#?.catalog              	"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Modules/Execute_Command.MUI/Catalogs/français/Scalos/#?.catalog  			"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Modules/IconProperties.MUI/Catalogs/français/Scalos/#?.catalog    		"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
@@ -225,6 +229,7 @@ say "Copying Foreign catalogs..."
 'copy Modules/Exchange.MUI/Catalogs/français/Scalos/#?.catalog     			"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Modules/Find.MUI/Catalogs/français/Scalos/#?.catalog     				"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 'copy Modules/WindowProperties.MUI/Catalogs/français/Scalos/#?.catalog 			"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
+'copy Modules/Updater.MUI/Catalogs/français/Scalos/#?.catalog 				"RAM:ScalosBeta/catalogs/' || LangFrench || '/Scalos/" clone quiet'
 
 say "Removing SVN directories..."
 
