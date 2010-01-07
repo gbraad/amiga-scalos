@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20100105	jl	- Bugfix: fixed GR with AmigaOS4 when user attempted to run a second Scalos instance.
+41.7    20100107	jl	- Improvement: Updated sqlite3.library to SQLite3 V3.6.22.
+	20100105	jl	- Bugfix: fixed GR with AmigaOS4 when user attempted to run a second Scalos instance.
 	20100104	jl	- Bugfix: improved DosList locking fixed occasional crash when volumes/devices go away.
 				- Improvement: requester informs user if Scalos is run a second time.
 				- Improvement: requesters informs user if menu preferences cannot be read.
