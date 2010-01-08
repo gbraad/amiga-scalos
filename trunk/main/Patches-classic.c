@@ -115,6 +115,7 @@ static BOOL RemovePatches(const struct PatchEntry *PatchList);
 #define LVORename 		-78
 #define LVOOpen			-30
 #define	LVOClose		-36
+#define	LVOCreateDir		-120
 
 //----------------------------------------------------------------------------
 
