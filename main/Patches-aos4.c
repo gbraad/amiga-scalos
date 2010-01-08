@@ -112,68 +112,70 @@ static APTR OldOpenScreen;
 //----------------------------------------------------------------------------
 
 #define OffsetCloseWorkBench 		offsetof(struct IntuitionIFace, CloseWorkBench)
-#define OffsetOpenWorkBench 	   offsetof(struct IntuitionIFace, OpenWorkBench)
-#define OffsetOpenScreenTagList    offsetof(struct IntuitionIFace, OpenScreenTagList)
-#define OffsetOpenScreen           offsetof(struct IntuitionIFace, OpenScreen)
+#define OffsetOpenWorkBench 	   	offsetof(struct IntuitionIFace, OpenWorkBench)
+#define OffsetOpenScreenTagList    	offsetof(struct IntuitionIFace, OpenScreenTagList)
+#define OffsetOpenScreen           	offsetof(struct IntuitionIFace, OpenScreen)
 
-#define OffsetUpdateWorkbench	   offsetof(struct WorkbenchIFace, UpdateWorkbench)
+#define OffsetUpdateWorkbench	   	offsetof(struct WorkbenchIFace, UpdateWorkbench)
 //#define OffsetwbPrivate2 		offsetof(struct WorkbenchIFace, Private1)
-#define OffsetAddAppWindowA 	   offsetof(struct WorkbenchIFace, AddAppWindowA)
-#define OffsetAddAppWindow	   offsetof(struct WorkbenchIFace, AddAppWindow)
-#define OffsetRemoveAppWindow      offsetof(struct WorkbenchIFace, RemoveAppWindow)
-#define OffsetAddAppIconA          offsetof(struct WorkbenchIFace, AddAppIconA)
-#define OffsetAddAppIcon           offsetof(struct WorkbenchIFace, AddAppIcon)
-#define OffsetRemoveAppIcon        offsetof(struct WorkbenchIFace, RemoveAppIcon)
-#define OffsetAddAppMenuItemA      offsetof(struct WorkbenchIFace, AddAppMenuItemA)
-#define OffsetAddAppMenuItem       offsetof(struct WorkbenchIFace, AddAppMenuItem)
-#define OffsetRemoveAppMenuItem    offsetof(struct WorkbenchIFace, RemoveAppMenuItem)
-//#define OffsetSetBackFill          offsetof(struct WorkbenchIFace, ...)
+#define OffsetAddAppWindowA 	   	offsetof(struct WorkbenchIFace, AddAppWindowA)
+#define OffsetAddAppWindow	   	offsetof(struct WorkbenchIFace, AddAppWindow)
+#define OffsetRemoveAppWindow      	offsetof(struct WorkbenchIFace, RemoveAppWindow)
+#define OffsetAddAppIconA          	offsetof(struct WorkbenchIFace, AddAppIconA)
+#define OffsetAddAppIcon           	offsetof(struct WorkbenchIFace, AddAppIcon)
+#define OffsetRemoveAppIcon        	offsetof(struct WorkbenchIFace, RemoveAppIcon)
+#define OffsetAddAppMenuItemA      	offsetof(struct WorkbenchIFace, AddAppMenuItemA)
+#define OffsetAddAppMenuItem       	offsetof(struct WorkbenchIFace, AddAppMenuItem)
+#define OffsetRemoveAppMenuItem 	offsetof(struct WorkbenchIFace, RemoveAppMenuItem)
+//#define OffsetSetBackFill          	offsetof(struct WorkbenchIFace, ...)
 
-#define OffsetPutDiskObject        offsetof(struct IconIFace, PutDiskObject)
-#define OffsetDeleteDiskObject     offsetof(struct IconIFace, DeleteDiskObject)
-#define OffsetPutIconTagList	offsetof(struct IconIFace, PutIconTagList)
+#define OffsetPutDiskObject        	offsetof(struct IconIFace, PutDiskObject)
+#define OffsetDeleteDiskObject     	offsetof(struct IconIFace, DeleteDiskObject)
+#define OffsetPutIconTagList		offsetof(struct IconIFace, PutIconTagList)
 
-#define OffsetRename 		   offsetof(struct DOSIFace, Rename)
-#define OffsetDeleteFile	offsetof(struct DOSIFace, DeleteFile)
-#define OffsetOpen 		offsetof(struct DOSIFace, Open)
-#define OffsetClose 		offsetof(struct DOSIFace, Close)
+#define OffsetRename 			offsetof(struct DOSIFace, Rename)
+#define OffsetDeleteFile		offsetof(struct DOSIFace, DeleteFile)
+#define OffsetOpen 			offsetof(struct DOSIFace, Open)
+#define OffsetClose 			offsetof(struct DOSIFace, Close)
+#define OffsetCreateDir 		offsetof(struct DOSIFace, CreateDir)
 
 //----------------------------------------------------------------------------
 static const struct PatchEntry EmulationPatches[] =
 	{
-	{ (struct Interface **)(APTR) &IIntuition,   OffsetCloseWorkBench,      (APTR)sca_CloseWorkBench,         (APTR) &OldCloseWB },
-	{ (struct Interface **)(APTR) &IIntuition,   OffsetOpenWorkBench,       (APTR)sca_OpenWorkBench,          (APTR) &OldOpenWB },
-	{ (struct Interface **)(APTR) &IIntuition,   OffsetOpenScreenTagList,   (APTR)sca_OpenScreenTagList,      (APTR) &OldOpenScreenTagList },
-	{ (struct Interface **)(APTR) &IIntuition,   OffsetOpenScreen,          (APTR)sca_OpenScreen,             (APTR) &OldOpenScreen },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetAddAppIconA,         (APTR)sca_AddAppIconA,            (APTR) &OldAddAppIconA },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetAddAppIcon,          (APTR)sca_AddAppIcon,             (APTR) &OldAddAppIcon },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetRemoveAppIcon,       (APTR)sca_RemoveAppIcon,          (APTR) &OldRemoveAppIcon },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetAddAppWindowA,       (APTR)sca_AddAppWindowA,          (APTR) &OldAddAppWindowA },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetAddAppWindow,        (APTR)sca_AddAppWindow,           (APTR) &OldAddAppWindow },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetRemoveAppWindow,     (APTR)sca_RemoveAppWindow,        (APTR) &OldRemoveAppWindow },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetAddAppMenuItemA,     (APTR)sca_AddAppMenuItemA,        (APTR) &OldAppAppMenuItemA },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetAddAppMenuItem,      (APTR)sca_AddAppMenuItem,         (APTR) &OldAppAppMenuItem },
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetRemoveAppMenuItem,   (APTR)sca_RemoveAppMenuItem,      (APTR) &OldRemoveAppMenuItem },
-//	{ (struct Interface **)(APTR) &IWorkbench,   OffsetwbPrivate2,	        (APTR)sca_GetLocString,           (APTR) &OldwbPrivate2 },
-	{ NULL, 				0, 			(APTR)NULL, 		       	  NULL },
+	{ (struct Interface **)(APTR) &IIntuition,	OffsetCloseWorkBench,		(APTR)sca_CloseWorkBench,         (APTR) &OldCloseWB },
+	{ (struct Interface **)(APTR) &IIntuition,	OffsetOpenWorkBench,		(APTR)sca_OpenWorkBench,          (APTR) &OldOpenWB },
+	{ (struct Interface **)(APTR) &IIntuition,	OffsetOpenScreenTagList,	(APTR)sca_OpenScreenTagList,      (APTR) &OldOpenScreenTagList },
+	{ (struct Interface **)(APTR) &IIntuition,	OffsetOpenScreen,		(APTR)sca_OpenScreen,             (APTR) &OldOpenScreen },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppIconA,		(APTR)sca_AddAppIconA,            (APTR) &OldAddAppIconA },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppIcon,		(APTR)sca_AddAppIcon,             (APTR) &OldAddAppIcon },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetRemoveAppIcon,		(APTR)sca_RemoveAppIcon,          (APTR) &OldRemoveAppIcon },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppWindowA,		(APTR)sca_AddAppWindowA,          (APTR) &OldAddAppWindowA },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppWindow,		(APTR)sca_AddAppWindow,           (APTR) &OldAddAppWindow },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetRemoveAppWindow,		(APTR)sca_RemoveAppWindow,        (APTR) &OldRemoveAppWindow },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppMenuItemA,		(APTR)sca_AddAppMenuItemA,        (APTR) &OldAppAppMenuItemA },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppMenuItem,		(APTR)sca_AddAppMenuItem,         (APTR) &OldAppAppMenuItem },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetRemoveAppMenuItem,	(APTR)sca_RemoveAppMenuItem,      (APTR) &OldRemoveAppMenuItem },
+//	{ (struct Interface **)(APTR) &IWorkbench,	OffsetwbPrivate2,		(APTR)sca_GetLocString,           (APTR) &OldwbPrivate2 },
+	{ NULL, 					0, 				(APTR)NULL, 		       	  NULL },
 	};
 static const struct PatchEntry StandardPatches[] =
 	{
-	{ (struct Interface **)(APTR) &IIcon,        OffsetPutDiskObject,       (APTR)sca_PutDiskObject,          (APTR) &OldPutDiskObject },
-	{ (struct Interface **)(APTR) &IIcon,        OffsetDeleteDiskObject,    (APTR)sca_DeleteDiskObject,       (APTR) &OldDeleteDiskObject },
-	{ (struct Interface **)(APTR) &IIcon,        OffsetPutIconTagList,      (APTR)sca_PutIconTagList,     (APTR) &OldPutIconTagList},
+	{ (struct Interface **)(APTR) &IIcon,		OffsetPutDiskObject,		(APTR)sca_PutDiskObject,	(APTR) &OldPutDiskObject },
+	{ (struct Interface **)(APTR) &IIcon,		OffsetDeleteDiskObject,		(APTR)sca_DeleteDiskObject,	(APTR) &OldDeleteDiskObject },
+	{ (struct Interface **)(APTR) &IIcon,		OffsetPutIconTagList,		(APTR)sca_PutIconTagList,	(APTR) &OldPutIconTagList},
 
-	{ (struct Interface **)(APTR) &IDOS,         OffsetDeleteFile,	        (APTR)sca_DeleteFile,             (APTR) &OldDeleteFile },
-	{ (struct Interface **)(APTR) &IDOS,         OffsetRename,	        (APTR)sca_Rename,                 (APTR) &OldRename },
-	{ (struct Interface **)(APTR) &IDOS,         OffsetOpen,                (APTR)sca_Open,                   (APTR) &OldOpen },
-	{ (struct Interface **)(APTR) &IDOS,         OffsetClose,	        (APTR)sca_Close,                  (APTR) &OldClose },
-	{ NULL, 				0, 			  (APTR)NULL,			    NULL },
+	{ (struct Interface **)(APTR) &IDOS,		OffsetDeleteFile,		(APTR)sca_DeleteFile,		(APTR) &OldDeleteFile },
+	{ (struct Interface **)(APTR) &IDOS,		OffsetRename,			(APTR)sca_Rename,		(APTR) &OldRename },
+	{ (struct Interface **)(APTR) &IDOS,		OffsetOpen,			(APTR)sca_Open, 		(APTR) &OldOpen },
+	{ (struct Interface **)(APTR) &IDOS,		OffsetClose,			(APTR)sca_Close,        	(APTR) &OldClose },
+	{ (struct Interface **)(APTR) &IDOS,		OffsetCreateDir,		(APTR)sca_CreateDir,		(APTR) &OldCreateDir },
+	{ NULL, 					0,				(APTR)NULL,		          NULL },
 	};
 static const struct PatchEntry HardEmulationPatches[] =
 	{
-	{ (struct Interface **)(APTR) &IWorkbench,   OffsetUpdateWorkbench,     (APTR)sca_UpdateWorkbench,        (APTR) &OldUpdateWorkbench },
-//	{ (struct Interface **)(APTR) &IWorkbench,   OffsetSetBackFill,         (APTR)sca_SetBackFill,            (APTR) &OldSetBackFill },
-	{ NULL, 				0, 			(APTR)NULL, 			  NULL },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetUpdateWorkbench,		(APTR)sca_UpdateWorkbench,        (APTR) &OldUpdateWorkbench },
+//	{ (struct Interface **)(APTR) &IWorkbench,	OffsetSetBackFill,		(APTR)sca_SetBackFill,            (APTR) &OldSetBackFill },
+	{ NULL, 					0,				(APTR)NULL, 			  NULL },
 	};
 
 //----------------------------------------------------------------------------

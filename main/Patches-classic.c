@@ -143,6 +143,7 @@ static const struct PatchEntry StandardPatches[] =
 
 	{ (struct Library **) &DOSBase,	 39,	LVODeleteFile,		PPATCHFUNC(sca_DeleteFile),	     	(APTR) &OldDeleteFile },
 	{ (struct Library **) &DOSBase,	 39,	LVORename,		PPATCHFUNC(sca_Rename),		     	(APTR) &OldRename },
+	{ (struct Library **) &DOSBase,	 39,	LVOCreateDir,		PPATCHFUNC(sca_CreateDir),	        (APTR) &OldCreateDir },
 	{ (struct Library **) &DOSBase,	 39,	LVOOpen,		PPATCHFUNC(sca_Open),	            	(APTR) &OldOpen },
 	{ (struct Library **) &DOSBase,	 39,	LVOClose,		PPATCHFUNC(sca_Close),		     	(APTR) &OldClose },
 	{ NULL, 				0, 0, 			PPATCHFUNC(NULL),			NULL },
