@@ -1579,6 +1579,10 @@ static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoNewDrawerHook, TagList);
 		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoNewDrawerHook, TagList);
 
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_NEWDRAWER_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_NEWDRAWER_MORE;
+		uev->uev_DescrObjName = &und->und_srcName;
+
 		name = AllocPathBuffer();
 		if (NULL == name)
 			break;

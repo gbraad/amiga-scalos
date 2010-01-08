@@ -106,6 +106,8 @@ static int PatchOpenCompare(const void *key1, const void *key2);
 #ifdef TEST_OPENWINDOWTAGLIST
 static void ByteDump(const void *Data, size_t Length);
 #endif /* TEST_OPENWINDOWTAGLIST */
+static void PatchAsyncWBUndoRename(CONST_STRPTR oldName, CONST_STRPTR newName);
+static void PatchAsyncWBUndoCreateDir(CONST_STRPTR name);
 
 //----------------------------------------------------------------------------
 
@@ -173,6 +175,9 @@ LIBFUNC_P3_DPROTO(BPTR, (*OldOpen),
 	A6, struct DosLibrary *, DOSBase);
 LIBFUNC_P2_DPROTO(ULONG, (*OldClose),
 	D1, BPTR, file,
+	A6, struct DosLibrary *, DOSBase);
+LIBFUNC_P2_DPROTO(BPTR, (*OldCreateDir),
+	D1, CONST_STRPTR, name,
 	A6, struct DosLibrary *, DOSBase);
 
 //LIBFUNC_P1_DPROTO(CONST_STRPTR, (*OldwbPrivate2),
@@ -1589,7 +1594,6 @@ static void PatchRefreshIcon(CONST_STRPTR IconName)
 }
 
 
-#if 1
 //	success = DeleteFile( name )
 //	D0		      D1
 //
@@ -1600,7 +1604,7 @@ LIBFUNC_P2(ULONG, sca_DeleteFile,
 {
 	ULONG Success;
 
-	d1(KPrintF("%s/%s/%ld: START Name=<%s>\n", __FILE__, __FUNC__, __LINE__, Name));
+	d1(KPrintF("%s/%s/%ld: START Name=<%s>  Task=<%s>\n", __FILE__, __FUNC__, __LINE__, Name, FindTask(NULL)->tc_Node.ln_Name));
 
 	Success = CALLLIBFUNC_P2((*OldDeleteFile),
 		D1, Name, A6, DOSBase);
@@ -1615,7 +1619,6 @@ LIBFUNC_P2(ULONG, sca_DeleteFile,
 	return Success;
 }
 LIBFUNC_END
-#endif
 
 
 //	success = Rename( oldName, newName )
@@ -1635,7 +1638,9 @@ LIBFUNC_P3(ULONG, sca_Rename,
 	BPTR parentLock = (BPTR)NULL;
 	struct ScaIconNode *in = NULL;
 
-	d1(kprintf("%s/%s/%ld: oldName=<%s>  newName=<%s>\n", __FILE__, __FUNC__, __LINE__, oldName, newName));
+	d1(kprintf("%s/%s/%ld: oldName=<%s>  newName=<%s>  Task=<%s>\n", __FILE__, __FUNC__, __LINE__, oldName, newName, FindTask(NULL)->tc_Node.ln_Name));
+
+	PatchAsyncWBUndoRename(oldName, newName);
 
 	do	{
 		fLock = Lock((STRPTR) oldName, ACCESS_READ);
@@ -1977,6 +1982,35 @@ LIBFUNC_P2(ULONG, sca_Close,
 LIBFUNC_END
 
 
+//	success = CreateDir( name )
+//	D0		      D1
+//
+//	BOOL CreateDir(STRPTR)
+LIBFUNC_P2(BPTR, sca_CreateDir,
+	D1, CONST_STRPTR, name,
+	A6, struct DosLibrary *, DOSBase)
+{
+	BPTR lock;
+
+	d1(KPrintF("%s/%s/%ld: START Name=<%s>  Task=<%s>\n", __FILE__, __FUNC__, __LINE__, name, FindTask(NULL)->tc_Node.ln_Name));
+
+	PatchAsyncWBUndoCreateDir(name);
+
+	lock = CALLLIBFUNC_P2((*OldCreateDir),
+		D1, name, A6, DOSBase);
+
+	if (BNULL != lock)
+		{
+		PatchRefreshIcon(name);
+		}
+
+	d1(KPrintF("%s/%s/%ld: END lock=%ld\n", __FILE__, __FUNC__, __LINE__, lock));
+
+	return lock;
+}
+LIBFUNC_END
+
+
 static BOOL IsScalosProcess(void)
 {
 	struct Task *myTask = FindTask(NULL);
@@ -2061,3 +2095,47 @@ static void ByteDump(const void *p, size_t Length)
 	KPrintF("\t%s\n", Line);
 }
 #endif /* TEST_OPENWINDOWTAGLIST */
+
+
+static void PatchAsyncWBUndoRename(CONST_STRPTR oldName, CONST_STRPTR newName)
+{
+	CONST_STRPTR ProcName = FindTask(NULL)->tc_Node.ln_Name;
+
+	if ((0 == strcmp(ProcName, "ASYNCWB")) && (0 == IsIconName(oldName)))
+		{
+		BPTR dirLock = CurrentDir(BNULL);
+
+		CurrentDir(dirLock);
+
+		DoMethod(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
+			SCCM_IconWin_AddUndoEvent,
+			UNDO_Rename,
+			UNDOTAG_CopySrcDirLock, dirLock,
+			UNDOTAG_CopySrcName, oldName,
+			UNDOTAG_CopyDestName, newName,
+			TAG_END
+			);
+		}
+}
+
+
+static void PatchAsyncWBUndoCreateDir(CONST_STRPTR name)
+{
+	CONST_STRPTR ProcName = FindTask(NULL)->tc_Node.ln_Name;
+
+	if (0 == strcmp(ProcName, "AsyncWB - textinput process"))
+		{
+		BPTR dirLock = CurrentDir(BNULL);
+
+		CurrentDir(dirLock);
+
+		DoMethod(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
+			SCCM_IconWin_AddUndoEvent,
+			UNDO_NewDrawer,
+			UNDOTAG_IconDirLock, dirLock,
+			UNDOTAG_IconName, name,
+			TAG_END
+			);
+		}
+}
+

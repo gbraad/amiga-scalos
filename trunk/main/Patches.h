@@ -144,6 +144,9 @@ LIBFUNC_P3_PROTO(BPTR, sca_Open,
 LIBFUNC_P2_PROTO(ULONG, sca_Close,
 	D1, BPTR, file,
 	A6, struct DosLibrary *, DOSBase);
+LIBFUNC_P2_PROTO(BPTR, sca_CreateDir,
+	D1, CONST_STRPTR, name,
+	A6, struct DosLibrary *, DOSBase);
 
 //LIBFUNC_P2_PROTO(CONST_STRPTR, sca_GetLocString,
 //	D0, ULONG, StringID,
@@ -214,6 +217,9 @@ extern LIBFUNC_P3_DPROTO(BPTR, (*OldOpen),
 	A6, struct DosLibrary *, DOSBase);
 extern LIBFUNC_P2_DPROTO(ULONG, (*OldClose),
 	D1, BPTR, file,
+	A6, struct DosLibrary *, DOSBase);
+extern LIBFUNC_P2_DPROTO(BPTR, (*OldCreateDir),
+	D1, CONST_STRPTR, name,
 	A6, struct DosLibrary *, DOSBase);
 
 //extern LIBFUNC_P1_DPROTO(CONST_STRPTR, (*OldwbPrivate2),
