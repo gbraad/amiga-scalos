@@ -27,6 +27,10 @@
 #define STR(x)  STR2(x)
 #define STR2(x) #x
 
+// initialized exec List and MinList
+#define	DEFINE_LIST(l) struct List (l) = { (struct Node *) &(l).lh_Tail, NULL, (struct Node *) &(l).lh_TailPred, 0, 0 };
+#define	DEFINE_MINLIST(l) struct MinList (l) = { (struct MinNode *) &(l).mlh_Tail, NULL, (struct MinNode *) &(l).mlh_TailPred };
+
 
 /* compiler specific stuff */
 #ifdef __VBCC__
