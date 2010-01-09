@@ -71,12 +71,6 @@ extern const size_t IDCMPFuncTableSize;			// number of entries in IDCMPFuncTable
 
 /* ------------------------------------------------- */
 
-// defined in MainWait.c
-
-extern struct ARexxCmdEntry ARexxCommandTable[];
-
-/* ------------------------------------------------- */
-
 // defined in Memory.c
 
 extern SCALOSSEMAPHORE MemPoolSemaphore;		// +jl+ 20020210 memory pool semaphore

@@ -72,16 +72,17 @@ static void QuitScalos(struct ScaWindowTask *iwtMain, struct RexxMsg *msg);
 
 // local data items
 
-//----------------------------------------------------------------------------
-
-// public data items
-
-struct ARexxCmdEntry ARexxCommandTable[] =
+// Notice: ARexx functions are called with mainTask->mwt.iwt_WindowTask as wtMain
+static struct ARexxCmdEntry ARexxCommandTable[] =
 	{
 	{ "about", 	ACEFLAGF_RunFromMainTask, 	(AREXXFUNC) AboutProg	},
 	{ "quit",	ACEFLAGF_RunFromMainTask, 	(AREXXFUNC) QuitScalos 	},
 	{ NULL, 	0, 				NULL			},
 	};
+
+//----------------------------------------------------------------------------
+
+// public data items
 
 //----------------------------------------------------------------------------
 
@@ -640,8 +641,9 @@ void RemFromMainNotifyList(struct NotifyNode *nonOld)
 
 static void QuitScalos(struct ScaWindowTask *wtMain, struct RexxMsg *msg)
 {
-	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) wtMain;
+	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
+	(void) wtMain;
 	(void) msg;
 
 	iwtMain->iwt_CloseWindow = TRUE;
