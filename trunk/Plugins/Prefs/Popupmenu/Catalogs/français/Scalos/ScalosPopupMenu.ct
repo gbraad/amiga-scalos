@@ -1,6 +1,7 @@
 ; ScalosPopupMenu.ct
 ; $Date$
 ; $Revision$
+; $Id$
 ## version $VER: ScalosPopupMenu.catalog 40.1 (10 Jan 2010 14:32:34)
 ## codeset 0s
 ## language français
@@ -131,10 +132,10 @@ MSGID_ABOUTREQFORMAT
 ;© 2006%s The Scalos Team
 ;
 ;---------------------------------------------
-;+++translateme+++
+;
 MSGID_SHORTHELP_SAVEBUTTON
-Press this button to save \n\
-the current settings to\n\
+Cliquez sur ce bouton pour sauvegarder \n\
+en permanence, les options courrantes dans\n\
 \"ENVARC:sys/PopupMenu.prefs\"\n\
 and make changes permanent.
 ;Press this button to save \n\
@@ -142,62 +143,58 @@ and make changes permanent.
 ;\"ENVARC:sys/PopupMenu.prefs\"\n\
 ;and make changes permanent.
 ;
-;+++translateme+++
 MSGID_SHORTHELP_USEBUTTON
-Press this button to save \n\
-the current settings to\n\
+Cliquez sur ce bouton pour sauvegarder \n\
+les options courrantes dans\n\
 \"ENV:sys/PopupMenu.prefs\"\n\
-and keep settings until reboot.
+et préserver les options jusqu'au prochain démarrage.
 ;Press this button to save \n\
 ;the current settings to\n\
 ;\"ENV:sys/PopupMenu.prefs\"\n\
 ;and keep settings until reboot.
 ;
-;+++translateme+++
 MSGID_SHORTHELP_CANCELBUTTON
-Press this button to abort \n\
-and forget all changes.
+Cliquez sur ce bouton afin d'annuler \n\
+et oublier tout changement.
 ;Press this button to abort \n\
 ;and forget all changes.
 ;
 ;---------------------------------------------
-;+++translateme+++
+;
 MSGID_REQTITLE_SAVEERROR
-Error writing PopupMenu preferences\n\
-file \"%s\"\n\
+Erreur durant l'écriture des préférences PopupMenu\n\
+fichier \"%s\"\n\
 %s
 ;Error writing PopupMenu preferences\n\
 ;file \"%s\"\n\
 ;%s
 ;
-;+++translateme+++
 MSGID_REQTITLE_READERROR
-Error reading PopupMenu preferences\n\
-file \"%s\"\n\
+Erreur de lecture des péférences PopupMenu\n\
+fichier \"%s\"\n\
 %s
 ;Error reading PopupMenu preferences\n\
 ;file \"%s\"\n\
 ;%s
 ;
 ;---------------------------------------------
-;+++translateme+++
+;
 MSGID_POPUP_ASLTITLE_MENUPLUGIN
-Select Scalos PopupMenu prefs
+Sélection des préférences PopupMenu de Scalos
 ;Select Scalos PopupMenu prefs
 ;
-;+++translateme+++
 MSGID_SHORTHELP_LAMP_CHANGED
-This lamp indicator changes from \033bOff\033n\n\
-to \033bOk\033n when the settings have been\n\
-modified since initial loading.
+Cette lampe indicatrice change de l'état \033bEteind\033n\n\
+en \033bAllumé\033n quand les options ont été\n\
+modifiées aprés le chargement initial.
 ;This lamp indicator changes from \033bOff\033n\n\
 ;to \033bOk\033n when the settings have been\n\
 ;modified since initial loading.
 ;
 ;-----------------------------------------------------------
-;+++translateme+++
+;
 MSGID_STARTUP_FAILURE
-Scalos PopupMenu Prefs startup failed
+Le démarrage des préférences PopupMenu de Scalos a échoué
 ;Scalos PopupMenu Prefs startup failed
 ;
 ;
@@ -205,30 +202,27 @@ MSGID_STARTUP_RETRY_QUIT_GAD
 Recommencer|Quitter
 ;Try again|Quit
 ;
-;+++translateme+++
 MSGID_STARTUP_MCC_NOT_FOUND
-Couldn't open MUI custom class '%s' V%lu.%lu.\n\
-The class is not installed.
+Impossible d'ouvrir la classe MUI '%s' V%lu.%lu.\n\
+La classe n'est pas installée.
 ;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
 ;The class is not installed.
 ;
-;+++translateme+++
 MSGID_STARTUP_OLD_MCC
-Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+Impossible d'ouvrir la classe MUI '%s' V%lu.%lu.\n\
 \n\
-Currently installed is V%lu.%lu, please upgrade!
+Version actuellement installée : V%lu.%lu, mettez la à jour s'il vous plaît !
 ;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
 ;\n\
 ;Currently installed is V%lu.%lu, please upgrade!
 ;
-;+++translateme+++
 MSGID_STARTUP_MCC_IN_USE
-Couldn't open MUI custom class '%s' V%lu.%lu.\n\
-%lu.%lu is currently in use by other applications.\n\
+Impossible d'ouvrir la classe MUI '%s' V%lu.%lu.\n\
+%lu.%lu est actuellement utilisée par une autre application.\n\
 \n\
-Once you have installed the required version,\n\
-close all MUI programs, make sure the old class\n\
-is flushed from memory and try again.
+Une fois la version requise installée,\n\
+fermez tous les programmes MUI, soyez sûr que l'ancienne classe\n\
+ne soit plus en mémoire et recommencez.
 ;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
 ;%lu.%lu is currently in use by other applications.\n\
 ;\n\
