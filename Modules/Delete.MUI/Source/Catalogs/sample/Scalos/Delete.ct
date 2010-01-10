@@ -241,6 +241,16 @@ Boston, MA\n\
 USA\n\n\
 Or email the original author
 ;
+;+++translateme+++
+MSGID_UNDO_OK
+Undo possible since \033bUse trashcan\033n is enabled
+;Undo possible since \033bUse trashcan\033n is enabled
+;
+;+++translateme+++
+MSGID_UNDO_NOT_POSSIBLE
+Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
+;Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
+;
 ;-----------------------------------------------------------
 ;
 MSGID_MENU_PROJECT
@@ -261,6 +271,48 @@ Quit
 ;
 MSGID_MENU_PROJECT_QUIT_SHORT
 Q
+;
+;-----------------------------------------------------------
+;
+MSGID_STARTUP_FAILURE
+Delete.module Prefs startup failed
+;Delete.module startup failed
+;
+;
+MSGID_STARTUP_RETRY_QUIT_GAD
+Try again|Quit
+;Try again|Quit
+;
+;
+MSGID_STARTUP_MCC_NOT_FOUND
+Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+The class is not installed.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;The class is not installed.
+;
+;
+MSGID_STARTUP_OLD_MCC
+Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+\n\
+Currently installed is V%lu.%lu, please upgrade!
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;\n\
+;Currently installed is V%lu.%lu, please upgrade!
+;
+;
+MSGID_STARTUP_MCC_IN_USE
+Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+%lu.%lu is currently in use by other applications.\n\
+\n\
+Once you have installed the required version,\n\
+close all MUI programs, make sure the old class\n\
+is flushed from memory and try again.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;%lu.%lu is currently in use by other applications.\n\
+;\n\
+;Once you have installed the required version,\n\
+;close all MUI programs, make sure the old class\n\
+;is flushed from memory and try again.
 ;
 ;-----------------------------------------------------------
 ;
