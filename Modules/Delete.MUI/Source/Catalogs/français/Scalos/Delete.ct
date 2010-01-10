@@ -342,3 +342,29 @@ Or email the original author
 ;USA\n\n\
 ;Or email the original author
 ;
+;-----------------------------------------------------------
+;
+MSGID_MENU_PROJECT
+Projet
+; Project
+;
+;
+MSGID_MENU_PROJECT_ABOUT
+About...
+;
+;
+MSGID_MENU_PROJECT_ABOUTMUI
+A propos de MUI...
+; About MUI...
+;
+;
+MSGID_MENU_PROJECT_QUIT
+Quitter
+; Quit
+;
+;
+MSGID_MENU_PROJECT_QUIT_SHORT
+Q
+; Q
+;-----------------------------------------------------------
+;
