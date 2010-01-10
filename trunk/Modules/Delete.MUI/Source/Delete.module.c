@@ -54,6 +54,22 @@
 #define CATCOMP_BLOCK
 #include"Delete.module.h"
 
+//----------------------------------------------------------------------------
+
+/*GFE*/
+// Prototypes
+int  wbmain          (struct WBStartup *);
+int  main            (int, char **);
+void ExitMUI         (APTR, STRPTR);
+void InitMUI         (void);
+void SetupInterface  (void);
+
+static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o, Msg msg);
+static SAVEDS(void) INTERRUPT EnableTrashcanHookFunc(struct Hook *hook, Object *o, Msg msg);
+static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev);
+
+//----------------------------------------------------------------------------
+
 const char Version[]   = VERSTAG;
 
 // Library bases and classes. Only hand-open the ones we really need a specific
@@ -105,6 +121,9 @@ Object *BT_Restore   = NULL;
 CONST_STRPTR Pages[ 3] = { NULL };
 CONST_STRPTR Keys [14] = { NULL };
 
+static Object *LampUndoPossible;
+static Object *TextUndoPossible;
+
 Object *WI_About     = NULL;
 Object *BT_About_MUI = NULL;
 static Object *MenuAbout;
@@ -112,17 +131,10 @@ static Object *MenuAboutMUI;
 static Object *MenuQuit;
 static Object *WIN_AboutMUI;
 
-/*GFE*/
-// Prototypes
-int  wbmain          (struct WBStartup *);
-int  main            (int, char **);
-void ExitMUI         (APTR, STRPTR);
-void InitMUI         (void);
-void SetupInterface  (void);
-
-static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o, Msg msg);
-
 static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHookFunc), NULL };
+static struct Hook EnableTrashcanHook = { { NULL, NULL }, HOOKFUNC_DEF(EnableTrashcanHookFunc), NULL };
+
+//----------------------------------------------------------------------------
 
 /* void ExitMUI(APTR, STRPTR)                                                */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=                                                */
@@ -316,6 +328,12 @@ static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHoo
 
 	// Wake up MUI...
 	InitMUI();
+
+	if (!CheckMCCVersion(MUIC_NList, 20, 121) ||
+		!CheckMCCVersion(MUIC_NListview, 19, 66) ||
+		!CheckMCCVersion(MUIC_Lamp, 11, 1) )
+		return 10;
+
 	SetupInterface();
 
 	// Bomb if the user has started the program from shell (daft user...) otherwise
@@ -331,6 +349,8 @@ static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHoo
 		ExitMUI(MUI_App, "Unable to create application");
 		}
 
+	CallHookPkt(&EnableTrashcanHook, MUI_App,  NULL);
+
 	// Some domethods to make processing easier.
 	DoMethod(WI_Delete   , MUIM_Notify, MUIA_Window_CloseRequest, TRUE          , MUI_App    , 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 	DoMethod(BT_Cancel   , MUIM_Notify, MUIA_Pressed            , FALSE         , MUI_App    , 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
@@ -343,7 +363,8 @@ static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHoo
 	DoMethod(BT_Use      , MUIM_Notify, MUIA_Pressed            , FALSE         , MUI_App    , 2, MUIM_Application_ReturnID, PREFSUSE );
 	DoMethod(BT_Restore  , MUIM_Notify, MUIA_Pressed            , FALSE         , MUI_App    , 2, MUIM_Application_ReturnID, PREFSLOAD);
 
-	DoMethod(CM_TrashCan , MUIM_Notify, MUIA_Selected           , MUIV_EveryTime, ST_TrashDir, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+	DoMethod(CM_TrashCan , MUIM_Notify, MUIA_Selected           , MUIV_EveryTime,
+		MUI_App, 2, MUIM_CallHook, &EnableTrashcanHook);
 
 	// About handling...
 	DoMethod(WI_About    , MUIM_Notify, MUIA_Window_CloseRequest, TRUE , WI_About, 3, MUIM_Set, MUIA_Window_Open, FALSE   );
@@ -462,6 +483,18 @@ static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHoo
 					MUIA_CycleChain, TRUE,
 					MUIA_Background, MUII_RegisterBack,
 					Child, VGroup,
+						Child, HGroup,
+						        GroupFrame,
+						        MUIA_Background, MUII_GroupBack,
+							Child, LampUndoPossible = LampObject,
+								MUIA_Lamp_Type, MUIV_Lamp_Type_Huge,
+								MUIA_Lamp_Color, MUIV_Lamp_Color_Off,
+								End, //LampObject
+							Child, TextUndoPossible = TextObject,
+								MUIA_Text_Contents, GetLocString(MSGID_UNDO_NOT_POSSIBLE),
+								End, //TextObject
+							End, //HGroup
+
 						Child, VGroup,
 							MUIA_Group_Spacing, 0,
 							Child,  LV_Files = NListviewObject,
@@ -481,6 +514,7 @@ static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHoo
 								End, //NListviewObject
 							Child, BT_Details = KeyButtonChain(GetLocString(MSG_BUTTON_FULL), Keys[0][0], 1),
 							End, //VGroup
+
 	                                        Child, TX_ReadOut =  TextObject,
 		                                        TextFrame,
 		                                        MUIA_Background, MUII_TextBack,
@@ -488,6 +522,7 @@ static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHoo
 							MUIA_Text_PreParse, "\33c",
 		                                        MUIA_FixHeightTxt , " ",
 							End, //TextObject
+
 						End, //VGroup
 
 					Child, VGroup,
@@ -733,6 +768,136 @@ static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o,
 		set(WIN_AboutMUI, MUIA_Window_Open, TRUE);
 
 	return 0;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) INTERRUPT EnableTrashcanHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	ULONG UseTrashcan;
+
+	get(CM_TrashCan, MUIA_Selected, &UseTrashcan);
+
+	set(ST_TrashDir, MUIA_Disabled, UseTrashcan);
+	set(LampUndoPossible, MUIA_Lamp_Color, UseTrashcan ? MUIV_Lamp_Color_Ok : MUIV_Lamp_Color_Error);
+	set(TextUndoPossible, MUIA_Text_Contents, GetLocString(UseTrashcan ? MSGID_UNDO_OK : MSGID_UNDO_NOT_POSSIBLE));
+}
+
+//----------------------------------------------------------------------------
+
+//  Checks if a certain version of a MCC is available
+static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
+{
+	BOOL flush = TRUE;
+
+	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: %s ", name, __LINE__);)
+
+	while (1)
+		{
+		ULONG ver;
+		ULONG rev;
+		struct Library *base;
+		char libname[256];
+
+		// First we attempt to acquire the version and revision through MUI
+		Object *obj = MUI_NewObject((STRPTR) name, TAG_DONE);
+		if (obj)
+			{
+			get(obj, MUIA_Version, &ver);
+			get(obj, MUIA_Revision, &rev);
+
+			MUI_DisposeObject(obj);
+
+			if(ver > minver || (ver == minver && rev >= minrev))
+				{
+				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: v%ld.%ld found through MUIA_Version/Revision\n", __LINE__, ver, rev);)
+				return TRUE;
+				}
+			}
+
+		// If we did't get the version we wanted, let's try to open the
+		// libraries ourselves and see what happens...
+		stccpy(libname, "PROGDIR:mui", sizeof(libname));
+		AddPart(libname, name, sizeof(libname));
+
+		if ((base = OpenLibrary(&libname[8], 0)) || (base = OpenLibrary(&libname[0], 0)))
+			{
+			UWORD OpenCnt = base->lib_OpenCnt;
+
+			ver = base->lib_Version;
+			rev = base->lib_Revision;
+
+			CloseLibrary(base);
+
+			// we add some additional check here so that eventual broken .mcc also have
+			// a chance to pass this test (i.e. Toolbar.mcc is broken)
+			if (ver > minver || (ver == minver && rev >= minrev))
+				{
+				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: v%ld.%ld found through OpenLibrary()\n", __LINE__, ver, rev);)
+				return TRUE;
+				}
+
+			if (OpenCnt > 1)
+				{
+				if (MUI_Request(NULL, NULL, 0L,
+					(STRPTR) GetLocString(MSGID_STARTUP_FAILURE),
+					(STRPTR) GetLocString(MSGID_STARTUP_RETRY_QUIT_GAD),
+					(STRPTR) GetLocString(MSGID_STARTUP_MCC_IN_USE),
+					name, minver, minrev, ver, rev))
+					{
+					flush = TRUE;
+					}
+				else
+					break;
+				}
+
+			// Attempt to flush the library if open count is 0 or because the
+			// user wants to retry (meaning there's a chance that it's 0 now)
+
+			if (flush)
+				{
+				struct Library *result;
+
+				Forbid();
+				if ((result = (struct Library *) FindName(&((struct ExecBase *)SysBase)->LibList, name)))
+					RemLibrary(result);
+				Permit();
+				flush = FALSE;
+				}
+			else
+				{
+				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: couldn`t find minimum required version.\n", __LINE__);)
+
+				// We're out of luck - open count is 0, we've tried to flush
+				// and still haven't got the version we want
+				if (MUI_Request(NULL, NULL, 0L,
+					(STRPTR) GetLocString(MSGID_STARTUP_FAILURE),
+					(STRPTR) GetLocString(MSGID_STARTUP_RETRY_QUIT_GAD),
+					(STRPTR) GetLocString(MSGID_STARTUP_OLD_MCC),
+					name, minver, minrev, ver, rev))
+					{
+					flush = TRUE;
+					}
+				else
+					break;
+				}
+			}
+		else
+			{
+			// No MCC at all - no need to attempt flush
+			flush = FALSE;
+			if (!MUI_Request(NULL, NULL, 0L,
+				(STRPTR) GetLocString(MSGID_STARTUP_FAILURE),
+				(STRPTR) GetLocString(MSGID_STARTUP_RETRY_QUIT_GAD),
+				(STRPTR) GetLocString(MSGID_STARTUP_MCC_NOT_FOUND),
+				name, minver, minrev))
+				{
+				break;
+				}
+			}
+		}
+
+	return FALSE;
 }
 
 //----------------------------------------------------------------------------

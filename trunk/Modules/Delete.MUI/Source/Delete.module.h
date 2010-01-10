@@ -27,6 +27,7 @@
 #include<libraries/mui.h>
 #include<mui/NList_mcc.h>
 #include<mui/NListview_mcc.h>
+#include <mui/Lamp_mcc.h>
 
 // System
 #include <exec/types.h>

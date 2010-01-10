@@ -342,6 +342,16 @@ Or email the original author
 ;USA\n\n\
 ;Or email the original author
 ;
+;+++translateme+++
+MSGID_UNDO_OK
+Undo possible since \033bUtiliser la corbeille\033n is enabled
+;Undo possible since \033bUse trashcan\033n is enabled
+;
+;+++translateme+++
+MSGID_UNDO_NOT_POSSIBLE
+Undo \033inot\033n possible unless \033bUtiliser la corbeille\033n is enabled
+;Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
+;
 ;-----------------------------------------------------------
 ;
 MSGID_MENU_PROJECT
@@ -366,5 +376,47 @@ Quitter
 MSGID_MENU_PROJECT_QUIT_SHORT
 Q
 ; Q
+;-----------------------------------------------------------
+;
+MSGID_STARTUP_FAILURE
+Le lancement de Delete.module a échoué
+;Delete.module startup failed
+;
+;
+MSGID_STARTUP_RETRY_QUIT_GAD
+Recommençer | Quitter
+;Try again|Quit
+;
+;
+MSGID_STARTUP_MCC_NOT_FOUND
+Impossible de charger la classe MUI '%s' V%lu.%lu.\n\
+Celle-ci n'est pas installée.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;The class is not installed.
+;
+;
+MSGID_STARTUP_OLD_MCC
+Impossible de charger la classe MUI '%s' V%lu.%lu.\n\
+\n\
+La version installée est V%lu.%lu, installez-en une plus récente s'il vous plaît !
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;\n\
+;Currently installed is V%lu.%lu, please upgrade!
+;
+;
+MSGID_STARTUP_MCC_IN_USE
+Impossible de charger la classe MUI '%s' V%lu.%lu.\n\
+%lu.%lu est actuellement utilisée par d'autres applications.\n\
+\n\
+Une fois la version requise installée,\n\
+fermez tous les programmes MUI, soyez sûr que l'ancienne classe\n\
+ne soit plus présente dans la mémoire puis, essayez de nouveau.
+;Couldn't open MUI custom class '%s' V%lu.%lu.\n\
+;%lu.%lu is currently in use by other applications.\n\
+;\n\
+;Once you have installed the required version,\n\
+;close all MUI programs, make sure the old class\n\
+;is flushed from memory and try again.
+;
 ;-----------------------------------------------------------
 ;
