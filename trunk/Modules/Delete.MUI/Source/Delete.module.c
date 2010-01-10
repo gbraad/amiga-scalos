@@ -74,6 +74,7 @@ const char Version[]   = VERSTAG;
 
 // Library bases and classes. Only hand-open the ones we really need a specific
 // version of..
+extern struct ExecBase *SysBase;
 struct Library *MUIMasterBase = NULL;
 struct Library *AslBase       = NULL;
 #ifndef __amigaos4__
