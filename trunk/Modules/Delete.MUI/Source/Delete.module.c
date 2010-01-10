@@ -54,7 +54,7 @@
 #define CATCOMP_BLOCK
 #include"Delete.module.h"
 
-const char Version[]   = VERSTAG COMPILER_STRING;
+const char Version[]   = VERSTAG;
 
 // Library bases and classes. Only hand-open the ones we really need a specific
 // version of..
@@ -107,6 +107,11 @@ CONST_STRPTR Keys [14] = { NULL };
 
 Object *WI_About     = NULL;
 Object *BT_About_MUI = NULL;
+static Object *MenuAbout;
+static Object *MenuAboutMUI;
+static Object *MenuQuit;
+static Object *WIN_AboutMUI;
+
 /*GFE*/
 // Prototypes
 int  wbmain          (struct WBStartup *);
@@ -114,6 +119,10 @@ int  main            (int, char **);
 void ExitMUI         (APTR, STRPTR);
 void InitMUI         (void);
 void SetupInterface  (void);
+
+static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o, Msg msg);
+
+static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIHookFunc), NULL };
 
 /* void ExitMUI(APTR, STRPTR)                                                */
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=                                                */
@@ -341,6 +350,14 @@ void SetupInterface  (void);
 	DoMethod(BT_About    , MUIM_Notify, MUIA_Pressed            , FALSE, WI_About, 3, MUIM_Set, MUIA_Window_Open, TRUE    );
 	DoMethod(BT_About_MUI, MUIM_Notify, MUIA_Pressed            , FALSE, MUI_App , 2, MUIM_Application_AboutMUI , WI_About);
 
+	// Menu handling
+	DoMethod(MenuAbout, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
+		WI_About, 3, MUIM_Set, MUIA_Window_Open, TRUE);
+	DoMethod(MenuAboutMUI, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
+		MUI_App, 2, MUIM_CallHook, &AboutMUIHook);
+	DoMethod(MenuQuit, MUIM_Notify,MUIA_Menuitem_Trigger,MUIV_EveryTime,
+		MUI_App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+
 	// Read in the settings
 	DoMethod(MUI_App, MUIM_Application_Load, MUIV_Application_Load_ENV);
 
@@ -437,161 +454,202 @@ void SetupInterface  (void);
                 MUIA_Application_Base       , BASENAME,
                 MUIA_Application_SingleTask , TRUE,
 /*GFS*/         SubWindow, WI_Delete = WindowObject,
-				    MUIA_Window_Title      , GetLocString(MSG_WIN_TITLE),
-                                    MUIA_Window_ID         , MAKE_ID('M','A','I','N'),
-                                    MUIA_Window_ScreenTitle, VSTR,
-                                    WindowContents, VGroup,
-                                        Child, RegisterGroup(Pages),
-					    MUIA_CycleChain, TRUE,
-                                            MUIA_Background, MUII_RegisterBack,
-                                            Child, VGroup,
-                                                Child, VGroup,
-                                                    MUIA_Group_Spacing, 0,
-                                                    Child,  LV_Files = NListviewObject,
-                                                        MUIA_CycleChain, 1,
-                                                        MUIA_NListview_Vert_ScrollBar, TRUE,
-                                                        MUIA_NListview_NList         , NListObject,
-                                                            MUIA_CycleChain, 1,
-                                                            MUIA_NList_Input         , FALSE,
-                                                            MUIA_NList_DragSortable  , FALSE,
-                                                            MUIA_NList_Title         , TRUE,
-                                                            MUIA_NList_Format        , "BAR,BAR,BAR,",
-                                                            MUIA_NList_ConstructHook , &ConList,
-                                                            MUIA_NList_DestructHook  , &DesList,
-                                                            MUIA_NList_DisplayHook   , &DisList,
-                                                            MUIA_NList_CompareHook   , &CmpList,
-                                                        End,
-                                                    End,
-						    Child, BT_Details = KeyButtonChain(GetLocString(MSG_BUTTON_FULL), Keys[0][0], 1),
-                                                End,
-                                                Child, TX_ReadOut =  TextObject,
-                                                    TextFrame,
-                                                    MUIA_Weight    , 800,
-                                                    MUIA_Background, MUII_TextBack,
-                                                    MUIA_Text_PreParse, "\33c\0338",
-                                                    MUIA_FixHeightTxt , " ",
-                                                End,
-                                            End,
-                                            Child, VGroup,
-                                                Child, ColGroup(5),
-                                                    // Row
-						    Child, KeyLabel1(GetLocString(MSG_LABEL_TRASH), Keys[1][0]),
-						    Child, CM_TrashCan = KeyCheckMarkHelpID(1, Keys[1][0], 1, MAKE_ID('C', 'M', 'T', 'C'), GetLocString(MSG_HELP_TRASH)),
-                                                    Child, HSpace(0),
-						    Child, KeyLabel1(GetLocString(MSG_LABEL_DIRS)  , Keys[2][0]),
-						    Child, CM_DirConf  = KeyCheckMarkHelpID(1, Keys[2][0], 1, MAKE_ID('C', 'M', 'D', 'C'), GetLocString(MSG_HELP_DIRS )),
-                                                    // Row
-						    Child, KeyLabel1(GetLocString(MSG_LABEL_FILES), Keys[3][0]),
-						    Child, CM_FileConf = KeyCheckMarkHelpID(1, Keys[3][0], 1, MAKE_ID('C', 'M', 'F', 'C'), GetLocString(MSG_HELP_FILES)),
-                                                    Child, HSpace(0),
-						    Child, KeyLabel1(GetLocString(MSG_LABEL_QUIET), Keys[4][0]),
-						    Child, CM_Quiet    = KeyCheckMarkHelpID(0, Keys[4][0], 1, MAKE_ID('C', 'M', 'Q', 'I'), GetLocString(MSG_HELP_QUIET)),
-                                                End,
-                                                Child, ColGroup(2),
-						    Child, KeyLabel1(GetLocString(MSG_LABEL_TLOC), Keys[5][0]),
-                                                    Child, ST_TrashDir = PopaslObject,
-                                                              MUIA_Popstring_String, StringObject,
-                                                                  StringFrame,
-                                                                  MUIA_String_MaxLen  , 128,
-                                                                  MUIA_CycleChain     ,   1,
-                                                                  MUIA_ControlChar    , Keys[5][0],
-								  MUIA_ShortHelp      , GetLocString(MSG_HELP_TLOC),
-                                                                  MUIA_ExportID       , MAKE_ID('S', 'T', 'T', 'C'),
-                                                              End,
-                                                              MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
-                                                              MUIA_CycleChain      , 1,
-							      ASLFR_TitleText      , GetLocString(MSG_ASL_TITLE),
-                                                              ASLFR_RejectIcons    , TRUE,
-                                                              ASLFR_DrawersOnly    , TRUE,
-                                                    End,
-                                                End,
-                                                Child, VSpace(0),
-                                                Child, HGroup,
-                                                    MUIA_Group_SameSize, TRUE,
-						    Child, BT_Save    = KeyButtonChain(GetLocString(MSG_BUTTON_SAVE), Keys[6][0], 1),
-						    Child, BT_Use     = KeyButtonChain(GetLocString(MSG_BUTTON_USE ), Keys[7][0], 1),
-						    Child, BT_Restore = KeyButtonChain(GetLocString(MSG_BUTTON_REST), Keys[8][0], 1),
-                                                End,
-                                            End,
-                                        End,
-                                        Child, HGroup,
-                                            MUIA_Group_SameSize, TRUE,
-					    Child, BT_Delete = KeyButtonChain(GetLocString(MSG_BUTTON_DEL), Keys[ 9][0], 1),
-					    Child, BT_About  = KeyButtonChain(GetLocString(MSG_BUTTON_ABT), Keys[10][0], 1),
-					    Child, BT_Cancel = KeyButtonChain(GetLocString(MSG_BUTTON_CAN), Keys[11][0], 1),
-                                        End,
-                                        Child, GP_Progress = VGroup, GroupFrame,
-                                            MUIA_Background, MUII_GroupBack,
-                                            MUIA_ShowMe, FALSE,
-                                            Child, HGroup,
-                                                Child, TX_Progress = TextObject,
-                                                    TextFrame,
-                                                    MUIA_Weight    , 800,
-                                                    MUIA_Background, MUII_TextBack,
-                                                    MUIA_Text_PreParse, "\33c\0338",
-                                                    MUIA_FixHeightTxt , " ",
-                                                End,
-						Child, BT_STOP = KeyButtonChain(GetLocString(MSG_BUTTON_STOP), Keys[12][0], 1),
-                                            End,
-                                            Child, VGroup,
-                                                Child, GA_Progress = GaugeObject,
-                                                    GaugeFrame,
-                                                    MUIA_Gauge_Current ,    0,
-                                                    MUIA_Gauge_Max     ,  100,
-                                                    MUIA_Gauge_Horiz   , TRUE,
-                                                    MUIA_FixHeightTxt  , " ",
-						    MUIA_Gauge_InfoText, GetLocString(MSG_LABEL_INFO),
-                                                End,
-                                                Child, ScaleObject,
-                                                    MUIA_Scale_Horiz  , TRUE,
-                                                End,
-                                            End,
-                                        End,
-                                    End,
-/*GFE*/                    End,
-/*GFS*/         SubWindow, WI_About = WindowObject,
-				    MUIA_Window_Title      , GetLocString(MSG_BUTTON_ABT),
-                                    MUIA_Window_ID         , MAKE_ID('A','B','O','T'),
-                                    MUIA_Window_ScreenTitle, VSTR,
-                                    WindowContents, VGroup,
-                                        Child, TextObject,
-                                            TextFrame,
-                                            MUIA_Background, MUII_TextBack,
-					    MUIA_Text_Contents, GetLocString(MSG_ABOUT_HEAD),
-                                        End,
-                                        Child, ColGroup(7),
-                                            Child, HSpace(0),
-                                            Child, TextObject,
-						MUIA_Text_Contents, GetLocString(MSG_LABEL_VERS),
-                                                MUIA_Text_PreParse, "\33r",
-                                            End,
-                                            Child, TextObject,
-                                                MUIA_Text_Contents, VersionBuffer,
-                                            End,
-                                            Child, HSpace(0),
-                                            Child, TextObject,
-						MUIA_Text_Contents, GetLocString(MSG_LABEL_COMP),
-                                                MUIA_Text_PreParse, "\33r",
-                                            End,
-                                            Child, TextObject,
-                                                MUIA_Text_Contents, DateBuffer,
-                                            End,
-                                            Child, HSpace(0),
-                                        End,
-                                        Child, ScrollgroupObject,
-                                            MUIA_Scrollgroup_Contents, VGroupV,
-                                                VirtualFrame ,
-                                                Child, TextObject,
-                                                    MUIA_Background, MUII_TextBack,
-						    MUIA_Text_Contents, GetLocString(MSG_ABOUT_BODY),
-                                                End,
-                                            End,
-                                        End,
+		        MUIA_Window_Title      , GetLocString(MSG_WIN_TITLE),
+                        MUIA_Window_ID         , MAKE_ID('M','A','I','N'),
+                        MUIA_Window_ScreenTitle, VSTR,
+                        WindowContents, VGroup,
+				Child, RegisterGroup(Pages),
+					MUIA_CycleChain, TRUE,
+					MUIA_Background, MUII_RegisterBack,
+					Child, VGroup,
+						Child, VGroup,
+							MUIA_Group_Spacing, 0,
+							Child,  LV_Files = NListviewObject,
+								MUIA_CycleChain, 1,
+		                                                MUIA_NListview_Vert_ScrollBar, TRUE,
+		                                                MUIA_NListview_NList         , NListObject,
+			                                                MUIA_CycleChain, 1,
+			                                                MUIA_NList_Input         , FALSE,
+			                                                MUIA_NList_DragSortable  , FALSE,
+			                                                MUIA_NList_Title         , TRUE,
+			                                                MUIA_NList_Format        , "BAR,BAR,BAR,",
+			                                                MUIA_NList_ConstructHook , &ConList,
+			                                                MUIA_NList_DestructHook  , &DesList,
+			                                                MUIA_NList_DisplayHook   , &DisList,
+			                                                MUIA_NList_CompareHook   , &CmpList,
+									End, //NListObject
+								End, //NListviewObject
+							Child, BT_Details = KeyButtonChain(GetLocString(MSG_BUTTON_FULL), Keys[0][0], 1),
+							End, //VGroup
+	                                        Child, TX_ReadOut =  TextObject,
+		                                        TextFrame,
+		                                        MUIA_Background, MUII_TextBack,
+		                                        MUIA_Weight    , 800,
+							MUIA_Text_PreParse, "\33c",
+		                                        MUIA_FixHeightTxt , " ",
+							End, //TextObject
+						End, //VGroup
 
-					Child, BT_About_MUI  = KeyButtonChain(GetLocString(MSG_BUTTON_AMUI), Keys[13][0], 1),
-                                    End,
-/*GFE*/                    End,
-	End;
+					Child, VGroup,
+						Child, ColGroup(4),
+						        GroupFrame,
+						        MUIA_Background, MUII_GroupBack,
+
+							Child, HVSpace,
+						        Child, KeyLabel1(GetLocString(MSG_LABEL_TRASH), Keys[1][0]),
+							Child, CM_TrashCan = KeyCheckMarkHelpID(TRUE, Keys[1][0], 1, MAKE_ID('C', 'M', 'T', 'C'), GetLocString(MSG_HELP_TRASH)),
+						        Child, HVSpace,
+
+						        Child, HVSpace,
+						        Child, KeyLabel1(GetLocString(MSG_LABEL_DIRS)  , Keys[2][0]),
+							Child, CM_DirConf  = KeyCheckMarkHelpID(FALSE, Keys[2][0], 1, MAKE_ID('C', 'M', 'D', 'C'), GetLocString(MSG_HELP_DIRS )),
+						        Child, HVSpace,
+
+						        Child, HVSpace,
+						        Child, KeyLabel1(GetLocString(MSG_LABEL_FILES), Keys[3][0]),
+							Child, CM_FileConf = KeyCheckMarkHelpID(FALSE, Keys[3][0], 1, MAKE_ID('C', 'M', 'F', 'C'), GetLocString(MSG_HELP_FILES)),
+						        Child, HVSpace,
+
+						        Child, HVSpace,
+						        Child, KeyLabel1(GetLocString(MSG_LABEL_QUIET), Keys[4][0]),
+							Child, CM_Quiet    = KeyCheckMarkHelpID(TRUE, Keys[4][0], 1, MAKE_ID('C', 'M', 'Q', 'I'), GetLocString(MSG_HELP_QUIET)),
+						        Child, HVSpace,
+
+							End, //ColGroup
+
+						Child, HVSpace,
+
+						Child, HGroup,
+							GroupFrameT(GetLocString(MSG_LABEL_TLOC)),
+
+		                                        Child, ST_TrashDir = PopaslObject,
+								MUIA_Popstring_String, StringObject,
+		                                                        StringFrame,
+		                                                        MUIA_String_MaxLen  , 128,
+		                                                        MUIA_CycleChain     ,   1,
+		                                                        MUIA_ControlChar    , Keys[5][0],
+								        MUIA_ShortHelp      , GetLocString(MSG_HELP_TLOC),
+		                                                        MUIA_ExportID       , MAKE_ID('S', 'T', 'T', 'C'),
+									End, //StringObject
+	                                                        MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
+	                                                        MUIA_CycleChain      , 1,
+							        ASLFR_TitleText      , GetLocString(MSG_ASL_TITLE),
+	                                                        ASLFR_RejectIcons    , TRUE,
+	                                                        ASLFR_DrawersOnly    , TRUE,
+								End, //PopaslObject
+							End, //HGroup
+	                                        Child, VSpace(0),
+	                                        Child, HGroup,
+		                                        MUIA_Group_SameSize, TRUE,
+						        Child, BT_Save    = KeyButtonChain(GetLocString(MSG_BUTTON_SAVE), Keys[6][0], 1),
+						        Child, BT_Use     = KeyButtonChain(GetLocString(MSG_BUTTON_USE ), Keys[7][0], 1),
+						        Child, BT_Restore = KeyButtonChain(GetLocString(MSG_BUTTON_REST), Keys[8][0], 1),
+							End, //HGroup
+						End, //VGroup
+					End, //RegisterGroup
+
+                                Child, HGroup,
+	                                MUIA_Group_SameSize, TRUE,
+				        Child, BT_Delete = KeyButtonChain(GetLocString(MSG_BUTTON_DEL), Keys[ 9][0], 1),
+				        Child, BT_About  = KeyButtonChain(GetLocString(MSG_BUTTON_ABT), Keys[10][0], 1),
+				        Child, BT_Cancel = KeyButtonChain(GetLocString(MSG_BUTTON_CAN), Keys[11][0], 1),
+					End, //HGroup
+
+				Child, GP_Progress = VGroup,
+					GroupFrame,
+	                                MUIA_Background, MUII_GroupBack,
+	                                MUIA_ShowMe, FALSE,
+	                                Child, HGroup,
+	                                        Child, TX_Progress = TextObject,
+							MUIA_Background, MUII_TextBack,
+		                                        TextFrame,
+		                                        MUIA_Weight    , 800,
+		                                        MUIA_Background, MUII_TextBack,
+							MUIA_Text_PreParse, "\33c",
+		                                        MUIA_FixHeightTxt , " ",
+							End, //TextObject
+						Child, BT_STOP = KeyButtonChain(GetLocString(MSG_BUTTON_STOP), Keys[12][0], 1),
+						End, //HGroup
+	                                Child, VGroup,
+	                                        Child, GA_Progress = GaugeObject,
+		                                        GaugeFrame,
+		                                        MUIA_Gauge_Current ,    0,
+		                                        MUIA_Gauge_Max     ,  100,
+		                                        MUIA_Gauge_Horiz   , TRUE,
+		                                        MUIA_FixHeightTxt  , " ",
+						        MUIA_Gauge_InfoText, GetLocString(MSG_LABEL_INFO),
+							End, //GaugeObject
+						Child, ScaleObject,
+							MUIA_Scale_Horiz  , TRUE,
+							End, //ScaleObject
+						End, //VGroup
+					End, //VGroup
+				End, //VGroup
+/*GFE*/			End, //WindowObject
+
+/*GFS*/         SubWindow, WI_About = WindowObject,
+		        MUIA_Window_Title      , GetLocString(MSG_BUTTON_ABT),
+                        MUIA_Window_ID         , MAKE_ID('A','B','O','T'),
+                        MUIA_Window_ScreenTitle, VSTR,
+                        WindowContents, VGroup,
+                                Child, TextObject,
+	                                TextFrame,
+	                                MUIA_Background, MUII_TextBack,
+				        MUIA_Text_Contents, GetLocString(MSG_ABOUT_HEAD),
+					End, //TextObject
+				Child, ColGroup(7),
+	                                Child, HSpace(0),
+	                                Child, TextObject,
+						MUIA_Text_Contents, GetLocString(MSG_LABEL_VERS),
+						MUIA_Text_PreParse, "\33r",
+						End, //TextObject
+	                                Child, TextObject,
+						MUIA_Text_Contents, VersionBuffer,
+						End, //TextObject
+	                                Child, HSpace(0),
+	                                Child, TextObject,
+						MUIA_Text_Contents, GetLocString(MSG_LABEL_COMP),
+						MUIA_Text_PreParse, "\33r",
+						End, //TextObject
+	                                Child, TextObject,
+						MUIA_Text_Contents, DateBuffer,
+						End, //TextObject
+	                                Child, HSpace(0),
+					End, //ColGroup
+				Child, ScrollgroupObject,
+					MUIA_Scrollgroup_Contents, VGroupV,
+						VirtualFrame ,
+						Child, TextObject,
+							MUIA_Background, MUII_TextBack,
+							MUIA_Text_Contents, GetLocString(MSG_ABOUT_BODY),
+							End, //TextObject
+						End, //VGroupV
+					End, //ScrollgroupObject
+
+				Child, BT_About_MUI  = KeyButtonChain(GetLocString(MSG_BUTTON_AMUI), Keys[13][0], 1),
+				End, //VGroup
+/*GFE*/                 End, //WindowObject
+
+		MUIA_Application_Menustrip, MenustripObject,
+			Child, MenuObjectT(GetLocString(MSGID_MENU_PROJECT)),
+
+				Child, MenuAbout = MenuitemObject,
+					MUIA_Menuitem_Title, GetLocString(MSGID_MENU_PROJECT_ABOUT),
+				End,
+				Child, MenuAboutMUI = MenuitemObject,
+					MUIA_Menuitem_Title, GetLocString(MSGID_MENU_PROJECT_ABOUTMUI),
+				End,
+				Child, MenuitemObject,
+					MUIA_Menuitem_Title, -1,
+				End,
+				Child, MenuQuit = MenuitemObject,
+					MUIA_Menuitem_Title, GetLocString(MSGID_MENU_PROJECT_QUIT),
+					MUIA_Menuitem_Shortcut, GetLocString(MSGID_MENU_PROJECT_QUIT_SHORT),
+				End,
+
+			End, //MenuObjectT
+		End, //MenuStripObject
+	End; //ApplicationObject
 }/*GFE*/
 
 //----------------------------------------------------------------------------
@@ -658,6 +716,24 @@ size_t stccpy(char *dest, const char *src, size_t MaxLen)
 }
 
 #endif /* __SASC */
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	if (NULL == WIN_AboutMUI)
+		{
+		WIN_AboutMUI = MUI_NewObject(MUIC_Aboutmui,
+			MUIA_Window_RefWindow, WI_Delete,
+			MUIA_Aboutmui_Application, MUI_App,
+			End;
+		}
+
+	if (WIN_AboutMUI)
+		set(WIN_AboutMUI, MUIA_Window_Open, TRUE);
+
+	return 0;
+}
 
 //----------------------------------------------------------------------------
 

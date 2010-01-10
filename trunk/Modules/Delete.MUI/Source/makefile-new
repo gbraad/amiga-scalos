@@ -60,7 +60,7 @@ Delete_Locale.h : Delete.cd
 ##############################################################################
 
 $(MODULENAME): $(OBJS)
-	$(ECHO) "Link $@"
+	@$(ECHO) "Link $@"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
 	@$(STRIP) $@.debug -o $@
 ifneq ($(MACHINE), ppc-amigaos)

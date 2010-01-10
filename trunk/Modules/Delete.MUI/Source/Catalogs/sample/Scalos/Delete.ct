@@ -241,3 +241,26 @@ Boston, MA\n\
 USA\n\n\
 Or email the original author
 ;
+;-----------------------------------------------------------
+;
+MSGID_MENU_PROJECT
+Project
+;
+;
+MSGID_MENU_PROJECT_ABOUT
+About...
+;
+;
+MSGID_MENU_PROJECT_ABOUTMUI
+About MUI...
+;
+;
+MSGID_MENU_PROJECT_QUIT
+Quit
+;
+;
+MSGID_MENU_PROJECT_QUIT_SHORT
+Q
+;
+;-----------------------------------------------------------
+;
