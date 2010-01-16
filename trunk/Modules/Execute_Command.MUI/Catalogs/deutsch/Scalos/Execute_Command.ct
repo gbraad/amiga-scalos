@@ -11,7 +11,8 @@ Scalos Execute_Command
 ;
 ;
 MSGID_OKBUTTON
-Execute
+Ausführen
+;Execute
 ;
 ;
 MSGID_OKBUTTON_SHORT
@@ -25,45 +26,56 @@ created from a the default icon.
 ;
 ;
 MSGID_CANCELBUTTON
-Cancel
+Abbrechen
+;Cancel
 ;
 ;
 MSGID_CANCELBUTTON_SHORT
-c
+a
+;c
 ;
 ;
 MSGID_SHORTHELP_CANCELBUTTON
-Discard all changes and\n\
-do not execute any command.
+Änderungen verwerfen und\n\
+keinen Befehl ausführen.
+;Discard all changes and\n\
+;do not execute any command.
 ;
 ;
 MSGID_CREATE_APPLICATION_FAILED
-Failed to create Application.\n
+Fehler beim Erzeugen der Anwendung.\n
+;Failed to create Application.\n
 ;
 ;
 MSGID_CREATE_MAINWINDOW_FAILED
-Failed to open main window !\n
+Fehler beim Öffnen des Hauptfensters!\n
+;Failed to open main window !\n
 ;
 ;
 MSGID_OPEN_LIBRARY_FAILED
-Failed to open \"%s\" !\n
+Fehler beim Öffnen von \"%s\" !\n
+;Failed to open \"%s\" !\n
 ;
 ;--------------------------------
 ;
 MSGID_MENU_PROJECT
-Project
+Projekt
+;Project
 ;
 ;
 MSGID_MENU_PROJECT_ABOUT
-About...
+Über...
+;About...
 ;
 ;
 MSGID_MENU_PROJECT_ABOUTMUI
-About MUI...
+Über MUI...
+;About MUI...
 ;
 ;
 MSGID_MENU_PROJECT_QUIT
-Quit
+Beenden
+;Quit
 ;
 ;
 MSGID_MENU_PROJECT_QUIT_SHORT
@@ -78,21 +90,27 @@ _OK
 MSGID_ABOUTREQFORMAT
 \33c\033bScalos Execute_Command.module V%ld.%ld\033n\n\
 %s\n\
-© 2004%s The Scalos Team
+© 2004%s Das Scalos-Team
+;\33c\033bScalos Execute_Command.module V%ld.%ld\033n\n\
+;%s\n\
+;© 2004%s The Scalos Team
 ;
 ;-----------------------------------------------------------
 ;
 ;
 MSGID_TEXT_ENTER_COMMAND
-Enter command and its arguments:
+Befehl und Parameter:
+;Enter command and its arguments:
 ;
 ;
 MSGID_LABEL_COMMAND
-Command:
+Befehl:
+;Command:
 ;
 ;
 MSGID_TITLE_ERRORREQ
-Execute_Command Error
+Eceute_Command Fehler
+;Execute_Command Error
 ;
 ;
 MSGID_CURRENTDIR
@@ -131,7 +149,8 @@ auszuführende Programm ausgewählt werden kann.
 ;
 ;
 MSGID_COMMAND_ASLTITLE
-Select file to execute
+Auszuführenden Befehl wählen
+;Select file to execute
 ;
 ;
 MSGID_LABEL_STACK
