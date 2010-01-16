@@ -19,7 +19,7 @@ ifeq ($(MACHINE), ppc-morphos)
 ###############################################################################
 # MorphOS
 
-LANG	=       deutsch
+LANG	=       français
 
 
 else
@@ -28,14 +28,14 @@ ifeq ($(MACHINE), ppc-amigaos)
 ###############################################################################
 # AmigOS4
 
-LANG	=       german
+LANG	=       french
 
 else
 
 ###############################################################################
 # AmigaOS
 
-LANG	=       deutsch
+LANG	=       français
 
 endif
 endif
