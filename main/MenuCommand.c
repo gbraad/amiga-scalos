@@ -52,6 +52,7 @@
 #include <DefIcons.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "locale.h"
 #include "functions.h"
 #include "Variables.h"
@@ -2685,7 +2686,6 @@ static void SnapshotIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *
 			}
 
 		in->in_Flags &= ~INF_FreeIconPosition;
-		in->in_SupportFlags &= ~INF_SupportsSnapshot;
 		in->in_SupportFlags |= INF_SupportsUnSnapshot;
 		}
 
@@ -3267,11 +3267,11 @@ static BOOL CallGlobalDeleteHook(struct WBArg *wbArg, ULONG nArgs, ULONG Action)
 // to	<Lock to Directory> <empty-Name>
 static void DeleteModuleKludge(struct WBArg *wbArg, ULONG nArgs)
 {
-	struct FileInfoBlock *fib = AllocDosObject(DOS_FIB, NULL);
+	T_ExamineData *fib;
 
 	d1(kprintf("%s/%s/%ld: START fib=%08lx\n", __FILE__, __FUNC__, __LINE__, fib));
 
-	if (fib)
+	if (ScalosExamineBegin(&fib))
 		{
 		ULONG n;
 
@@ -3287,7 +3287,7 @@ static void DeleteModuleKludge(struct WBArg *wbArg, ULONG nArgs)
 			dirLock = Lock(wbArg[n].wa_Name, ACCESS_READ);
 			if (dirLock)
 				{
-				if (Examine(dirLock, fib) && (fib->fib_DirEntryType > 0))
+				if (ScalosExamineLock(dirLock, &fib) && ScalosExamineIsDrawer(fib))
 					{
 					FreeCopyString(wbArg[n].wa_Name);
 					oldLock = wbArg[n].wa_Lock;
@@ -3308,7 +3308,7 @@ static void DeleteModuleKludge(struct WBArg *wbArg, ULONG nArgs)
 			debugLock_d1(wbArg[n].wa_Lock);
 			}
 
-		FreeDosObject(DOS_FIB, fib);
+		ScalosExamineEnd(&fib);
 		}
 }
 

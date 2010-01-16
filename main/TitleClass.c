@@ -714,7 +714,7 @@ static void TTLFN_DiskFree(struct internalScaWindowTask *iwt, struct InfoData *i
 		}
 	else
 		{
-		ULONG64 BytesFree = Mul64(Make64(id->id_NumBlocks - id->id_NumBlocksUsed), Make64(id->id_BytesPerBlock), NULL);
+		ULONG64 BytesFree = Mul64(MakeU64(id->id_NumBlocks - id->id_NumBlocksUsed), MakeU64(id->id_BytesPerBlock), NULL);
 
 		ShiftR64(&BytesFree, Scale);
 
@@ -743,7 +743,7 @@ static void TTLFN_DiskFreeKMG(struct internalScaWindowTask *iwt, struct InfoData
 		}
 	else
 		{
-		ULONG64 BytesFree = Mul64(Make64(id->id_NumBlocks - id->id_NumBlocksUsed), Make64(id->id_BytesPerBlock), NULL);
+		ULONG64 BytesFree = Mul64(MakeU64(id->id_NumBlocks - id->id_NumBlocksUsed), MakeU64(id->id_BytesPerBlock), NULL);
 
 		d1(kprintf("%s/%s/%ld: id_NumBlocksUsed=%lu  id_BytesPerBlock=%lu\n", __FILE__, __FUNC__, __LINE__, id->id_NumBlocksUsed, id->id_BytesPerBlock));
 		d1(kprintf("%s/%s/%ld: BytesFree=%lu %lu\n", __FILE__, __FUNC__, __LINE__, ULONG64_HIGH(BytesFree), ULONG64_LOW(BytesFree)));
@@ -778,7 +778,7 @@ static void TTLFN_DiskUsed(struct internalScaWindowTask *iwt, struct InfoData *i
 		}
 	else
 		{
-		ULONG64 BytesUsed = Mul64(Make64(id->id_NumBlocksUsed), Make64(id->id_BytesPerBlock), NULL);
+		ULONG64 BytesUsed = Mul64(MakeU64(id->id_NumBlocksUsed), MakeU64(id->id_BytesPerBlock), NULL);
 
 		ShiftR64(&BytesUsed, Scale);
 
@@ -807,7 +807,7 @@ static void TTLFN_DiskUsedKMG(struct internalScaWindowTask *iwt, struct InfoData
 		}
 	else
 		{
-		ULONG64 BytesUsed = Mul64(Make64(id->id_NumBlocksUsed), Make64(id->id_BytesPerBlock), NULL);
+		ULONG64 BytesUsed = Mul64(MakeU64(id->id_NumBlocksUsed), MakeU64(id->id_BytesPerBlock), NULL);
 
 		d1(kprintf("%s/%s/%ld: id_NumBlocksUsed=%lu  id_BytesPerBlock=%lu\n", __FILE__, __FUNC__, __LINE__, id->id_NumBlocksUsed, id->id_BytesPerBlock));
 		d1(kprintf("%s/%s/%ld: BytesUsed=%lu %lu\n", __FILE__, __FUNC__, __LINE__, ULONG64_HIGH(BytesUsed), ULONG64_LOW(BytesUsed)));
@@ -860,15 +860,15 @@ static void TTLFN_DiskPercent(struct internalScaWindowTask *iwt, struct InfoData
 	else
 		{
 		char Line[10];
-		ULONG64 BlocksTotal = Make64(id->id_NumBlocks);
-		ULONG64 BlocksUsed100 = Mul64(Make64(id->id_NumBlocksUsed), Make64(100), NULL);
+		ULONG64 BlocksTotal = MakeU64(id->id_NumBlocks);
+		ULONG64 BlocksUsed100 = Mul64(MakeU64(id->id_NumBlocksUsed), MakeU64(100), NULL);
 		ULONG64 PercentUsed;
 
 		d1(kprintf("%s/%s/%ld: Total=%lu %lu\n", __FILE__, __FUNC__, __LINE__, ULONG64_HIGH(BlocksTotal), ULONG64_LOW(BlocksTotal)));
 		d1(kprintf("%s/%s/%ld: Used100=%lu %lu\n", __FILE__, __FUNC__, __LINE__, ULONG64_HIGH(BlocksUsed100), ULONG64_LOW(BlocksUsed100)));
 
-		if (0 == Cmp64(BlocksUsed100, Make64(0)))
-			PercentUsed = Make64(0);
+		if (0 == Cmp64(BlocksUsed100, MakeU64(0)))
+			PercentUsed = MakeU64(0);
 		else
 			PercentUsed = Div64(BlocksUsed100, BlocksTotal, NULL);
 
@@ -1182,7 +1182,7 @@ void TitleClass_Convert64KMGRounded(ULONG64 Number, STRPTR Buffer, size_t MaxLen
 {
 	ULONG MsgID = MSGID_BYTENAME;
 
-	while (Cmp64(Number, Make64(10000)) >= 0 && MsgID < MSGID_HBYTENAME)
+	while (Cmp64(Number, MakeU64(10000)) >= 0 && MsgID < MSGID_HBYTENAME)
 		{
 		ShiftR64(&Number, 10);
 		MsgID++;
@@ -1192,10 +1192,10 @@ void TitleClass_Convert64KMGRounded(ULONG64 Number, STRPTR Buffer, size_t MaxLen
 
 	if (Round)
 		{
-		ULONG64 ten = Make64(10);
+		ULONG64 ten = MakeU64(10);
 		ULONG n;
 
-		for (n = 0; Cmp64(Number, Make64(Round)) > 0; n++)
+		for (n = 0; Cmp64(Number, MakeU64(Round)) > 0; n++)
 			{
 			Number = Div64(Number, ten, NULL);
 			}

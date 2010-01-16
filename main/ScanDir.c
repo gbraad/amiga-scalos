@@ -102,7 +102,7 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 {
 	struct ScaIconNode *in = NULL;
 	ULONG err;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	BPTR oldDir = NOT_A_LOCK;
 	BPTR dirLock;
 	BOOL VolumeIsWritable;
@@ -141,10 +141,9 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 				}
 			}
 
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			{
-			d1(kprintf("%s/%s/%ld: AllocDosObject failed\n", __FILE__, __FUNC__, __LINE__));
+			d1(kprintf("%s/%s/%ld: ScalosExamineBegin failed\n", __FILE__, __FUNC__, __LINE__));
 			break;
 			}
 
@@ -167,19 +166,13 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 			err = IoErr();
 		else
 			{
-			if (!ScalosExamine64(iLock, fib))
+			if (!ScalosExamineLock(iLock, &fib))
 				err = IoErr();
 			UnLock(iLock);
 			}
 
 
 		d1(kprintf("%s/%s/%ld: Lock/Examine returned %ld\n", __FILE__, __FUNC__, __LINE__, err));
-
-		if (RETURN_OK != err)
-			{
-			fib->fib_DirEntryType = MAKE_ID('E','R','R','O');
-			stccpy(fib->fib_FileName, Name, sizeof(fib->fib_FileName));
-			}
 
 		rild.rild_SoloIcon = FALSE;
 
@@ -200,7 +193,7 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 				if (iLock)
 					{
 					rild.rild_SoloIcon = TRUE;
-					ScalosExamine64(iLock, fib);
+					ScalosExamineLock(iLock, &fib);
 					iconExists = TRUE;
 					UnLock(iLock);
 					}
@@ -214,32 +207,42 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 				}
 
 			// switch back to original object name (w/o ".info")
-			stccpy(fib->fib_FileName, Name, sizeof(fib->fib_FileName));
+			stccpy(rild.rild_Name, Name, sizeof(rild.rild_Name));
+			}
+		else if (RETURN_OK != err)
+			{
+			stccpy(rild.rild_Name, Name, sizeof(rild.rild_Name));
+			}
+		else
+			{
+			stccpy(rild.rild_Name, ScalosExamineGetName(fib), sizeof(rild.rild_Name));
 			}
 
-		if (IsFileHidden(fib))
+		stccpy(rild.rild_Comment, ScalosExamineGetComment(fib), sizeof(rild.rild_Comment));
+		rild.rild_Protection = ScalosExamineGetProtection(fib);
+		rild.rild_DateStamp = *ScalosExamineGetDate(fib);
+		rild.rild_DiskWriteProtected = iwt->iwt_ReadOnly;
+		rild.rild_CheckOverlap = TRUE;
+
+		if (IsFileHidden(rild.rild_Name, rild.rild_Protection))
 			{
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			break;
 			}
 
-		stccpy(rild.rild_Name, fib->fib_FileName, sizeof(rild.rild_Name));
-		stccpy(rild.rild_Comment, fib->fib_Comment, sizeof(rild.rild_Comment));
-		rild.rild_Protection = fib->fib_Protection;
-		rild.rild_DateStamp = fib->fib_Date;
-		rild.rild_DiskWriteProtected = iwt->iwt_ReadOnly;
-		rild.rild_CheckOverlap = TRUE;
-
 		if (rild.rild_SoloIcon)
 			{
 			// icon without object
 			rild.rild_Type = 0;	// type of object is undefined
-			rild.rild_Size64 = Make64(0);
+			rild.rild_Size64 = MakeU64(0);
 			}
 		else
 			{
-			rild.rild_Type = fib->fib_DirEntryType;
-			rild.rild_Size64 = ScalosFibSize64(fib);
+			if ((RETURN_OK != err) && (ERROR_OBJECT_NOT_FOUND == err))
+				rild.rild_Type = MAKE_ID('E','R','R','O');
+			else
+				rild.rild_Type = ScalosExamineGetDirEntryType(fib);
+			rild.rild_Size64 = ScalosExamineGetSize(fib);
 			}
 
 		ReExamine(&rild);
@@ -291,8 +294,7 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 
 	if (IS_VALID_LOCK(oldDir))
 		CurrentDir(oldDir);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	d1(KPrintF("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
@@ -408,7 +410,7 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 
 			sdResult = GenerateIcons(iwt, &rilc, TRUE);
 
-			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+			d1(KPrintF("%s/%s/%ld: sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 
 			if (SCANDIR_OK != sdResult)
 				{
@@ -430,7 +432,7 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 				}
 			}
 		TIMESTAMP_d1();
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 		} while (0);
 
 	RilcCleanup(&rilc);
@@ -453,6 +455,8 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 		GenerateThumbnails(iwt);
 
 	TIMESTAMP_d1();
+
+	d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }
@@ -653,11 +657,10 @@ static enum ScanDirResult ScanDir_ExAll(struct internalScaWindowTask *iwt, struc
 
 static enum ScanDirResult BeginScan_Examine(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc)
 {
-	rilc->rilc_fib = AllocDosObject(DOS_FIB, NULL);
-	if (NULL == rilc->rilc_fib)
-		return SCANDIR_FAIL_ABORT;
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
-	ScalosExamine64(rilc->rilc_dirLock, rilc->rilc_fib);
+	if (!ScalosExamineDirBegin(rilc->rilc_dirLock, &rilc->rilc_DirHandle))
+		return SCANDIR_FAIL_ABORT;
 
 	rilc->rilc_replyPort = CreateMsgPort();
 	if (NULL == rilc->rilc_replyPort)
@@ -667,8 +670,10 @@ static enum ScanDirResult BeginScan_Examine(struct internalScaWindowTask *iwt, s
 	if (NULL == rilc->rilc_FileSysPort)
 		return SCANDIR_FAIL_ABORT;
 
-	rilc->rilc_FlagLargeFileSupported = ScalosSupports64(rilc->rilc_FileSysPort,
-		rilc->rilc_dirLock, rilc->rilc_fib);
+	rilc->rilc_FlagLargeFileSupported = ScalosSupportsExamineDir(rilc->rilc_FileSysPort,
+		rilc->rilc_dirLock, &rilc->rilc_DirHandle);
+
+	d1(KPrintF("%s/%s/%ld: rilc_FlagLargeFileSupported=%ld\n", __FILE__, __FUNC__, __LINE__, rilc->rilc_FlagLargeFileSupported));
 
 	rilc->rilc_pkt = AllocDosObject(DOS_STDPKT, NULL);
 	if (NULL == rilc->rilc_pkt)
@@ -676,17 +681,38 @@ static enum ScanDirResult BeginScan_Examine(struct internalScaWindowTask *iwt, s
 
 	if (rilc->rilc_FlagLargeFileSupported)
 		{
-		ScalosDosPacketExNext64(rilc->rilc_pkt, rilc->rilc_dirLock, rilc->rilc_fib);
+		d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+		ScalosDosPacketExamineDir(rilc->rilc_pkt, rilc->rilc_dirLock, &rilc->rilc_DirHandle);
+		d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 		}
 	else
 		{
+		LONG rc;
+
+		d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
+		rilc->rilc_Fib = AllocDosObject(DOS_FIB, NULL);
+		if (NULL == rilc->rilc_Fib)
+			return SCANDIR_FAIL_ABORT;
+
+		rc = DoPkt2(rilc->rilc_FileSysPort,
+			ACTION_EXAMINE_OBJECT,
+			rilc->rilc_dirLock,
+			MKBADDR(rilc->rilc_Fib));
+		if (!rc)
+			return SCANDIR_FAIL_ABORT;
+
 		rilc->rilc_pkt->dp_Type = ACTION_EXAMINE_NEXT;
 		rilc->rilc_pkt->dp_Arg1 = rilc->rilc_dirLock;
-		rilc->rilc_pkt->dp_Arg2 = MKBADDR(rilc->rilc_fib);
+		rilc->rilc_pkt->dp_Arg2 = MKBADDR(rilc->rilc_Fib);
+
+		d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 		}
 
 	rilc->rilc_PacketPending = TRUE;
 	SendPkt(rilc->rilc_pkt, rilc->rilc_FileSysPort, rilc->rilc_replyPort);
+
+	d1(KPrintF("%s/%s/%ld: END(SCANDIR_OK)\n", __FILE__, __FUNC__, __LINE__));
 
 	return SCANDIR_OK;
 }
@@ -696,6 +722,9 @@ static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, str
 {
 	struct IconScanEntry *ise;
 	struct StandardPacket *replyPkt;
+	T_ExamineData *exd;
+	CONST_STRPTR Filename;
+	CONST_STRPTR Comment;
 	size_t len;
 
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
@@ -713,6 +742,8 @@ static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, str
 
 	if (!replyPkt->sp_Pkt.dp_Res1)
 		{
+		d1(kprintf("%s/%s/%ld: Res2=%ld\n", __FILE__, __FUNC__, __LINE__, replyPkt->sp_Pkt.dp_Res2));
+
 		switch (replyPkt->sp_Pkt.dp_Res2)
 			{
 		case ERROR_NO_MORE_ENTRIES:
@@ -724,38 +755,57 @@ static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, str
 			}
 		}
 
-	rilc->rilc_rd.rild_Type = rilc->rilc_fib->fib_DirEntryType;
-	rilc->rilc_rd.rild_Protection = rilc->rilc_fib->fib_Protection;
 	if (rilc->rilc_FlagLargeFileSupported)
-		rilc->rilc_rd.rild_Size64 = ScalosFibSize64(rilc->rilc_fib);
+		{
+		if (!ScalosDosPacketExamineDirResult(replyPkt, &exd, &rilc->rilc_DirHandle))
+			return SCANDIR_FAIL_ABORT;
+
+		d1(kprintf("%s/%s/%ld: exd=%08lx\n", __FILE__, __FUNC__, __LINE__, exd));
+
+		rilc->rilc_rd.rild_Type = ScalosExamineGetDirEntryType(exd);
+		rilc->rilc_rd.rild_Protection = ScalosExamineGetProtection(exd);
+		rilc->rilc_rd.rild_Size64 = ScalosExamineGetSize(exd);
+		rilc->rilc_rd.rild_DateStamp = *ScalosExamineGetDate(exd);
+		rilc->rilc_rd.rild_SoloIcon = FALSE;
+		Filename = ScalosExamineGetName(exd);
+		Comment	= ScalosExamineGetComment(exd);
+		}
 	else
-		rilc->rilc_rd.rild_Size64 = Make64(rilc->rilc_fib->fib_Size);
-	rilc->rilc_rd.rild_DateStamp = rilc->rilc_fib->fib_Date;
-	rilc->rilc_rd.rild_SoloIcon = FALSE;
+		{
+		rilc->rilc_rd.rild_Type = rilc->rilc_Fib->fib_DirEntryType;
+		rilc->rilc_rd.rild_Protection = rilc->rilc_Fib->fib_Protection;
+		rilc->rilc_rd.rild_Size64 = MakeU64(rilc->rilc_Fib->fib_Size);
+		rilc->rilc_rd.rild_DateStamp = rilc->rilc_Fib->fib_Date;
+		rilc->rilc_rd.rild_SoloIcon = FALSE;
+		Filename = rilc->rilc_Fib->fib_FileName;
+		Comment	= rilc->rilc_Fib->fib_Comment;
+		}
 
 	// when using Dos Packet interface,
 	// fib_FileName is NOT 0-terminated and is preceded by length byte.
 
-	len = (size_t) rilc->rilc_fib->fib_FileName[0];
-	rilc->rilc_fib->fib_FileName[1 + len] = 0;
+	len = (size_t) Filename[0];
+	if (len >= sizeof(rilc->rilc_rd.rild_Name))
+		len = sizeof(rilc->rilc_rd.rild_Name) - 1;
 
-	stccpy(rilc->rilc_rd.rild_Name, &rilc->rilc_fib->fib_FileName[1], 
-		sizeof(rilc->rilc_rd.rild_Name));
+	strncpy(rilc->rilc_rd.rild_Name, &Filename[1], len);
+	rilc->rilc_rd.rild_Name[len] = 0;
 
-	d1(kprintf("%s/%s/%ld: fib_FileName=%02lx %02lx %02lx %02lx %02lx %02lx %02lx %02lx\n", __FILE__, __FUNC__, __LINE__, \
-		rilc->rilc_fib->fib_FileName[0], rilc->rilc_fib->fib_FileName[1], \
-		rilc->rilc_fib->fib_FileName[2], rilc->rilc_fib->fib_FileName[3], \
-		rilc->rilc_fib->fib_FileName[4], rilc->rilc_fib->fib_FileName[5], \
-		rilc->rilc_fib->fib_FileName[6], rilc->rilc_fib->fib_FileName[7] ));
+	d1(kprintf("%s/%s/%ld: fib_Filename=%02lx %02lx %02lx %02lx %02lx %02lx %02lx %02lx\n", __FILE__, __FUNC__, __LINE__, \
+		Filename[0], Filename[1], \
+		Filename[2], Filename[3], \
+		Filename[4], Filename[5], \
+		Filename[6], Filename[7] ));
 
 	d1(kprintf("%s/%s/%ld: Name=<%s>  Type=%ld  Prot=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 		rilc->rilc_rd.rild_Name, rilc->rilc_rd.rild_Type, rilc->rilc_rd.rild_Protection));
 
-	len = (size_t) rilc->rilc_fib->fib_Comment[0];
-	rilc->rilc_fib->fib_Comment[1 + len] = 0;
+	len = (size_t) Comment[0];
+	if (len >= sizeof(rilc->rilc_rd.rild_Comment))
+		len = sizeof(rilc->rilc_rd.rild_Comment) - 1;
 
-	stccpy(rilc->rilc_rd.rild_Comment, &rilc->rilc_fib->fib_Comment[1], 
-		sizeof(rilc->rilc_rd.rild_Comment));
+	strncpy(rilc->rilc_rd.rild_Comment, &Comment[1], len);
+	rilc->rilc_rd.rild_Comment[len] = 0;
 
 
 	rilc->rilc_PacketPending = TRUE;
@@ -1239,7 +1289,7 @@ static enum ScanDirResult GenerateIcons(struct internalScaWindowTask *iwt, struc
 				ShowEntry = FALSE;	// don't show WBDISK icons
 			}
 
-		if (ShowEntry && IsFileHidden(&ise->ise_Fib))
+		if (ShowEntry && IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 			ShowEntry = FALSE;
 
 		d1(kprintf("%s/%s/%ld: <%s> ShowEntry=%ld\n", __FILE__, __FUNC__, __LINE__, ise->ise_Fib.fib_FileName, ShowEntry));
@@ -1261,7 +1311,7 @@ static enum ScanDirResult GenerateIcons(struct internalScaWindowTask *iwt, struc
 				ScanDirFillRildFromIse(&rild,  ise);
 				rild.rild_Type = 0;	// type of object is undefined
 
-				rild.rild_Size64 = Make64(0);
+				rild.rild_Size64 = MakeU64(0);
 				rild.rild_SoloIcon = TRUE;
 
 				d1(kprintf("%s/%s/%ld: ise=<%s>  Flags=%08lx  ObjPtr=%08lx  IconPtr=%08lx  SOLOicon\n", \
@@ -1341,7 +1391,7 @@ static enum ScanDirResult GenerateIcons(struct internalScaWindowTask *iwt, struc
 				}
 			}
 
-		if (ShowEntry && IsFileHidden(&ise->ise_Fib))
+		if (ShowEntry && IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 			ShowEntry = FALSE;
 
 		d1(kprintf("%s/%s/%ld: ShowEntry=%ld\n", __FILE__, __FUNC__, __LINE__, ShowEntry));
@@ -1577,7 +1627,7 @@ void RilcInit(struct ReadIconListControl *rilc)
 	rilc->rilc_dirLock = (BPTR)NULL;
 	rilc->rilc_FlagFinished = FALSE;
 	rilc->rilc_edNext = NULL;
-	rilc->rilc_fib = NULL;
+	rilc->rilc_exd = NULL;
 	rilc->rilc_CleanupCount = 0;
 	rilc->rilc_PacketPending = FALSE;
 	rilc->rilc_TotalFound = 0;
@@ -1621,11 +1671,12 @@ void RilcCleanup(struct ReadIconListControl *rilc)
 		BTreeDispose(rilc->rilc_StdFilesTree);
 		rilc->rilc_StdFilesTree = NULL;
 		}
-	if (rilc->rilc_fib)
+	if (rilc->rilc_Fib)
 		{
-		FreeDosObject(DOS_FIB, rilc->rilc_fib);
-		rilc->rilc_fib = NULL;
+		FreeDosObject(DOS_FIB, rilc->rilc_Fib);
+		rilc->rilc_Fib = NULL;
 		}
+	ScalosExamineDirEnd(&rilc->rilc_DirHandle);
 	if (rilc->rilc_exallControl)
 		{
 		FreeDosObject(DOS_EXALLCONTROL, rilc->rilc_exallControl);
@@ -1656,13 +1707,12 @@ void RilcCleanup(struct ReadIconListControl *rilc)
 
 static LONG ReExamine(struct ReadIconListData *rild)
 {
-	struct FileInfoBlock *fib;
+	T_ExamineData *fib;
 	BPTR fLock = (BPTR)NULL;
 	BOOL Result = RETURN_OK;
 
 	do	{
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			{
 			Result = IoErr();
 			break;
@@ -1675,24 +1725,22 @@ static LONG ReExamine(struct ReadIconListData *rild)
 			break;
 			}
 
-		if (!ScalosExamine64(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			{
 			Result = IoErr();
 			break;
 			}
 
-		rild->rild_Type = fib->fib_DirEntryType;
-		rild->rild_Protection = fib->fib_Protection;
-		rild->rild_Size64 = ScalosFibSize64(fib);
-		rild->rild_DateStamp = fib->fib_Date;
+		rild->rild_Type = ScalosExamineGetDirEntryType(fib);
+		rild->rild_Protection = ScalosExamineGetProtection(fib);
+		rild->rild_Size64 = ScalosExamineGetSize(fib);
+		rild->rild_DateStamp = *ScalosExamineGetDate(fib);
 
-		stccpy(rild->rild_Comment, fib->fib_Comment, sizeof(rild->rild_Comment));
-		stccpy(rild->rild_Name, fib->fib_FileName, sizeof(rild->rild_Name));
-
+		stccpy(rild->rild_Comment, ScalosExamineGetComment(fib), sizeof(rild->rild_Comment));
+		stccpy(rild->rild_Name, ScalosExamineGetName(fib), sizeof(rild->rild_Name));
 		} while (0);
 
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 	if (fLock)
 		UnLock(fLock);
 
@@ -1716,7 +1764,7 @@ static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *ril
 
 		stccpy(ise->ise_Fib.fib_FileName, rild->rild_Name, sizeof(ise->ise_Fib.fib_FileName));
 		ise->ise_Fib.fib_DirEntryType = rild->rild_Type;
-		ScalosSetFibSize64(&ise->ise_Fib, rild->rild_Size64);
+		ise->ise_Size64	= rild->rild_Size64;
 		ise->ise_Fib.fib_Protection = rild->rild_Protection;
 		ise->ise_Fib.fib_Date = rild->rild_DateStamp;
 		stccpy(ise->ise_Fib.fib_Comment, rild->rild_Comment, sizeof(ise->ise_Fib.fib_Comment));
@@ -2070,18 +2118,16 @@ LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_ST
 	d1(kprintf("%s/%s/%ld: Name=<%s>\n", __FILE__, __FUNC__, __LINE__, Name));
 
 	do	{
+		CONST_STRPTR Filename;
+		CONST_STRPTR Comment;
 		struct IconScanEntry *ise;
 
 		oldDir = CurrentDir(dirLock);
 
-		if (NULL == rilc->rilc_fib)
+		if (!ScalosExamineBegin(&rilc->rilc_exd))
 			{
-			rilc->rilc_fib = AllocDosObject(DOS_FIB, NULL);
-			if (NULL == rilc->rilc_fib)
-				{
-				Result = IoErr();
-				break;
-				}
+			Result = IoErr();
+			break;
 			}
 
 		fLock = Lock((STRPTR) Name, ACCESS_READ);
@@ -2091,26 +2137,27 @@ LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_ST
 			break;
 			}
 
-		if (!ScalosExamine64(fLock, rilc->rilc_fib))
+		if (!ScalosExamineLock(fLock, &rilc->rilc_exd))
 			{
 			Result = IoErr();
 			break;
 			}
 
-		rilc->rilc_rd.rild_Type = rilc->rilc_fib->fib_DirEntryType;
-		rilc->rilc_rd.rild_Protection = rilc->rilc_fib->fib_Protection;
-		rilc->rilc_rd.rild_Size64 = ScalosFibSize64(rilc->rilc_fib);
-		rilc->rilc_rd.rild_DateStamp = rilc->rilc_fib->fib_Date;
+		rilc->rilc_rd.rild_Type = ScalosExamineGetDirEntryType(rilc->rilc_exd);
+		rilc->rilc_rd.rild_Protection = ScalosExamineGetProtection(rilc->rilc_exd);
+		rilc->rilc_rd.rild_Size64 = ScalosExamineGetSize(rilc->rilc_exd);
+		rilc->rilc_rd.rild_DateStamp = *ScalosExamineGetDate(rilc->rilc_exd);
 		rilc->rilc_rd.rild_SoloIcon = FALSE;
 
-		stccpy(rilc->rilc_rd.rild_Name, rilc->rilc_fib->fib_FileName, 
-			sizeof(rilc->rilc_rd.rild_Name));
+		Filename = ScalosExamineGetName(rilc->rilc_exd);
+		Comment =  ScalosExamineGetComment(rilc->rilc_exd);
+
+		stccpy(rilc->rilc_rd.rild_Name, Filename, sizeof(rilc->rilc_rd.rild_Name));
 
 		d1(kprintf("%s/%s/%ld: Name=<%s>  Type=%ld  Prot=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 			rilc->rilc_rd.rild_Name, rilc->rilc_rd.rild_Type, rilc->rilc_rd.rild_Protection));
 
-		stccpy(rilc->rilc_rd.rild_Comment, rilc->rilc_fib->fib_Comment, 
-			sizeof(rilc->rilc_rd.rild_Comment));
+		stccpy(rilc->rilc_rd.rild_Comment, Comment, sizeof(rilc->rilc_rd.rild_Comment));
 
 		ise = NewIconScanEntry(&rilc->rilc_rd);
 		d1(kprintf("%s/%s/%ld: ise=%08lx\n", __FILE__, __FUNC__, __LINE__, ise));
@@ -2130,6 +2177,7 @@ LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_ST
 
 	if (fLock)
 		UnLock(fLock);
+	ScalosExamineEnd(&rilc->rilc_exd);
 
 	CurrentDir(oldDir);
 
@@ -2143,7 +2191,7 @@ void ScanDirFillRildFromIse(struct ReadIconListData *rild, const struct IconScan
 {
 	rild->rild_Type = ise->ise_Fib.fib_DirEntryType;
 	rild->rild_Protection = ise->ise_Fib.fib_Protection;
-	rild->rild_Size64 = ScalosFibSize64(&ise->ise_Fib);
+	rild->rild_Size64 = ise->ise_Size64;
 	rild->rild_DateStamp = ise->ise_Fib.fib_Date;
 	rild->rild_IconType = ise->ise_IconType;
 	rild->rild_TypeNode = NULL;
@@ -2179,12 +2227,12 @@ void ScanDirUpdateStatusBarText(struct internalScaWindowTask *iwt, ULONG TotalIc
 }
 
 
-BOOL IsFileHidden(const struct FileInfoBlock *fib)
+BOOL IsFileHidden(CONST_STRPTR Filename, ULONG Protection)
 {
-	if (CurrentPrefs.pref_HideHiddenFlag && ('.' == fib->fib_FileName[0]))
+	if (CurrentPrefs.pref_HideHiddenFlag && ('.' == Filename[0]))
 		return TRUE;
 
-	if (CurrentPrefs.pref_HideProtectHiddenFlag && (fib->fib_Protection & FIBF_HIDDEN))
+	if (CurrentPrefs.pref_HideProtectHiddenFlag && (Protection & FIBF_HIDDEN))
 		return TRUE;
 
 	return FALSE;

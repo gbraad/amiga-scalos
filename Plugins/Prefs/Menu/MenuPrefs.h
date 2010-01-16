@@ -107,6 +107,7 @@ enum PopupMenuNodeIndex
 	POPMENUINDEX_Trashcan,
 	POPMENUINDEX_Window,
 	POPMENUINDEX_AppIcon,
+	POPMENUINDEX_Desktop,
 	POPMENUINDEX_MAX	// MUST be last entry!!
 };
 
@@ -119,6 +120,7 @@ enum DefaultMenuParentNode
 	DEFAULTPARENTNODE_Popup_Trashcan,
 	DEFAULTPARENTNODE_Popup_Window,
 	DEFAULTPARENTNODE_Popup_AppIcon,
+	DEFAULTPARENTNODE_Popup_Desktop,
 	DEFAULTPARENTNODE_LastInsertedMenu,
 	DEFAULTPARENTNODE_LastInsertedMenuItem,
 	DEFAULTPARENTNODE_LastInserted,

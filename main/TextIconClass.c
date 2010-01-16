@@ -364,6 +364,10 @@ static ULONG TextIcon_Get(Class *cl, Object *o, Msg msg)
 		*(opg->opg_Storage) = ULONG64_LOW(inst->txicl_realsize);
 		break;
 
+	case TIDTA_Size64:
+		*(opg->opg_Storage) = (ULONG) &inst->txicl_realsize;
+		break;
+
 	case TIDTA_Protection:
 		*(opg->opg_Storage) = inst->txicl_realprot;
 		break;
@@ -853,6 +857,7 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 	ULONG ExAllType;
 	struct DateTime dtm;
 	struct FileInfoBlock *fib;
+	const ULONG64 *pSize64;
 	struct ExAllData *ead;
 	static const ULONG packTable[] =
 		{
@@ -888,6 +893,7 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 
 	ead = (struct ExAllData *) GetTagData(TIDTA_ExAllData, (ULONG)NULL, ops->ops_AttrList);
 	fib = (struct FileInfoBlock *) GetTagData(TIDTA_ExNextData, (ULONG)NULL, ops->ops_AttrList);
+	pSize64 = (const ULONG64 *) GetTagData(TIDTA_Size64, (ULONG)NULL, ops->ops_AttrList);
 
 	if (ExAllType >= ED_NAME && ead)
 		{
@@ -897,7 +903,10 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 			inst->txicl_type = ead->ed_Type;
 		if (ExAllType >= ED_SIZE)
 			{
-			inst->txicl_realsize = ScalosExAllSize64(ead, ExAllType);
+			if (pSize64)
+				inst->txicl_realsize = *pSize64;
+			else
+				inst->txicl_realsize = ScalosExAllSize64(ead, ExAllType);
 
 			if (inst->txicl_SoloIcon)
 				{
@@ -973,7 +982,11 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 		stccpy((char *)inst->txicl_name, fib->fib_FileName, sizeof(inst->txicl_name));
 		inst->txicl_type = fib->fib_DirEntryType;
 
-		inst->txicl_realsize = ScalosFibSize64(fib);
+		if (pSize64)
+			inst->txicl_realsize = *pSize64;
+		else
+			inst->txicl_realsize = ScalosFibSize64(fib);
+
 		if (inst->txicl_SoloIcon)
 			{
 			stccpy((char *)inst->txicl_size,

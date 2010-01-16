@@ -155,10 +155,9 @@ enum ScalosMenuChunkId
 	SCMID_Popup_Tool, 
 	SCMID_Popup_Trashcan, 
 	SCMID_Popup_Window, 
-	SCMID_Popup_AppIcon
+	SCMID_Popup_AppIcon,
+	SCMID_Popup_Desktop,
 	}; 
-
-#define	MAX_PopupMenu 6		// number of Popup menus
 
 struct ScalosMenuChunk
 	{
@@ -2559,6 +2558,11 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 						inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_Listtree,
 						inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_ListNode);
 					break;
+				case SCMID_Popup_Desktop:
+					GenerateMenuList(inst, menuChunk->smch_Menu,
+						inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree,
+						inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_ListNode);
+					break;
 					}
 
 				free(menuChunk);
@@ -2726,6 +2730,11 @@ static LONG WritePrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename)
 
 		Result = SaveMenuNode(inst,
 			iff, &inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon], SCMID_Popup_AppIcon);
+		if (RETURN_OK != Result)
+			break;
+
+		Result = SaveMenuNode(inst,
+			iff, &inst->mpb_PopMenuNode[POPMENUINDEX_Desktop], SCMID_Popup_Desktop);
 		if (RETURN_OK != Result)
 			break;
 
@@ -4596,6 +4605,11 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_ListNode;
 			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_AppIcon Listtree=%08lx\n", __LINE__, Listtree));
 			break;
+		case DEFAULTPARENTNODE_Popup_Desktop:
+			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree;
+			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_ListNode;
+			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_Desktop Listtree=%08lx\n", __LINE__, Listtree));
+			break;
 		case DEFAULTPARENTNODE_LastInsertedMenu:
 		case DEFAULTPARENTNODE_LastInsertedMenuItem:
 			ParentNode = LastNode[DefaultMenu[n].dme_Level - 1];
@@ -4842,6 +4856,14 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_Listtree = GetMenuEntryListtree(inst);
 	inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME6),
+		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
+		TNF_OPEN | TNF_LIST);
+
+	inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree = inst->mpb_Objects[OBJNDX_MainListTree];
+	inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree,
+		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME7),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
 			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,

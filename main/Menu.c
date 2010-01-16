@@ -78,6 +78,7 @@ enum ScalosMenuChunkId
 	SCMID_Popup_Trashcan, 
 	SCMID_Popup_Window, 
 	SCMID_Popup_AppIcon,
+	SCMID_Popup_Desktop,
 
 	MAX_PopupMenu	      // MUST be last entry
 	}; 
@@ -707,6 +708,7 @@ ULONG ReadMenuPrefs(void)
 			case SCMID_Popup_Trashcan:
 			case SCMID_Popup_Window:
 			case SCMID_Popup_AppIcon:
+			case SCMID_Popup_Desktop:
 				d1(KPrintF("%s/%s/%ld: smch_MenuID=%lu\n", __FILE__, __FUNC__, __LINE__, MenuChunk->smch_MenuID));
 				PopupMenuBuffer[MenuChunk->smch_MenuID] = MenuChunk;
 				PopupMenus[MenuChunk->smch_MenuID - 1] = GeneratePopupMenu(MenuChunk, MenuChunk->smch_MenuID - 1);

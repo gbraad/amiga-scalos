@@ -442,6 +442,7 @@ TIDTA_TextPenDrawerNormal 	EQU	DTA_Dummy+1175	;(ISG) UWORD - text window normal 
 TIDTA_TextPenDrawerSelected 	EQU	DTA_Dummy+1176	;(ISG) UWORD - text window selected icon text pen  for drawers
 TIDTA_TextPenFileNormal		equ	DTA_Dummy+1177	;(ISG) UWORD - text window normal  icon text pen for files
 TIDTA_TextPenFileSelected	equ	DTA_Dummy+1178	;(ISG) UWORD - text window selected icon text pen for files
+TIDTA_Size64			equ	DTA_Dummy+1179	;(ISG) ULONG64 * - 64bit file size
 
 ;------------------------------------------------------------------------------
 

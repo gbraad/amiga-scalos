@@ -247,6 +247,12 @@ MSGID_PMTITLE6NAME
 [AppIcon]
 ;
 ;
+;+++translateme+++
+MSGID_PMTITLE7NAME
+[Desktop]
+;[Desktop]
+;
+;
 MSGID_COPYERRORNAME
 Error copying file\n\
 \"%s\"\n\

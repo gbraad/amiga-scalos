@@ -62,6 +62,7 @@
 #include <assert.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "locale.h"
 #include "Variables.h"
@@ -2001,20 +2002,20 @@ ULONG GetPrefsCRCFromFH(BPTR fh)
 {
 	UBYTE buffer[256];
 	ULONG crc = INITIAL_CRC;
-	LONG FilePos;
+	SLONG64	FilePos;
 	LONG len;
 
 	if (BNULL == fh)
 		return 0;
 
 	d1(KPrintF("%s/%s/%ld: START  fh=%08lx\n", __FILE__, __FUNC__, __LINE__, fh));
-	FilePos = Seek(fh, 0, OFFSET_BEGINNING);
+	FilePos = ScalosSeek(fh, MakeS64(0), OFFSET_BEGINNING);
 
 	while ((len = FRead(fh, buffer, 1, sizeof(buffer))) > 0)
 		{
 		crc = update_crc(crc, buffer, len);
 		}
-	Seek(fh, FilePos, OFFSET_BEGINNING);
+	ScalosSeek(fh, FilePos, OFFSET_BEGINNING);
 
 	d1(KPrintF("%s/%s/%ld: END  fh=%08lx  crc=%08lx\n", __FILE__, __FUNC__, __LINE__, fh, crc));
 

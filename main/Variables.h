@@ -22,10 +22,15 @@ extern SCALOSSEMAPHORE AppMenuListSemaphore;	// Semaphore to protect ToolsMenuIt
 /* ------------------------------------------------- */
 
 // Array Index for PopupMenus[]
-enum PopupMenusArrayIndex { 
-	SCPOPUPMENU_Disk=0, SCPOPUPMENU_Drawer, 
-	SCPOPUPMENU_Tool, SCPOPUPMENU_Trashcan, 
-	SCPOPUPMENU_Window, SCPOPUPMENU_AppIcon,
+enum PopupMenusArrayIndex
+	{
+	SCPOPUPMENU_Disk=0,
+	SCPOPUPMENU_Drawer,
+	SCPOPUPMENU_Tool,
+	SCPOPUPMENU_Trashcan,
+	SCPOPUPMENU_Window,
+	SCPOPUPMENU_AppIcon,
+	SCPOPUPMENU_Desktop,
 
 	SCPOPUPMENU_Last
 	};

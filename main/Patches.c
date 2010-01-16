@@ -46,6 +46,7 @@
 #include <ctype.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "Variables.h"
 #include "Patches.h"
@@ -1792,7 +1793,7 @@ LIBFUNC_P3(BPTR, sca_Open,
 	A6, struct DosLibrary *, DOSBase)
 {
 	BPTR file;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	struct DosOpenInfo *doi;
 
 	file = CALLLIBFUNC_P3((*OldOpen),
@@ -1822,12 +1823,11 @@ LIBFUNC_P3(BPTR, sca_Open,
 		if (NULL == PatchOpenBTree)
 			break;
 
-		fib = AllocDosObject(DOS_FIB, NULL);
-		d1(KPrintF("%s/%s/%ld: fib=%08lx\n", __FILE__, __FUNC__, __LINE__, fib));
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
+		d1(KPrintF("%s/%s/%ld: fib=%08lx\n", __FILE__, __FUNC__, __LINE__, fib));
 
-		if (!ExamineFH(file, fib))
+		if (!ScalosExamineFH(file, &fib))
 			break;
 
 		doi = ScalosAlloc(sizeof(struct DosOpenInfo));
@@ -1839,7 +1839,7 @@ LIBFUNC_P3(BPTR, sca_Open,
 
 		doi->doi_fh = file;
 		doi->doi_AccessMode = accessMode;
-		doi->doi_DateBefore = fib->fib_Date;
+		doi->doi_DateBefore = *ScalosExamineGetDate(fib);
 
 		if (BTreeInsert(PatchOpenBTree, (APTR) doi->doi_fh, doi))
 			{
@@ -1853,8 +1853,7 @@ LIBFUNC_P3(BPTR, sca_Open,
 			__FILE__, __FUNC__, __LINE__, file, DoiCount, BTreeNumberOfNodes(PatchOpenBTree), name));
 		} while (0);
 
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 #endif
 	return file;
 }
@@ -1871,7 +1870,7 @@ LIBFUNC_P2(ULONG, sca_Close,
 {
 	BOOL Success;
 	struct DosOpenInfo *doi = NULL;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	STRPTR FileName = NULL;
 	BOOL DoUpdate = FALSE;
 
@@ -1908,12 +1907,12 @@ LIBFUNC_P2(ULONG, sca_Close,
 
 		d1(kprintf("%s/%s/%ld: fh_Link=%08lx  fh_Port=%08lx  fh_Type=%08lx\n", __FILE__, __FUNC__, __LINE__, fh->fh_Link, fh->fh_Port, fh->fh_Type));
 
-		fib = AllocDosObject(DOS_FIB, NULL);
-		d1(KPrintF("%s/%s/%ld: fib=%08lx\n", __FILE__, __FUNC__, __LINE__, fib));
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
-		if (!ExamineFH(file, fib))
+		d1(KPrintF("%s/%s/%ld: fib=%08lx\n", __FILE__, __FUNC__, __LINE__, fib));
+
+		if (!ScalosExamineFH(file, &fib))
 			break;
 
 		d1(KPrintF("%s/%s/%ld: doi_DateBefore: ds_Days=%ld  ds_Minute=%ld  ds_Tick=%ld\n", \
@@ -1926,7 +1925,7 @@ LIBFUNC_P2(ULONG, sca_Close,
 		d1(KPrintF("%s/%s/%ld: CompareDates=%08lx\n", __FILE__, __FUNC__, __LINE__, CompareDates(&fib->fib_Date, &doi->doi_DateBefore)));
 
 		if (MODE_NEWFILE == doi->doi_AccessMode ||
-			0 != CompareDates(&fib->fib_Date, &doi->doi_DateBefore))
+			0 != CompareDates(ScalosExamineGetDate(fib), &doi->doi_DateBefore))
 			{
 			d1(KPrintF("%s/%s/%ld: doi_DateBefore: ds_Days=%ld  ds_Minute=%ld  ds_Tick=%ld\n", \
 				__FILE__, __FUNC__, __LINE__, doi->doi_DateBefore.ds_Days,
@@ -1962,8 +1961,7 @@ LIBFUNC_P2(ULONG, sca_Close,
 		D1, file, A6, DOSBase);
 
 #if 1
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	if (DoUpdate)
 		{

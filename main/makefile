@@ -24,6 +24,8 @@ CFLAGS  	= nostkchk nochkabort strcons strmer opt dbg=f nover streq data=far \
 		  idir=/include \
 		  idir=$(subst ../,/,$(MCPGFX_DIR)) \
 		  idir=$(subst ../,/,$(INT64_DIR)) \
+		  idir=$(subst ../,/,$(FS_DIR)) \
+		  idir=$(subst ../,/,$(MALLOC_DIR)) \
                   idlen=64 \
                   define SVN_VERSION=$(SVNVERSION) \
 		  ERROR=87,88 IGNORE=306,316 
@@ -46,6 +48,8 @@ CSTARTUP 	= .startup/cbacknb.o
 OBJDIR	       	= .sasobj
 MCPGFX_DIR	= ../common/McpGfx
 INT64_DIR	= ../common/Int64
+FS_DIR		= ../common/Fs
+MALLOC_DIR	= ../common/malloc
 
 #############################################################
 
@@ -56,7 +60,7 @@ $(OBJDIR)::
 
 APP		= Scalos
 APP_DBG		= Scalos.debug
-CATHEADER	= Scalos_Locale.h
+CATHEADER	= $(OBJDIR)/Scalos_Locale.h
 MSG_NAMES 	= MsgIdNames.h
 DESTCAT		= Locale:Catalogs
 CAT_FILE	= Scalos/Scalos.catalog
@@ -115,6 +119,7 @@ SRCS  =	about.c			\
 	FileTypes.c		\
 	FontUtil.c		\
         FrameImageClass.c	\
+	$(FS_DIR)/FsAbstraction.c \
 	Functions.c		\
 	GadgetBarClass.c	\
 	GadgetBarImageClass.c	\
@@ -131,7 +136,7 @@ SRCS  =	about.c			\
 	Lasso.c			\
 	LocaleStrings.c		\
 	MainWait.c		\
-	malloc.c		\
+	$(MALLOC_DIR)/malloc.c	\
 	Memory.c		\
 	Menu.c			\
 	MenuCommand.c		\
@@ -219,6 +224,14 @@ $(OBJDIR)/Dos64.o: $(INT64_DIR)/Dos64.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
+$(OBJDIR)/FsAbstraction.o: $(FS_DIR)/FsAbstraction.c
+	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
+	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
+
+$(OBJDIR)/malloc.o: $(MALLOC_DIR)/malloc.c
+	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
+	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
+
 # commands generated a catalog (.catalog) from a catalog translation (.ct) file.
 .ct.catalog:
 	$(CATCOMP) scalos.cd $< CATALOG $*.catalog VB=1
@@ -267,6 +280,7 @@ $(OBJDIR)/FileTransClass.o		: FileTransClass.c $(CHEADERS) FileTransClass.h $(LO
 $(OBJDIR)/FileTypes.o			: FileTypes.c TTLayout.h MsgIdNames.h PenNames.h DtImageClass.h ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/FontUtil.o			: FontUtil.c $(CHEADERS)
 $(OBJDIR)/FrameImageClass.o		: FrameImageClass.c $(CHEADERS) FrameImageClass.h
+$(OBJDIR)/FsAbstraction.o		: $(FS_DIR)/FsAbstraction.c $(CHEADERS)
 $(OBJDIR)/Functions.o			: Functions.c $(CHEADERS)
 $(OBJDIR)/GadgetBarClass.o		: GadgetBarClass.c $(CHEADERS)
 $(OBJDIR)/GadgetBarImageClass.o		: GadgetBarImageClass.c $(CHEADERS)
@@ -284,7 +298,7 @@ $(OBJDIR)/ScalosMcpGfx.o		: $(MCPGFX_DIR)/ScalosMcpGfx.c $(CHEADERS)
 $(OBJDIR)/Lasso.o			: Lasso.c $(CHEADERS)
 $(OBJDIR)/LocaleStrings.o		: LocaleStrings.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/MainWait.o			: MainWait.c $(CHEADERS)
-$(OBJDIR)/malloc.o			: malloc.c $(CHEADERS)
+$(OBJDIR)/malloc.o			: $(MALLOC_DIR)/malloc.c $(CHEADERS)
 $(OBJDIR)/Memory.o			: Memory.c $(CHEADERS)
 $(OBJDIR)/Menu.o			: Menu.c DtImageClass.h $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/MenuCommand.o			: MenuCommand.c ../include/DefIcons.h $(CHEADERS) $(LOCALE_HEADERS)

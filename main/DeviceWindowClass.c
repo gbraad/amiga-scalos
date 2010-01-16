@@ -44,6 +44,7 @@
 #include <DefIcons.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "locale.h"
 #include "Variables.h"
@@ -1160,7 +1161,7 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 	BPTR dirLock = (BPTR)NULL;
 	BPTR oldDir = NOT_A_LOCK;
 	BPTR iLock;				// +++ JMC 28.11.2004
-	struct FileInfoBlock *fib = NULL;	// +++ JMC 28.11.2004
+	T_ExamineData *fib = NULL;		// +++ JMC 28.11.2004
 
 
 	d1(kprintf("%s/%s/%ld: START BackdropIconName=<%s>\n", __FILE__, __FUNC__, __LINE__, BackdropIconName));
@@ -1198,7 +1199,7 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 
 		if (CurrentPrefs.pref_HideProtectHiddenFlag)
 			{
-			fib = AllocDosObject(DOS_FIB, NULL);
+			if (!ScalosExamineBegin(&fib))
 			if (NULL == fib)
 				{
 				d1(kprintf("%s/%s/%ld: AllocDosObject failed\n", __FILE__, __FUNC__, __LINE__));
@@ -1207,10 +1208,11 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 			iLock = Lock(PathPart(fName), SHARED_LOCK);
 			if (iLock)
 				{
-				Examine(iLock, fib);
-				if (fib->fib_Protection & FIBF_HIDDEN)
+				ScalosExamineLock(iLock, &fib);
+				if (ScalosExamineGetProtection(fib) & FIBF_HIDDEN)
 					{
 					d1(kprintf("%s/%s/%ld: <%s> FIBF_HIDDEN found!\n", __FILE__, __FUNC__, __LINE__, PathPart(fName)));
+					UnLock(iLock);
 					break;
 					}
 				UnLock(iLock);
@@ -1338,8 +1340,7 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 		UnLock(dirLock);
 	if (iconObj)
 		DisposeIconObject(iconObj);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	d1(kprintf("%s/%s/%ld: END  in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 

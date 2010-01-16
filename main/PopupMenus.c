@@ -238,6 +238,7 @@ LONG TestPopup(struct internalScaWindowTask *iwt, WORD MouseX, WORD MouseY, UWOR
 		else
 			{
 			// Pointer over Scalos window
+			struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 			WORD x, y;
 
 			x = MouseX + iwt->iwt_WindowTask.wt_Window->LeftEdge - iwtUnderPointer->iwt_WindowTask.wt_Window->LeftEdge - iwtUnderPointer->iwt_InnerLeft;
@@ -245,9 +246,9 @@ LONG TestPopup(struct internalScaWindowTask *iwt, WORD MouseX, WORD MouseY, UWOR
 
 			d1(KPrintF("%s/%s/%ld: x=%ld  y=%ld  pref_FullPopupFlag=%ld\n", __FILE__, __FUNC__, __LINE__, x, y, CurrentPrefs.pref_FullPopupFlag));
 
-			pm = PopupMenus[SCPOPUPMENU_Window];
+			pm = PopupMenus[(iwtUnderPointer == iwtMain) ? SCPOPUPMENU_Desktop : SCPOPUPMENU_Window];
 
-			if ((y < 0 || !CurrentPrefs.pref_FullPopupFlag) && x >= 0
+			if ((y < 0 || !CurrentPrefs.pref_FullPopupFlag || (iwtUnderPointer == iwtMain)) && x >= 0
 				&& x < iwtUnderPointer->iwt_WindowTask.wt_Window->Width
 				&& y < iwtUnderPointer->iwt_WindowTask.wt_Window->Height
 				&& pm)

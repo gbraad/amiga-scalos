@@ -8,7 +8,7 @@
 CONST_STRPTR      GetLocString(LONG lStrnum);
 
 #define	CATCOMP_NUMBERS
-#include "Scalos_Locale.h"
+#include STR(SCALOSLOCALE)
 
 
 #endif

@@ -1,7 +1,6 @@
 # makefile for Scalos Tools
 # $Date$
 # $Revision$
-# $Id$
 # using GNU make and SAS/C
 
 
@@ -11,6 +10,7 @@ CC      	= sc
 CFLAGS  	= nostkchk nochkabort strcons strmer opt dbg=f nover streq data=far \
 		  idir=//include \
 		  idir=$(subst ../,/,$(INT64_DIR)) \
+		  idir=$(subst ../,/,$(FS_DIR)) \
                   idlen=64 \
                   ERROR=87,88 \
                   IGNORE=306,316
@@ -23,6 +23,7 @@ CSTARTUP 	= LIB:c.o
 ECHO		= echo
 OBJ_DIR		= .sasobj
 INT64_DIR	= ../../common/Int64
+FS_DIR		= ../../common/Fs
 
 #############################################################
 

@@ -238,6 +238,7 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 			const struct Gadget *gad;
 			const struct Gadget *DepthArrangeGad = NULL;
 			WORD RightMostPos = SHRT_MIN;
+			struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
 			// Try to find depth arrange gadget
 			for (gad=iwtUnderPointer->iwt_WindowTask.wt_Window->FirstGadget; gad; gad=gad->NextGadget)
@@ -263,7 +264,7 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 
 			d1(KPrintF("%s/%s/%ld: ie_x=%ld  ie_y=%ld  x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, ie->ie_position.ie_xy.ie_x, ie->ie_position.ie_xy.ie_y, x, y));
 
-			if ((y < 0 || !CurrentPrefs.pref_FullPopupFlag) && x >= 0
+			if ((y < 0 || !CurrentPrefs.pref_FullPopupFlag || (iwtUnderPointer == iwtMain)) && x >= 0
 				&& !PointInGadget(xw, yw, iwtUnderPointer->iwt_WindowTask.wt_Window, DepthArrangeGad)
 				&& x < iwtUnderPointer->iwt_WindowTask.wt_Window->Width
 				&& y < iwtUnderPointer->iwt_WindowTask.wt_Window->Height)

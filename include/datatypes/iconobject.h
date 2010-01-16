@@ -518,6 +518,7 @@ struct iopCloneIconObject
 #define TIDTA_TextPenDrawerSelected	DTA_Dummy+1176		/* (ISG) UWORD - text window selected icon text pen  for drawers */
 #define TIDTA_TextPenFileNormal		DTA_Dummy+1177		/* (ISG) UWORD - text window normal  icon text pen for files */
 #define TIDTA_TextPenFileSelected	DTA_Dummy+1178		/* (ISG) UWORD - text window selected icon text pen for files */
+#define TIDTA_Size64			DTA_Dummy+1179		/* (IS.) ULONG64 * - 64bit file size */
 
 /*----------------------------------------------------------------------------------*/
 

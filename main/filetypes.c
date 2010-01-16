@@ -32,6 +32,7 @@
 #include "TTLayout.h"
 #include <scalos/menu.h>
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "Variables.h"
 
@@ -1972,10 +1973,6 @@ static struct FileTypeDef *CreateFileTypeDef(void)
 		memset(ftd->ftd_FileHandles, 0, sizeof(ftd->ftd_FileHandles));
 		ftd->ftd_IncludeNesting = 0;
 
-		ftd->ftd_FileInfoBlock = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == ftd->ftd_FileInfoBlock)
-			break;
-
 		if (RETURN_OK != ScalosTagListInit(&ftd->ftd_TagList))
 			break;
 
@@ -2107,11 +2104,6 @@ static void DisposeFileTypeDefTemp(struct FileTypeDef *ftd)
 		d1(kprintf("%s/%s/%ld: ftd_TagList.stl_TagList=%08lx\n", __FILE__, __FUNC__, __LINE__, ftd->ftd_TagList.stl_TagList));
 		ScalosTagListCleanup(&ftd->ftd_TagList);
 
-		if (ftd->ftd_FileInfoBlock)
-			{
-			FreeDosObject(DOS_FIB, ftd->ftd_FileInfoBlock);
-			ftd->ftd_FileInfoBlock = NULL;
-			}
 		if (ftd->ftd_FileTypesDirLock)
 			{
 			UnLock(ftd->ftd_FileTypesDirLock);

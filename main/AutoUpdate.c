@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "Variables.h"
 
@@ -161,7 +162,7 @@ ULONG DeviceWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			d1(kprintf("%s/%s/%ld: IconPtr=%08lx  ObjPtr=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 				ise->ise_IconPtr, ise->ise_ObjPtr));
 
-			if (IsFileHidden(&ise->ise_Fib))
+			if (IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 				continue;
 
 			// strip ".info" from name
@@ -436,7 +437,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			ise != (struct IconScanEntry *) &rilc.rilc_IconScanList.lh_Tail;
 			ise = (struct IconScanEntry *) ise->ise_Node.ln_Succ)
 			{
-			if (IsFileHidden(&ise->ise_Fib))
+			if (IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 				continue;
 
 			// strip ".info" from name
@@ -455,7 +456,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			ise != (struct IconScanEntry *) &rilc.rilc_NonIconScanList.lh_Tail;
 			ise = (struct IconScanEntry *) ise->ise_Node.ln_Succ)
 			{
-			if (IsFileHidden(&ise->ise_Fib))
+			if (IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 				continue;
 
 			AddToCheckUpdateFilesList(iwt, &cfl, ise);
@@ -468,7 +469,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			ise != (struct IconScanEntry *) &rilc.rilc_UnlinkedIconScanList.lh_Tail;
 			ise = (struct IconScanEntry *) ise->ise_Node.ln_Succ)
 			{
-			if (IsFileHidden(&ise->ise_Fib))
+			if (IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 				continue;
 
 			// strip ".info" from name
@@ -779,7 +780,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			ise != (struct IconScanEntry *) &rilc.rilc_IconScanList.lh_Tail;
 			ise = (struct IconScanEntry *) ise->ise_Node.ln_Succ)
 			{
-			if (IsFileHidden(&ise->ise_Fib))
+			if (IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 				continue;
 
 			if (!IsShowAllType(iwt->iwt_OldShowType))
@@ -799,7 +800,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			ise != (struct IconScanEntry *) &rilc.rilc_NonIconScanList.lh_Tail;
 			ise = (struct IconScanEntry *) ise->ise_Node.ln_Succ)
 			{
-			if (IsFileHidden(&ise->ise_Fib))
+			if (IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 				continue;
 
 			AddToCheckUpdateFilesList(iwt, &cfl, ise);
@@ -812,7 +813,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			ise != (struct IconScanEntry *) &rilc.rilc_UnlinkedIconScanList.lh_Tail;
 			ise = (struct IconScanEntry *) ise->ise_Node.ln_Succ)
 			{
-			if (IsFileHidden(&ise->ise_Fib))
+			if (IsFileHidden(ise->ise_Fib.fib_FileName, ise->ise_Fib.fib_Protection))
 				continue;
 
 			if (!IsShowAllType(iwt->iwt_OldShowType))
@@ -1413,7 +1414,7 @@ static BOOL DateFromDiskIcon(struct ScaDeviceIcon *di, struct DateStamp *ds)
 {
 	BOOL Success = FALSE;
 	BPTR fLock =BNULL;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 
 	do	{
 		if (NULL == di)
@@ -1423,9 +1424,8 @@ static BOOL DateFromDiskIcon(struct ScaDeviceIcon *di, struct DateStamp *ds)
 
 		d1(kprintf("%s/%s/%ld: di=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, di, di->di_DiskIconName));
 
-		fib = AllocDosObject(DOS_FIB, NULL);
 		d1(kprintf("%s/%s/%ld: fib=%08lx\n", __FILE__, __FUNC__, __LINE__, fib));
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
 		fLock = Lock(di->di_DiskIconName, ACCESS_READ);
@@ -1433,15 +1433,14 @@ static BOOL DateFromDiskIcon(struct ScaDeviceIcon *di, struct DateStamp *ds)
 		if (BNULL == fLock)
 			break;
 
-		if (!Examine(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			break;
 
-		*ds = fib->fib_Date;
+		*ds = *ScalosExamineGetDate(fib);
 		Success = TRUE;
 		} while (0);
 
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 	if (BNULL != fLock)
 		UnLock(fLock);
 

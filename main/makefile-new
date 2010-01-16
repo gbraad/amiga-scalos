@@ -44,6 +44,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/filetypes.o               	\
 		$(OBJDIR)/FontUtil.o                	\
 		$(OBJDIR)/FrameImageClass.o	    	\
+		$(OBJDIR)/FsAbstraction.o		\
 		$(OBJDIR)/Functions.o               	\
 		$(OBJDIR)/GadgetBarClass.o          	\
 		$(OBJDIR)/GadgetBarImageClass.o     	\
@@ -130,16 +131,16 @@ endif
 $(OBJDIR)/%.o: $(MCPGFX_DIR)/%.c
 	@$(run-cc)
 
-about.c Scalos.c windowtask.c locale.h : Scalos_Locale.h
+about.c Scalos.c windowtask.c locale.h : $(OBJDIR)/Scalos_Locale.h
 filetypes.c : MsgIdNames.h
 
-Scalos_Locale.h : Scalos.cd
+$(OBJDIR)/Scalos_Locale.h : Scalos.cd
 	@printf 'Compile CatComp header from $<\n'
 	@catcomp vb=1 $< cfile=$@
 
-MsgIdNames.h : Scalos_Locale.h
+MsgIdNames.h : $(OBJDIR)/Scalos_Locale.h
 	@printf 'Generate $<\n'
-	@$(GENMSGIDNAMES) Scalos_Locale.h MsgIdNames.h
+	@$(GENMSGIDNAMES) $(OBJDIR)/Scalos_Locale.h MsgIdNames.h
 
 $(OBJDIR)/ScalosVersion.o : FORCE
 
@@ -207,6 +208,6 @@ clean:
         	$(OBJDIR)/*.i \
         	$(OBJDIR)/*.s $(OBJDIR)/*.d.* \
 		$(NAME) $(NAME_DB) *.dump *_str.* \
-		Scalos_Locale.h MsgIdNames.h
+		$(OBJDIR)/Scalos_Locale.h MsgIdNames.h
 
 

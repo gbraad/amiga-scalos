@@ -2275,7 +2275,7 @@ static SAVEDS(void) INTERRUPT DrawerSizeHookFunc(struct Hook *hook, Object *o, M
 	Object *ButtonSize;
 
 	FileCount = DrawersCount = 0;
-	ByteCount = Make64(0);
+	ByteCount = MakeU64(0);
 	BlocksCount = 1;
 	Result = RETURN_OK;
 

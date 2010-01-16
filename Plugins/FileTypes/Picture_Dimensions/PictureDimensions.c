@@ -238,7 +238,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 
 		oldDir = CurrentDir(dirLock);
 
-		dt = NewDTObject((STRPTR) ttshd->ttshd_fib->fib_FileName,
+		dt = NewDTObject((STRPTR) ttshd->ttshd_FileName,
 				DTA_SourceType, DTST_FILE,
 				PDTA_DestMode, PMODE_V43,
 				DTA_GroupID, GID_PICTURE,

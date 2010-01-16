@@ -43,6 +43,7 @@
 #include <DefIcons.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "locale.h"
 #include "functions.h"
 #include "Variables.h"
@@ -99,7 +100,7 @@ static BOOL TestIsDrawer(CONST_STRPTR Name);
 
 static Object *DoubleClick_GetIconObject(struct internalScaWindowTask *iwt, struct ScaIconNode *in, BOOL *isDefIcon)
 {
-	struct FileInfoBlock *fib;
+	T_ExamineData *fib;
 	Object *IconObject;
 	BPTR fLock = (BPTR)NULL;
 
@@ -110,30 +111,28 @@ static Object *DoubleClick_GetIconObject(struct internalScaWindowTask *iwt, stru
 		return IconObject;
 
 	do	{
-		fib = AllocDosObjectTags(DOS_FIB, TAG_END);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
 		fLock = Lock(in->in_Name, ACCESS_READ);
 		if ((BPTR)NULL == fLock)
 			break;
 
-		if (!Examine(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			break;
 
 		IconObject = (Object *) DoMethod(iwt->iwt_WindowTask.mt_MainObject, 
 			SCCM_IconWin_GetDefIcon,
 			in->in_Name, 
-			fib->fib_DirEntryType, 
-			fib->fib_Protection);
+			ScalosExamineGetDirEntryType(fib),
+			ScalosExamineGetProtection(fib));
 
 		*isDefIcon = TRUE;		
 		} while (0);
 
 	if (fLock)
 		UnLock(fLock);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	return IconObject;
 }
@@ -994,15 +993,14 @@ static SAVEDS(ULONG) AsyncArexxToolStart(struct ARexxToolStartArg *arg, struct S
 
 static BOOL TestIsDrawer(CONST_STRPTR Name)
 {
-	struct FileInfoBlock *fib;
+	T_ExamineData *fib;
 	BPTR fLock = BNULL;
 	BOOL isDrawer = TRUE;
 
 	d1(KPrintF("%s/%s/%ld: BEGIN  Name=<%s>\n", __FILE__, __FUNC__, __LINE__, Name));
 
 	do	{
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
 		fLock = Lock((STRPTR) Name, ACCESS_READ);
@@ -1012,18 +1010,17 @@ static BOOL TestIsDrawer(CONST_STRPTR Name)
 
 		debugLock_d1(fLock);
 
-		if (!Examine(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			break;
 
 		d1(KPrintF("%s/%s/%ld: fib_DirEntryType=%ld\n", __FILE__, __FUNC__, __LINE__, fib->fib_DirEntryType));
 
-		isDrawer = fib->fib_DirEntryType > 0;	// e.g. ST_USERDIR
+		isDrawer = ScalosExamineIsDrawer(fib);
 		} while (0);
 
 	if (fLock)
 		UnLock(fLock);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	d1(KPrintF("%s/%s/%ld: END  isDrawer=%ld\n", __FILE__, __FUNC__, __LINE__, isDrawer));
 
