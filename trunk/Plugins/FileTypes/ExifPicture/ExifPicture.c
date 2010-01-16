@@ -754,7 +754,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 
 		oldDir = CurrentDir(dirLock);
 
-		fLock = Lock(ttshd->ttshd_fib->fib_FileName, ACCESS_READ);
+		fLock = Lock(ttshd->ttshd_FileName, ACCESS_READ);
 		if (fLock)
 			{
 			if (Examine(fLock, &fib))
@@ -762,7 +762,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 			UnLock(fLock);
 			}
 
-		CurrentFile = ttshd->ttshd_fib->fib_FileName;
+		CurrentFile = ttshd->ttshd_FileName;
 
 		d1(kprintf("%s/%s/%ld: ResetJpgfile() \n", __FILE__, __FUNC__, __LINE__));
 
@@ -777,7 +777,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 		{
 		struct stat st;
 
-		 if (stat(ttshd->ttshd_fib->fib_FileName, &st) >= 0)
+		 if (stat(ttshd->ttshd_FileName, &st) >= 0)
 			{
 			ImageInfo.FileDateTime = st.st_mtime;
 			ImageInfo.FileSize = st.st_size;
@@ -789,9 +789,9 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 			}
 		}
 
-		strncpy(ImageInfo.FileName, ttshd->ttshd_fib->fib_FileName, PATH_MAX);
+		strncpy(ImageInfo.FileName, ttshd->ttshd_FileName, PATH_MAX);
 
-		infile = Open(ttshd->ttshd_fib->fib_FileName, MODE_OLDFILE);
+		infile = Open(ttshd->ttshd_FileName, MODE_OLDFILE);
 
 		if (infile == (BPTR)NULL)
         		break;
@@ -803,7 +803,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 		if (!ResultJPEG)
 			{
 			d1(kprintf("%s/%s/%ld: ResultJPEG = [%ld]\n", __FILE__, __FUNC__, __LINE__, ResultJPEG));
-			sprintf(ttshd->ttshd_Buffer, GetLocString(MSGID_ERROR_NOJPEG, ExifPictureBase), ttshd->ttshd_fib->fib_FileName);
+			sprintf(ttshd->ttshd_Buffer, GetLocString(MSGID_ERROR_NOJPEG, ExifPictureBase), ttshd->ttshd_FileName);
 			break;
 			}
 

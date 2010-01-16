@@ -7,6 +7,8 @@
 *        Operators on Large (64-bit) Integers
 *
 * Public Routines:
+*        MakeU64()
+*        MakeS64()
 *        Incr64()
 *        Decr64()
 *        Add64()
@@ -31,20 +33,20 @@
 ***********************************************************************/
 
 /*----------------------------------------------------------------------
-* Name:    Make64()
+* Name:    MakeU64()
 *
-* Action:  Construct a 64-bit integer from a 32-bit integer.
+* Action:  Construct a 64-bit unsigned integer from a 32-bit unsigned integer.
 *
-* Input:   n - 32 bit integer to be used to construct 64-bit integer.
+* Input:   n - 32 bit integer to be used to construct 64-bit unsigned integer.
 *
 * Return
-* Value:   Constructed 64-bit integer.
+* Value:   Constructed 64-bit unsigned integer.
 *
 * Side
 * Effects: None.
 *
 *---------------------------------------------------------------------*/
-ULONG64 Make64( ULONG n )
+ULONG64 MakeU64( ULONG n )
 {
 #ifdef __GNUC__
 	return (ULONG64) n;
@@ -56,7 +58,35 @@ ULONG64 Make64( ULONG n )
 
 	return ( result );
 #endif /* __GNUC__ */
-} /* Make64() */
+} /* MakeU64() */
+
+/*----------------------------------------------------------------------
+* Name:    MakeS64()
+*
+* Action:  Construct a 64-bit signed integer from a 32-bit signed integer.
+*
+* Input:   n - 32 bit integer to be used to construct 64-bit signed integer.
+*
+* Return
+* Value:   Constructed 64-bit signed integer.
+*
+* Side
+* Effects: None.
+*
+*---------------------------------------------------------------------*/
+SLONG64 MakeS64( LONG n )
+{
+#ifdef __GNUC__
+	return (SLONG64) n;
+#else /* __GNUC__ */
+	SLONG64 result;
+
+	result.High = (n < 0) ? -1 : 0;
+	result.Low = n;
+
+	return ( result );
+#endif /* __GNUC__ */
+} /* MakeS64() */
 
 /*----------------------------------------------------------------------
 * Name:    Incr64()
@@ -406,7 +436,7 @@ void Convert64(const struct Locale *locale, ULONG64 Number, STRPTR Buffer, size_
 {
 	char InternalBuffer[40];
 	char *lp;
-	ULONG64 Ten = Make64(10);
+	ULONG64 Ten = MakeU64(10);
 	size_t MaxLen2;
 	STRPTR Separator = NULL;
 	short grp, GroupSize = 0;
@@ -433,7 +463,7 @@ void Convert64(const struct Locale *locale, ULONG64 Number, STRPTR Buffer, size_
 		*lp-- = (char) ULONG64_LOW(Remainder) + '0';
 		MaxLen2--;
 
-		NumberIsNotZero = Cmp64(Number, Make64(0)) > 0;
+		NumberIsNotZero = Cmp64(Number, MakeU64(0)) > 0;
 
 		// insert separator
 		if (Separator && NumberIsNotZero && ++grp >= GroupSize && MaxLen2 > SeparatorLength)

@@ -48,6 +48,7 @@
 #include <DefIcons.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "Variables.h"
 
@@ -73,7 +74,7 @@ static VOID AddSon(struct TypeNode *parent,struct TypeNode *son);
 
 static LONG match(CONST_STRPTR a, CONST_STRPTR b, size_t len);
 static struct TypeNode *DefIconsIdentifyDisk(BPTR lock);
-static struct TypeNode *DefIconsIdentifyProject(CONST_STRPTR Name, struct FileInfoBlock *fib);
+static struct TypeNode *DefIconsIdentifyProject(CONST_STRPTR Name, T_ExamineData *fib);
 static void DeleteTypeNode(struct TypeNode *tn);
 static Object *ReadDefIconObjectForName(ULONG IconType, CONST_STRPTR TypeName,
 	BPTR dirLock, CONST_STRPTR OriginalName, struct TagItem *TagList);
@@ -472,7 +473,7 @@ it returns NULL for failure
 struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name)
 {
 	struct TypeNode *type = NULL;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	BPTR lock;
 	BPTR oldDirLock;
 
@@ -481,12 +482,12 @@ struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name)
 
 	oldDirLock = CurrentDir(dirLock);
 
-	if ((lock = Lock((STRPTR) Name, ACCESS_READ)) && (fib = AllocDosObject(DOS_FIB, NULL)) &&
-			ScalosExamine64(lock, fib))
+	if ((lock = Lock((STRPTR) Name, ACCESS_READ)) && ScalosExamineBegin(&fib) &&
+			ScalosExamineLock(lock, &fib))
 		{
 		debugLock_d1(lock);
 
-		if (fib->fib_DirEntryType > 0)
+		if (ScalosExamineIsDrawer(fib))
 			{
 			BPTR dirlock;
 
@@ -532,8 +533,7 @@ struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name)
 			}
 		}
 
-	if (fib)
-		FreeDosObject(DOS_FIB,fib);
+	ScalosExamineEnd(&fib);
 	if (lock)
 		UnLock(lock);
 
@@ -754,7 +754,7 @@ loop1:
 }
 
 
-static struct TypeNode *DefIconsIdentifyProject(CONST_STRPTR Name, struct FileInfoBlock *fib)
+static struct TypeNode *DefIconsIdentifyProject(CONST_STRPTR Name, T_ExamineData *fib)
 {
 	UBYTE *Buffer = NULL;
 	BPTR File = (BPTR) NULL;
@@ -857,7 +857,7 @@ loop1:
 					case ACT_FILESIZE:
 						if (matching)
 							{
-							if (0 != Cmp64(ScalosFibSize64(fib), Make64(curr->arg2)))
+							if (0 != Cmp64(ScalosExamineGetSize(fib), MakeU64(curr->arg2)))
 							//if (fib->fib_Size != curr->arg2)
 								matching = 0;
 							}
@@ -870,7 +870,7 @@ loop1:
 
 							matching = 0;
 							if (ParsePatternNoCase(curr->str,(STRPTR)buf,sizeof(buf)) >= 0 &&
-									MatchPatternNoCase((STRPTR)buf,fib->fib_FileName))
+									MatchPatternNoCase((STRPTR)buf, (STRPTR)ScalosExamineGetName(fib)))
 								matching = 1;
 							}
 						break;
@@ -878,7 +878,7 @@ loop1:
 					case ACT_PROTECTION:
 						if (matching)
 							{
-							if ((fib->fib_Protection & curr->arg1) != curr->arg2)
+							if ((ScalosExamineGetProtection(fib) & curr->arg1) != curr->arg2)
 								matching = 0;
 							}
 						break;

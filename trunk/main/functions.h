@@ -756,7 +756,7 @@ void RilcCleanup(struct ReadIconListControl *rilc);
 enum ScanDirResult LinkIconScanList(struct internalScaWindowTask *iwt,
 	struct ReadIconListControl *rilc);
 LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_STRPTR Name);
-BOOL IsFileHidden(const struct FileInfoBlock *fib);
+BOOL IsFileHidden(CONST_STRPTR Filename, ULONG Protection);
 BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropList *bdl,
 	BPTR fLock, CONST_STRPTR FileName);
 void ScanDirFillRildFromIse(struct ReadIconListData *rild, const struct IconScanEntry *ise);

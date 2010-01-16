@@ -389,6 +389,11 @@ Clear Selection
 MSGID_POPMENUNAME6
 Popup Menu: AppIcons
 ;
+;+++translateme+++
+MSGID_POPMENUNAME7
+Popup Menu: Desktop
+;Popup Menu: Desktop
+;
 ;
 MSGID_COM37NAME
 View By - Size

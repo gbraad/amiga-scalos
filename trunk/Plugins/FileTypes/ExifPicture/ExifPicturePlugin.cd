@@ -66,11 +66,11 @@ CCD width: %4.2fmm\n
 ;
 ;
 MSGID_EXPOSURETIME64 (//)
-Exposure time: %6.4f s 
+Exposure time: %6.4f s
 ;
 ;
 MSGID_EXPOSURETIME53 (//)
-Exposure time: %5.3f s 
+Exposure time: %5.3f s
 ;
 ;
 MSGID_APERTUREFNUMBER (//)
@@ -138,7 +138,7 @@ Jpeg process: %s\n
 ;
 ;
 MSGID_COMMENT (//)
-Comment: 
+Comment:
 ;
 ;-------------------
 MSGID_BASELINE (//)

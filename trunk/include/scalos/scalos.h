@@ -68,6 +68,10 @@
 #include <scalos/undo.h>
 #endif
 
+#ifndef SCALOS_INT64TYPES_H
+#include <scalos/int64types.h>
+#endif
+
 #define SCALOSNAME "scalos.library"
 
 #if defined(__GNUC__) && !defined(mc68000)
@@ -1849,12 +1853,17 @@ struct ScaToolTipInfoHookData
 	{
 	const struct ScaIconNode *ttshd_IconNode;	// icon node of the file/drawer/disk to identify
 	BPTR ttshd_FileLock;				// READ lock on the file/drawer/disk to identify
-	const struct FileInfoBlock *ttshd_fib;		// FileInfoBlock, valid if ttshd_FileLock != NULL
+
+	ULONG64 ttshd_FSize;
+	LONG ttshd_DirEntryType;
+	ULONG ttshd_Protection;
+	CONST_STRPTR ttshd_FileName;
+	CONST_STRPTR ttshd_Comment;
+	struct DateStamp ttshd_Date;
 
 	STRPTR ttshd_Buffer;				// Buffer to fill result string in
 	ULONG ttshd_BuffLen;				// Length of ttshd_Buffer
 	};
-
 
 // Parameter structure for SCCM_IconWin_ReadIcon
 struct ScaReadIconArg

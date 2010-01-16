@@ -23,6 +23,7 @@
 
 #include <stddef.h>
 
+#include "FsAbstraction.h"
 #include "BTree.h"
 #include "int64.h"
 
@@ -1041,7 +1042,9 @@ struct ReadIconListControl
 	BOOL rilc_FlagFinished;			// Flag: ExAllData contains last entries
 	BOOL rilc_FlagLargeFileSupported;	// Flag: file system supports large files (> 32 bit)
 	struct ExAllData *rilc_edNext;
-	struct FileInfoBlock *rilc_fib;
+	T_ExamineData *rilc_exd;
+	T_ExamineDirHandle rilc_DirHandle;
+	struct FileInfoBlock *rilc_Fib;		// for fallback ACTION_EXAMINE_OBJECT / ACTION_EXAMINE_NEXT
 	ULONG rilc_CleanupCount;
 	ULONG rilc_ExAllType;
 	BOOL rilc_PacketPending;		// Packet has been sent, need to wait for reply 
@@ -1067,6 +1070,7 @@ struct IconScanEntry
 	ULONG ise_Pos;				// Result from IsIconName()
 	char ise_PosChar;
 	struct FileInfoBlock ise_Fib;
+	ULONG64 ise_Size64;
 	};
 
 // Values in ise_Flags
@@ -1288,8 +1292,6 @@ struct FileTypeDef
 #endif
 
 	// ---- temporary, only used during Popup menu and Tooltip creation --------------
-
-	struct FileInfoBlock *ftd_FileInfoBlock;
 
 	struct List ftd_MenuList;			// Root List of FileTypeMenuItem
 

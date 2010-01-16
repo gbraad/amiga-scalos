@@ -22,12 +22,8 @@
 
 #define	CATCOMP_CODE
 #define	CATCOMP_BLOCK
-#include "Scalos_Locale.h"
+#include "locale.h"
 
-//----------------------------------------------------------------------------
-// Revision history :
-//
-// 20011206	jl	initial history
 //----------------------------------------------------------------------------
 
 // local data structures

@@ -273,6 +273,11 @@ MSGID_PMTITLE6NAME
 [Icône App]
 ; [AppIcon]
 ;
+;+++translateme+++
+MSGID_PMTITLE7NAME
+[Desktop]
+;[Desktop]
+;
 ;
 MSGID_COPYERRORNAME
 Erreur rencontrée lors de la copie du fichier\n\

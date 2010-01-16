@@ -11,31 +11,14 @@
 #include <dos/dosextens.h>
 #include <dos/exall.h>
 #include <libraries/locale.h>
-
-#ifdef __GNUC__
-
-typedef	unsigned long long ULONG64;
-
-// Macros to acccess one of the longs of an ULONG64
-#define	ULONG64_LOW(long64)	((ULONG) ((long64) & 0xffffffff))
-#define	ULONG64_HIGH(long64)	((ULONG) (((long64) >> 32) & 0xffffffff))
-
-#else /* __GNUC__ */
-
-typedef	struct { ULONG High, Low; } ULONG64;
-
-
-// Macros to acccess one of the longs of an ULONG64
-#define	ULONG64_LOW(long64)	((long64).Low)
-#define	ULONG64_HIGH(long64)	((long64).High)
-
-#endif /* __GNUC__ */
+#include <scalos/int64types.h>
 
 // ------------------------------------------------------------------------
 
 // defined in int64.c
 ///
-ULONG64 Make64( ULONG n );
+ULONG64 MakeU64( ULONG n );
+SLONG64 MakeS64( LONG n );
 ULONG64 Incr64(ULONG64 x, ULONG n );
 ULONG64 Decr64(ULONG64 x, ULONG n );
 ULONG64 Add64(ULONG64 x, ULONG64 y );

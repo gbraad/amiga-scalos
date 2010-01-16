@@ -259,6 +259,11 @@ MSGID_PMTITLE6NAME
 [AppIcon]
 ;
 ;
+MSGID_PMTITLE7NAME
+[Arbeitsfläche]
+;[Desktop]
+;
+;
 ; +jl+
 MSGID_COPYERRORNAME
 Fehler beim Kopieren von Datei\n\

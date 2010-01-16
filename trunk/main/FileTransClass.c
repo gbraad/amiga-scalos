@@ -221,7 +221,7 @@ static ULONG FileTransClass_New(Class *cl, Object *o, Msg msg)
 		ScalosInitSemaphore(&inst->ftci_OpListSemaphore);
 		NewList(&inst->ftci_OpList);
 
-		inst->ftci_TotalBytes = Make64(0);
+		inst->ftci_TotalBytes = MakeU64(0);
 		inst->ftci_TotalItems = 0;
 		inst->ftci_TotalFiles = 0;
 		inst->ftci_TotalDirs = 0;
@@ -623,7 +623,7 @@ static void ProcessFTOps(Class *cl, Object *o)
 	struct FileTransClassInstance *inst = INST_DATA(cl, o);
 	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
 
-	inst->ftci_CurrentBytes = Make64(0);
+	inst->ftci_CurrentBytes = MakeU64(0);
 	inst->ftci_CurrentItems = 0;
 
 	GetSysTime(&inst->ftci_ProcessStartTime);
@@ -1321,12 +1321,12 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 
 		if (inst->ftci_CountValid)
 			{
-			PercentFinishedBytes = Div64(Mul64(inst->ftci_CurrentBytes, Make64(100), NULL), inst->ftci_TotalBytes, NULL);
+			PercentFinishedBytes = Div64(Mul64(inst->ftci_CurrentBytes, MakeU64(100), NULL), inst->ftci_TotalBytes, NULL);
 			PercentFinishedItems = (inst->ftci_CurrentItems * 100) / inst->ftci_TotalItems;
 			}
 		else
 			{
-			PercentFinishedBytes = Make64(100);
+			PercentFinishedBytes = MakeU64(100);
 			PercentFinishedItems = 100;
 			}
 
@@ -1351,9 +1351,9 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 
 			// Calculate speed in Bytes/s
 			if (elapsedTime > 1000)
-				Speed = Div64(inst->ftci_CurrentBytes, Make64(elapsedTime / 1000), NULL);
+				Speed = Div64(inst->ftci_CurrentBytes, MakeU64(elapsedTime / 1000), NULL);
 			else
-				Speed = Make64(0);
+				Speed = MakeU64(0);
 
 			if (PercentFinished && elapsedTime)
 				{

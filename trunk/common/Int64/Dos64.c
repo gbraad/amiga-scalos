@@ -52,7 +52,7 @@ ULONG64 ScalosSeek64(BPTR file, ULONG64 position, LONG mode)
 	if (DOSBase->dl_lib.lib_Version >= 51)
 		return Seek64(file, position, mode);
 #endif /* __MORPHOS__ */
-	return Make64(Seek(file, ULONG64_LOW(position), mode));
+	return MakeU64(Seek(file, ULONG64_LOW(position), mode));
 }
 
 
@@ -66,12 +66,12 @@ ULONG64 ScalosFibSize64(const struct FileInfoBlock *fib)
 		// workaround for MorphOS 2.1 sign-extenstion bug:
 		// 64bit file size is negative for files with sizes between 2G and 4G
 		if (0xffffffff == ULONG64_HIGH(Size))
-			Size = Make64(ULONG64_LOW(Size));
+			Size = MakeU64(ULONG64_LOW(Size));
 
 		return Size;
 	}
 #endif /* __MORPHOS__ */
-	return Make64(fib->fib_Size);
+	return MakeU64(fib->fib_Size);
 }
 
 
@@ -81,7 +81,7 @@ ULONG64 ScalosFibNumBlocks64(const struct FileInfoBlock *fib)
 	if (DOSBase->dl_lib.lib_Version >= 51)
 		return fib->fib_un.fib_un_ext.fib_un_ext_NumBlocks64;
 #endif /* __MORPHOS__ */
-	return Make64(fib->fib_NumBlocks);
+	return MakeU64(fib->fib_NumBlocks);
 }
 
 
@@ -102,7 +102,7 @@ ULONG64 ScalosExAllSize64(const struct ExAllData *ead, ULONG edType)
 		return ead->ed_Size64;
 #endif /* __MORPHOS__ */
 
-	return Make64(ead->ed_Size);
+	return MakeU64(ead->ed_Size);
 }
 
 

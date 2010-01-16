@@ -51,6 +51,7 @@
 #include <stdarg.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "locale.h"
 #include "int64.h"
@@ -164,7 +165,7 @@ struct ttInfo
 static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ...);
 static SAVEDS(CONST_STRPTR) GetStringFunc(struct Hook *hook, ULONG dummy, ULONG *args);
 static struct ttDef *CreateIconTooltip(struct internalScaWindowTask *iwt,
-	struct ScaIconNode *in, BPTR fileLock, const struct FileInfoBlock *fib);
+	struct ScaIconNode *in, BPTR fileLock);
 static struct ttDef *CreateDiskTooltip(struct internalScaWindowTask *iwt, const struct ScaIconNode *in);
 static struct ttDef *CreateAppIconTooltip(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static struct ttDef *CreateToolTipMsg(CONST_STRPTR Name, ULONG MsgID);
@@ -327,12 +328,20 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 	struct ttDef *ttd = NULL;
 	WORD MouseX, MouseY;
 	STRPTR tt;
+	CONST_STRPTR fName = "";
+	CONST_STRPTR Comment = "";
 	BPTR fLock = NOT_A_LOCK;
 	struct ScaIconNode *in = NULL;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
+	LONG DirEntryType = 0;
+	ULONG64 fSize;
+	ULONG Protection = 0;
+	struct DateStamp fDate;
 	va_list args;
 
 	va_start(args, FirstTag);
+
+	fSize = MakeU64(0);
 
 	MouseX = iInfos.xii_iinfos.ii_Screen->MouseX;
 	MouseY = iInfos.xii_iinfos.ii_Screen->MouseY;
@@ -370,12 +379,18 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 						if ((BPTR)NULL == fLock)
 							break;
 
-						fib = AllocDosObject(DOS_FIB, NULL);
-						if (NULL == fib)
+						if (!ScalosExamineBegin(&fib))
 							break;
 
-						if (!ScalosExamine64(fLock, fib))
+						if (!ScalosExamineLock(fLock, &fib))
 							break;
+
+						DirEntryType = ScalosExamineGetDirEntryType(fib);
+						fName = ScalosExamineGetName(fib);
+						fSize = ScalosExamineGetSize(fib);
+						Protection = ScalosExamineGetProtection(fib);
+						fDate = *ScalosExamineGetDate(fib);
+						Comment = ScalosExamineGetComment(fib);
 						}
 					else
 						{
@@ -399,23 +414,32 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 								break;
 								}
 
-							fib = AllocDosObject(DOS_FIB, NULL);
-							if (NULL == fib)
+							if (!ScalosExamineBegin(&fib))
 								break;
 
-							if (!ScalosExamine64(fLock, fib))
+							if (!ScalosExamineLock(fLock, &fib))
 								break;
+
+							fSize = ScalosExamineGetSize(fib);
+							Protection = ScalosExamineGetProtection(fib);
+							fDate = *ScalosExamineGetDate(fib);
+							Comment = ScalosExamineGetComment(fib);
 
 							if (IsSoftLink(in->in_Name))
 								{
-								fib->fib_DirEntryType = ST_SOFTLINK;
+								DirEntryType = ST_SOFTLINK;
 
 								// Examine() returns the name of the link target
 								// copy the original name of the link in place.
-								stccpy(fib->fib_FileName, in->in_Name, sizeof(fib->fib_FileName));
+								fName = in->in_Name;
+								}
+							else
+								{
+								DirEntryType = ScalosExamineGetDirEntryType(fib);
+								fName = ScalosExamineGetName(fib);
 								}
 
-							ttd = CreateIconTooltip(iwt, in, fLock, fib);
+							ttd = CreateIconTooltip(iwt, in, fLock);
 
 							if (NULL == ttd)
 								break;
@@ -450,9 +474,16 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 
 		ttu.ttshd_IconNode = in;
 		ttu.ttshd_FileLock = IS_VALID_LOCK(fLock) ? fLock : (BPTR)NULL;
-		ttu.ttshd_fib = fib;
+		ttu.ttshd_FileName = fName;
+		ttu.ttshd_Comment = Comment;
+		ttu.ttshd_DirEntryType = DirEntryType;
+		ttu.ttshd_FSize = fSize;
+		ttu.ttshd_Date = fDate;
+		ttu.ttshd_Protection = Protection;
 		ttu.ttshd_Buffer = Buffer;
 		ttu.ttshd_BuffLen = sizeof(Buffer);
+
+		fName = NULL;
 
 		userHook.h_Data = &ttu;
 		SETHOOKFUNC(userHook, TooltipTTUserHookFunc);
@@ -488,8 +519,7 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 		TTDisposeItem(ttd);
 	if (IS_VALID_LOCK(fLock))
 		UnLock(fLock);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 }
 
 
@@ -523,7 +553,7 @@ void GetProtectionString(ULONG Protection, STRPTR String, size_t MaxLen)
 
 
 static struct ttDef *CreateIconTooltip(struct internalScaWindowTask *iwt,
-	struct ScaIconNode *in, BPTR fileLock, const struct FileInfoBlock *fib)
+	struct ScaIconNode *in, BPTR fileLock)
 {
 	struct ttDef *ttd = NULL;
 	struct FileTypeDef *ftd;
@@ -1586,7 +1616,7 @@ static STRPTR Tooltip_VersionString(struct ScaToolTipInfoHookData *ttshd, CONST_
 	// skip the leading "\0" in versTag
 	stccpy(VersMask, versTag + 1, 6 + 1);
 
-	switch (ttshd->ttshd_fib->fib_DirEntryType)
+	switch (ttshd->ttshd_DirEntryType)
 		{
 	case ST_FILE:
 	case ST_LINKFILE:
@@ -1754,7 +1784,7 @@ static STRPTR Tooltip_FileType(struct ScaToolTipInfoHookData *ttshd, CONST_STRPT
 		break;
 
 	default:
-		switch (ttshd->ttshd_fib->fib_DirEntryType)
+		switch (ttshd->ttshd_DirEntryType)
 			{
 		case ST_ROOT:
 			if (!GetFileTypeFromTypeNode(ttshd))
@@ -1831,11 +1861,11 @@ static STRPTR Tooltip_FileSize(struct ScaToolTipInfoHookData *ttshd, CONST_STRPT
 {
 	(void) Args;
 
-	if (ST_FILE == ttshd->ttshd_fib->fib_DirEntryType)
+	if (ST_FILE == ttshd->ttshd_DirEntryType)
 		{
 		char NumBuff[40];
 
-		Convert64(ScalosLocale, ScalosFibSize64(ttshd->ttshd_fib), NumBuff, sizeof(NumBuff));
+		Convert64(ScalosLocale, ttshd->ttshd_FSize, NumBuff, sizeof(NumBuff));
 
 		ScaFormatStringMaxLength(ttshd->ttshd_Buffer,
 			ttshd->ttshd_BuffLen,
@@ -1851,7 +1881,7 @@ static STRPTR Tooltip_Protection(struct ScaToolTipInfoHookData *ttshd, CONST_STR
 {
 	(void) Args;
 
-	GetProtectionString(ttshd->ttshd_fib->fib_Protection, ttshd->ttshd_Buffer, ttshd->ttshd_BuffLen);
+	GetProtectionString(ttshd->ttshd_Protection, ttshd->ttshd_Buffer, ttshd->ttshd_BuffLen);
 
 	return ttshd->ttshd_Buffer;
 }
@@ -1863,7 +1893,7 @@ static STRPTR Tooltip_FileDate(struct ScaToolTipInfoHookData *ttshd, CONST_STRPT
 
 	(void) Args;
 
-	dtm.dat_Stamp = ttshd->ttshd_fib->fib_Date;
+	dtm.dat_Stamp = ttshd->ttshd_Date;
 	dtm.dat_Format = FORMAT_DOS;
 	dtm.dat_Flags = DTF_SUBST;
 	dtm.dat_StrDay = NULL;
@@ -1881,7 +1911,7 @@ static STRPTR Tooltip_FileTime(struct ScaToolTipInfoHookData *ttshd, CONST_STRPT
 
 	(void) Args;
 
-	dtm.dat_Stamp = ttshd->ttshd_fib->fib_Date;
+	dtm.dat_Stamp = ttshd->ttshd_Date;
 	dtm.dat_Format = FORMAT_DOS;
 	dtm.dat_Flags = DTF_SUBST;
 	dtm.dat_StrDay = NULL;
@@ -1897,7 +1927,7 @@ static STRPTR Tooltip_FileComment(struct ScaToolTipInfoHookData *ttshd, CONST_ST
 {
 	(void) Args;
 
-	stccpy(ttshd->ttshd_Buffer, ttshd->ttshd_fib->fib_Comment, ttshd->ttshd_BuffLen);
+	stccpy(ttshd->ttshd_Buffer, ttshd->ttshd_Comment, ttshd->ttshd_BuffLen);
 
 	return ttshd->ttshd_Buffer;
 }
@@ -1917,7 +1947,7 @@ static STRPTR Tooltip_FibFileName(struct ScaToolTipInfoHookData *ttshd, CONST_ST
 		}
 	else
 		{
-		stccpy(ttshd->ttshd_Buffer, ttshd->ttshd_fib->fib_FileName, ttshd->ttshd_BuffLen);
+		stccpy(ttshd->ttshd_Buffer, ttshd->ttshd_FileName, ttshd->ttshd_BuffLen);
 		}
 
 	return ttshd->ttshd_Buffer;
@@ -2302,12 +2332,7 @@ static STRPTR Tooltip_LinkTarget(struct ScaToolTipInfoHookData *ttshd, CONST_STR
 	do	{
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		if (NULL == ttshd->ttshd_fib)
-			break;
-
-		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-		if (ST_SOFTLINK != ttshd->ttshd_fib->fib_DirEntryType)
+		if (ST_SOFTLINK != ttshd->ttshd_DirEntryType)
 			break;
 
 		NameBuffer = AllocPathBuffer();

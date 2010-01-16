@@ -30,6 +30,7 @@
 #include <sqlite3.h>
 
 #include "scalos_structures.h"
+#include "FsAbstraction.h"
 #include "functions.h"
 #include "Variables.h"
 
@@ -78,6 +79,7 @@ static BOOL ThumbnailCacheIsSameDay(ULONG sec1, ULONG sec2);
 static int ThumbnailCacheCreateTable(sqlite3 *db);
 static void ThumbnailCacheGetEndOfLife(T_TIMEVAL *tv, ULONG LifetimeDays);
 static void ThumbnailCacheFileExists(sqlite3_context *context, LONG x, sqlite3_value **pVal);
+static int ThumbnailCacheSetTempDir(sqlite3 *db, CONST_STRPTR DirName);
 
 //-----------------------------------------------------------------------
 
@@ -174,7 +176,14 @@ BOOL ThumbnailCacheOpen(APTR *pThumbnailCacheHandle)
 			d1(KPrintF("%s/%s/%ld: ThumbnailCacheCreateTable() failed: <%s>\n", __FILE__, __FUNC__, __LINE__, SQLite3Errmsg(db)));
 			break;
 			}
-
+/*
+		rc = ThumbnailCacheSetTempDir(db, "Data1:t");
+		if (SQLITE_OK != rc)
+			{
+			d1(KPrintF("%s/%s/%ld: ThumbnailCacheSetTempDir() failed: <%s>\n", __FILE__, __FUNC__, __LINE__, SQLite3Errmsg(db)));
+			break;
+			}
+*/
 		Success = TRUE;
 		*pThumbnailCacheHandle = (APTR) db;
 		} while (0);
@@ -542,7 +551,7 @@ void ThumbnailCacheAddARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 	const struct ARGBHeader *argbh, ULONG LifetimeDays)
 {
 	sqlite3 *db = (sqlite3 *) ThumbnailCacheHandle;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	STRPTR FileName = NULL;
 	UBYTE *Buffer = NULL;
 
@@ -556,11 +565,10 @@ void ThumbnailCacheAddARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		if (NULL == db)
 			break;	// fail if thumbnail database is not available
 
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
-		if (!Examine(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			break;
 
 		FileName = ThumbnailCacheGetFileNameFromLock(fLock);
@@ -578,7 +586,7 @@ void ThumbnailCacheAddARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		memcpy(Buffer + sizeof(struct ARGBHeader), argbh->argb_ImageData, ImageDataSize);
 
 		ThumbnailCacheAddEntry(db, FileName,
-			&fib->fib_Date, 24,
+			ScalosExamineGetDate(fib), 24,
 			Buffer, BuffLength, LifetimeDays);
 		} while (0);
 
@@ -586,8 +594,7 @@ void ThumbnailCacheAddARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		ScalosFree(Buffer);
 	if (FileName)
 		FreePathBuffer(FileName);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
@@ -598,7 +605,7 @@ void ThumbnailCacheAddRemapped(BPTR fLock, APTR ThumbnailCacheHandle,
 	const struct ScalosBitMapAndColor *sac, ULONG LifetimeDays)
 {
 	sqlite3 *db = (sqlite3 *) ThumbnailCacheHandle;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	STRPTR FileName = NULL;
 	UBYTE *Buffer = NULL;
 	struct RastPort TempRp;
@@ -617,11 +624,10 @@ void ThumbnailCacheAddRemapped(BPTR fLock, APTR ThumbnailCacheHandle,
 		if (NULL == db)
 			break;	// fail if thumbnail database is not available
 
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
-		if (!Examine(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			break;
 
 		FileName = ThumbnailCacheGetFileNameFromLock(fLock);
@@ -659,7 +665,7 @@ void ThumbnailCacheAddRemapped(BPTR fLock, APTR ThumbnailCacheHandle,
 		memcpy(ColorTable, sac->sac_ColorTable, ColorTableLength);
 
 		ThumbnailCacheAddEntry(db, FileName,
-			&fib->fib_Date, sac->sac_Depth,
+			ScalosExamineGetDate(fib), sac->sac_Depth,
 			Buffer, BuffLength, LifetimeDays);
 		} while (0);
 
@@ -672,8 +678,7 @@ void ThumbnailCacheAddRemapped(BPTR fLock, APTR ThumbnailCacheHandle,
 		ScalosFree(Buffer);
 	if (FileName)
 		FreePathBuffer(FileName);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
@@ -684,7 +689,7 @@ BOOL ThumbnailCacheFindARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 	struct ARGBHeader *argbh, ULONG LifetimeDays)
 {
 	sqlite3 *db = (sqlite3 *) ThumbnailCacheHandle;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	STRPTR FileName = NULL;
 	struct CachedThumbnail ctn;
 	BOOL Found = FALSE;
@@ -706,11 +711,10 @@ BOOL ThumbnailCacheFindARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		if (NULL == FileName)
 			break;
 
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
-		if (!Examine(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			break;
 
 		if (!ThumbnailCacheFindEntry(db, FileName, &ctn, LifetimeDays))
@@ -735,7 +739,7 @@ BOOL ThumbnailCacheFindARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 			break;
 			}
 
-		if (0 != CompareDates(&ctn.ctn_FileDate, &fib->fib_Date))
+		if (0 != CompareDates(&ctn.ctn_FileDate, ScalosExamineGetDate(fib)))
 			{
 			// cache entry is outdated
 			// mark it for deletion
@@ -777,8 +781,7 @@ BOOL ThumbnailCacheFindARGB(BPTR fLock, APTR ThumbnailCacheHandle,
 		ScalosFree(ctn.ctn_ThumbnailData);
 	if (FileName)
 		FreePathBuffer(FileName);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	d1(KPrintF("%s/%s/%ld: END  Found=%ld\n", __FILE__, __FUNC__, __LINE__, Found));
 
@@ -792,7 +795,7 @@ struct ScalosBitMapAndColor *ThumbnailCacheFindRemapped(BPTR fLock,
 {
 	sqlite3 *db = (sqlite3 *) ThumbnailCacheHandle;
 	struct RastPort TempRp;
-	struct FileInfoBlock *fib = NULL;
+	T_ExamineData *fib = NULL;
 	STRPTR FileName = NULL;
 	BOOL Found = FALSE;
 	BOOL ShouldDeleteEntry = FALSE;
@@ -825,11 +828,10 @@ struct ScalosBitMapAndColor *ThumbnailCacheFindRemapped(BPTR fLock,
 		if (NULL == FileName)
 			break;
 
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
+		if (!ScalosExamineBegin(&fib))
 			break;
 
-		if (!Examine(fLock, fib))
+		if (!ScalosExamineLock(fLock, &fib))
 			break;
 
 		if (!ThumbnailCacheFindEntry(db, FileName, &ctn, LifetimeDays))
@@ -854,7 +856,7 @@ struct ScalosBitMapAndColor *ThumbnailCacheFindRemapped(BPTR fLock,
 			break;
 			}
 
-		if (0 != CompareDates(&ctn.ctn_FileDate, &fib->fib_Date))
+		if (0 != CompareDates(&ctn.ctn_FileDate, ScalosExamineGetDate(fib)))
 			{
 			// cache entry is outdated
 			// mark it for deletion
@@ -930,8 +932,7 @@ struct ScalosBitMapAndColor *ThumbnailCacheFindRemapped(BPTR fLock,
 		ScalosFree(ctn.ctn_ThumbnailData);
 	if (FileName)
 		FreePathBuffer(FileName);
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineEnd(&fib);
 
 	if (!Found)
 		{
@@ -1300,6 +1301,49 @@ static void ThumbnailCacheFileExists(sqlite3_context *context, LONG x, sqlite3_v
 	SQLite3ResultInt(context, fileExists);
 
 	d1(KPrintF("%s/%s/%ld: END  fileExists=%ld\n", __FILE__, __FUNC__, __LINE__, fileExists));
+}
+
+//-----------------------------------------------------------------------
+
+static int ThumbnailCacheSetTempDir(sqlite3 *db, CONST_STRPTR DirName)
+{
+	STRPTR CmdStr;
+	BOOL Success = FALSE;
+	int rc = SQLITE_DONE;
+
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		size_t Length;
+		static CONST_STRPTR Cmd =
+			"PRAGMA temp_store_directory = \"%s\";";
+
+		Length = 1 + strlen(Cmd) + strlen(DirName);
+
+		CmdStr = ScalosAlloc(Length);
+		if (NULL == CmdStr)
+			break;
+
+		snprintf(CmdStr, Length, Cmd, DirName);
+
+		rc = SQLite3Exec(db,
+			CmdStr,
+			NULL,
+			NULL,
+			NULL);
+		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+		if (SQLITE_OK != rc)
+			break;
+
+		Success = TRUE;
+		} while (0);
+
+	if (CmdStr)
+		ScalosFree(CmdStr);
+
+	d1(KPrintF("%s/%s/%ld: END  rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+
+	return rc;
 }
 
 //-----------------------------------------------------------------------
