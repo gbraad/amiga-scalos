@@ -176,14 +176,14 @@ BOOL ThumbnailCacheOpen(APTR *pThumbnailCacheHandle)
 			d1(KPrintF("%s/%s/%ld: ThumbnailCacheCreateTable() failed: <%s>\n", __FILE__, __FUNC__, __LINE__, SQLite3Errmsg(db)));
 			break;
 			}
-/*
-		rc = ThumbnailCacheSetTempDir(db, "Data1:t");
+
+		rc = ThumbnailCacheSetTempDir(db, CurrentPrefs.pref_SQLiteTempDir);
 		if (SQLITE_OK != rc)
 			{
 			d1(KPrintF("%s/%s/%ld: ThumbnailCacheSetTempDir() failed: <%s>\n", __FILE__, __FUNC__, __LINE__, SQLite3Errmsg(db)));
 			break;
 			}
-*/
+
 		Success = TRUE;
 		*pThumbnailCacheHandle = (APTR) db;
 		} while (0);

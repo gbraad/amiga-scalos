@@ -147,6 +147,7 @@ SCP_SelectMarkerTransparency	EQU	$8000008d	; UBYTE - transparency for text windo
 SCP_ControlBarGadgetsStd	EQU	$8000008e	; array of SCP_GadgetEntry for normal windows
 SCP_ControlBarGadgetStringsStd	EQU	$8000008f	; SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for normal windows
 SCP_MaxUndoSteps		EQU	$80000090	; ULONG - maximum number of Undo/Redo steps
+SCP_PathsSQLiteTempDir          EQU	$80000091	; string -- path for SQLite3 temporary file
 
 
 	ENDC	; PREFERENCES_I

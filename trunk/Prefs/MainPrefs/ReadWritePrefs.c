@@ -126,6 +126,7 @@ struct PathsGroup
 	char			pg_pThumbnailDb[MAX_FILENAME];
 	char			pg_pFormat[MAX_FILENAME];
 	char			pg_pWbStartup[MAX_FILENAME];
+	char                    pg_SQLiteTempDir[MAX_FILENAME];
 };
 
 struct StartupGroup
@@ -326,6 +327,7 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		"Scalos:Thumbnails.db",	// pg_pThumbnailDb[MAX_FILENAME];
 		"Sys:System/Format",	// pg_pFormat[MAX_FILENAME];
 		"SYS:WBStartup",	// pg_pWbStartup[MAX_FILENAME];
+		"t:",			// pg_SQLiteTempDir
 	},
 	{
 	// Startup
@@ -653,6 +655,7 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	setstring(app->Obj[STRING_IMAGECACHE], (ULONG) currentPrefs.Paths.pg_pImageCache);
 	setstring(app->Obj[STRING_THUMBNAILDB], (ULONG) currentPrefs.Paths.pg_pThumbnailDb);
 	setstring(app->Obj[STRING_FORMAT], (ULONG) currentPrefs.Paths.pg_pFormat);
+	setstring(app->Obj[STRING_SQLITE3TEMPPATH], (ULONG) currentPrefs.Paths.pg_SQLiteTempDir);
 
 	// --- Startup Page
 
@@ -1051,6 +1054,8 @@ static void FillPrefsStructures(struct SCAModule *app)
 	stccpy(currentPrefs.Paths.pg_pThumbnailDb, lp, sizeof(currentPrefs.Paths.pg_pThumbnailDb));
 	lp = (CONST_STRPTR) getv(app->Obj[STRING_FORMAT], MUIA_String_Contents);
 	stccpy(currentPrefs.Paths.pg_pFormat, lp, sizeof(currentPrefs.Paths.pg_pFormat));
+	lp = (CONST_STRPTR) getv(app->Obj[STRING_SQLITE3TEMPPATH], MUIA_String_Contents);
+	stccpy(currentPrefs.Paths.pg_SQLiteTempDir, lp, sizeof(currentPrefs.Paths.pg_SQLiteTempDir));
 
 	// --- Startup Page
 	currentPrefs.Startup.sg_bShowSplash       = getv(app->Obj[CHECK_SHOWSPLASH], MUIA_Selected);
@@ -1398,6 +1403,7 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsThumbnailDb, &currentPrefs.Paths.pg_pThumbnailDb, 1 + strlen(currentPrefs.Paths.pg_pThumbnailDb) );
                 SetPreferences(p_MyPrefsHandle, lID, SCP_PathsWBStartup, &currentPrefs.Startup.sg_pWBStartup, 1 + strlen(currentPrefs.Startup.sg_pWBStartup) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsHome, &currentPrefs.Paths.pg_pHome, 1 + strlen(currentPrefs.Paths.pg_pHome) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsSQLiteTempDir, &currentPrefs.Paths.pg_SQLiteTempDir, 1 + strlen(currentPrefs.Paths.pg_SQLiteTempDir) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscAutoRemove, &currentPrefs.DragNDrop.ddg_bAutoRemoveIcons, sizeof(currentPrefs.DragNDrop.ddg_bAutoRemoveIcons) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscClickTransp, &currentPrefs.Icons.ig_bClickAreaMask, sizeof(currentPrefs.Icons.ig_bClickAreaMask) );
@@ -1579,6 +1585,7 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
                 GetPreferences(p_MyPrefsHandle, lID, SCP_PathsThumbnailDb, &currentPrefs.Paths.pg_pThumbnailDb, sizeof(currentPrefs.Paths.pg_pThumbnailDb) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsWBStartup, &currentPrefs.Startup.sg_pWBStartup, sizeof(currentPrefs.Startup.sg_pWBStartup) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsHome, &currentPrefs.Paths.pg_pHome, sizeof(currentPrefs.Paths.pg_pHome) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsSQLiteTempDir, &currentPrefs.Paths.pg_SQLiteTempDir, sizeof(currentPrefs.Paths.pg_SQLiteTempDir) );
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscAutoRemove, &currentPrefs.DragNDrop.ddg_bAutoRemoveIcons, sizeof(currentPrefs.DragNDrop.ddg_bAutoRemoveIcons) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscClickTransp, &currentPrefs.Icons.ig_bClickAreaMask, sizeof(currentPrefs.Icons.ig_bClickAreaMask) );

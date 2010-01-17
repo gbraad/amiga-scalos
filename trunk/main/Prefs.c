@@ -240,6 +240,7 @@ static const struct ScalosPrefs DefaultPrefs =
 	"Scalos:Thumbnails.db",			// pref_ThumbDatabasePath
 	"Scalos:Themes",			// pref_ThemesDir
 	"t:",					// pref_ImageCacheDir
+	"t:",					// pref_SQLiteTempDir
 
 	'.',					// GroupSeparator
 	5,					// pref_TitleRefreshSec
@@ -1120,14 +1121,15 @@ BOOL ReadScalosPrefs(void)
 		else
 			NewPrefs->pref_LinkTextStyle = FS_NORMAL;
 
-		NewPrefs->pref_DefIconPath = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsDefIcons, "ENV:sys");
-		NewPrefs->pref_DefDiskCopy = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsDiskCopy, "Sys:System/DiskCopy");
-		NewPrefs->pref_WBStartupDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsWBStartup, "SYS:WBStartup");
-		NewPrefs->pref_ScalosHomeDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsHome, "Scalos:");
-		NewPrefs->pref_ThemesDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsTheme, "Scalos:Themes");
-		NewPrefs->pref_ImageCacheDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsImagecache, "t:");
-	        
-		NewPrefs->pref_ThumbDatabasePath = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsThumbnailDb, "Scalos:Thumbnails.db");
+		NewPrefs->pref_DefIconPath = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsDefIcons, DefaultPrefs.pref_DefIconPath);
+		NewPrefs->pref_DefDiskCopy = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsDiskCopy, DefaultPrefs.pref_DefDiskCopy);
+		NewPrefs->pref_WBStartupDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsWBStartup, DefaultPrefs.pref_WBStartupDir);
+		NewPrefs->pref_ScalosHomeDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsHome, DefaultPrefs.pref_ScalosHomeDir);
+		NewPrefs->pref_ThemesDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsTheme, DefaultPrefs.pref_ThemesDir);
+		NewPrefs->pref_ImageCacheDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsImagecache, DefaultPrefs.pref_ImageCacheDir);
+		NewPrefs->pref_SQLiteTempDir = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsSQLiteTempDir, DefaultPrefs.pref_SQLiteTempDir);
+
+		NewPrefs->pref_ThumbDatabasePath = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_PathsThumbnailDb, DefaultPrefs.pref_ThumbDatabasePath);
 
 		ps = FindPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TextModeFont);
 		if (ps)

@@ -935,6 +935,23 @@ MSGID_PATHSPAGE_IMAGECACHE_ASLTITLE
 Bitte wählen Sie ein Verzeichnis...
 ;Please select a drawer...
 ;
+;
+MSGID_PATHSPAGE_SQLITE3TEMPPATH
+Verzeichnis für Hilfsdateien der Miniaturansichten:
+;Thumbnail Database Temporary Files:
+;
+;
+MSGID_PATHSPAGE_SQLITE3TEMPPATH_SHORTHELP
+Dieses Verzeichnis wird von der Miniaturansichten-Datenbank\n\
+zum Zwischenspeichern temporärer Dateien genutzt.
+;This drawer is used to store any temporary\n\
+;files for internal use by the thumbnail database.
+;
+;
+MSGID_PATHSPAGE_SQLITE3TEMPPATH_ASLTITLE
+Bitte wählen Sie ein Verzeichnis...
+;Please select thumbnail cache temporary files location...
+;
 ;-----------------------------------------------------------
 ;
 MSGID_STARTUPPAGE_SPLASHWINDOW

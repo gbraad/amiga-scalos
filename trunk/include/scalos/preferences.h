@@ -162,6 +162,7 @@ struct PrefsStruct
 #define SCP_ControlBarGadgetsStd	0x8000008e	// array of SCP_GadgetEntry for normal windows
 #define SCP_ControlBarGadgetStringsStd	0x8000008f	// SCP_GadgetStringEntry -- strings for SCP_ControlBarGadgets, starts with ULONG containing total length for normal windows
 #define SCP_MaxUndoSteps		0x80000090	// ULONG - maximum number of Undo/Redo steps
+#define SCP_PathsSQLiteTempDir          0x80000091	// string -- path for SQLite3 temporary file
 
 //---------------------------------------------------------------
 
