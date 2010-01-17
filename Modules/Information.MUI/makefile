@@ -14,7 +14,7 @@ CFLAGS		= nostackcheck nochkabort debug=s data=far code=far \
 		  idir=//include \
 		  idir=$(subst ../,/,$(TOOLTYPE_DIR)) \
 		  idir=$(subst ../,/,$(ICONOBJMCC_DIR)) \
-		  idir=$(subst ../,/,$(INT64_DIR))
+		  idir=$(subst ../,/,$(INT64_DIR)) \
 		  idir=$(subst ../,/,$(FS_DIR))
 SPLAT		= sc:c/splat
 AS		= phxass

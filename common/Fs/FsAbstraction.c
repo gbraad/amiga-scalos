@@ -176,7 +176,7 @@ ULONG ScalosExamineGetBlockCount(const T_ExamineData *exd)
 #elif defined(__MORPHOS__)
 	return exd->fib_NumBlocks;
 #else //__amigaos4__
-	return exd->fib_NumBlocks;
+	return (ULONG) exd->fib_NumBlocks;
 #endif //__amigaos4__
 }
 
