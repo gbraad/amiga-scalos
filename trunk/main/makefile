@@ -28,6 +28,7 @@ CFLAGS  	= nostkchk nochkabort strcons strmer opt dbg=f nover streq data=far \
 		  idir=$(subst ../,/,$(MALLOC_DIR)) \
                   idlen=64 \
                   define SVN_VERSION=$(SVNVERSION) \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  ERROR=87,88 IGNORE=306,316 
 #define DEBUG_SEMAPHORES=1
 SPLAT		= sc:c/splat
@@ -50,6 +51,8 @@ MCPGFX_DIR	= ../common/McpGfx
 INT64_DIR	= ../common/Int64
 FS_DIR		= ../common/Fs
 MALLOC_DIR	= ../common/malloc
+
+SCALOS_LOCALE	= $(OBJDIR)/Scalos_Locale.h
 
 #############################################################
 

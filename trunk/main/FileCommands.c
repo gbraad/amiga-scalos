@@ -1747,7 +1747,6 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
-		eName = ScalosExamineGetName(fib);
 
 		if (SourceIsVolume)
 			{
