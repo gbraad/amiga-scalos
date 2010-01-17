@@ -28,6 +28,7 @@ BOOL ScalosExamineFH(BPTR fh, T_ExamineData **exd);
 struct DateStamp *ScalosExamineGetDate(T_ExamineData *exd);
 ULONG ScalosExamineGetProtection(const T_ExamineData *exd);
 ULONG64 ScalosExamineGetSize(const T_ExamineData *exd);
+ULONG ScalosExamineGetBlockCount(const T_ExamineData *exd);
 CONST_STRPTR ScalosExamineGetName(const T_ExamineData *exd);
 CONST_STRPTR ScalosExamineGetComment(const T_ExamineData *exd);
 LONG ScalosExamineGetDirEntryType(const T_ExamineData *exd);

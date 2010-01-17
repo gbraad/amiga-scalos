@@ -62,6 +62,7 @@
 #include "Information.h"
 #include "IconobjectMCC.h"
 #include "ToolTypes.h"
+#include "FsAbstraction.h"
 #include "debug.h"
 
 #define	CATCOMP_NUMBERS
@@ -492,7 +493,7 @@ static Object *GroupWaitUntilFinished2, *GroupIconProject, *GroupWaitTimeTool2, 
 
 static struct MUI_CustomClass *IconobjectClass;
 
-static struct FileInfoBlock *fib = NULL;
+static T_ExamineData *fib = NULL;
 static BOOL FibValid = FALSE;
 static LONG Result;
 
@@ -646,7 +647,7 @@ int main(int argc, char *argv[])
 			fLock = Lock(arg->wa_Name, ACCESS_READ);
 			if (fLock)
 				{
-				if (ScalosExamine64(fLock, fib))
+				if (ScalosExamineLock(fLock, &fib))
 					FibValid = TRUE;
 				UnLock(fLock);
 				}
@@ -662,7 +663,7 @@ int main(int argc, char *argv[])
 				fLock = Lock(VolumeName, ACCESS_READ);
 				if (fLock)
 					{
-					if (ScalosExamine64(fLock, fib))	// +jmc+ - fib->fib_Comment for WBDISK(Supported by some FileSystems - Not for PFS).
+					if (ScalosExamineLock(fLock, &fib))	   // +jmc+ - fib->fib_Comment for WBDISK(Supported by some FileSystems - Not for PFS).
 						FibValid = TRUE;
 					UnLock(fLock);
 					}
@@ -692,6 +693,7 @@ int main(int argc, char *argv[])
 		LONG ToolPri = 0;
 		LONG StartPri = 0;
 		LONG WaitTime = 0;
+		ULONG Protection = ScalosExamineGetProtection(fib);
 
 		GetAttr(IDTA_ToolTypes, iconObjFromDisk, (APTR)&ToolTypesArray);
 		GetAttr(IDTA_Type, iconObjFromDisk, &IconType);
@@ -769,7 +771,7 @@ int main(int argc, char *argv[])
 						Child, StringName = StringObject,
 							MUIA_Text_PreParse, MUIX_C MUIX_B,
 							MUIA_String_Contents, IconName,
-							MUIA_String_MaxLen, sizeof(fib->fib_FileName),
+							MUIA_String_MaxLen, 108,
 							StringFrame,
 							StringBack,
 							MUIA_String_Format, MUIV_String_Format_Center,
@@ -896,7 +898,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentDevice = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, fib->fib_Comment,
+											MUIA_String_Contents, ScalosExamineGetComment(fib),
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //StringObject
@@ -938,7 +940,7 @@ int main(int argc, char *argv[])
 									GroupFrame,
 									Child, ColGroup(2),
 										Child, Label1S(GetLocString(MSGID_LASTCHANGE)),
-										Child, ConstantText(GetChangeDate(FibValid, &fib->fib_Date)),
+										Child, ConstantText(GetChangeDate(FibValid, ScalosExamineGetDate(fib))),
 										Child, Label1S(GetLocString(MSGID_SIZE)),
 										Child, ButtonDrawerSize = ButtonHelp(GetLocString(MSGID_INITIAL_DRAWER_SIZE), GetLocString(MSGID_DRAWER_SIZE_SHORTHELP), MUIV_InputMode_Toggle),
 										Child, Label1S(GetLocString(MSGID_PROTECTION)),
@@ -951,22 +953,22 @@ int main(int argc, char *argv[])
 													MUIA_Disabled, !FibValid || !IsWriteable,
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_READ)),
-													Child, CheckMarkProtectionReadDrawer =  CheckMarkHelp(!(fib->fib_Protection & FIBF_READ), MSGID_PROTECTION_READ_SHORTHELP),
+													Child, CheckMarkProtectionReadDrawer =  CheckMarkHelp(!(Protection & FIBF_READ), MSGID_PROTECTION_READ_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_WRITE)),
-													Child, CheckMarkProtectionWriteDrawer = CheckMarkHelp(!(fib->fib_Protection & FIBF_WRITE), MSGID_PROTECTION_WRITE_SHORTHELP),
+													Child, CheckMarkProtectionWriteDrawer = CheckMarkHelp(!(Protection & FIBF_WRITE), MSGID_PROTECTION_WRITE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_ARCHIVE)),
-													Child, CheckMarkProtectionArchiveDrawer = CheckMarkHelp(fib->fib_Protection & FIBF_ARCHIVE, MSGID_PROTECTION_ARCHIVE_SHORTHELP),
+													Child, CheckMarkProtectionArchiveDrawer = CheckMarkHelp(Protection & FIBF_ARCHIVE, MSGID_PROTECTION_ARCHIVE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_DELETE)),
-													Child, CheckMarkProtectionDeleteDrawer = CheckMarkHelp(!(fib->fib_Protection & FIBF_DELETE), MSGID_PROTECTION_DELETE_SHORTHELP),
+													Child, CheckMarkProtectionDeleteDrawer = CheckMarkHelp(!(Protection & FIBF_DELETE), MSGID_PROTECTION_DELETE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_EXECUTE)),
-													Child, CheckMarkProtectionExecuteDrawer = CheckMarkHelp(!(fib->fib_Protection & FIBF_EXECUTE), MSGID_PROTECTION_EXECUTE_SHORTHELP),
+													Child, CheckMarkProtectionExecuteDrawer = CheckMarkHelp(!(Protection & FIBF_EXECUTE), MSGID_PROTECTION_EXECUTE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_SCRIPT)),
-													Child, CheckMarkProtectionScriptDrawer = CheckMarkHelp(fib->fib_Protection & FIBF_SCRIPT, MSGID_PROTECTION_SCRIPT_SHORTHELP),
+													Child, CheckMarkProtectionScriptDrawer = CheckMarkHelp(Protection & FIBF_SCRIPT, MSGID_PROTECTION_SCRIPT_SHORTHELP),
 												End, //ColGroup
 												Child, HSpace(0),
 											End, //HGroup
@@ -976,7 +978,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentDrawer = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, fib->fib_Comment,
+											MUIA_String_Contents, ScalosExamineGetComment(fib),
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //StringObject
@@ -1022,7 +1024,7 @@ int main(int argc, char *argv[])
 										Child, ConstantFloatText(GetVersionString(IconName)),
 
 										Child, Label1S(GetLocString(MSGID_LASTCHANGE)),
-										Child, ConstantText(GetChangeDate(FibValid, &fib->fib_Date)),
+										Child, ConstantText(GetChangeDate(FibValid, ScalosExamineGetDate(fib))),
 
 										Child, Label1S(GetLocString(MSGID_SIZE)),
 										Child, ConstantText(GetSizeString()),
@@ -1038,32 +1040,32 @@ int main(int argc, char *argv[])
 													MUIA_Disabled, !FibValid || !IsWriteable,
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_HIDDEN)),
-													Child, CheckMarkProtectionHideProject = CheckMarkHelp((fib->fib_Protection & FIBF_HIDDEN), MSGID_PROTECTION_HIDDEN_SHORTHELP),
+													Child, CheckMarkProtectionHideProject = CheckMarkHelp((Protection & FIBF_HIDDEN), MSGID_PROTECTION_HIDDEN_SHORTHELP),
 
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_READ)),
-													Child, CheckMarkProtectionReadProject = CheckMarkHelp(!(fib->fib_Protection & FIBF_READ), MSGID_PROTECTION_READ_SHORTHELP),
+													Child, CheckMarkProtectionReadProject = CheckMarkHelp(!(Protection & FIBF_READ), MSGID_PROTECTION_READ_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_WRITE)),
-													Child, CheckMarkProtectionWriteProject = CheckMarkHelp(!(fib->fib_Protection & FIBF_WRITE), MSGID_PROTECTION_WRITE_SHORTHELP),
+													Child, CheckMarkProtectionWriteProject = CheckMarkHelp(!(Protection & FIBF_WRITE), MSGID_PROTECTION_WRITE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_ARCHIVE)),
-													Child, CheckMarkProtectionArchiveProject = CheckMarkHelp(fib->fib_Protection & FIBF_ARCHIVE, MSGID_PROTECTION_ARCHIVE_SHORTHELP),
+													Child, CheckMarkProtectionArchiveProject = CheckMarkHelp(Protection & FIBF_ARCHIVE, MSGID_PROTECTION_ARCHIVE_SHORTHELP),
 
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_DELETE)),
-													Child, CheckMarkProtectionDeleteProject = CheckMarkHelp(!(fib->fib_Protection & FIBF_DELETE), MSGID_PROTECTION_DELETE_SHORTHELP),
+													Child, CheckMarkProtectionDeleteProject = CheckMarkHelp(!(Protection & FIBF_DELETE), MSGID_PROTECTION_DELETE_SHORTHELP),
 
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_PURE)),
-													Child, CheckMarkProtectionPureProject = CheckMarkHelp((fib->fib_Protection & FIBF_PURE), MSGID_PROTECTION_PURE_SHORTHELP),
+													Child, CheckMarkProtectionPureProject = CheckMarkHelp((Protection & FIBF_PURE), MSGID_PROTECTION_PURE_SHORTHELP),
 
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_EXECUTE)),
-													Child, CheckMarkProtectionExecuteProject = CheckMarkHelp(!(fib->fib_Protection & FIBF_EXECUTE), MSGID_PROTECTION_EXECUTE_SHORTHELP),
+													Child, CheckMarkProtectionExecuteProject = CheckMarkHelp(!(Protection & FIBF_EXECUTE), MSGID_PROTECTION_EXECUTE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_SCRIPT)),
-													Child, CheckMarkProtectionScriptProject = CheckMarkHelp(fib->fib_Protection & FIBF_SCRIPT, MSGID_PROTECTION_SCRIPT_SHORTHELP),
+													Child, CheckMarkProtectionScriptProject = CheckMarkHelp(Protection & FIBF_SCRIPT, MSGID_PROTECTION_SCRIPT_SHORTHELP),
 												End, //ColGroup
 
 												Child, HSpace(0),
@@ -1075,7 +1077,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentProject = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, fib->fib_Comment,
+											MUIA_String_Contents, ScalosExamineGetComment(fib),
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //TextObject
@@ -1225,7 +1227,7 @@ int main(int argc, char *argv[])
 										Child, ConstantFloatText(GetVersionString(IconName)),
 
 										Child, Label1S(GetLocString(MSGID_LASTCHANGE)),
-										Child, ConstantText(GetChangeDate(FibValid, &fib->fib_Date)),
+										Child, ConstantText(GetChangeDate(FibValid, ScalosExamineGetDate(fib))),
 
 										Child, Label1S(GetLocString(MSGID_SIZE)),
 										Child, ConstantText(GetSizeString()),
@@ -1241,30 +1243,30 @@ int main(int argc, char *argv[])
 													MUIA_Disabled, !FibValid || !IsWriteable,
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_HIDDEN)),
-													Child, CheckMarkProtectionHideTool = CheckMarkHelp((fib->fib_Protection & FIBF_HIDDEN), MSGID_PROTECTION_HIDDEN_SHORTHELP),
+													Child, CheckMarkProtectionHideTool = CheckMarkHelp((Protection & FIBF_HIDDEN), MSGID_PROTECTION_HIDDEN_SHORTHELP),
 
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_READ)),
-													Child, CheckMarkProtectionReadTool = CheckMarkHelp(!(fib->fib_Protection & FIBF_READ), MSGID_PROTECTION_READ_SHORTHELP),
+													Child, CheckMarkProtectionReadTool = CheckMarkHelp(!(Protection & FIBF_READ), MSGID_PROTECTION_READ_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_WRITE)),
-													Child, CheckMarkProtectionWriteTool = CheckMarkHelp(!(fib->fib_Protection & FIBF_WRITE), MSGID_PROTECTION_WRITE_SHORTHELP),
+													Child, CheckMarkProtectionWriteTool = CheckMarkHelp(!(Protection & FIBF_WRITE), MSGID_PROTECTION_WRITE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_ARCHIVE)),
-													Child, CheckMarkProtectionArchiveTool = CheckMarkHelp(fib->fib_Protection & FIBF_ARCHIVE, MSGID_PROTECTION_ARCHIVE_SHORTHELP),
+													Child, CheckMarkProtectionArchiveTool = CheckMarkHelp(Protection & FIBF_ARCHIVE, MSGID_PROTECTION_ARCHIVE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_DELETE)),
-													Child, CheckMarkProtectionDeleteTool = CheckMarkHelp(!(fib->fib_Protection & FIBF_DELETE), MSGID_PROTECTION_DELETE_SHORTHELP),
+													Child, CheckMarkProtectionDeleteTool = CheckMarkHelp(!(Protection & FIBF_DELETE), MSGID_PROTECTION_DELETE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_PURE)),
-													Child, CheckMarkProtectionPureTool = CheckMarkHelp((fib->fib_Protection & FIBF_PURE), MSGID_PROTECTION_PURE_SHORTHELP),
+													Child, CheckMarkProtectionPureTool = CheckMarkHelp((Protection & FIBF_PURE), MSGID_PROTECTION_PURE_SHORTHELP),
 
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_EXECUTE)),
-													Child, CheckMarkProtectionExecuteTool = CheckMarkHelp(!(fib->fib_Protection & FIBF_EXECUTE), MSGID_PROTECTION_EXECUTE_SHORTHELP),
+													Child, CheckMarkProtectionExecuteTool = CheckMarkHelp(!(Protection & FIBF_EXECUTE), MSGID_PROTECTION_EXECUTE_SHORTHELP),
 
 													Child, Label1(GetLocString(MSGID_PROTECTION_SCRIPT)),
-													Child, CheckMarkProtectionScriptTool = CheckMarkHelp(fib->fib_Protection & FIBF_SCRIPT, MSGID_PROTECTION_SCRIPT_SHORTHELP),
+													Child, CheckMarkProtectionScriptTool = CheckMarkHelp(Protection & FIBF_SCRIPT, MSGID_PROTECTION_SCRIPT_SHORTHELP),
 												End, //ColGroup
 
 												Child, HSpace(0),
@@ -1276,7 +1278,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentTool = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, fib->fib_Comment,
+											MUIA_String_Contents, ScalosExamineGetComment(fib),
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //TextObject
@@ -2088,8 +2090,7 @@ static BOOL OpenLibraries(STRPTR *LibName)
 		ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
 #endif
 
-	fib = AllocDosObject(DOS_FIB, TAG_DONE);
-	if (NULL == fib)
+	if (!ScalosExamineBegin(&fib))
 		return FALSE;
 
 	return TRUE;
@@ -2098,11 +2099,7 @@ static BOOL OpenLibraries(STRPTR *LibName)
 
 static void CloseLibraries(void)
 {
-	if (fib)
-		{
-		FreeDosObject(DOS_FIB, fib);
-		fib = NULL;
-		}
+	ScalosExamineEnd(&fib);
 	if (LocaleBase)
 		{
 		if (InformationLocale)
@@ -2339,7 +2336,7 @@ static void UpdateDrawerSize(Object *ButtonSize, ULONG *FileCount,
 static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCount,
 	ULONG *DrawersCount, ULONG *BlocksCount, ULONG64 *ByteCount)
 {
-	struct FileInfoBlock *fib;
+	T_ExamineDirHandle edh;
 	BPTR dLock = (BPTR)NULL;
 
 	DoMethod(APP_Main, MUIM_Application_InputBuffered);
@@ -2349,13 +2346,6 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 	DoMethod(APP_Main, MUIM_Application_InputBuffered);
 
 	do	{
-		fib = AllocDosObject(DOS_FIB, NULL);
-		if (NULL == fib)
-			{
-			Result = IoErr();
-			d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
-			break;
-			}
 		dLock = Lock(Name, ACCESS_READ);
 		if ((BPTR)NULL == dLock)
 			{
@@ -2363,57 +2353,37 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 			d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
 			break;
 			}
-
-		if (!ScalosExamine64(dLock, fib))
+		if (!ScalosExamineDirBegin(dLock, &edh))
 			{
 			Result = IoErr();
 			d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
 			break;
 			}
 
-		d1(KPrintF(__FILE__ "/%s/%ld: Examine() success - Name=<%s>  DirEntryType=%ld\n", __FUNC__, __LINE__, fib->fib_FileName, fib->fib_DirEntryType));
-
 		do	{
-			BOOL IsDir;
+			T_ExamineData *exd;
 
 			DoMethod(APP_Main, MUIM_Application_InputBuffered);
 
-			if (!ScalosExNext64(dLock, fib))
+			if (!ScalosExamineDir(dLock, &edh, &exd))
 				{
 				Result = IoErr();
 				d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
 				break;
 				}
 
-			d1(KPrintF(__FILE__ "/%s/%ld: ScalosExNext64() success - Name=<%s>  DirEntryType=%ld\n", __FUNC__, __LINE__, fib->fib_FileName, fib->fib_DirEntryType));
+			d1(KPrintF(__FILE__ "/%s/%ld: ScalosExamineDir() success - Name=<%s>  DirEntryType=%ld\n", __FUNC__, __LINE__, ScalosExamineGetName(fib), ScalosExamineGetDirEntryType(fib)));
 
-			(*BlocksCount) += fib->fib_NumBlocks;
+			(*BlocksCount) += ScalosExamineGetBlockCount(fib);
 
-			switch (fib->fib_DirEntryType)
-				{
-			case ST_ROOT:
-			case ST_USERDIR:
-				IsDir = TRUE;
-				break;
-			case ST_FILE:
-			case ST_LINKFILE:
-			case ST_PIPEFILE:
-			case ST_SOFTLINK:
-				IsDir = FALSE;
-				break;
-			default:
-				IsDir = fib->fib_DirEntryType >= 0;
-				break;
-				}
-
-			if (IsDir)
+			if (ScalosExamineIsDrawer(fib))
 				{
 				BPTR OldDir = CurrentDir(dLock);
 
 				(*DrawersCount)++;
-				d1(KPrintF(__FILE__ "/%s/%ld: Name=<%s>\n", __FUNC__, __LINE__, fib->fib_FileName));
+				d1(KPrintF(__FILE__ "/%s/%ld: Name=<%s>\n", __FUNC__, __LINE__, ScalosExamineGetName(fib)));
 
-				Result = ExamineDrawer(ButtonSize, fib->fib_FileName,
+				Result = ExamineDrawer(ButtonSize, ScalosExamineGetName(exd),
 					FileCount, DrawersCount, BlocksCount, ByteCount);
 
 				CurrentDir(OldDir);
@@ -2421,7 +2391,7 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 			else
 				{
 				(*FileCount)++;
-				*ByteCount = Add64(*ByteCount, ScalosFibSize64(fib) );
+				*ByteCount = Add64(*ByteCount, ScalosExamineGetSize(exd) );
 				}
 			DoMethod(APP_Main, MUIM_Application_InputBuffered);
 
@@ -2436,8 +2406,7 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 	if (ERROR_NO_MORE_ENTRIES == Result)
 		Result = RETURN_OK;
 
-	if (fib)
-		FreeDosObject(DOS_FIB, fib);
+	ScalosExamineDirEnd(&edh);
 	if (dLock)
 		UnLock(dLock);
 
@@ -2760,7 +2729,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 		ULONG Selected;
 		ULONG Protection = 0;
 		ULONG StackSize;
-		STRPTR NewName = fib->fib_FileName;
+		CONST_STRPTR NewName = ScalosExamineGetName(fib);
 		char GetName[128];
 		char VolumeName[128];
 		ULONG Pos2;
@@ -2780,7 +2749,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 		GetAttr(IDTA_ToolTypes, IconObj, (APTR) &ToolTypesArray);
 		OldToolTypesArray = CloneToolTypeArray(ToolTypesArray, 0);
 
-		Protection = fib->fib_Protection & ~(FIBF_READ | FIBF_WRITE | FIBF_ARCHIVE | FIBF_DELETE | FIBF_EXECUTE | FIBF_SCRIPT);
+		Protection = ScalosExamineGetProtection(fib) & ~(FIBF_READ | FIBF_WRITE | FIBF_ARCHIVE | FIBF_DELETE | FIBF_EXECUTE | FIBF_SCRIPT);
 
 		switch (IconType)
 			{
@@ -3112,7 +3081,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 				UNDO_ChangeIconObject,
 				UNDOTAG_UndoMultiStep, UndoStep,
 				UNDOTAG_IconDirLock, dirLock,
-				UNDOTAG_IconName, (ULONG) fib->fib_FileName,
+				UNDOTAG_IconName, (ULONG) ScalosExamineGetName(fib),
 				UNDOTAG_OldIconObject, (ULONG) originalIconObj,
 				UNDOTAG_NewIconObject, (ULONG) IconObj,
 				TAG_END
@@ -3128,7 +3097,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 		if (WBDISK != IconType)
 			{
-			if (FibValid && Protection != fib->fib_Protection)
+			if (FibValid && Protection != ScalosExamineGetProtection(fib))
 				{
 				// Protection has changed
 				if (ws)
@@ -3138,8 +3107,8 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 						UNDO_SetProtection,
 						UNDOTAG_UndoMultiStep, UndoStep,
 						UNDOTAG_IconDirLock, dirLock,
-						UNDOTAG_IconName, (ULONG) fib->fib_FileName,
-						UNDOTAG_OldProtection, fib->fib_Protection,
+						UNDOTAG_IconName, (ULONG) ScalosExamineGetName(fib),
+						UNDOTAG_OldProtection, ScalosExamineGetProtection(fib),
 						UNDOTAG_NewProtection, Protection,
 						TAG_END
 						);
@@ -3149,7 +3118,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 				}
 			}
 
-		if (FibValid && 0 != strcmp(NewName, fib->fib_FileName))
+		if (FibValid && 0 != strcmp(NewName, ScalosExamineGetName(fib)))
 			{
 			// Name has changed
 			if (WBDISK == IconType)
@@ -3161,12 +3130,12 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 						UNDO_Relabel,
 						UNDOTAG_UndoMultiStep, UndoStep,
 						UNDOTAG_CopySrcDirLock, dirLock,
-						UNDOTAG_CopySrcName, fib->fib_FileName,
+						UNDOTAG_CopySrcName, (ULONG) ScalosExamineGetName(fib),
 						UNDOTAG_CopyDestName, NewName,
 						TAG_END
 						);
 					}
-				RenameDevice(fib->fib_FileName, NewName);
+				RenameDevice(ScalosExamineGetName(fib), NewName);
 				}
 			else
 				{
@@ -3177,19 +3146,19 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 						UNDO_Rename,
 						UNDOTAG_UndoMultiStep, UndoStep,
 						UNDOTAG_CopySrcDirLock, dirLock,
-						UNDOTAG_CopySrcName, fib->fib_FileName,
-						UNDOTAG_CopyDestName, NewName,
+						UNDOTAG_CopySrcName, (ULONG) ScalosExamineGetName(fib),
+						UNDOTAG_CopyDestName, (ULONG) NewName,
 						TAG_END
 						);
 					}
-				RenameObject(fib->fib_FileName, NewName);
+				RenameObject(ScalosExamineGetName(fib), NewName);
 				}
 
 			if (ws)
 				SCA_UnLockWindowList();
 			}
 
-		if (FibValid && 0 != strcmp(Comment, fib->fib_Comment))
+		if (FibValid && 0 != strcmp(Comment, ScalosExamineGetComment(fib)))
 			{
 			// Comment has changed
 			if (WBDISK == IconType && FoundDeviceFromArg)	// +jmc+ - Add ":" to volume name for SetComment().
@@ -3205,8 +3174,8 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 					UNDO_SetComment,
 					UNDOTAG_UndoMultiStep, UndoStep,
 					UNDOTAG_IconDirLock, dirLock,
-					UNDOTAG_IconName, (ULONG) fib->fib_FileName,
-					UNDOTAG_OldComment, (ULONG) fib->fib_Comment,
+					UNDOTAG_IconName, (ULONG) ScalosExamineGetName(fib),
+					UNDOTAG_OldComment, (ULONG) ScalosExamineGetComment(fib),
 					UNDOTAG_NewComment, (ULONG) Comment,
 					TAG_END
 					);
@@ -3528,20 +3497,19 @@ static BOOL IsDevice(struct WBArg *arg)
 			}
 		else
 			{
-			struct FileInfoBlock *fib;
+			T_ExamineData *fib;
 
-			fib = AllocDosObject(DOS_FIB, NULL);
-			if (fib)
+			if (ScalosExamineBegin(&fib))
 				{
 				BPTR parentDir;
 
-				if (ScalosExamine64(arg->wa_Lock, fib))
+				if (ScalosExamineLock(arg->wa_Lock, &fib))
 					{
-					d1(KPrintF(__FILE__ "/%s/%ld: fib_DirEntryType=%ld  <%s>\n", __FUNC__, __LINE__, fib->fib_DirEntryType, fib->fib_FileName));
-					isDevice = ST_ROOT == fib->fib_DirEntryType;
+					d1(KPrintF(__FILE__ "/%s/%ld: fib_DirEntryType=%ld  <%s>\n", __FUNC__, __LINE__, ScalosExamineGetDirEntryType(fib), ScalosExamineGetName(fib)));
+					isDevice = ST_ROOT == ScalosExamineGetDirEntryType(fib);
 					}
 
-				FreeDosObject(DOS_FIB, fib);
+				ScalosExamineEnd(&fib);
 
 				parentDir = ParentDir(arg->wa_Lock);
 				d1(KPrintF(__FILE__ "/%s/%ld: parentDir=%08lx\n", __FUNC__, __LINE__, parentDir));
@@ -3552,6 +3520,8 @@ static BOOL IsDevice(struct WBArg *arg)
 					// ParentDir() of root directory returns NULL
 					isDevice = TRUE;
 					}
+
+				ScalosExamineEnd(&fib);
 				}
 			}
 		} while (0);
@@ -4174,7 +4144,7 @@ static STRPTR GetVersionString(CONST_STRPTR IconName)
 	// strcat(VersMask, "VER: ");
 	stccpy(VersMask, versTag + 1, 6 + 1);
 
-	switch (fib->fib_DirEntryType)
+	switch (ScalosExamineGetDirEntryType(fib))
 		{
 	case ST_FILE:
 	case ST_LINKFILE:
@@ -4619,7 +4589,7 @@ static STRPTR GetSizeString(void)
 		{
 		char ByteCountText[40];
 
-		Convert64(InformationLocale, ScalosFibSize64(fib), ByteCountText, sizeof(ByteCountText));
+		Convert64(InformationLocale, ScalosExamineGetSize(fib), ByteCountText, sizeof(ByteCountText));
 
 		SizeString = ScaFormatString(GetLocString(MSGID_SIZE_FORMAT), TextSize, sizeof(TextSize),
 			1, ByteCountText);

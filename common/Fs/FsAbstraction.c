@@ -30,9 +30,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "scalos_structures.h"
-#include "functions.h"
-#include "Variables.h"
+#include "int64.h"
+#include "FsAbstraction.h"
 
 //----------------------------------------------------------------------------
 
@@ -146,7 +145,7 @@ ULONG64 ScalosExamineGetSize(const T_ExamineData *exd)
 		{
 		ULONG64 Size = (ULONG64) exd->fib_un.fib_un_ext.fib_un_ext_Size64;
 
-		// workaround for MorphOS 2.1 sign-extenstion bug:
+		// workaround for MorphOS 2.1 sign-extension bug:
 		// 64bit file size is negative for files with sizes between 2G and 4G
 		if (0xffffffff == ULONG64_HIGH(Size))
 			Size = MakeU64(ULONG64_LOW(Size));
@@ -159,6 +158,25 @@ ULONG64 ScalosExamineGetSize(const T_ExamineData *exd)
 		}
 #else //__amigaos4__
 	return MakeU64(exd->fib_Size);
+#endif //__amigaos4__
+}
+
+//----------------------------------------------------------------------------
+
+ULONG ScalosExamineGetBlockCount(const T_ExamineData *exd)
+{
+#ifdef __amigaos4__
+	if (exd->FileSize >= 0)
+		{
+		// Real block count is not available, so we calculate an estimation
+		return (511 + exd->FileSize) / 512;
+		}
+	else
+		return 1;
+#elif defined(__MORPHOS__)
+	return exd->fib_NumBlocks;
+#else //__amigaos4__
+	return exd->fib_NumBlocks;
 #endif //__amigaos4__
 }
 
@@ -351,21 +369,16 @@ BOOL ScalosReadLink(BPTR srcDirLock, CONST_STRPTR srcName, STRPTR Buffer, size_t
 #ifdef __amigaos4__
 	BOOL Success = FALSE;
 	BPTR oldDir = CurrentDir(srcDirLock);
-	STRPTR MatchString = NULL;
 	struct ExamineData *exd = NULL;
 	APTR dirContext= NULL;
 
 	do	{
-		MatchString = AllocPathBuffer();
-		if (NULL == MatchString)
-			break;
-
-		if (ParsePatternNoCase(srcName, MatchString, Max_PathLen) < 0)
+		if (ParsePatternNoCase(srcName, Buffer, BuffLen) < 0)
 			break;
 
 		dirContext = ObtainDirContextTags(EX_FileLockInput, srcDirLock,
 				EX_DataFields, EXF_NAME | EXF_LINK | EXF_TYPE,
-				EX_MatchString, MatchString,
+				EX_MatchString, Buffer,
 				TAG_END);
 		if (NULL == dirContext)
 			break;
@@ -383,8 +396,6 @@ BOOL ScalosReadLink(BPTR srcDirLock, CONST_STRPTR srcName, STRPTR Buffer, size_t
 
 	if (dirContext)
 		ReleaseDirContext(dirContext);
-	if (MatchString)
-		FreePathBuffer(MatchString);
 
 	CurrentDir(oldDir);
 

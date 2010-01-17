@@ -15,6 +15,7 @@ CFLAGS		= nostackcheck nochkabort debug=s data=far code=far \
 		  idir=$(subst ../,/,$(TOOLTYPE_DIR)) \
 		  idir=$(subst ../,/,$(ICONOBJMCC_DIR)) \
 		  idir=$(subst ../,/,$(INT64_DIR))
+		  idir=$(subst ../,/,$(FS_DIR))
 SPLAT		= sc:c/splat
 AS		= phxass
 AFLAGS		= QUIET m=68020 linedebug opt=NRQB i=include:
@@ -32,6 +33,7 @@ OBJ_DIR		= .sasobj
 TOOLTYPE_DIR	=  ../IconProperties.MUI
 ICONOBJMCC_DIR	=  ../../common/IconobjectMCC
 INT64_DIR	=  ../../common/Int64
+FS_DIR	     	=  ../../common/Fs
 
 .SUFFIXES: .asm .cd
 
@@ -66,7 +68,7 @@ allcatalogs:
 CSRCS =		Information.c \
 		$(ICONOBJMCC_DIR)/IconobjectMCC.c \
 		$(TOOLTYPE_DIR)/ToolTypes.c \
-		$(INT64_DIR)/Dos64.c \
+		$(FS_DIR)/FsAbstraction.c \
 		$(INT64_DIR)/int64.c	\
 
 #############################################################
@@ -89,7 +91,7 @@ $(CATCOMPHEADER) : Information.cd
 
 $(OBJ_DIR)/Information.o : Information.c Information.h \
 	Information_Locale.h $(ICONOBJMCC_DIR)/IconobjectMCC.h \
-	$(TOOLTYPE_DIR)/ToolTypes.h $(INT64_DIR)/int64.h debug.h
+	$(TOOLTYPE_DIR)/ToolTypes.h $(INT64_DIR)/int64.h $(FS_DIR)/FsAbstraction.h debug.h
 
 $(OBJ_DIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c \
 	$(ICONOBJMCC_DIR)/IconobjectMCC.h debug.h
@@ -121,7 +123,7 @@ $(OBJ_DIR)/ToolTypes.o      : $(TOOLTYPE_DIR)/ToolTypes.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/Dos64.o      : $(INT64_DIR)/Dos64.c
+$(OBJ_DIR)/FsAbstraction.o      : $(FS_DIR)/FsAbstraction.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
