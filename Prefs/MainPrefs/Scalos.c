@@ -4793,6 +4793,19 @@ static Object *GeneratePathsPage(struct SCAModule *app)
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PATHSPAGE_IMAGECACHE_SHORTHELP),
 				End, //Pop
 
+				Child, Label2((ULONG) GetLocString(MSGID_PATHSPAGE_SQLITE3TEMPPATH)),
+				Child, app->Obj[STRING_SQLITE3TEMPPATH] = PopaslObject,
+					MUIA_CycleChain, TRUE,
+					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
+					MUIA_Popstring_String, BetterStringObject,
+						StringFrame,
+						MUIA_String_Contents, "t:",
+					End, //BetterString
+					ASLFR_TitleText, (ULONG) GetLocString(MSGID_PATHSPAGE_SQLITE3TEMPPATH_ASLTITLE),
+					ASLFR_DrawersOnly, TRUE,
+					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PATHSPAGE_SQLITE3TEMPPATH_SHORTHELP),
+				End, //Pop
+
 				Child, HVSpace,
 				Child, HVSpace,
 

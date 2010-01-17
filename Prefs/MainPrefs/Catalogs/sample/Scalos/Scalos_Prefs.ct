@@ -952,6 +952,23 @@ MSGID_PATHSPAGE_IMAGECACHE_ASLTITLE
 Please select a drawer...
 ;Please select a drawer...
 ;
+;+++translateme+++
+MSGID_PATHSPAGE_SQLITE3TEMPPATH
+Thumbnail Database Temporary Files:
+;Thumbnail Database Temporary Files:
+;
+;+++translateme+++
+MSGID_PATHSPAGE_SQLITE3TEMPPATH_SHORTHELP
+This drawer is used to store any temporary\n\
+files for internal use by the thumbnail database.
+;This drawer is used to store any temporary\n\
+;files for internal use by the thumbnail database.
+;
+;+++translateme+++
+MSGID_PATHSPAGE_SQLITE3TEMPPATH_ASLTITLE
+Please select thumbnail cache temporary files location...
+;Please select thumbnail cache temporary files location...
+;
 ;-----------------------------------------------------------
 ;
 MSGID_STARTUPPAGE_SPLASHWINDOW

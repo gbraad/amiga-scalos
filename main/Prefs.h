@@ -140,6 +140,7 @@ struct ScalosPrefs
 	CONST_STRPTR pref_ThumbDatabasePath;			// Path of thumbnail cache database file
 	CONST_STRPTR pref_ThemesDir;				// default path for THEME:
 	CONST_STRPTR pref_ImageCacheDir;			// default path for datatypes image cache
+	CONST_STRPTR pref_SQLiteTempDir;			// path for SQLite3 temporary files
 
 	UBYTE pref_GroupSeparator;				// +jl+ 20010829 separates groups of digits, see locale.h
 	UBYTE pref_TitleRefreshSec;				// +jl+ 20010831 number of seconds for Title-refresh
