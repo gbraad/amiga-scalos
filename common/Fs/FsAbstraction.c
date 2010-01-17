@@ -250,7 +250,19 @@ SLONG64 ScalosSeek(BPTR fh, SLONG64 pos, LONG mode)
 	else
 		return Seek(fh, ULONG64_LOW(pos), mode);
 #else //__amigaos4__
-	return MakeS64(Seek(fh, ULONG64_LOW(pos), mode));
+
+#ifdef __GNUC__
+	return (SLONG64) Seek(fh, ULONG64_LOW(pos), mode);
+#else //__GNUC__
+
+	SLONG64 res64;
+
+	SLONG64_HIGH(res64) = 0;
+	SLONG64_LOW(res64) = Seek(fh, ULONG64_LOW(pos), mode);
+
+	return res64;
+#endif //__GNUC__
+
 #endif //__amigaos4__
 }
 
@@ -283,7 +295,7 @@ BOOL ScalosExamineDirBegin(BPTR lock, T_ExamineDirHandle *edh)
 			*edh = NULL;
 			}
 		}
-	d2(KPrintF("%s/%s/%ld:  fib=%08lx\n", __FILE__, __FUNC__, __LINE__, *edh));
+	d1(KPrintF("%s/%s/%ld:  fib=%08lx\n", __FILE__, __FUNC__, __LINE__, *edh));
 	return (NULL != *edh);
 #else //__amigaos4__
 	*edh = AllocDosObject(DOS_FIB, NULL);
@@ -489,12 +501,12 @@ BOOL ScalosSupportsExamineDir(struct MsgPort *fileSysPort, BPTR dirLock, T_Exami
 		ACTION_EXAMINEDATA_DIR,
 		MKBADDR(edh));
 
-	d2(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+	d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 	return (BOOL) (0 != rc);
 #elif defined(__MORPHOS__) && defined(ACTION_EXAMINE_NEXT64)
 	LONG rc;
 
-	d2(KPrintF("%s/%s/%ld:  fib=%08lx\n", __FILE__, __FUNC__, __LINE__, *edh));
+	d1(KPrintF("%s/%s/%ld:  fib=%08lx\n", __FILE__, __FUNC__, __LINE__, *edh));
 
 	rc = DoPkt3(fileSysPort,
 		ACTION_EXAMINE_OBJECT64,
@@ -502,10 +514,11 @@ BOOL ScalosSupportsExamineDir(struct MsgPort *fileSysPort, BPTR dirLock, T_Exami
 		MKBADDR(*edh),
 		NULL);
 
-	d2(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+	d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 	return (BOOL) (0 != rc);
-#endif /* __MORPHOS__ */
+#else
 	return FALSE;
+#endif /* __MORPHOS__ */
 }
 
 //----------------------------------------------------------------------------

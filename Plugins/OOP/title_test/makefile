@@ -14,7 +14,7 @@ CFLAGS  	= nostkchk nochkabort strcons strmer opt dbg=ff nover \
 		  streq data=far idir=sc:include/ idir=include: \
 		  idlen=64 idir=///include
 AS      	= phxass
-AFLAGS  	= quiet m=68020 linedebug opt=NRQB i=include:
+AFLAGS  	= quiet m=68020 linedebug opt=NRQB i=SC:Assembler_Headers
 LD      	= slink
 ECHO		= echo
 LDFLAGS 	= quiet batch noicons sd
