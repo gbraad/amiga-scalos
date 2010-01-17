@@ -55,7 +55,7 @@ BOOL ScalosExamineBegin(T_ExamineData **exd)
 	return TRUE;
 #else //__amigaos4__
 	*exd = AllocDosObject(DOS_FIB, NULL);
-	return (NULL != *exd);
+	return (BOOL) (NULL != *exd);
 #endif //__amigaos4__
 }
 
@@ -92,7 +92,7 @@ BOOL ScalosExamineLock(BPTR lock, T_ExamineData **exd)
 	else
 		return Examine(lock, *exd);
 #else //__amigaos4__
-	return Examine(lock, *exd);
+	return (BOOL) Examine(lock, *exd);
 #endif //__amigaos4__
 }
 
@@ -131,7 +131,7 @@ ULONG ScalosExamineGetProtection(const T_ExamineData *exd)
 #ifdef __amigaos4__
 	return exd->Protection;
 #else //__amigaos4__
-	return exd->fib_Protection;
+	return (ULONG) exd->fib_Protection;
 #endif //__amigaos4__
 }
 
@@ -158,7 +158,7 @@ ULONG64 ScalosExamineGetSize(const T_ExamineData *exd)
 		return MakeU64(exd->fib_Size);
 		}
 #else //__amigaos4__
-	return exd->fib_Protection;
+	return MakeU64(exd->fib_Size);
 #endif //__amigaos4__
 }
 
@@ -232,7 +232,7 @@ SLONG64 ScalosSeek(BPTR fh, SLONG64 pos, LONG mode)
 	else
 		return Seek(fh, ULONG64_LOW(pos), mode);
 #else //__amigaos4__
-	return Seek(fh, ULONG64_LOW(pos), mode);
+	return MakeS64(Seek(fh, ULONG64_LOW(pos), mode));
 #endif //__amigaos4__
 }
 
@@ -276,7 +276,7 @@ BOOL ScalosExamineDirBegin(BPTR lock, T_ExamineDirHandle *edh)
 		FreeDosObject(DOS_FIB, *edh);
 		*edh = NULL;
 		}
-	return (NULL != *edh);
+	return (BOOL) (NULL != *edh);
 #endif //__amigaos4__
 }
 
@@ -463,7 +463,7 @@ BOOL ScalosDosPacketExamineDirResult(struct StandardPacket *pkt, T_ExamineData *
 #else
 	*exd = (T_ExamineData *) *edh;
 
-	return 0 != pkt->sp_Pkt.dp_Res1;
+	return (BOOL) (0 != pkt->sp_Pkt.dp_Res1);
 #endif
 }
 

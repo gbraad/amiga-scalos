@@ -336,7 +336,7 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 	LONG DirEntryType = 0;
 	ULONG64 fSize;
 	ULONG Protection = 0;
-	struct DateStamp fDate;
+	struct DateStamp fDate = { 0, 0, 0 };
 	va_list args;
 
 	va_start(args, FirstTag);
@@ -482,8 +482,6 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 		ttu.ttshd_Protection = Protection;
 		ttu.ttshd_Buffer = Buffer;
 		ttu.ttshd_BuffLen = sizeof(Buffer);
-
-		fName = NULL;
 
 		userHook.h_Data = &ttu;
 		SETHOOKFUNC(userHook, TooltipTTUserHookFunc);
