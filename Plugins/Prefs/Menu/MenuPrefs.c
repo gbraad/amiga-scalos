@@ -142,9 +142,11 @@ struct MenuListEntry
 #define	LLISTFLGB_NotRemovable		0
 #define	LLISTFLGB_NameNotSetable	1
 #define LLISTFLGB_MayNotHaveChildren	2
+#define LLISTFLGB_PopupMenu		3
 #define	LLISTFLGF_NotRemovable		(1 << LLISTFLGB_NotRemovable)
 #define	LLISTFLGF_NameNotSetable	(1 << LLISTFLGB_NameNotSetable)
 #define LLISTFLGF_MayNotHaveChildren	(1 << LLISTFLGB_MayNotHaveChildren)
+#define LLISTFLGF_PopupMenu		(1 << LLISTFLGB_PopupMenu)
 
 
 enum ScalosMenuChunkId
@@ -1991,7 +1993,7 @@ static SAVEDS(APTR) INTERRUPT ChangeUnselectedImageHookFunc(struct Hook *hook, O
 		SetChangedFlag(inst, TRUE);
 
 		stccpy(mle->llist_UnselectedIconName, NewImage, sizeof(mle->llist_UnselectedIconName));
-		set(inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage], MUIA_ScaDtpic_Name, mle->llist_UnselectedIconName);
+		set(inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage], MUIA_ScaDtpic_Name, (ULONG) mle->llist_UnselectedIconName);
 
 		DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 			MUIM_NListtree_Redraw,
@@ -2024,7 +2026,7 @@ static SAVEDS(APTR) INTERRUPT ChangeSelectedImageHookFunc(struct Hook *hook, Obj
 		SetChangedFlag(inst, TRUE);
 
 		stccpy(mle->llist_SelectedIconName, NewImage, sizeof(mle->llist_SelectedIconName));
-		set(inst->mpb_Objects[OBJNDX_DtImage_SelectedImage], MUIA_ScaDtpic_Name, mle->llist_SelectedIconName);
+		set(inst->mpb_Objects[OBJNDX_DtImage_SelectedImage], MUIA_ScaDtpic_Name, (ULONG) mle->llist_SelectedIconName);
 
 		DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 			MUIM_NListtree_Redraw,
@@ -2071,9 +2073,9 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: menuType=%lu  EntryCount=%lu  MaxCount=%lu\n", \
 				__LINE__, menuType, Count, MaxCount));
 
-			MayAddNewItem = (SCAMENUTYPE_MainMenu != mle->llist_EntryType) &&
+			MayAddNewItem = ((SCAMENUTYPE_MainMenu != mle->llist_EntryType) || (mle->llist_Flags & LLISTFLGF_PopupMenu)) &&
 				Count < MaxCount &&
-				!(mle->llist_Flags & LLISTFLGF_MayNotHaveChildren);
+				(!(mle->llist_Flags & LLISTFLGF_MayNotHaveChildren) || (mle->llist_Flags & LLISTFLGF_PopupMenu));
 
 			MayAddCommand = (mle->llist_name && strlen(mle->llist_name) > 0) &&
 				((SCAMENUTYPE_MenuItem == mle->llist_EntryType)
@@ -2105,8 +2107,8 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 			set(inst->mpb_Objects[OBJNDX_StringHotkey], MUIA_String_Contents, (ULONG) mle->llist_HotKey);
 			set(inst->mpb_Objects[OBJNDX_PopAsl_UnselectedImage], MUIA_String_Contents, (ULONG) mle->llist_UnselectedIconName);
 			set(inst->mpb_Objects[OBJNDX_PopAsl_SelectedImage], MUIA_String_Contents, (ULONG) mle->llist_SelectedIconName);
-			set(inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage], MUIA_ScaDtpic_Name, mle->llist_UnselectedIconName);
-			set(inst->mpb_Objects[OBJNDX_DtImage_SelectedImage], MUIA_ScaDtpic_Name, mle->llist_SelectedIconName);
+			set(inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage], MUIA_ScaDtpic_Name, (ULONG) mle->llist_UnselectedIconName);
+			set(inst->mpb_Objects[OBJNDX_DtImage_SelectedImage], MUIA_ScaDtpic_Name, (ULONG) mle->llist_SelectedIconName);
 
 			set(inst->mpb_Objects[OBJNDX_DelButton], MUIA_Disabled, !MayDelete);
 			set(inst->mpb_Objects[OBJNDX_NameString], MUIA_Disabled, !MayChangeName);
@@ -2317,7 +2319,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuHookFunc(struct Hook *hook, Object *o, Msg 
 
 	// try to activate menu name string gadget
 	set(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject,
-		inst->mpb_Objects[OBJNDX_NameString]);
+		(ULONG) inst->mpb_Objects[OBJNDX_NameString]);
 
 	return 0;
 }
@@ -2354,7 +2356,7 @@ static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, M
 
 			// try to activate command name string gadget
 			set(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject,
-				inst->mpb_Objects[OBJNDX_StringCmd]);
+				(ULONG) inst->mpb_Objects[OBJNDX_StringCmd]);
 			break;
 
 		case SCAMENUTYPE_Command:
@@ -2372,7 +2374,7 @@ static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, M
 
 			// try to activate command name string gadget
 			set(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject,
-				inst->mpb_Objects[OBJNDX_StringCmd]);
+				(ULONG) inst->mpb_Objects[OBJNDX_StringCmd]);
 			break;
 			}
 		}
@@ -2426,7 +2428,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuItemHookFunc(struct Hook *hook, Object *o, 
 
 		// try to activate menu name string gadget
 		set(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject,
-			inst->mpb_Objects[OBJNDX_NameString]);
+			(ULONG) inst->mpb_Objects[OBJNDX_NameString]);
 
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Node Count=%ld\n", __LINE__, Count));
 		}
@@ -4817,7 +4819,7 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_Disk].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Disk].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME1),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
@@ -4825,7 +4827,7 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_Drawer].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Drawer].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME2),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
@@ -4833,7 +4835,7 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME3),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
@@ -4841,7 +4843,7 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_Trashcan].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Trashcan].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME4),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
@@ -4849,7 +4851,7 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_Window].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Window].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME5),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
@@ -4857,7 +4859,7 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME6),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
@@ -4865,7 +4867,7 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 	inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME7),
 		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren),
+			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 }

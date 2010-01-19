@@ -8,7 +8,7 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20100117	jl	- Improvement: added user configuration for SQLite3 thumbnail
+41.7	20100117	jl	- Improvement: added user configuration for SQLite3 thumbnail
 				  database temporary files directory.
 				- Improvement: implemented large file (4 >GBytes) support for AmigaOS4.
 				- Improvement: added new popup menu for desktop.
@@ -2120,7 +2120,9 @@ Additions/changes:
 
 --------------------Scalos Menu Preferences---------------------------------
 
- 40.17	20071003	jl	- Improvement: Automatically use Zune instead of MUI if present. 
+ 40.17	20100119	jl	- Bugfix: With Scalos menu preferences, it was not possible to 
+				  add menu items to an empty popup menu
+	20071003	jl	- Improvement: Automatically use Zune instead of MUI if present. 
 				  Fixes crashes with prefs pugins with AFA OS installed.
 	20070918	jl	- Improvement: thumbnail menu image is now optionally
 				  loaded from "THEME:prefs/plugins/menu".
