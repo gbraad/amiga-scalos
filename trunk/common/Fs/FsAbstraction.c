@@ -453,13 +453,18 @@ void ScalosDosPacketExamineDir(struct DosPacket *pkt, BPTR dirLock, T_ExamineDir
 
 #elif defined(__MORPHOS__) && defined(ACTION_EXAMINE_NEXT64)
 
-	pkt->dp_Arg1 = dirLock;
-	pkt->dp_Arg2 = MKBADDR(*edh);
-
 	if (DOSBase->dl_lib.lib_Version >= 51)
 		{
 		pkt->dp_Type = ACTION_EXAMINE_NEXT64;
+		pkt->dp_Arg1 = dirLock;
+		pkt->dp_Arg2 = MKBADDR(*edh);
 		pkt->dp_Arg3 = NULL;
+		}
+	else
+		{
+		pkt->dp_Type = ACTION_EXAMINE_NEXT;
+		pkt->dp_Arg1 = dirLock;
+		pkt->dp_Arg2 = MKBADDR(*edh);
 		}
 	return;
 #else
