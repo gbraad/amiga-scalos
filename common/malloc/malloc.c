@@ -530,6 +530,8 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #include <time.h>
 #endif //__SASC
 
+#include "debug.h"
+
 #define	LACKS_SYS_PARAM_H 1
 #define	NEED_GLOBAL_LOCK_INIT 1
 #define	USE_LOCKS 1
