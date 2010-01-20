@@ -15,46 +15,43 @@
 ;
 MSGID_BYTENAME
 O
-;
+;B
 ;
 MSGID_KBYTENAME
 Ko
-;
+;KB
 ;
 MSGID_MBYTENAME
 Mo
-;
+;MB
 ;
 MSGID_GBYTENAME
 Go
-;
+;Gb
 ;
 MSGID_TBYTENAME
 To
-;
+;TB
 ;
 MSGID_PBYTENAME
 Po
-;
+;PB
 ;
 MSGID_HBYTENAME
 Ho
-;
+;MB
 ;
 MSGID_REQTITLE
 Requête de Scalos
 ; Scalos Request
 ;
-;
 MSGID_OPENERRORNAME
 Impossible de lancer le programme '%s'
 ; Unable to open your tool '%s'
 ;
-;
 MSGID_OPENERRORGADGETS
 Réessayer|Choisir un autre outil|Annuler
 ; Retry|Select different Tool|Cancel
-;
 ;
 MSGID_CANNOT_QUIT_FOREIGNWINDOWS
 Impossible de quitter...\n\
@@ -62,31 +59,25 @@ Des fenêtres externes sont ouvertes !
 ; Cannot quit ...\n\
 ; There are some foreign windows open!
 ;
-;
 MSGID_GADGETSNAME
 Réessayer|Annuler
 ; Retry|Cancel
-;
 ;
 MSGID_WBLOADNAME
 Essaye de charger le programme '%s'.
 ; Attempt to load program '%s'.
 ;
-;
 MSGID_WBLOAD_ASLTITLE
 Choisir un autre outil
 ; Select different Tool
-;
 ;
 MSGID_REPLACENAME
 Le fichier '%s' existe déjà ! Le remplacer ?
 ; File '%s' already exists! Replace?
 ;
-;
 MSGID_REPLACEGNAME
 Remplacer|Annuler
 ; Replace|Cancel
-;
 ;
 MSGID_DOWAITERRNAME
 Le programme '%s'\n\
@@ -96,13 +87,11 @@ Dois-je attendre plus longtemps ?
 ; not yet returned\n\
 ; Should I wait some more?
 ;
-;
 MSGID_CANNOT_QUIT_LIBOPEN
 Impossible de quitter ! La librairie\n\
 Scalos.library est utilisée par %d applications.
 ; Can't quit yet. The Scalos.library\n\
 ; is being used by %d applications.
-;
 ;
 MSGID_CLOSEWBNAME
 Scalos tente de réinitialiser l'écran\n\
@@ -112,35 +101,28 @@ Workbench. Veuillez fermer toutes les fenêtres,\n\
 ; Workbench screen. Please close all windows\n\
 ; except drawers.
 ;
-;
 MSGID_ABOUTNAME
 A propos de Scalos... 
 ; About Scalos...
-;
 ;
 MSGID_OKNAME
 D'accord
 ; Ok
 ;
-;
 MSGID_UPDATENAME
 Mettre à jour
-;
 ;
 MSGID_SYSINFONAME
 Information système
 ; System Info
 ;
-;
 MSGID_FLUSHNAME
 Libérer
 ; Flush
 ;
-;
 MSGID_REBOOTNAME
 Redémarrer
 ; Reboot
-;
 ;
 MSGID_EXISTSNAME_COPY
 Erreur rencontrée lors de la copie de l'objet,\n\
@@ -148,136 +130,109 @@ Erreur rencontrée lors de la copie de l'objet,\n\
 ; Cannot copy object\n\
 ; \"%s\" already exists.
 ;
-;
 MSGID_EXISTSGNAME
 Remplacer|Passer|Tout remplacer|Annuler
 ; Replace|Skip|Replace All|Abort
-;
 ;
 MSGID_SUREREBOOTNAME
 Voulez vous vraiment\n\
 relancer Scalos ?
 ; Do you really want to reboot?
 ;
-;
 MSGID_OKCANCELNAME
 D'accord|Annuler
 ; Ok|Cancel
-;
 ;
 MSGID_LIBERRORNAME
 Impossible d'ouvrir \"%s\" V%ld !
 ; Couldn't open \"%s\" V%ld !
 ;
-;
 MSGID_SCALIBERRORNAME
 Impossible de créer scalos.library !
 ; Couldn't create scalos.library!
-;
 ;
 MSGID_COLNAMENAME
 Nom
 ; Name
 ;
-;
 MSGID_COLSIZENAME
 Taille
 ; Size
-;
 ;
 MSGID_COLACCESSNAME
 Accès
 ; Access
 ;
-;
 MSGID_COLDATENAME
 Date
 ; Date
-;
 ;
 MSGID_COLTIMENAME
 Heure
 ; Time
 ;
-;
 MSGID_COLCOMNAME
 Commentaire
 ; Comment
-;
 ;
 MSGID_USEDLIBSNAME
 Bibliothèques utilisées :
 ; Used libraries:
 ;
-;
 MSGID_SCARUNNINGNAME
 Scalos tourne en 
 ; Scalos is running in 
-;
 ;
 MSGID_PREVIEWNAME
 Mode démo !
 ; Preview Mode!
 ;
-;
 MSGID_EMULATIONNAME
 Mode émulation !
 ; Emulation Mode!
-;
 ;
 MSGID_FILETRANSTITLE_COPY
 Copie en cours...
 ; Copying...
 ;
-;
 MSGID_COPYINGNAME
 Copie du fichier
 ; Copying file
-;
 ;
 MSGID_FROMNAME
 Depuis
 ; From
 ;
-;
 MSGID_TONAME
 vers
-;
 ;
 MSGID_PMTITLE1NAME
 [Volume]
 ; [Disk]
 ;
-;
 MSGID_PMTITLE2NAME
 [Répertoire]
 ; [Drawer]
-;
 ;
 MSGID_PMTITLE3NAME
 [Outil/Projet]
 ; [Tool-/Project]
 ;
-;
 MSGID_PMTITLE4NAME
 [Corbeille]
 ; [Trashcan]
-;
 ;
 MSGID_PMTITLE5NAME
 [Fenêtre Scalos]
 ; [Scalos Window]
 ;
-;
 MSGID_PMTITLE6NAME
 [Icône App]
 ; [AppIcon]
 ;
-;+++translateme+++
 MSGID_PMTITLE7NAME
-[Desktop]
+[Bureau]
 ;[Desktop]
-;
 ;
 MSGID_COPYERRORNAME
 Erreur rencontrée lors de la copie du fichier\n\
@@ -287,11 +242,9 @@ Erreur rencontrée lors de la copie du fichier\n\
 ; \"%s\"\n\
 ; %s
 ;
-;
 MSGID_COPYERRORGNAME
 Réessayer|Passer|Annuler
 ; Retry|Skip|Abort
-;
 ;
 MSGID_MOVEERRORNAME
 Erreur rencontrée lors du déplacement du fichier\n\
@@ -301,7 +254,6 @@ Erreur rencontrée lors du déplacement du fichier\n\
 ; \"%s\"\n\
 ; %s
 ;
-;
 MSGID_DELETEERRORNAME
 Erreur rencontrée lors de l'éffacement du fichier\n\
 \"%s\"\n\
@@ -310,13 +262,11 @@ Erreur rencontrée lors de l'éffacement du fichier\n\
 ; \"%s\"\n\
 ; %s
 ;
-;
 ;text: first bytes:
 ;0 = Font: n = normal, b =bold, i = italic, j = bold+italic
 ;1 = DRIPen: 0..9 (ascii)
 ;2 = Justify: l = left, r = right, c = centered
 ;3-5 = SkipLines: 3 digits decimal = height in pixels to skip after this textline
-;
 ;
 ; the following macros are recognized :
 ; "%b" gets replaces by the Scalos Revision build number, e.g. "2440"
@@ -433,7 +383,6 @@ b2c160Amusez-vous bien sous Scalos et appréciez la réelle puissance du Workbench
 ; n3c014Web: http://scalos.noname.fr\n\
 ; b2c160Have fun with Scalos and feel the real Workbench power!\n
 ;
-;
 MSGID_ABOUT_UNREGTEXT
 n2c004* Version non enregistrée *\n\
 n2c000Enregistrez-vous s'il vous plaît, pour utiliser Scalos\n\
@@ -442,72 +391,57 @@ n2c010comme remplacement du Workbench !\n
 ; n2c000Please register to use Scalos\n\
 ; n2c010as a real Workbench replacement\n
 ;
-;
 MSGID_ABOUT_REGTOTEXT
 b2c004Enregistré à :
 ; b2c004Registered to:
-;
 ;
 MSGID_ABOUT_REGTEXT
 n2c010Merci pour votre participation !
 ; n2c010Thanks for your support!
 ;
-;
 MSGID_ABOUT_COMREGINFO
 Version FREEWARE\n
 ; freeware version\n
-;
 ;
 MSGID_PROGRESS_SETUPSCREEN
 Préparation de l'écran de Scalos...
 ; Setting up Scalos Screen...
 ;
-;
-;
 MSGID_PROGRESS_SETUPSCRPATTERN
 Chargement du motif de l'écran...
 ; Setting up Screen Pattern...
-;
 ;
 MSGID_PROGRESS_INITMENU
 Initialisation des menus...
 ; Initializing Menus...
 ;
-;
 MSGID_PROGRESS_INITTIMER
 Installation du temporisateur principal...
 ; Setting up 1s Timer...
-;
 ;
 MSGID_PROGRESS_STARTWINDOWPROC
 Chargement de la fenêtre principale...
 ; Starting Main Window Process...
 ;
-;
 MSGID_PROGRESS_INITNOTIFY
 Préparation du dispositif des fichiers du système...
 ; Setting up File System Notify...
-;
 ;
 MSGID_PROGRESS_WBSTARTUP
 Lancement du processus de démarrage...
 ; Starting WBStartup Process...
 ;
-;
 MSGID_PROGRESS_WBSTARTUP_RUNPRG
 Processus de démarrage : Lancement de \"%s\"...
 ; WBStartup : Running \"%s\" ...
-;
 ;
 MSGID_PROGRESS_READDEVICEICONS
 Lecture des icônes des volumes...
 ; Reading Device Window Icons...
 ;
-;
 MSGID_PROGRESS_INITDEVICEWINDOW
 Initialisation du bureau...
 ; Initializing Device Window...
-;
 ;
 MSGID_PROGRESS_WBSTARTUPFINISHED
 Processus de démarrage terminé.
@@ -517,196 +451,157 @@ MSGID_PROGRESS_SCALOSVERSION
 Version de Scalos : %ld.%ld - C.N°: %s
 ; Scalos Version %ld.%ld (Build %s)
 ;
-;
 MSGID_TOOLTIP_ROOTDIR
 [Répertoire racine]
 ; [Root Directory]
-;
 ;
 MSGID_TOOLTIP_USERDIR
 [Répertoire]
 ; [Drawer]
 ;
-;
 MSGID_TOOLTIP_SOFTLINK
 [Lien Soft]
 ; [SoftLink]
-;
 ;
 MSGID_TOOLTIP_HARDLINKDIR
 [Lien 'Hard' vers répertoire]
 ; [Hard Link to Drawer]
 ;
-;
 MSGID_TOOLTIP_FILE
 [Fichier]
 ; [File]
-;
 ;
 MSGID_TOOLTIP_HARDLINKFILE
 [Lien 'Hard' vers fichier]
 ; [Hard Link to File]
 ;
-;
 MSGID_TOOLTIP_PIPEFILE
 [Fichier Pipe]
 ; [Pipe File]
-;
 ;
 MSGID_TOOLTIP_UNKNOWNTYPE
 [(type inconnu)]
 ; [(unknown type)]
 ;
-;
 MSGID_TOOLTIP_LASTCHANGE
 Dernier changement : 
 ; Last Change: 
-;
 ;
 MSGID_TOOLTIP_SIZE
 Taille : 
 ; Size: 
 ;
-;
 MSGID_TOOLTIP_PROTECTION
 Protection : 
 ; Protection: 
-;
 ;
 MSGID_TOOLTIP_STATE_WRITEPROTECT
 Protégé en écriture
 ; Write Protected
 ;
-;
 MSGID_TOOLTIP_STATE_VALIDATING
 Validation
 ; Validating
-;
 ;
 MSGID_TOOLTIP_STATE_READWRITE
 Lisible/Modifiable
 ; Read-/Writeable
 ;
-;
 MSGID_TOOLTIP_STATE_UNKNOWN
 (statut inconnu)
 ; (unknown state)
-;
 ;
 MSGID_TOOLTIP_DISK
 [Volume]
 ; [Disk]
 ;
-;
 MSGID_TOOLTIP_USEDCOUNTFMT
 %s %% de plein, %s de libre, %s utilisé
 ; %s %% full, %s free, %s in use
-;
 ;
 MSGID_TOOLTIP_USEDCOUNTFMT_FULL
 %s %% plein 
 ; %s %% full
 ;
-;
 MSGID_TOOLTIP_USEDCOUNTFMT_FREE
 %s libre
 ; %s free
-;
 ;
 MSGID_TOOLTIP_USEDCOUNTFMT_INUSE
 %s utilisé
 ; %s in use
 ;
-;
 MSGID_TOOLTIP_CREATED
 Créé : 
 ;Created: 
-;
 ;
 MSGID_TOOLTIP_STATE
 Statut : 
 ;State: 
 ;
-;
 MSGID_TOOLTIP_USED
 Utilisé : 
 ;Used: 
-;
 ;
 MSGID_TOOLTIP_FILESIZEFMT
 %s Octets
 ; %s Bytes
 ;
-;
 MSGID_TOOLTIP_APPICON
 [Icône App]
 ; [AppIcon]
-;
 ;
 MSGID_ICON_WITHOUT_FILE
 [Icône sans objet]
 ; [Icon without Object]
 ;
-;
 MSGID_ICONIFIED_WINDOW
 [Fenêtre Iconifiée]
 ; [Iconified Window]
-;
 ;
 MSGID_PMMENU_APPICON_OPEN
 Ouvrir
 ; Open
 ;
-;
 MSGID_PMMENU_APPICON_COPY
 Dupliquer
 ; Duplicate
-;
 ;
 MSGID_PMMENU_APPICON_RENAME
 Renommer...
 ; Rename...
 ;
-;
 MSGID_PMMENU_APPICON_INFO
 Information...
 ; Information...
-;
 ;
 MSGID_PMMENU_APPICON_SNAPSHOT
 Figer
 ; Snapshot
 ;
-;
 MSGID_PMMENU_APPICON_UNSNAPSHOT
 Libérer
 ; UnSnapshot
-;
 ;
 MSGID_PMMENU_APPICON_LEAVEOUT
 Sortir
 ; Leave Out
 ;
-;
 MSGID_PMMENU_APPICON_PUTAWAY
 Ranger
 ; Put Away
-;
 ;
 MSGID_PMMENU_APPICON_DELETE
 Effacer...
 ; Delete...
 ;
-;
 MSGID_PMMENU_APPICON_FORMATDISK
 Formater le volume...
 ; Format Disk...
 ;
-;
 MSGID_PMMENU_APPICON_EMPTYTRASHCAN
 Vider la corbeille
 ; Empty Trashcan
-;
 ;
 MSGID_EXISTSNAME_MOVE
 Erreur rencontrée lors du déplaçant de l'objet,\n\
@@ -714,43 +609,35 @@ Erreur rencontrée lors du déplaçant de l'objet,\n\
 ; Cannot move object\n\
 ; \"%s\" already exists.
 ;
-;
 MSGID_MULTIDRAG
 %lU %s
 ; %lU %s
-;
 ;
 MSGID_MULTIDRAG_DRAWER_1
 Répertoire
 ; Drawer
 ;
-;
 MSGID_MULTIDRAG_DRAWER_2
 Répertoires
 ; Drawers
-;
 ;
 MSGID_MULTIDRAG_FILE_1
 Fichier
 ; File
 ;
-;
 MSGID_MULTIDRAG_FILE_2
 Fichiers
 ; Files
-;
 ;
 ; Message in text window "size" column for drawers
 MSGID_TEXTICON_DRAWER
 Répertoire
 ; Drawer
 ;
-;
 ; Message in text window "size" column for trashcan
 MSGID_TEXTICON_TRASHCAN
 Corbeille
 ; Trashcan
-;
 ;
 MSGID_PROGRESS_ENDREADDEVICEICONS
 Lecture des icônes des volumes terminée.
@@ -759,71 +646,58 @@ MSGID_STATUSBARTEXT
 %ld Objet(s), %ld sélectionné(s)
 ; %ld Items, %ld selected
 ;
-;
 MSGID_MULTIDRAG_DEVICE_1
 Unité
 ; Device
 ;
-;
 MSGID_MULTIDRAG_DEVICE_2
 Unités
 ; Devices
-;
 ;
 ; File transfer dialog window - "Cancel" button
 MSGID_CANCELBUTTON
 _Annuler
 ; _Cancel
 ;
-;
 MSGID_PREPARING_COPY
 Enumération des éléments à copier...
 ; Counting Objects to Copy...
 ;
-;
 MSGID_PREPARING_MOVE
 Enumération des éléments à déplacer...
 ; Counting Objects to Move...
-;
 ;
 ; File transfer dialog window
 MSGID_FILETRANSFER_REMAININGTIME
 Temps restant : 
 ; Remaining Time 
 ;
-;
 ; File transfer dialog window
 MSGID_FILETRANSFER_MINUTES
 Minutes
 ; Minutes
-;
 ;
 ; File transfer dialog window
 MSGID_FILETRANSFER_SECONDS
 Secondes
 ; Seconds
 ;
-;
 ; File transfer dialog window
 MSGID_FILETRANSFER_SECOND
 Seconde
 ; Second
 ;
-;
 MSGID_FILETRANSTITLE_MOVE
 Déplacement en cours...
 ; Moving...
-;
 ;
 MSGID_MOVINGNAME
 Déplacement du fichier
 ; Moving file
 ;
-;
 MSGID_PROGRESS_READINGPREFS
 Chargement des préférences des menus et des motifs...
 ; Reading Menu and Pattern Prefs...
-;
 ;
 ; this text is shown on unreadable disks appended 
 ; to the device name, e.g. "DF0:Unreadable"
@@ -831,11 +705,9 @@ MSGID_DISK_UNREADABLE
 Illisible
 ; Unreadable
 ;
-;
 MSGID_PROGRESS_MAINWINDOW
 Initialisation de la fenêtre principale...
 ; Initializing Main Window...
-;
 ;
 ; default name for new drawer
 ; if an object with this name exists,
@@ -844,14 +716,12 @@ MSGID_NEW_DRAWER_NAME
 Nouveau_Répertoire
 ; New_Drawer
 ;
-;
 ; This message is displayed in the screen title when the user double-clicked 
 ; a drawer icon and the associated drawer cannot be opened (e.g. drawer 
 ; doesn't exist.)
 MSGID_CANNOT_OPEN_DRAWER
 Ce répertoire ne peut être ouvert.
 ; This drawer cannot be opened.
-;
 ;
 ; Requester informing the user that not all requested pens could be allocated.
 MSGID_ALLOCPENSREQ_CONTENTS
@@ -865,41 +735,33 @@ MSGID_ALLOCPENSREQ_GADGETSNAME
 D'accord
 ; Ok
 ;
-;
 MSGID_TOOLTIP_FILETYPE_WBGARBAGE
 [Corbeille]
 ; [Trashcan]
-;
 ;
 MSGID_TOOLTIP_FILETYPE_WBPROJECT
 [Fichier Projet]
 ; [Project file]
 ;
-;
 MSGID_TOOLTIP_FILETYPE_WBDEVICE
 [Unité]
 ; [Device]
-;
 ;
 MSGID_TOOLTIP_FILETYPE_WBKICK
 [Disque Kickstart]
 ; [Kickstart Disk]
 ;
-;
 MSGID_TOOLTIP_FILETYPE_WBTOOL
 [Fichier outil]
 ; [Tool file]
-;
 ;
 MSGID_TOOLTIP_FILETYPE_WBDISK
 [Disque]
 ; [Disk]
 ;
-;
 MSGID_ERROR_NO_DEFAULTTOOL
 L'icône ne possède pas d'outil par défaut.
 ; The icon(s) have no default tool.
-;
 ;
 MSGID_TOOLTIP_GADGET_RIGHTSCROLLER
  Utiliser cette glissière pour déplacer\n\
@@ -908,14 +770,12 @@ vers le haut ou vers le bas.
 ; Use this scroller to move the\n\
 ; window contents up and down.
 ;
-;
 MSGID_TOOLTIP_GADGET_BOTTOMSCROLLER
  Utiliser cette glissière pour déplacer\n\
 le contenu de la fenêtre,\n\
 vers la gauche ou vers la droite.
 ; Use this scroller to move the\n\
 ; window contents left and right.
-;
 ;
 MSGID_TOOLTIP_GADGET_UPARROW
  Utiliser cette flèche pour déplacer\n\
@@ -924,14 +784,12 @@ d'un cran vers le bas.
 ; Use this arrow to scroll the\n\
 ; window contents downwards.
 ;
-;
 MSGID_TOOLTIP_GADGET_DOWNARROW
  Utiliser cette flèche pour déplacer\n\
 le contenu de la fenêtre,\n\
 d'un cran vers le haut.
 ; Use this arrow to scroll the\n\
 ; window contents upwards.
-;
 ;
 MSGID_TOOLTIP_GADGET_RIGHTARROW
  Utiliser cette flèche pour déplacer\n\
@@ -940,7 +798,6 @@ vers la gauche.
 ; Use this arrow to scroll the\n\
 ; window contents to the left.
 ;
-;
 MSGID_TOOLTIP_GADGET_LEFTARROW
  Utiliser cette flèche pour déplacer\n\
 le contenu de la fenêtre,\n\
@@ -948,13 +805,11 @@ vers la droite.
 ; Use this arrow to scroll the\n\
 ; window contents to the right.
 ;
-;
 MSGID_TOOLTIP_GADGET_ICONIFY
  Ce gadget icônifie\n\
 la fenêtre actuelle.
 ; This gadget iconifies\n\
 ; the current window.
-;
 ;
 MSGID_TOOLTIP_GADGET_STATUSBAR_TEXT
  Affiche le nombre d'entrées\n\
@@ -964,7 +819,6 @@ selectionnées dans cette fenêtre.
 ; items displayed and the number of\n\
 ; selected items in this window.
 ;
-;
 MSGID_TOOLTIP_GADGET_STATUSBAR_READONLY
  Ce symbole indique que le contenu\n\
 de cette fenêtre ne peux être modifier.\n\
@@ -973,7 +827,6 @@ Ex: En \"Mode lecture\" seulement.
 ; of this window cannot be changed.\n\
 ; e.g. might be located on a read-only medium.
 ;
-;
 MSGID_TOOLTIP_GADGET_STATUSBAR_READING
  Ce symbole indique que\n\
 cette fenêtre est actuellement\n\
@@ -981,7 +834,6 @@ en train de lire le répertoire du volume.
 ; This symbol indicates that\n\
 ; this window is currently\n\
 ; reading the disk directory.
-;
 ;
 MSGID_TOOLTIP_GADGET_STATUSBAR_TYPING
  Ce symbole indique que l'icône de sélection\n\
@@ -993,7 +845,6 @@ commençant par cette lettre.
 ; you may select the first icon starting \n\
 ; with that letter.
 ;
-;
 MSGID_TOOLTIP_GADGET_STATUSBAR_SHOWALL
  Ce symbole indique que\n\
 cette fenêtre est en\n\
@@ -1002,29 +853,24 @@ mode \"Voir tous les fichiers\".
 ; this window is in \n\
 ; \"Show all files\" mode.
 ;
-;
 MSGID_EXISTSICON_COPY
 Erreur rencontrée lors de la copie de l'icône,\n\
 \"%s\" existe déjà !
 ; Error copying icon\n\
 ; \"%s\" already exists.
 ;
-;
 ; new 5-Jan-2003
 MSGID_TOOLTIP_DRAWERS
 Répertoires : 
 ; Drawers: 
 ;
-;
 MSGID_TOOLTIP_FILES
 Fichiers : 
 ; Files: 
 ;
-;
 MSGID_TOOLTIP_LINKTO
 Lien vers : 
 ; Link to: 
-;
 ;
 MSGID_TOOLTIP_KICKSTART
 [Disque Kickstart]
@@ -1038,16 +884,13 @@ Voulez-vous choisir un outil ?
 ;The icon \"%s\" has no default tool.\n\
 ;Do you want to select a tool?
 ;
-;
 MSGID_NODEFAULTTOOL_REQ_GADGETS
 Choisir un outil|Annuler
 ;Select Tool|Cancel
 ;
-;
 MSGID_REQ_SELECTDEFTOOL
 Choisir un outil par défaut
 ;Select default Tool
-;
 ;
 ; Message in text window "size" column for icons w/o object
 MSGID_TEXTICON_SOLOICON
@@ -1059,28 +902,23 @@ MSGID_COLOWNERNAME
 Propriètaire
 ;Owner
 ;
-;
 MSGID_COLGROUPNAME
 Groupe
 ;Group
-;
 ;
 MSGID_COLFILETYPENAME
 Type de fichier
 ;Filetype
 ;
-;
 MSGID_COLVERSIONNAME
 Version
 ;Version
-;
 ;
 ; this text is shown on busy disks appended 
 ; to the device name, e.g. "DF0:Busy"
 MSGID_DISK_BUSY
 Occupé
 ;Busy
-;
 ;
 ; this text is shown on not dos disks appended 
 ; to the device name, e.g. "DF0:NDOS"
@@ -1094,11 +932,9 @@ MSGID_EXISTS_GNAME_NEW
 Remplacer|Passer|Tout remplacer|Tout passer|Annuler
 ;Replace|Skip|Replace All|Skip All|Abort
 ;
-;
 MSGID_COPYTO_ASLTITLE
 Scalos : Copier vers...
 ;Scalos: Copy to...
-;
 ;
 MSGID_MOVETO_ASLTITLE
 Scalos: Déplacer vers...
@@ -1114,7 +950,6 @@ Erreur déplaçant l'objet\n\
 ;\"%s\"\n\
 ;%s.
 ;
-;
 MSGID_WRITEPROTECTED_COPYICON
 Erreur copiant l'icône\n\
 \"%s\"\n\
@@ -1122,7 +957,6 @@ Erreur copiant l'icône\n\
 ;Error copying icon\n\
 ;\"%s\"\n\
 ;%s.
-;
 ;
 MSGID_WRITEPROTECTED_COPY
 Erreur copiant l'objet\n\
@@ -1132,18 +966,15 @@ Erreur copiant l'objet\n\
 ;\"%s\"\n\
 ;%s.
 ;
-;
 MSGID_WRITEPROTECTED_GNAME_NEW
 Ecraser|Ignorer|Tout écraser|Tout ignorer|Annuler
 ; Overwrite|Skip|Overwrite All|Skip All|Abort
-;
 ;
 MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_ALWAYS
  Ce symbole indique que les vignettes\n\
 sont disponibles pour toutes les images.
 ;This symbol shows that this window\n\
 ;displays thumbnails for every image.
-;
 ;
 MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_ASDEFAULT
  Ce symbole indique que les vignettes\n\
@@ -1153,13 +984,11 @@ fichiers d'images ne possédant pas d'icône.
 ;window displays thumbnails for\n\
 ;every image without an icon.
 ;
-;
 MSGID_TOOLTIP_GADGET_STATUSBAR_THUMBNAILS_GENERATE
  Ce symbole indique que la création des vignettes\n\
 des images présentes, est en cours d'éxecution.
 ;This symbol indicates that thumbnail\n\
 ;generation from images is currently in progress.
-;
 ;
 MSGID_MOVETO_DEVICE
 Déplacement annulé !\n\
@@ -1173,7 +1002,6 @@ et ne peut être déplaçé !
 ;do not change this one:
 MSGID_COLICONNAME
 \x20
-;
 ;
 MSGID_CREATE_LINK_ERRORNAME
 Erreur créant le lien vers\n\
@@ -1262,21 +1090,20 @@ MSGID_FILETRANSFER_DETAILS_SPEED
 Vitesse moyenne : %s/s
 ;Average Speed: %s/s
 ;
-;+++translateme+++
 MSGID_REQUEST_SCALOS_ALREADY_RUNNING
-There is already one instance of Scalos running!\n\
-Probably you use Scalos as Workbench replacement?\n\
-From original Workbench, you may start Scalos with this icon.
+Il y a déjà une séssion ouverte de Scalos !\n\
+Vous utilisez probablement Scalos comme remplacement du Workbench ?\n\
+Depuis le Workbench original, vous avez la possibilité de lancer Scalos avec cette icône.
 ;There is already one instance of Scalos running!\n\
 ;Probably you use Scalos as Workbench replacement?\n\
 ;From original Workbench, you may start Scalos with this icon.
 ;
-;+++translateme+++
 MSGID_READMENUPREFS_FAIL
-Scalos failed to read your\n\
-menu preferences: %s\n\
-Due to this error, you won't have any menus available.\n\
-Please use Scalos Menu Preferences to create preferences!
+Scalos n'a pas pu charger votre\n\
+préférence du menu : %s\n\
+Du fait de cette erreur, vous ne disposez d'aucun menu disponible.\n\
+S'il vous plaît, utilisez les préfrences des menu de Scalos afin de créer\n\
+correctement les préférences !
 ;Scalos failed to read your\n\
 ;menu preferences: %s\n\
 ;Due to this error, you won't have any menus available.\n\
@@ -1292,16 +1119,13 @@ MSGID_DROPMENU_CANCEL
 Ne pas déposer
 ;Cancel drop
 ;
-;
 MSGID_DROPMENU_COPY
 Copier ici
 ;Copy here
 ;
-;
 MSGID_DROPMENU_MOVE
 Déplacer ici
 ;Move here
-;
 ;
 MSGID_DROPMENU_CREATE_LINK
 Créer le lien ici
@@ -1349,7 +1173,6 @@ pouvez choisir un nouveau chemin d'accès, afin\n\
 d'afficher son contenu dans cette fenêtre.
 ;This gadget opens an ASL requester where you\n\
 ;can select a new path to display in this window.
-;
 ;
 MSGID_CONTROLBAR_VIEWBY_ICON
 Icône
@@ -1543,44 +1366,36 @@ MSGID_UNDO_PUTAWAY_MORE
 %s: Ranger %ld éléments
 ;%s: Put away %ld items
 ;
-;+++translateme+++
 MSGID_UNDO_SETPROTECTION_SINGLE
-%s: Change Protection on %s
+%s : Changement de protection sur %s
 ;%s: Change Protection on %s
 ;
-;+++translateme+++
 MSGID_UNDO_SETPROTECTION_MORE
-%s: Change Protection %ld icons
+%s : Changement de protection pour %ld icônes
 ;%s: Change Protection %ld icons
 ;
-;+++translateme+++
 MSGID_UNDO_SETCOMMENT_SINGLE
-%s: Change Comment on %s
+%s : Changement de commentaire sur %s
 ;%s: Change Comment on %s
 ;
-;+++translateme+++
 MSGID_UNDO_SETCOMMENT_MORE
-%s: Change Comment on %ld icons
+%s : Changement de commentaire pour %ld icônes
 ;%s: Change Comment on %ld icons
 ;
-;+++translateme+++
 MSGID_UNDO_SETTOOLTYPES_SINGLE
-%s: Change Tooltypes on %s
+%s : Changement de type d'outils sur %s
 ;%s: Change Tooltypes on %s
 ;
-;+++translateme+++
 MSGID_UNDO_SETTOOLTYPES_MORE
-%s: Change Tooltypes on %ld icons
+%s : Changement de type d'outils sur %ld icônes
 ;%s: Change Tooltypes on %ld icons
 ;
-;+++translateme+++
 MSGID_UNDO_CHANGEICON_SINGLE
-%s: Change icon %s
+%s : Changement d'icône %s
 ;%s: Change icon %s
 ;
-;+++translateme+++
 MSGID_UNDO_CHANGEICON_MORE
-%s: Change %ld icons
+%s : Changement de %ld icônes
 ;%s: Change %ld icons
 ;
 ; ==============================================
