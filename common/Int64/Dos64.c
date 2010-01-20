@@ -65,3 +65,24 @@ ULONG64 ScalosFibSize64(const struct FileInfoBlock *fib)
 }
 
 
+ULONG64 ScalosExAllSize64(const struct ExAllData *ead, ULONG edType)
+{
+#if defined(__MORPHOS__) && defined(ACTION_EXAMINE_NEXT64)
+	if (DOSBase->dl_lib.lib_Version >= 51 && edType >= ED_SIZE64)
+		return ead->ed_Size64;
+#endif /* __MORPHOS__ */
+
+	return MakeU64(ead->ed_Size);
+}
+
+
+void ScalosSetExAllSize64(struct ExAllData *ead, ULONG edType, ULONG64 Size)
+{
+#if defined(__MORPHOS__) && defined(ACTION_EXAMINE_NEXT64)
+	if (DOSBase->dl_lib.lib_Version >= 51 && edType >= ED_SIZE64)
+		ead->ed_Size64 = Size;
+#endif /* __MORPHOS__ */
+	if (edType >= ED_SIZE)
+		ead->ed_Size = ULONG64_LOW(Size);
+}
+
