@@ -182,6 +182,11 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 			{
 			stccpy(rild.rild_Name, Name, sizeof(rild.rild_Name));
 			}
+		else
+			{
+			// Success
+			stccpy(rild.rild_Name, ScalosExamineGetName(fib), sizeof(rild.rild_Name));
+			}
 
 		stccpy(rild.rild_Comment, ScalosExamineGetComment(fib), sizeof(rild.rild_Comment));
 		rild.rild_Protection = ScalosExamineGetProtection(fib);
