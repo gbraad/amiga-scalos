@@ -34,11 +34,7 @@ void Convert64(const struct Locale *locale, ULONG64 Number, STRPTR Buffer, size_
 
 // defined in Dos64.c
 ///
-LONG ScalosExamine64(BPTR lock, struct FileInfoBlock *fib);
-LONG ScalosExNext64(BPTR lock, struct FileInfoBlock *fib);
-ULONG64 ScalosFibSize64(const struct FileInfoBlock *fib);
 ULONG64 ScalosExAllSize64(const struct ExAllData *ead, ULONG edType);
-void ScalosSetExAllSize64(struct ExAllData *ead, ULONG edType, ULONG64 Size);
 
 ///
 /* ------------------------------------------------- */

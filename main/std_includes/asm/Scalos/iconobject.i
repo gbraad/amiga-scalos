@@ -415,10 +415,10 @@ ICONA_NotifyWorkbench	EQU	$80000004	; ULONG - Flag: notify Scalos that the saved
 
 ;texticon.datatype (Scalos internal)
 
-TIDTA_ExAllData			EQU	DTA_Dummy+1151	;(IS.)
-TIDTA_ExAllType			EQU	DTA_Dummy+1152	;(IS.)
+;TIDTA_ExAllData		 EQU	 DTA_Dummy+1151	 ;(IS.) deprecated
+;TIDTA_ExAllType		 EQU	 DTA_Dummy+1152	 ;(IS.) deprecated
 TIDTA_WidthArray		EQU	DTA_Dummy+1153	;(ISG)
-TIDTA_ExNextData		EQU	DTA_Dummy+1154	;(IS.)
+;TIDTA_ExNextData		 EQU	 DTA_Dummy+1154	 ;(IS.) deprecated
 TIDTA_FileType			EQU	DTA_Dummy+1155	;(..G)
 TIDTA_Size			EQU	DTA_Dummy+1156	;(..G)
 TIDTA_Days			EQU	DTA_Dummy+1157	;(..G)
@@ -442,7 +442,7 @@ TIDTA_TextPenDrawerNormal 	EQU	DTA_Dummy+1175	;(ISG) UWORD - text window normal 
 TIDTA_TextPenDrawerSelected 	EQU	DTA_Dummy+1176	;(ISG) UWORD - text window selected icon text pen  for drawers
 TIDTA_TextPenFileNormal		equ	DTA_Dummy+1177	;(ISG) UWORD - text window normal  icon text pen for files
 TIDTA_TextPenFileSelected	equ	DTA_Dummy+1178	;(ISG) UWORD - text window selected icon text pen for files
-TIDTA_Size64			equ	DTA_Dummy+1179	;(ISG) ULONG64 * - 64bit file size
+TIDTA_ReadIconListData		equ	DTA_Dummy+1180	;(IS.) struct ReadIconListData *
 
 ;------------------------------------------------------------------------------
 

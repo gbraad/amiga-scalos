@@ -189,6 +189,8 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 			}
 
 		stccpy(rild.rild_Comment, ScalosExamineGetComment(fib), sizeof(rild.rild_Comment));
+		rild.rild_OwnerUID = ScalosExamineGetDirUID(fib);
+		rild.rild_OwnerGID = ScalosExamineGetDirGID(fib);
 		rild.rild_Protection = ScalosExamineGetProtection(fib);
 		rild.rild_DateStamp = *ScalosExamineGetDate(fib);
 		rild.rild_Type = ScalosExamineGetDirEntryType(fib);
@@ -684,17 +686,11 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 {
 	Object *TextIconObj;
 	struct ScaIconNode *in = NULL;
-	struct ExAllData ead;
 	BOOL isLink;
 	BPTR currentDirLock;
 	ULONG TextStyle = FS_NORMAL;
 	ULONG pos;
 	struct ReadIconListData rildClone;
-#if defined(ED_SIZE64)
-	const ULONG ExAllType = ED_SIZE64;
-#else /* ED_SIZE64 */
-	const ULONG ExAllType = ED_OWNER;
-#endif /* ED_SIZE64 */
 
 	d1(kprintf("%s/%s/%ld: Name=<%s>  Type=%ld\n", __FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_Type));
 	d1(kprintf("%s/%s/%ld: Comment=<%s>\n", __FILE__, __FUNC__, __LINE__, rild->rild_Comment));
@@ -702,25 +698,14 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 	if (NULL == rild->rild_Name || '\0' == *rild->rild_Name)
 		return NULL;
 
-	ead.ed_Name = (STRPTR) rild->rild_Name;
-	ead.ed_Type = rild->rild_Type;
-	ScalosSetExAllSize64(&ead, ExAllType, rild->rild_Size64);
-	ead.ed_Prot = rild->rild_Protection;
-	ead.ed_Days = rild->rild_DateStamp.ds_Days;
-	ead.ed_Mins = rild->rild_DateStamp.ds_Minute;
-	ead.ed_Ticks = rild->rild_DateStamp.ds_Tick;
-	ead.ed_Comment = (STRPTR) rild->rild_Comment;
-
 	isLink = (ST_SOFTLINK == rild->rild_Type) || (ST_LINKDIR == rild->rild_Type) ||
 		(ST_LINKFILE == rild->rild_Type) || IsSoftLink(rild->rild_Name);
 
-	d1(KPrintF("%s/%s/%ld: <%s> Type=%ld  isLink=%ld\n", __FILE__, __FUNC__, __LINE__, ead.ed_Name, rild->rild_IconType, isLink));
-	d1(KPrintF("%s/%s/%ld: <%s> comment=<%s>\n", __FILE__, __FUNC__, __LINE__, ead.ed_Name, ead.ed_Comment));
+	d1(KPrintF("%s/%s/%ld: <%s> Type=%ld  isLink=%ld\n", __FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_IconType, isLink));
+	d1(KPrintF("%s/%s/%ld: <%s> comment=<%s>\n", __FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_Comment));
 
-	d1(KPrintF("%s/%s/%ld: ExAllType=%ld  rild_Size64=%08lx-%08lx\n", __FILE__, __FUNC__, __LINE__, \
-		ExAllType, ULONG64_HIGH(rild->rild_Size64), ULONG64_LOW(rild->rild_Size64)));
-	d1(KPrintF("%s/%s/%ld: ed_Size64=%08lx-%08lx\n", __FILE__, __FUNC__, __LINE__, \
-		ULONG64_HIGH(ead.ed_Size64), ULONG64_LOW(ead.ed_Size64)));
+	d1(KPrintF("%s/%s/%ld: rild_Size64=%08lx-%08lx\n", __FILE__, __FUNC__, __LINE__, \
+		ULONG64_HIGH(rild->rild_Size64), ULONG64_LOW(rild->rild_Size64)));
 
 	currentDirLock = CurrentDir((BPTR)NULL);
 	CurrentDir(currentDirLock);
@@ -732,16 +717,10 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 		return NULL;
 		}
 
-	if (ST_SOFTLINK == ead.ed_Type)
+	if (ST_SOFTLINK == rild->rild_Type)
 		{
 		rild = &rildClone;
 		ResolveLink(&rildClone);
-		ead.ed_Type = rild->rild_Type;
-		ScalosSetExAllSize64(&ead, ExAllType, rild->rild_Size64);
-		ead.ed_Prot = rild->rild_Protection;
-		ead.ed_Days = rild->rild_DateStamp.ds_Days;
-		ead.ed_Mins = rild->rild_DateStamp.ds_Minute;
-		ead.ed_Ticks = rild->rild_DateStamp.ds_Tick;
 		}
 
 	if (isLink)
@@ -752,9 +731,7 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 	// for shadowed drawing (ICONOBJ_USERFLAGF_DrawShadowed), IDTV_TextMode_Shadow is used.
 
 	TextIconObj = NewObject(TextIconClass, NULL,
-		TIDTA_ExAllData, (ULONG) &ead,
-		TIDTA_Size64, (ULONG) &rild->rild_Size64,
-		TIDTA_ExAllType, ExAllType,
+		TIDTA_ReadIconListData, (ULONG) rild,
 		TIDTA_WidthArray, (ULONG) iwt->iwt_WidthArray,
 		TIDTA_TextStyle, TextStyle,
 		TIDTA_Font, (ULONG) iwt->iwt_IconFont,
@@ -789,7 +766,7 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 		TIDTA_SelectNameOnly, CurrentPrefs.pref_SelectTextIconName,
 		TAG_END);
 
-	d1(KPrintF("%s/%s/%ld: TextIconObj=%08lx  Name=<%s>  rild_IconType=%ld\n", __FILE__, __FUNC__, __LINE__, TextIconObj, ead.ed_Name, rild->rild_IconType));
+	d1(KPrintF("%s/%s/%ld: TextIconObj=%08lx  Name=<%s>  rild_IconType=%ld\n", __FILE__, __FUNC__, __LINE__, TextIconObj, rild->rild_Name, rild->rild_IconType));
 
 	if (TextIconObj)
 		{
@@ -816,7 +793,7 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 				in->in_Flags |= INF_File;
 				break;
 			case ST_SOFTLINK:
-				if (ead.ed_Type < 0)
+				if (rild->rild_Type < 0)
 					in->in_Flags |= INF_File;
 				break;
 			default:

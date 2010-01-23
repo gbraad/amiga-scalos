@@ -234,6 +234,26 @@ LONG ScalosExamineIsDrawer(const T_ExamineData *exd)
 
 //----------------------------------------------------------------------------
 
+ULONG ScalosExamineGetDirUID(const T_ExamineData *exd)
+{
+#ifdef __amigaos4__
+	return exd->OwnerUID;
+#else //__amigaos4__
+	return exd->fib_OwnerUID;
+#endif //__amigaos4__
+}
+//----------------------------------------------------------------------------
+
+ULONG ScalosExamineGetDirGID(const T_ExamineData *exd)
+{
+#ifdef __amigaos4__
+	return exd->OwnerGID;
+#else //__amigaos4__
+	return exd->fib_OwnerGID;
+#endif //__amigaos4__
+}
+//----------------------------------------------------------------------------
+
 SLONG64 ScalosSeek(BPTR fh, SLONG64 pos, LONG mode)
 {
 #ifdef __amigaos4__

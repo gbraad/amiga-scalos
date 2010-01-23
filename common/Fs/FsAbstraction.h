@@ -33,6 +33,8 @@ CONST_STRPTR ScalosExamineGetName(const T_ExamineData *exd);
 CONST_STRPTR ScalosExamineGetComment(const T_ExamineData *exd);
 LONG ScalosExamineGetDirEntryType(const T_ExamineData *exd);
 LONG ScalosExamineIsDrawer(const T_ExamineData *exd);
+ULONG ScalosExamineGetDirUID(const T_ExamineData *exd);
+ULONG ScalosExamineGetDirGID(const T_ExamineData *exd);
 
 SLONG64 ScalosSeek(BPTR fh, SLONG64 pos, LONG mode);
 
