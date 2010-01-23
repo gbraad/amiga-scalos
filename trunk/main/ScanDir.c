@@ -219,6 +219,8 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 			}
 
 		stccpy(rild.rild_Comment, ScalosExamineGetComment(fib), sizeof(rild.rild_Comment));
+		rild.rild_OwnerUID = ScalosExamineGetDirUID(fib);
+		rild.rild_OwnerGID = ScalosExamineGetDirGID(fib);
 		rild.rild_Protection = ScalosExamineGetProtection(fib);
 		rild.rild_DateStamp = *ScalosExamineGetDate(fib);
 		rild.rild_DiskWriteProtected = iwt->iwt_ReadOnly;
@@ -598,6 +600,17 @@ static enum ScanDirResult ScanDir_ExAll(struct internalScaWindowTask *iwt, struc
 			stccpy(rilc->rilc_rd.rild_Comment, ead->ed_Comment, sizeof(rilc->rilc_rd.rild_Comment));
 		else
 			strcpy(rilc->rilc_rd.rild_Comment, "");
+
+		if (rilc->rilc_ExAllType >= ED_OWNER)
+			{
+			rilc->rilc_rd.rild_OwnerUID = ead->ed_OwnerUID;
+			rilc->rilc_rd.rild_OwnerUID = ead->ed_OwnerGID;
+			}
+		else
+			{
+			rilc->rilc_rd.rild_OwnerUID = 0;
+			rilc->rilc_rd.rild_OwnerUID = 0;
+			}
 
 		if (NULL == rilc->rilc_edNext && !rilc->rilc_FlagFinished)
 			{

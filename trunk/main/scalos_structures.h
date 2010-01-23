@@ -1019,8 +1019,9 @@ struct ReadIconListData
 	const struct TypeNode *rild_TypeNode;	// TypeNode * or Workbench icon type (e.g. WBDISK)
 	LONG rild_Type;				// same as fib_DirEntryType
 	LONG rild_Protection;			// same as fib_Protection
-//	LONG rild_Size;				// same as fib_Size
 	ULONG64 rild_Size64;
+	ULONG rild_OwnerUID;                    // Owner info
+	ULONG rild_OwnerGID;			// Group info
 	struct DateStamp rild_DateStamp;
 	BOOL rild_DiskWriteProtected;		// Flag: disk/volume is not writeable
 	BOOL rild_CheckOverlap;			// Flag: check for overlapping icons

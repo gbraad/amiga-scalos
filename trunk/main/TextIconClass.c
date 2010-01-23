@@ -56,32 +56,25 @@
 
 // local data definitions
 
-#define	TIDTA_FIRSTTAG	(TIDTA_ExAllData - 1)
+#define	TIDTA_FIRSTTAG	(TIDTA_WidthArray - 1)
 #define	IDTA_FIRSTTAG	(IDTA_Type - 1)
 
 
 struct TextIColumn
 	{
-	STRPTR tic_String;		// pointer to the contents
-	WORD tic_Width;			// Width in pixels
-	WORD tic_Chars;			// Number of chars;
+	STRPTR tic_String;			// pointer to the contents
+	WORD tic_Width;				// Width in pixels
+	WORD tic_Chars;				// Number of chars;
 	};
 
 struct TextIClassInst
 	{
-	LONG	txicl_type;		// Filetype (<0 - File)
-	ULONG	txicl_TextStyle;	// Text style for icon text
+	ULONG	txicl_TextStyle;		// Text style for icon text
 
 	struct TextIColumn txicl_positions[TXICOL_MAX];
 
-	ULONG64	txicl_realsize;
-	struct	DateStamp txicl_realdate;
-	ULONG	txicl_realprot;
+	struct ReadIconListData txicl_rild;
 
-	UWORD	txicl_OwnerUID;
-	UWORD	txicl_OwnerGID;
-
-	ULONG	txicl_WbIconType;	// Workbench icon type (e.g. WBDISK)
 	struct TypeNode	*txicl_TypeNode;	// DefIcons TypeNode or Workbench icon type (e.g. WBDISK)
 
 	UWORD   txicl_PenNormal;
@@ -90,28 +83,26 @@ struct TextIClassInst
 	UWORD   txicl_PenDrawersSelected;
 	UWORD	txicl_PenShadow;
 	UWORD	txicl_PenOutline;
-	UWORD	txicl_LeftRightSpace;	// Space left and right of text columns
+	UWORD	txicl_LeftRightSpace;		// Space left and right of text columns
 
-	ULONG	txicl_UserFlags;	// IDTA_UserFlags
+	ULONG	txicl_UserFlags;		// IDTA_UserFlags
 
-	struct	TextFont *txicl_Font;	// font to use or NULL
+	struct	TextFont *txicl_Font;		// font to use or NULL
 	struct TTFontFamily *txicl_TTFont;	// ttEngine font to use or NULL
 
-	WORD	*txicl_widtharray;	//pointer to an array of words
+	WORD	*txicl_widtharray;		//pointer to an array of words
 
-	BYTE	txicl_name[108];	//Filename
-	BYTE	txicl_size[16];		//Size
-	BYTE	txicl_prot[10];		//Protection bits
-	BYTE	txicl_date[80];		//Date
-	BYTE	txicl_time[80];		//Time
-	BYTE	txicl_comment[80];	//Comment
-	BYTE	txicl_owner[80];	//Owner
-	BYTE	txicl_group[80];	//Group
-	BYTE	txicl_filetype[80];	//FileType
-	BYTE	txicl_version[80];	//Version
-	BYTE	txicl_miniicon[2];	//Mini-Icon
+	BYTE	txicl_size[16];			//Size string
+	BYTE	txicl_prot[10];			//Protection bits string
+	BYTE	txicl_date[80];			//Date string
+	BYTE	txicl_time[80];			//Time string
+	BYTE	txicl_owner[80];		//Owner string
+	BYTE	txicl_group[80];		//Group string
+	BYTE	txicl_filetype[80];		//FileType string
+	BYTE	txicl_version[80];		//Version string
+	BYTE	txicl_miniicon[2];		//Mini-Icon string
 
-	UBYTE	txicl_HitOnNameOnly;	// flag: only NAME column reacts to mouse hits
+	UBYTE	txicl_HitOnNameOnly;		// flag: only NAME column reacts to mouse hits
 	UBYTE	txicl_TextMode;
 
 	struct Rectangle txicl_IconRect;	// size limits for mini-icon
@@ -121,7 +112,6 @@ struct TextIClassInst
 	struct internalScaWindowTask *txicl_WindowTask;
 	Object	*txicl_IconObject;
 	Object	*txicl_Highlight;
-	UBYTE	txicl_SoloIcon;
 	};
 
 //----------------------------------------------------------------------------
@@ -250,26 +240,26 @@ static ULONG TextIcon_New(Class *cl, Object *o, Msg msg)
 
 	inst->txicl_LeftRightSpace = 3;
 
-	inst->txicl_positions[TXICOL_Name].tic_String = (STRPTR)inst->txicl_name;
+	inst->txicl_positions[TXICOL_Name].tic_String = (STRPTR)inst->txicl_rild.rild_Name;
 	inst->txicl_positions[TXICOL_Size].tic_String = (STRPTR)inst->txicl_size;
 	inst->txicl_positions[TXICOL_Prot].tic_String = (STRPTR)inst->txicl_prot;
 	inst->txicl_positions[TXICOL_Date].tic_String = (STRPTR)inst->txicl_date;
 	inst->txicl_positions[TXICOL_Time].tic_String = (STRPTR)inst->txicl_time;
-	inst->txicl_positions[TXICOL_Comment].tic_String = (STRPTR)inst->txicl_comment;
+	inst->txicl_positions[TXICOL_Comment].tic_String = (STRPTR)inst->txicl_rild.rild_Comment;
 	inst->txicl_positions[TXICOL_Owner].tic_String = (STRPTR)inst->txicl_owner;
 	inst->txicl_positions[TXICOL_Group].tic_String = (STRPTR)inst->txicl_group;
 	inst->txicl_positions[TXICOL_FileType].tic_String = (STRPTR)inst->txicl_filetype;
 	inst->txicl_positions[TXICOL_Version].tic_String = (STRPTR)inst->txicl_version;
 	inst->txicl_positions[TXICOL_MiniIcon].tic_String = (STRPTR)inst->txicl_miniicon;
 
-	inst->txicl_SoloIcon = FALSE;
+	inst->txicl_rild.rild_SoloIcon = FALSE;
 	inst->txicl_HitOnNameOnly = TRUE;
 
 	inst->txicl_IconObject = NULL;
 	inst->ixicl_ColWidthChangeHook = NULL;
 	inst->txicl_WindowTask = NULL;
 
-	inst->txicl_WbIconType = WBDISK;
+	inst->txicl_rild.rild_IconType = WBDISK;
 	inst->txicl_TypeNode = NULL;
 	inst->txicl_TextStyle = FS_NORMAL;
 	inst->txicl_TextMode = IDTV_TextMode_Normal;
@@ -284,7 +274,7 @@ static ULONG TextIcon_New(Class *cl, Object *o, Msg msg)
 	SetAttributes(inst, ops);
 
 	d1(KPrintF("%s/%s/%ld: name=<%s>  comment=<%s>\n", \
-		__FILE__, __FUNC__, __LINE__, inst->txicl_name, inst->txicl_comment));
+		__FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Name, inst->txicl_rild.rild_Comment));
 
 	return (ULONG) o;
 }
@@ -295,7 +285,7 @@ static ULONG TextIcon_Dispose(Class *cl, Object *o, Msg msg)
 	struct TextIClassInst *inst = INST_DATA(cl, o);
 
 	d1(KPrintF("%s/%s/%ld: name=<%s>  comment=<%s>\n", \
-		__FILE__, __FUNC__, __LINE__, inst->txicl_name, inst->txicl_comment));
+		__FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Name, inst->txicl_rild.rild_Comment));
 
 	if (inst->txicl_IconObject)
 		{
@@ -352,48 +342,44 @@ static ULONG TextIcon_Get(Class *cl, Object *o, Msg msg)
 
 	case DTA_Name:
 	case IDTA_Text:
-		d1(KPrintF("%s/%s/%ld: DTA_Name=<%s> %08lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_name, inst->txicl_name));
-		*(opg->opg_Storage) = (ULONG) inst->txicl_name;
+		d1(KPrintF("%s/%s/%ld: DTA_Name=<%s> %08lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Name, inst->txicl_rild.rild_Name));
+		*(opg->opg_Storage) = (ULONG) inst->txicl_rild.rild_Name;
 		break;
 
 	case TIDTA_FileType:
-		*(opg->opg_Storage) = inst->txicl_type;
+		*(opg->opg_Storage) = inst->txicl_rild.rild_Type;
 		break;
 
 	case TIDTA_Size:
-		*(opg->opg_Storage) = ULONG64_LOW(inst->txicl_realsize);
-		break;
-
-	case TIDTA_Size64:
-		*(opg->opg_Storage) = (ULONG) &inst->txicl_realsize;
+		*(opg->opg_Storage) = ULONG64_LOW(inst->txicl_rild.rild_Size64);
 		break;
 
 	case TIDTA_Protection:
-		*(opg->opg_Storage) = inst->txicl_realprot;
+		*(opg->opg_Storage) = inst->txicl_rild.rild_Protection;
 		break;
 
 	case TIDTA_Days:
-		*(opg->opg_Storage) = inst->txicl_realdate.ds_Days;
+		*(opg->opg_Storage) = inst->txicl_rild.rild_DateStamp.ds_Days;
 		break;
 
 	case TIDTA_Mins:
-		*(opg->opg_Storage) = inst->txicl_realdate.ds_Minute;
+		*(opg->opg_Storage) = inst->txicl_rild.rild_DateStamp.ds_Minute;
 		break;
 
 	case TIDTA_Ticks:
-		*(opg->opg_Storage) = inst->txicl_realdate.ds_Tick;
+		*(opg->opg_Storage) = inst->txicl_rild.rild_DateStamp.ds_Tick;
 		break;
 
 	case TIDTA_Comment:
-		*(opg->opg_Storage) = (ULONG) inst->txicl_comment;
+		*(opg->opg_Storage) = (ULONG) inst->txicl_rild.rild_Comment;
 		break;
 
 	case TIDTA_Owner_UID:
-		*(opg->opg_Storage) = (ULONG) inst->txicl_OwnerUID;
+		*(opg->opg_Storage) = (ULONG) inst->txicl_rild.rild_OwnerUID;
 		break;
 
 	case TIDTA_Owner_GID:
-		*(opg->opg_Storage) = (ULONG) inst->txicl_OwnerGID;
+		*(opg->opg_Storage) = (ULONG) inst->txicl_rild.rild_OwnerGID;
 		break;
 
 	case TIDTA_Font:
@@ -409,7 +395,7 @@ static ULONG TextIcon_Get(Class *cl, Object *o, Msg msg)
 		break;
 
 	case TIDTA_SoloIcon:
-		*(opg->opg_Storage) = (ULONG) inst->txicl_SoloIcon;
+		*(opg->opg_Storage) = (ULONG) inst->txicl_rild.rild_SoloIcon;
 		break;
 
 	case TIDTA_ColumnWidthChangeHook:
@@ -454,16 +440,16 @@ static ULONG TextIcon_Get(Class *cl, Object *o, Msg msg)
 
 	case IDTA_Type:
 	case TIDTA_IconType:
-		d1(KPrintF("%s/%s/%ld: <%s>  IconType=%ld  txicl_type=%ld\n", \
-			__FILE__, __FUNC__, __LINE__, inst->txicl_name, inst->txicl_WbIconType, inst->txicl_type));
-		*(opg->opg_Storage) = inst->txicl_WbIconType;
+		d1(KPrintF("%s/%s/%ld: <%s>  IconType=%ld  txicl_rild.rild_Type=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Name, inst->txicl_rild.rild_IconType, inst->txicl_rild.rild_Type));
+		*(opg->opg_Storage) = inst->txicl_rild.rild_IconType;
 		break;
 
 	case TIDTA_TypeNode:
 		if (!IS_TYPENODE(inst->txicl_TypeNode))
-			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock, (STRPTR)inst->txicl_name);
+			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock, (STRPTR)inst->txicl_rild.rild_Name);
 
-		*(opg->opg_Storage) = inst->txicl_TypeNode ? (ULONG) inst->txicl_TypeNode : inst->txicl_WbIconType;
+		*(opg->opg_Storage) = inst->txicl_TypeNode ? (ULONG) inst->txicl_TypeNode : inst->txicl_rild.rild_IconType;
 		break;
 
 	case IDTA_MaskBM_Selected:
@@ -523,7 +509,7 @@ static ULONG TextIcon_Layout(Class *cl, Object *o, Msg msg)
 			{
 			Attr = inst->txicl_TextStyle;
 
-			d1(KPrintF("%s/%s/%ld: txicl_type=%ld  Attr=%04lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_type, Attr));
+			d1(KPrintF("%s/%s/%ld: txicl_rild.rild_Type=%ld  Attr=%04lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Type, Attr));
 			}
 
 		if (LastAttr != Attr)
@@ -627,7 +613,7 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 	xRight--;
 	HighlightRect.MaxY = y + gg->Height - 1;
 
-	BgColor = PalettePrefs.pal_PensList[(inst->txicl_type < 0) ? PENIDX_FILEBG : PENIDX_DRAWERBG];
+	BgColor = PalettePrefs.pal_PensList[(inst->txicl_rild.rild_Type < 0) ? PENIDX_FILEBG : PENIDX_DRAWERBG];
 
 	SetAPen(iop->iopd_RastPort, BgColor);
 	SetDrMd(iop->iopd_RastPort, JAM1);
@@ -662,8 +648,8 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 
 	d1(KPrintF("%s/%s/%ld: HighlightRect.MinX=%ld  HighlightRect.MaxX=%ld\n", __FILE__, __FUNC__, __LINE__, HighlightRect.MinX, HighlightRect.MaxX));
 
-	Num = (inst->txicl_type < 0) ? NumFile : NumDrawer;
-	Denom = (inst->txicl_type < 0) ? DenomFile : DenomDrawer;
+	Num = (inst->txicl_rild.rild_Type < 0) ? NumFile : NumDrawer;
+	Denom = (inst->txicl_rild.rild_Type < 0) ? DenomFile : DenomDrawer;
 
 	BmRight = GetBitMapAttr(iop->iopd_RastPort->BitMap, BMA_WIDTH);
 
@@ -717,7 +703,7 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 			}
 		}
 
-	if (inst->txicl_type < 0)
+	if (inst->txicl_rild.rild_Type < 0)
 		{
 		// file
 		FgColor = (gg->Flags & GFLG_SELECTED) ? inst->txicl_PenSelected : inst->txicl_PenNormal;
@@ -761,7 +747,7 @@ static ULONG TextIcon_Draw(Class *cl, Object *o, Msg msg)
 					Attr = inst->txicl_TextStyle;
 
 					SetAPen(iop->iopd_RastPort, FgColor);
-					d1(KPrintF("%s/%s/%ld: txicl_type=%ld  Attr=%04lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_type, Attr));
+					d1(KPrintF("%s/%s/%ld: txicl_rild.rild_Type=%ld  Attr=%04lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Type, Attr));
 					}
 
 				if (LastAttr != Attr)
@@ -854,11 +840,8 @@ static ULONG TextIcon_HitTest(Class *cl, Object *o, Msg msg)
 
 static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 {
-	ULONG ExAllType;
 	struct DateTime dtm;
-	struct FileInfoBlock *fib;
-	const ULONG64 *pSize64;
-	struct ExAllData *ead;
+	const struct ReadIconListData *rild;
 	static const ULONG packTable[] =
 		{
 		PACK_STARTTABLE(TIDTA_FIRSTTAG),
@@ -866,11 +849,11 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_TextStyle, 	       TextIClassInst, txicl_TextStyle, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_Font, 		       TextIClassInst, txicl_Font, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_TTFont, 	       TextIClassInst, txicl_TTFont, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
-		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_IconType, 	       TextIClassInst, txicl_WbIconType, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
+		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_IconType, 	       TextIClassInst, txicl_rild.rild_IconType, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_TypeNode, 	       TextIClassInst, txicl_TypeNode, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_IconObject, 	       TextIClassInst, txicl_IconObject, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_ColumnWidthChangeHook,TextIClassInst, ixicl_ColWidthChangeHook, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
-		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_SoloIcon, 	       TextIClassInst, txicl_SoloIcon, PKCTRL_UBYTE | PKCTRL_PACKUNPACK),
+		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_SoloIcon, 	       TextIClassInst, txicl_rild.rild_SoloIcon, PKCTRL_UBYTE | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_SelectNameOnly,       TextIClassInst, txicl_HitOnNameOnly, PKCTRL_UBYTE | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_WindowTask, 	       TextIClassInst, txicl_WindowTask, PKCTRL_ULONG | PKCTRL_PACKUNPACK),
 		PACK_ENTRY(TIDTA_FIRSTTAG, TIDTA_TextPenFileNormal,    TextIClassInst, txicl_PenNormal, PKCTRL_UWORD | PKCTRL_PACKUNPACK),
@@ -889,105 +872,16 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 
 	PackStructureTags(inst, packTable, ops->ops_AttrList);
 
-	ExAllType = GetTagData(TIDTA_ExAllType, 0, ops->ops_AttrList);
+	rild = (struct ReadIconListData *) GetTagData(TIDTA_ReadIconListData, (ULONG)NULL, ops->ops_AttrList);
 
-	ead = (struct ExAllData *) GetTagData(TIDTA_ExAllData, (ULONG)NULL, ops->ops_AttrList);
-	fib = (struct FileInfoBlock *) GetTagData(TIDTA_ExNextData, (ULONG)NULL, ops->ops_AttrList);
-	pSize64 = (const ULONG64 *) GetTagData(TIDTA_Size64, (ULONG)NULL, ops->ops_AttrList);
-
-	if (ExAllType >= ED_NAME && ead)
+	if (rild)
 		{
-		if (ExAllType >= ED_NAME)
-			stccpy((char *)inst->txicl_name, ead->ed_Name, sizeof(inst->txicl_name));
-		if (ExAllType >= ED_TYPE)
-			inst->txicl_type = ead->ed_Type;
-		if (ExAllType >= ED_SIZE)
-			{
-			if (pSize64)
-				inst->txicl_realsize = *pSize64;
-			else
-				inst->txicl_realsize = ScalosExAllSize64(ead, ExAllType);
-
-			if (inst->txicl_SoloIcon)
-				{
-				stccpy((char *)inst->txicl_size,
-					GetLocString(MSGID_TEXTICON_SOLOICON), 
-					sizeof(inst->txicl_size));
-				}
-			else
-				{
-				if (inst->txicl_type < 0)
-					{
-					// size only for files
-					Convert64(ScalosLocale, inst->txicl_realsize, (char *)inst->txicl_size, sizeof(inst->txicl_size));
-					}
-				else
-					{
-					switch ((ULONG) inst->txicl_WbIconType)
-						{
-					case WBGARBAGE:
-						stccpy((char *)inst->txicl_size,
-							GetLocString(MSGID_TEXTICON_TRASHCAN), 
-							sizeof(inst->txicl_size));
-						break;
-					default:
-						stccpy((char *)inst->txicl_size,
-							GetLocString(MSGID_TEXTICON_DRAWER), 
-							sizeof(inst->txicl_size));
-						break;
-						}
-					}
-				}
-			}
-		if (ExAllType >= ED_PROTECTION)
-			{
-			inst->txicl_realprot = ead->ed_Prot;
-
-			GetProtectionString(inst->txicl_realprot, (STRPTR)inst->txicl_prot, sizeof(inst->txicl_prot));
-			}
-		if (ExAllType >= ED_DATE)
-			{
-			inst->txicl_realdate.ds_Days = ead->ed_Days;
-			inst->txicl_realdate.ds_Minute = ead->ed_Mins;
-			inst->txicl_realdate.ds_Tick = ead->ed_Ticks;
-
-			dtm.dat_Stamp = inst->txicl_realdate;
-			dtm.dat_Format = FORMAT_DOS;
-			dtm.dat_Flags = DTF_SUBST;
-			dtm.dat_StrDay = NULL;
-			dtm.dat_StrDate = (STRPTR)inst->txicl_date;
-			dtm.dat_StrTime = (STRPTR)inst->txicl_time;
-			ClassFormatDate(&dtm, sizeof(inst->txicl_date), sizeof(inst->txicl_time));
-			}
-		if (ExAllType >= ED_COMMENT)
-			stccpy((char *)inst->txicl_comment, ead->ed_Comment, sizeof(inst->txicl_comment));
-		if (ExAllType >= ED_OWNER)
-			{
-			inst->txicl_OwnerUID = ead->ed_OwnerUID;
-			snprintf((char *)inst->txicl_owner, sizeof(inst->txicl_owner), "%lu", (ULONG) inst->txicl_OwnerUID);
-			inst->txicl_OwnerGID = ead->ed_OwnerGID;
-			snprintf((char *)inst->txicl_group, sizeof(inst->txicl_group), "%lu", (ULONG) inst->txicl_OwnerGID);
-			}
-		else
-			{
-			strcpy((char *)inst->txicl_owner, "nobody");
-			strcpy((char *)inst->txicl_group, "nogroup");
-			}
+		inst->txicl_rild = *rild;
 
 		snprintf((char *)inst->txicl_version, sizeof(inst->txicl_version), "TBD");
 		snprintf((char *)inst->txicl_miniicon, sizeof(inst->txicl_miniicon), "M");
-		}
-	if (fib)
-		{
-		stccpy((char *)inst->txicl_name, fib->fib_FileName, sizeof(inst->txicl_name));
-		inst->txicl_type = fib->fib_DirEntryType;
 
-		if (pSize64)
-			inst->txicl_realsize = *pSize64;
-		else
-			inst->txicl_realsize = ScalosFibSize64(fib);
-
-		if (inst->txicl_SoloIcon)
+		if (inst->txicl_rild.rild_SoloIcon)
 			{
 			stccpy((char *)inst->txicl_size,
 				GetLocString(MSGID_TEXTICON_SOLOICON), 
@@ -995,14 +889,14 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 			}
 		else
 			{
-			if (inst->txicl_type < 0)
+			if (inst->txicl_rild.rild_Type < 0)
 				{
 				// size only for files
-				Convert64(ScalosLocale, inst->txicl_realsize, (char *)inst->txicl_size, sizeof(inst->txicl_size));
+				Convert64(ScalosLocale, inst->txicl_rild.rild_Size64, (char *)inst->txicl_size, sizeof(inst->txicl_size));
 				}
 			else
 				{
-				switch ((ULONG) inst->txicl_WbIconType)
+				switch ((ULONG) inst->txicl_rild.rild_IconType)
 					{
 				case WBGARBAGE:
 					stccpy((char *)inst->txicl_size,
@@ -1018,12 +912,9 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 				}
 			}
 
-		inst->txicl_realprot = fib->fib_Protection;
-		GetProtectionString(inst->txicl_realprot, (STRPTR)inst->txicl_prot, sizeof(inst->txicl_prot));
+		GetProtectionString(inst->txicl_rild.rild_Protection, (STRPTR)inst->txicl_prot, sizeof(inst->txicl_prot));
 
-		inst->txicl_realdate = fib->fib_Date;
-
-		dtm.dat_Stamp = inst->txicl_realdate;
+		dtm.dat_Stamp = inst->txicl_rild.rild_DateStamp;
 		dtm.dat_Format = FORMAT_DOS;
 		dtm.dat_Flags = DTF_SUBST;
 		dtm.dat_StrDay = NULL;
@@ -1031,25 +922,20 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 		dtm.dat_StrTime = (STRPTR)inst->txicl_time;
 		ClassFormatDate(&dtm, sizeof(inst->txicl_date), sizeof(inst->txicl_time));
 
-		stccpy((char *)inst->txicl_comment, fib->fib_Comment, sizeof(inst->txicl_comment));
-
-		inst->txicl_OwnerUID = fib->fib_OwnerUID;
-		inst->txicl_OwnerGID = fib->fib_OwnerGID;
-
-		snprintf((char *)inst->txicl_owner, sizeof(inst->txicl_owner), "%lu", (ULONG) inst->txicl_OwnerUID);
-		snprintf((char *)inst->txicl_group, sizeof(inst->txicl_group), "%lu", (ULONG) inst->txicl_OwnerGID);
+		snprintf((char *)inst->txicl_owner, sizeof(inst->txicl_owner), "%lu", (ULONG) inst->txicl_rild.rild_OwnerUID);
+		snprintf((char *)inst->txicl_group, sizeof(inst->txicl_group), "%lu", (ULONG) inst->txicl_rild.rild_OwnerGID);
 		snprintf((char *)inst->txicl_filetype, sizeof(inst->txicl_filetype), "TBD");
 		snprintf((char *)inst->txicl_version, sizeof(inst->txicl_version), "TBD");
 		snprintf((char *)inst->txicl_miniicon, sizeof(inst->txicl_miniicon), "M");
 		}
 
-	d1(KPrintF("%s/%s/%ld: <%s>  IconType=%ld  txicl_type=%ld\n", \
-			__FILE__, __FUNC__, __LINE__, inst->txicl_name, inst->txicl_WbIconType, inst->txicl_type));
+	d1(KPrintF("%s/%s/%ld: <%s>  IconType=%ld  txicl_rild.rild_Type=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Name, inst->txicl_rild.rild_IconType, inst->txicl_rild.rild_Type));
 
 	if (IsColumnEnabled(TXICOL_FileType))
 		{
 		if (!IS_TYPENODE(inst->txicl_TypeNode))
-			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock, (STRPTR)inst->txicl_name);
+			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock, (STRPTR)inst->txicl_rild.rild_Name);
 
 		switch ((ULONG) inst->txicl_TypeNode)
 			{
@@ -1097,19 +983,19 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 	case WBDEVICE:
 	case WBKICK:
 	case WBAPPICON:
-		inst->txicl_WbIconType = (ULONG) inst->txicl_TypeNode;
+		inst->txicl_rild.rild_IconType = (ULONG) inst->txicl_TypeNode;
 		break;
 	case WBDRAWER:
-		inst->txicl_WbIconType = WB_TEXTICON_DRAWER;      // Dir
+		inst->txicl_rild.rild_IconType = WB_TEXTICON_DRAWER;      // Dir
 		break;
 	case WBTOOL:
-		inst->txicl_WbIconType = WB_TEXTICON_TOOL;        // File
+		inst->txicl_rild.rild_IconType = WB_TEXTICON_TOOL;        // File
 		break;
 	default:
-		if (inst->txicl_type < 0)
-			inst->txicl_WbIconType = WB_TEXTICON_TOOL;	// File
+		if (inst->txicl_rild.rild_Type < 0)
+			inst->txicl_rild.rild_IconType = WB_TEXTICON_TOOL;	// File
 		else
-			inst->txicl_WbIconType = WB_TEXTICON_DRAWER;    // Dir
+			inst->txicl_rild.rild_IconType = WB_TEXTICON_DRAWER;    // Dir
 		}
 
 	d1(KPrintF("%s/%s/%ld: txicl_TTFont=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->txicl_TTFont));
@@ -1148,12 +1034,12 @@ static Object *CreateIconObject(struct TextIClassInst *inst, struct TagItem *tag
 	
         OldDir = CurrentDir(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock);
 
-	inst->txicl_IconObject = NewIconObjectTags((STRPTR)inst->txicl_name,
+	inst->txicl_IconObject = NewIconObjectTags((STRPTR)inst->txicl_rild.rild_Name,
 		IDTA_InnerBottom, CurrentPrefs.pref_ImageBorders.Bottom,
 		IDTA_InnerRight, CurrentPrefs.pref_ImageBorders.Right,
 		IDTA_InnerTop, CurrentPrefs.pref_ImageBorders.Top,
 		IDTA_InnerLeft, CurrentPrefs.pref_ImageBorders.Left,
-		IDTA_Text, (ULONG) inst->txicl_name,
+		IDTA_Text, (ULONG) inst->txicl_rild.rild_Name,
 		IDTA_HalfShinePen, PalettePrefs.pal_PensList[PENIDX_HSHINEPEN],
 		IDTA_HalfShadowPen, PalettePrefs.pal_PensList[PENIDX_HSHADOWPEN],
 		IDTA_FrameTypeSel, MF_FRAME_NONE,
@@ -1162,19 +1048,19 @@ static Object *CreateIconObject(struct TextIClassInst *inst, struct TagItem *tag
 		IDTA_SizeConstraints, (ULONG) &inst->txicl_IconRect,
 		TAG_MORE, (ULONG) tagList,
 		TAG_END);
-	d1(KPrintF("%s/%s/%ld: txicl_name=<%s>  txicl_IconObject=%08lx\n", \
-		__FILE__, __FUNC__, __LINE__, inst->txicl_name, inst->txicl_IconObject));
+	d1(KPrintF("%s/%s/%ld: txicl_rild.rild_Name=<%s>  txicl_IconObject=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, inst->txicl_rild.rild_Name, inst->txicl_IconObject));
 
 	if (NULL == inst->txicl_IconObject)
 		{
 		// try to get default icon
 		inst->txicl_IconObject = SCA_GetDefIconObjectTags(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock,
-				(STRPTR)inst->txicl_name,
+				(STRPTR)inst->txicl_rild.rild_Name,
 				IDTA_InnerBottom, CurrentPrefs.pref_ImageBorders.Bottom,
 				IDTA_InnerRight, CurrentPrefs.pref_ImageBorders.Right,
 				IDTA_InnerTop, CurrentPrefs.pref_ImageBorders.Top,
 				IDTA_InnerLeft, CurrentPrefs.pref_ImageBorders.Left,
-				IDTA_Text, (ULONG) inst->txicl_name,
+				IDTA_Text, (ULONG) inst->txicl_rild.rild_Name,
 				IDTA_HalfShinePen, PalettePrefs.pal_PensList[PENIDX_HSHINEPEN],
 				IDTA_HalfShadowPen, PalettePrefs.pal_PensList[PENIDX_HSHADOWPEN],
 				IDTA_FrameTypeSel, MF_FRAME_NONE,

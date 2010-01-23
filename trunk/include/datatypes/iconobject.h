@@ -491,10 +491,10 @@ struct iopCloneIconObject
  * texticon.datatype (scalos internal)
  */
 
-#define TIDTA_ExAllData			DTA_Dummy+1151		/* (IS.) */
-#define TIDTA_ExAllType			DTA_Dummy+1152		/* (IS.) */
+//#define TIDTA_ExAllData		DTA_Dummy+1151		/* (IS.) deprecated */
+//#define TIDTA_ExAllType		DTA_Dummy+1152		/* (IS.) deprecated */
 #define TIDTA_WidthArray		DTA_Dummy+1153		/* (ISG) */
-#define TIDTA_ExNextData		DTA_Dummy+1154		/* (IS.) */
+//#define TIDTA_ExNextData		DTA_Dummy+1154		/* (IS.) deprecated */
 #define TIDTA_FileType			DTA_Dummy+1155		/* (..G) */
 #define TIDTA_Size			DTA_Dummy+1156		/* (..G) */
 #define TIDTA_Days			DTA_Dummy+1157		/* (..G) */
@@ -518,7 +518,7 @@ struct iopCloneIconObject
 #define TIDTA_TextPenDrawerSelected	DTA_Dummy+1176		/* (ISG) UWORD - text window selected icon text pen  for drawers */
 #define TIDTA_TextPenFileNormal		DTA_Dummy+1177		/* (ISG) UWORD - text window normal  icon text pen for files */
 #define TIDTA_TextPenFileSelected	DTA_Dummy+1178		/* (ISG) UWORD - text window selected icon text pen for files */
-#define TIDTA_Size64			DTA_Dummy+1179		/* (IS.) ULONG64 * - 64bit file size */
+#define TIDTA_ReadIconListData		DTA_Dummy+1180		/* (IS.) struct ReadIconListData * */
 
 /*----------------------------------------------------------------------------------*/
 
