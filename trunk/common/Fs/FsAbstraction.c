@@ -206,16 +206,19 @@ CONST_STRPTR ScalosExamineGetComment(const T_ExamineData *exd)
 
 LONG ScalosExamineGetDirEntryType(const T_ExamineData *exd)
 {
+	if (NULL == exd)
+		return ST_FILE;
 #ifdef __amigaos4__
-	if (EXD_IS_SOFTLINK(exd))
-		return ST_SOFTLINK;
-	else if( EXD_IS_FILE(exd) )
+	if( EXD_IS_FILE(exd) )
 		return ST_FILE;
 	else if ( EXD_IS_DIRECTORY(exd) )
 		return ST_USERDIR;
+	else if (EXD_IS_SOFTLINK(exd))
+		return ST_SOFTLINK;
 	else if (EXD_IS_PIPE(exd))
 		return ST_PIPEFILE;
-	return ST_FILE;
+	else
+		return ST_FILE;
 #else //__amigaos4__
 	return exd->fib_DirEntryType;
 #endif //__amigaos4__

@@ -22,6 +22,7 @@
 #include <libraries/asl.h>
 #include <libraries/mui.h>
 #include <libraries/mcpgfx.h>
+#include <devices/timer.h>
 #include <resources/filesysres.h>
 #include <workbench/workbench.h>
 #include <workbench/icon.h>
@@ -49,6 +50,7 @@
 #include <proto/scalos.h>
 #include <proto/preferences.h>
 #include <proto/wb.h>
+#include <proto/timer.h>
 
 #include <DefIcons.h>
 #include <defs.h>
@@ -267,7 +269,8 @@ static void  ReplaceIcon(Object *NewIconObj, Object **OldIconObj);
 static void UpdateDrawerSize(Object *ButtonSize, ULONG *FileCount,
 	ULONG *DrawersCount, ULONG *BlocksCount, ULONG64 *ByteCount);
 static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCount,
-	ULONG *DrawersCount, ULONG *BlocksCount, ULONG64 *ByteCount);
+	ULONG *DrawersCount, ULONG *BlocksCount, ULONG64 *ByteCount, T_TIMEVAL *lastUpdateTime);
+static LONG GetElapsedTime(T_TIMEVAL *tv);
 static CONST_STRPTR GetLocString(ULONG MsgId);
 static void TranslateStringArray(STRPTR *stringArray);
 static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR IconName);
@@ -348,6 +351,7 @@ struct Library *IconobjectBase = NULL;
 struct ScalosBase *ScalosBase = NULL;
 struct Library *PreferencesBase = NULL;
 T_LOCALEBASE LocaleBase = NULL;
+T_TIMERBASE TimerBase;
 
 #ifdef __amigaos4__
 struct IntuitionIFace *IIntuition = NULL;
@@ -358,10 +362,14 @@ struct IconobjectIFace *IIconobject = NULL;
 struct ScalosIFace *IScalos = NULL;
 struct PreferencesIFace *IPreferences = NULL;
 struct LocaleIFace *ILocale = NULL;
+struct TimerIFace *ITimer;
 #endif
 
 static struct Catalog *InformationCatalog;
 static struct Locale *InformationLocale;
+
+static struct MsgPort *TimerPort;
+static T_TIMEREQUEST *TimerIO;
 
 static STRPTR DeviceRegisterTitleStrings[] =
 	{
@@ -693,7 +701,10 @@ int main(int argc, char *argv[])
 		LONG ToolPri = 0;
 		LONG StartPri = 0;
 		LONG WaitTime = 0;
-		ULONG Protection = ScalosExamineGetProtection(fib);
+		ULONG Protection = FibValid ? ScalosExamineGetProtection(fib) : 0;
+		CONST_STRPTR Comment = FibValid ? ScalosExamineGetComment(fib) : "";
+
+		d1(kprintf(__FILE__ "/%s/%ld: FibValid=%ld  fib=%08lx\n", __FUNC__, __LINE__, FibValid, fib));
 
 		GetAttr(IDTA_ToolTypes, iconObjFromDisk, (APTR)&ToolTypesArray);
 		GetAttr(IDTA_Type, iconObjFromDisk, &IconType);
@@ -898,7 +909,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentDevice = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, ScalosExamineGetComment(fib),
+											MUIA_String_Contents, (ULONG) Comment,
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //StringObject
@@ -978,7 +989,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentDrawer = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, ScalosExamineGetComment(fib),
+											MUIA_String_Contents, Comment,
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //StringObject
@@ -1077,7 +1088,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentProject = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, ScalosExamineGetComment(fib),
+											MUIA_String_Contents, (ULONG) Comment,
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //TextObject
@@ -1278,7 +1289,7 @@ int main(int argc, char *argv[])
 										Child, StringCommentTool = StringObject,
 											StringFrame,
 											StringBack,
-											MUIA_String_Contents, ScalosExamineGetComment(fib),
+											MUIA_String_Contents, (ULONG) Comment,
 											MUIA_CycleChain, TRUE,
 											MUIA_Dropable, TRUE,
 										End, //TextObject
@@ -2090,6 +2101,24 @@ static BOOL OpenLibraries(STRPTR *LibName)
 		ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
 #endif
 
+	*LibName = "timer.device";
+	TimerPort = CreateMsgPort();
+	if (NULL == TimerPort)
+		return FALSE;
+	TimerIO	= (T_TIMEREQUEST *)CreateIORequest(TimerPort, sizeof(T_TIMEREQUEST));
+	if (NULL == TimerIO)
+		return FALSE;
+	if (0 != OpenDevice("timer.device", UNIT_VBLANK, &TimerIO->tr_node, 0))
+		return FALSE;
+	TimerBase = (T_TIMERBASE) TimerIO->tr_node.io_Device;
+	if (NULL == TimerBase)
+		return FALSE;
+#ifdef __amigaos4__
+	ITimer = (struct TimerIFace *)GetInterface((struct Library *)TimerBase, "main", 1, NULL);
+	if (NULL == ITimer)
+		return FALSE;
+#endif
+
 	if (!ScalosExamineBegin(&fib))
 		return FALSE;
 
@@ -2099,6 +2128,25 @@ static BOOL OpenLibraries(STRPTR *LibName)
 
 static void CloseLibraries(void)
 {
+#ifdef __amigaos4__
+	if (ITimer)
+		{
+		DropInterface((struct Interface *)ITimer);
+		ITimer = NULL;
+		}
+#endif
+	if (TimerIO)
+		{
+		CloseDevice(&TimerIO->tr_node);
+		DeleteIORequest(&TimerIO->tr_node);
+		TimerIO = NULL;
+		}
+	if (TimerPort)
+		{
+		DeleteMsgPort(TimerPort);
+		TimerPort = NULL;
+		}
+
 	ScalosExamineEnd(&fib);
 	if (LocaleBase)
 		{
@@ -2270,6 +2318,7 @@ static SAVEDS(void) INTERRUPT DrawerSizeHookFunc(struct Hook *hook, Object *o, M
 	struct WBArg *arg = (struct WBArg *) hook->h_Data;
 	BPTR OldDir;
 	Object *ButtonSize;
+	T_TIMEVAL lastUpdateTime;
 
 	FileCount = DrawersCount = 0;
 	ByteCount = MakeU64(0);
@@ -2278,6 +2327,7 @@ static SAVEDS(void) INTERRUPT DrawerSizeHookFunc(struct Hook *hook, Object *o, M
 
 	d1(KPrintF(__FILE__ "/%s/%ld: arg=%08lx  wa_Lock=%08lx  wa_Name=<%s> TestLock=<%s>\n", __FUNC__, __LINE__, arg, arg->wa_Lock, arg->wa_Name, TestLock));
 
+	GetSysTime(&lastUpdateTime);
 
 	OldDir = CurrentDir(arg->wa_Lock);
 
@@ -2288,7 +2338,7 @@ static SAVEDS(void) INTERRUPT DrawerSizeHookFunc(struct Hook *hook, Object *o, M
 
 		d1(KPrintF(__FILE__ "/%s/%ld: ButtonDiskSize=<%s>\n", __FUNC__, __LINE__, InitButtonSize));
 
-		ExamineDrawer(ButtonSize, ":", &FileCount, &DrawersCount, &BlocksCount, &ByteCount);
+		ExamineDrawer(ButtonSize, ":", &FileCount, &DrawersCount, &BlocksCount, &ByteCount, &lastUpdateTime);
 		}
 	else
 		{
@@ -2297,7 +2347,7 @@ static SAVEDS(void) INTERRUPT DrawerSizeHookFunc(struct Hook *hook, Object *o, M
 
 		d1(KPrintF(__FILE__ "/%s/%ld: ButtonDiskSize=<%s>\n", __FUNC__, __LINE__, InitButtonSize));
 
-		ExamineDrawer(ButtonSize, arg->wa_Name, &FileCount, &DrawersCount, &BlocksCount, &ByteCount);
+		ExamineDrawer(ButtonSize, arg->wa_Name, &FileCount, &DrawersCount, &BlocksCount, &ByteCount, &lastUpdateTime);
 		}
 
 	CurrentDir(OldDir);
@@ -2334,14 +2384,19 @@ static void UpdateDrawerSize(Object *ButtonSize, ULONG *FileCount,
 //----------------------------------------------------------------------------
 
 static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCount,
-	ULONG *DrawersCount, ULONG *BlocksCount, ULONG64 *ByteCount)
+	ULONG *DrawersCount, ULONG *BlocksCount, ULONG64 *ByteCount, T_TIMEVAL *lastUpdateTime)
 {
 	T_ExamineDirHandle edh;
 	BPTR dLock = (BPTR)NULL;
 
 	DoMethod(APP_Main, MUIM_Application_InputBuffered);
 
-	UpdateDrawerSize(ButtonSize, FileCount, DrawersCount, BlocksCount, ByteCount);
+	// do not update more often than every 100ms
+	if (GetElapsedTime(lastUpdateTime) > 100)
+		{
+		GetSysTime(lastUpdateTime);
+		UpdateDrawerSize(ButtonSize, FileCount, DrawersCount, BlocksCount, ByteCount);
+		}
 
 	DoMethod(APP_Main, MUIM_Application_InputBuffered);
 
@@ -2372,7 +2427,8 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 				break;
 				}
 
-			d1(KPrintF(__FILE__ "/%s/%ld: ScalosExamineDir() success - Name=<%s>  DirEntryType=%ld\n", __FUNC__, __LINE__, ScalosExamineGetName(exd), ScalosExamineGetDirEntryType(exd)));
+			d1(KPrintF(__FILE__ "/%s/%ld: ScalosExamineDir() success - Name=<%s>  DirEntryType=%ld\n", __FUNC__, __LINE__, \
+				ScalosExamineGetName(exd), ScalosExamineGetDirEntryType(exd)));
 
 			(*BlocksCount) += ScalosExamineGetBlockCount(exd);
 
@@ -2384,7 +2440,7 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 				d1(KPrintF(__FILE__ "/%s/%ld: Name=<%s>\n", __FUNC__, __LINE__, ScalosExamineGetName(exd)));
 
 				Result = ExamineDrawer(ButtonSize, ScalosExamineGetName(exd),
-					FileCount, DrawersCount, BlocksCount, ByteCount);
+					FileCount, DrawersCount, BlocksCount, ByteCount, lastUpdateTime);
 
 				CurrentDir(OldDir);
 				}
@@ -2395,8 +2451,13 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 				}
 			DoMethod(APP_Main, MUIM_Application_InputBuffered);
 
-			UpdateDrawerSize(ButtonSize, FileCount,
+			// do not update more often than every 100ms
+			if (GetElapsedTime(lastUpdateTime) > 100)
+				{
+				GetSysTime(lastUpdateTime);
+				UpdateDrawerSize(ButtonSize, FileCount,
 					DrawersCount, BlocksCount, ByteCount);
+				}
 
 			DoMethod(APP_Main, MUIM_Application_InputBuffered);
 
@@ -2413,6 +2474,27 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 	d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld InitButtonSize <%s>\n", __FUNC__, __LINE__, Result, InitButtonSize));
 
 	return Result;
+}
+
+//----------------------------------------------------------------------------
+
+// Get elapsed time since time <tv> in milliseconds.
+static LONG GetElapsedTime(T_TIMEVAL *tv)
+{
+	T_TIMEVAL Now;
+	LONG Diff;
+
+	GetSysTime(&Now);
+	SubTime(&Now, tv);
+
+	Diff = 1000 * Now.tv_secs + Now.tv_micro / 1000;
+
+	d1(kprintf("%s/%s/%ld: Now s=%ld  ms=%ld   Start s=%ld  ms=%ld  Diff=%ld\n", \
+		__FILE__, __FUNC__, __LINE__, \
+			Now.tv_secs, Now.tv_micro, \
+			tv->tv_secs, tv->tv_micro, Diff));
+
+	return Diff;
 }
 
 // +jmc+ ----------------------------------------------------------------------//
@@ -3466,6 +3548,8 @@ static BOOL IsDevice(struct WBArg *arg)
 	BPTR OldDir;
 	BPTR fLock = (BPTR)NULL;
 
+	d1(KPrintF(__FILE__ "/%s/%ld: START\n", __FUNC__, __LINE__));
+
 	do	{
 		char VolumeName[128];
 		size_t Len;
@@ -3505,11 +3589,10 @@ static BOOL IsDevice(struct WBArg *arg)
 
 				if (ScalosExamineLock(arg->wa_Lock, &fib))
 					{
-					d1(KPrintF(__FILE__ "/%s/%ld: fib_DirEntryType=%ld  <%s>\n", __FUNC__, __LINE__, ScalosExamineGetDirEntryType(fib), ScalosExamineGetName(fib)));
+					d1(KPrintF(__FILE__ "/%s/%ld: fib_DirEntryType=%ld  <%s>\n", __FUNC__, __LINE__, \
+						ScalosExamineGetDirEntryType(fib), ScalosExamineGetName(fib)));
 					isDevice = ST_ROOT == ScalosExamineGetDirEntryType(fib);
 					}
-
-				ScalosExamineEnd(&fib);
 
 				parentDir = ParentDir(arg->wa_Lock);
 				d1(KPrintF(__FILE__ "/%s/%ld: parentDir=%08lx\n", __FUNC__, __LINE__, parentDir));
