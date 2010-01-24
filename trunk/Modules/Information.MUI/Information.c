@@ -2372,16 +2372,16 @@ static LONG ExamineDrawer(Object *ButtonSize, CONST_STRPTR Name, ULONG *FileCoun
 				break;
 				}
 
-			d1(KPrintF(__FILE__ "/%s/%ld: ScalosExamineDir() success - Name=<%s>  DirEntryType=%ld\n", __FUNC__, __LINE__, ScalosExamineGetName(fib), ScalosExamineGetDirEntryType(fib)));
+			d1(KPrintF(__FILE__ "/%s/%ld: ScalosExamineDir() success - Name=<%s>  DirEntryType=%ld\n", __FUNC__, __LINE__, ScalosExamineGetName(exd), ScalosExamineGetDirEntryType(exd)));
 
-			(*BlocksCount) += ScalosExamineGetBlockCount(fib);
+			(*BlocksCount) += ScalosExamineGetBlockCount(exd);
 
-			if (ScalosExamineIsDrawer(fib))
+			if (ScalosExamineIsDrawer(exd))
 				{
 				BPTR OldDir = CurrentDir(dLock);
 
 				(*DrawersCount)++;
-				d1(KPrintF(__FILE__ "/%s/%ld: Name=<%s>\n", __FUNC__, __LINE__, ScalosExamineGetName(fib)));
+				d1(KPrintF(__FILE__ "/%s/%ld: Name=<%s>\n", __FUNC__, __LINE__, ScalosExamineGetName(exd)));
 
 				Result = ExamineDrawer(ButtonSize, ScalosExamineGetName(exd),
 					FileCount, DrawersCount, BlocksCount, ByteCount);
