@@ -726,10 +726,15 @@ static BOOL DtImageCreateAlpha(struct DatatypesImage *dti)
 void DtImageDraw(struct DatatypesImage *dti, struct RastPort *rp,
 	LONG Left, LONG Top, LONG Width, LONG Height)
 {
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 #if defined(__amigaos4__)
 	if (dti->dti_ARGB)
 		{
-		BltBitMapTags(
+		LONG rc;
+
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		// BltBitMapTagList
+		rc = BltBitMapTags(
 			BLITA_Source, dti->dti_ARGB,
 			BLITA_Dest, rp,
 			BLITA_SrcX, 0,
@@ -744,11 +749,16 @@ void DtImageDraw(struct DatatypesImage *dti, struct RastPort *rp,
 			BLITA_UseSrcAlpha, TRUE,
 			TAG_END);
 
+		d1(kprintf("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 		}
 	else
 #endif //defined(__amigaos4__)
 		{
-		DoMethod(dti->dti_ImageObj,
+		ULONG rc;
+
+		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		// returns 1 if successful, 0 on error
+		rc = DoMethod(dti->dti_ImageObj,
 			DTM_DRAW,
 			rp,
 			Left,
@@ -758,8 +768,34 @@ void DtImageDraw(struct DatatypesImage *dti, struct RastPort *rp,
 			0, 0,
 			NULL
 			);
-		}
+		d1(kprintf("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 
+		if (!rc)
+			{
+			if (dti->dti_MaskPlane)
+				{
+				d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+				BltMaskBitMapRastPort(dti->dti_BitMap,
+					0, 0,
+					rp,
+					Left, Top,
+					Width, Height,
+					ABC | ABNC | ANBC,
+					dti->dti_MaskPlane);
+				}
+			else
+				{
+				d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+				BltBitMapRastPort(dti->dti_BitMap,
+					0, 0,
+					rp,
+					Left, Top,
+					Width, Height,
+					ABC | ABNC);
+				}
+			}
+		}
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 

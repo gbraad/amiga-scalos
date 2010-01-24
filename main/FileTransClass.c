@@ -1459,7 +1459,8 @@ static LONG GetElapsedTime(T_TIMEVAL *tv)
 	Diff = 1000 * Now.tv_secs + Now.tv_micro / 1000;
 
 	d1(kprintf("%s/%s/%ld: Now s=%ld  ms=%ld   Start s=%ld  ms=%ld  Diff=%ld\n", \
-		__LINE__, Now.tv_secs, Now.tv_micro, \
+		__FILE__, __FUNC__, __LINE__, \
+			Now.tv_secs, Now.tv_micro, \
 			tv->tv_secs, tv->tv_micro, Diff));
 
 	return Diff;
