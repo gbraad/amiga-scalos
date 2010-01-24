@@ -702,7 +702,7 @@ int main(int argc, char *argv[])
 		LONG StartPri = 0;
 		LONG WaitTime = 0;
 		ULONG Protection = FibValid ? ScalosExamineGetProtection(fib) : 0;
-		CONST_STRPTR Comment = FibValid ? ScalosExamineGetComment(fib) : "";
+		CONST_STRPTR Comment = FibValid ? ScalosExamineGetComment(fib) : (CONST_STRPTR) "";
 
 		d1(kprintf(__FILE__ "/%s/%ld: FibValid=%ld  fib=%08lx\n", __FUNC__, __LINE__, FibValid, fib));
 
