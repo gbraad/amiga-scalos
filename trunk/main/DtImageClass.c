@@ -244,6 +244,8 @@ static ULONG DtImage_Draw(Class *cl, Object *o, Msg msg)
 		x += (img->Width - dtImg->dti_BitMapHeader->bmh_Width) / 2;
 		y += (img->Height - dtImg->dti_BitMapHeader->bmh_Height) / 2;
 
+		d1(kprintf("%s/%s/%ld: x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, x, y));
+
 		DtImageDraw(dtImg,
 			imp->imp_RPort,
 			x,
@@ -274,7 +276,7 @@ static ULONG DtImage_Draw(Class *cl, Object *o, Msg msg)
 			y + img->Height - 1);
 		}
 
-	d1(kprintf("%s/%s/%ld: \n", __LINE__));
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 1;
 }
