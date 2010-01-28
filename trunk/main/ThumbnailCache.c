@@ -188,6 +188,11 @@ BOOL ThumbnailCacheOpen(APTR *pThumbnailCacheHandle)
 		*pThumbnailCacheHandle = (APTR) db;
 		} while (0);
 
+	if (!Success)
+		{
+		ThumbnailCacheClose(*pThumbnailCacheHandle);
+		}
+
 	d1(KPrintF("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
