@@ -138,7 +138,7 @@ static void GetDeviceName(BPTR dLock, STRPTR DeviceName, size_t MaxLen);
 static const struct FileSysEntry *FindFileSysResEntry(ULONG DosType);
 static CONST_STRPTR FindVersionString(const UBYTE *block, size_t BlockLen);
 
-const char versTag[] = "\0$VER: " VERSTAG;	// $VER version string
+const char versTag[] = VERSTAG;	     // $VER version string
 
 static char TextDeviceName[128];
 static char TextDeviceOnDev[64];
