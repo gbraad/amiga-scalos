@@ -1,4 +1,4 @@
-## version $VER: scalos.catalog 41.6 (05 Jan 2009 23:22:04)
+## version $VER: scalos.catalog 41.7 (30 Jan 2010 11:45:04)
 ## codeset 0
 ## language deutsch
 ;
@@ -1636,6 +1636,16 @@ MSGID_UNDO_CHANGEICON_SINGLE
 MSGID_UNDO_CHANGEICON_MORE
 %s: %ld Piktogramme ver‰ndern
 ;%s: Change %ld icons
+;
+;
+MSGID_UNDO_CLOSEWINDOW_SINGLE
+%s: Fenster %s schlieﬂen
+;%s: Close %s Window
+;
+;
+MSGID_UNDO_CLOSEWINDOW_MORE
+%s: Schlieﬂen von %ld Fenstern
+;%s: Close %ld Windows
 ;
 ; ==============================================
 ;

@@ -1,4 +1,4 @@
-## version $VER: scalos.catalog 41.6 (05 Jan 2009 23:22:04)
+## version $VER: scalos.catalog 41.7 (30 Jan 2010 11:45:04)
 ## codeset 0
 ## language dansk
 ;
@@ -1412,6 +1412,16 @@ MSGID_UNDO_CHANGEICON_SINGLE
 MSGID_UNDO_CHANGEICON_MORE
 %s: Change %ld icons
 ;%s: Change %ld icons
+;
+;+++translateme+++
+MSGID_UNDO_CLOSEWINDOW_SINGLE
+%s: Close %s Window
+;%s: Close %s Window
+;
+;+++translateme+++
+MSGID_UNDO_CLOSEWINDOW_MORE
+%s: Close %ld Windows
+;%s: Close %ld Windows
 ;
 ; ==============================================
 ;

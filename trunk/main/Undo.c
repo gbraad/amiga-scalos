@@ -75,6 +75,7 @@ static SAVEDS(LONG) UndoDummyFunc(struct Hook *hook, APTR object, struct UndoEve
 static void RedoCleanup(void);
 static SAVEDS(ULONG) UndoTask(struct UndoProcArg *upa, struct SM_RunProcess *msg);
 static SAVEDS(ULONG) RedoTask(struct UndoProcArg *upa, struct SM_RunProcess *msg);
+
 static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList);
@@ -89,6 +90,7 @@ static BOOL AddSetProtectionEvent(struct UndoEvent *uev, struct TagItem *TagList
 static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList);
 static BOOL AddChangeIconObjectEvent(struct UndoEvent *uev, struct TagItem *TagList);
+static BOOL AddCloseWindowEvent(struct UndoEvent *uev, struct TagItem *TagList);
 
 static SAVEDS(void) UndoDisposeCopyMoveData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(void) UndoDisposeNewDrawerData(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -100,6 +102,7 @@ static SAVEDS(void) UndoDisposeSetProtectionData(struct Hook *hook, APTR object,
 static SAVEDS(void) UndoDisposeSetCommentData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(void) UndoDisposeSetToolTypesData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(void) UndoDisposeChangeIconObjectData(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(void) UndoDisposeCloseWindowData(struct Hook *hook, APTR object, struct UndoEvent *uev);
 
 static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoMoveEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
@@ -130,6 +133,8 @@ static SAVEDS(LONG) UndoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) UndoChangeIconObjectEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 static SAVEDS(LONG) RedoChangeIconObjectEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) UndoCloseWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
+static SAVEDS(LONG) RedoCloseWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev);
 
 static BOOL MoveIconTo(CONST_STRPTR DirName, CONST_STRPTR IconName, LONG x, LONG y);
 static STRPTR UndoBuildIconName(CONST_STRPTR ObjName);
@@ -284,6 +289,9 @@ BOOL UndoAddEventTagList(struct internalScaWindowTask *iwt, enum ScalosUndoType 
 					break;
 				case UNDO_ChangeIconObject:
 					Success = AddChangeIconObjectEvent(uev, TagList);
+					break;
+				case UNDO_CloseWindow:
+					Success = AddCloseWindowEvent(uev, TagList);
 					break;
 				default:
 					if (uev->uev_CustomAddHook)
@@ -2119,6 +2127,97 @@ static BOOL AddChangeIconObjectEvent(struct UndoEvent *uev, struct TagItem *TagL
 
 //----------------------------------------------------------------------------
 
+static BOOL AddCloseWindowEvent(struct UndoEvent *uev, struct TagItem *TagList)
+{
+	BOOL Success = FALSE;
+	STRPTR name;
+
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		struct internalScaWindowTask *iwt;
+		struct ScaWindowStruct *ws;
+		struct UndoCloseWindowData *ucwd = &uev->uev_Data.uev_CloseWindowData;
+		static struct Hook UndoDisposeCloseWindowHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoDisposeCloseWindowData),  // h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook UndoCloseWindowHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(UndoCloseWindowEvent),    // h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+		static struct Hook RedoCloseWindowHook =
+			{
+			{ NULL, NULL },
+			HOOKFUNC_DEF(RedoCloseWindowEvent),    // h_Entry + h_SubEntry
+			NULL,					// h_Data
+			};
+
+		uev->uev_DisposeHook = (struct Hook *) GetTagData(UNDOTAG_DisposeHook, (ULONG) &UndoDisposeCloseWindowHook, TagList);
+
+		uev->uev_UndoHook = (struct Hook *) GetTagData(UNDOTAG_UndoHook, (ULONG) &UndoCloseWindowHook, TagList);
+		uev->uev_RedoHook = (struct Hook *) GetTagData(UNDOTAG_RedoHook, (ULONG) &RedoCloseWindowHook, TagList);
+
+		uev->uev_DescrMsgIDSingle = MSGID_UNDO_CLOSEWINDOW_SINGLE;
+		uev->uev_DescrMsgIDMultiple = MSGID_UNDO_CLOSEWINDOW_MORE;
+
+		name = AllocPathBuffer();
+		if (NULL == name)
+			break;
+
+		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
+
+		iwt = (struct internalScaWindowTask *) GetTagData(UNDOTAG_WindowTask, (ULONG) NULL, TagList);
+		if (BNULL == iwt)
+			break;
+
+		ws = iwt->iwt_WindowTask.mt_WindowStruct;
+
+		if (BNULL == ws->ws_Lock)
+			break;
+
+		ucwd->ucwd_WindowTitle = AllocCopyString(iwt->iwt_WinTitle);
+		if (NULL == ucwd->ucwd_WindowTitle)
+			break;
+
+		d1(kprintf("%s/%s/%ld: ucwd_WindowTitle=%08lx\n", __FILE__, __FUNC__, __LINE__, ucwd->ucwd_WindowTitle));
+
+		uev->uev_DescrObjName = &ucwd->ucwd_WindowTitle;
+
+		if (!NameFromLock(ws->ws_Lock, name, Max_PathLen))
+			break;
+
+		d1(kprintf("%s/%s/%ld: ws_lock=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
+
+		ucwd->ucwd_DirName = AllocCopyString(name);
+		if (NULL == ucwd->ucwd_DirName)
+			break;
+
+		ucwd->ucwd_Left      = ws->ws_Left;
+		ucwd->ucwd_Top       = ws->ws_Top;
+		ucwd->ucwd_Width     = ws->ws_Width;
+		ucwd->ucwd_Height    = ws->ws_Height;
+		ucwd->ucwd_VirtX     = ws->ws_xoffset;
+		ucwd->ucwd_VirtY     = ws->ws_yoffset;
+		ucwd->ucwd_ViewAll   = ws->ws_ViewAll;
+		ucwd->ucwd_Viewmodes = ws->ws_Viewmodes;
+
+		Success = TRUE;
+		} while (0);
+
+	if (name)
+		FreePathBuffer(name);
+
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+//----------------------------------------------------------------------------
+
 static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
 	BOOL Success = FALSE;
@@ -2859,6 +2958,31 @@ static SAVEDS(void) UndoDisposeChangeIconObjectData(struct Hook *hook, APTR obje
 	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
 }
 
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) UndoDisposeCloseWindowData(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	(void) hook;
+	(void) object;
+
+	d1(kprintf("%s/%s/%ld: START  uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+	if (uev)
+		{
+		struct UndoCloseWindowData *ucwd = &uev->uev_Data.uev_CloseWindowData;
+
+		if (ucwd->ucwd_DirName)
+			{
+			FreeCopyString(ucwd->ucwd_DirName);
+			ucwd->ucwd_DirName = NULL;
+			}
+		if (ucwd->ucwd_WindowTitle)
+			{
+			FreeCopyString(ucwd->ucwd_WindowTitle);
+			ucwd->ucwd_WindowTitle = NULL;
+			}
+		}
+	d1(kprintf("%s/%s/%ld: END   uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+}
 //----------------------------------------------------------------------------
 
 static SAVEDS(LONG) UndoCleanupEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
@@ -4263,6 +4387,73 @@ static SAVEDS(LONG) RedoChangeIconObjectEvent(struct Hook *hook, APTR object, st
 
 	return Success;
 }
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) UndoCloseWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	BOOL Success = FALSE;
+
+	(void) hook;
+	(void) object;
+
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		struct UndoCloseWindowData *ucwd = &uev->uev_Data.uev_CloseWindowData;
+		struct IBox WindowBox;
+
+		WindowBox.Left   = ucwd->ucwd_Left;
+		WindowBox.Top    = ucwd->ucwd_Top;
+		WindowBox.Width  = ucwd->ucwd_Width;
+		WindowBox.Height = ucwd->ucwd_Height;
+
+		Success = SCA_OpenIconWindowTags(
+			SCA_Path, (ULONG) ucwd->ucwd_DirName,
+			SCA_WindowRect, (ULONG) &WindowBox,
+			SCA_ViewModes, ucwd->ucwd_Viewmodes,
+			SCA_ShowAllMode, ucwd->ucwd_ViewAll,
+			SCA_XOffset, ucwd->ucwd_VirtX,
+			SCA_YOffset, ucwd->ucwd_VirtY,
+			TAG_END);
+		} while (0);
+
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(LONG) RedoCloseWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
+{
+	BOOL Success = FALSE;
+
+	(void) hook;
+	(void) object;
+
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		struct UndoCloseWindowData *ucwd = &uev->uev_Data.uev_CloseWindowData;
+		struct internalScaWindowTask *iwt;
+
+		iwt = UndoFindWindowByDir(ucwd->ucwd_DirName);
+		if (NULL == iwt)
+			break;
+
+		iwt->iwt_CloseWindow = TRUE;
+
+		SCA_UnLockWindowList();
+
+		Success = TRUE;
+		} while (0);
+
+	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+	return Success;
+}
+
 //----------------------------------------------------------------------------
 
 // If window <iwt> is about to close, walk through Undo/Redo lists
@@ -4272,6 +4463,10 @@ void UndoWindowSignalClosing(struct internalScaWindowTask *iwt)
 	struct UndoStep *ust;
 
 	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	UndoAddEvent(iwt, UNDO_CloseWindow,
+		UNDOTAG_WindowTask, iwt,
+		TAG_END);
 
 	ScalosObtainSemaphore(&UndoListListSemaphore);
 
