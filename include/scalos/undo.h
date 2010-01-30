@@ -39,6 +39,7 @@ enum ScalosUndoType
 	UNDO_SetComment,		// UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_OldComment, UNDOTAG_NewComment
 	UNDO_SetToolTypes,		// UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_OldToolTypes, UNDOTAG_NewToolTypes
 	UNDO_ChangeIconObject,		// UNDOTAG_IconDirLock, UNDOTAG_IconName, UNDOTAG_OldIconObject, UNDOTAG_NewIconObject
+	UNDO_CloseWindow,		// UNDOTAG_WindowTask
 	};
 
 enum ScalosUndoTags
@@ -202,6 +203,19 @@ struct UndoEvent
 			Object *uciod_OldIconObject;
 			Object *uciod_NewIconObject;
 			} uev_ChangeIconObjectData;
+		struct UndoCloseWindowData
+			{
+			STRPTR ucwd_DirName;
+			STRPTR ucwd_WindowTitle;
+			LONG ucwd_Left;
+			LONG ucwd_Top;
+			ULONG ucwd_Width;
+			ULONG ucwd_Height;
+			LONG ucwd_VirtX;
+			LONG ucwd_VirtY;
+			UWORD ucwd_ViewAll;
+			UBYTE ucwd_Viewmodes;
+			} uev_CloseWindowData;
 		} uev_Data;
 
 	struct UndoStep *uev_UndoStep;

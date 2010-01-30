@@ -1,5 +1,5 @@
 ; Scalos.cd
-; version 41.6 (17 Aug 2008 20:22:04)
+; version 41.7 (30 Jan 2010 11:45:04)
 ; codeset 0s
 ; language english
 ;
@@ -1264,6 +1264,14 @@ MSGID_UNDO_CHANGEICON_SINGLE (//)
 ;
 MSGID_UNDO_CHANGEICON_MORE (//)
 %s: Change %ld icons
+;
+;
+MSGID_UNDO_CLOSEWINDOW_SINGLE (//)
+%s: Close %s Window
+;
+;
+MSGID_UNDO_CLOSEWINDOW_MORE (//)
+%s: Close %ld Windows
 ;
 ; ==============================================
 ;

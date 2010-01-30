@@ -269,7 +269,13 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 				&& x < iwtUnderPointer->iwt_WindowTask.wt_Window->Width
 				&& y < iwtUnderPointer->iwt_WindowTask.wt_Window->Height)
 				{
-				DoPopupMenu = SendPopupMenuMsg(iwtUnderPointer, ie);
+				if (PopupMenus[(iwtUnderPointer == iwtMain) ? SCPOPUPMENU_Desktop : SCPOPUPMENU_Window])
+					DoPopupMenu = SendPopupMenuMsg(iwtUnderPointer, ie);
+				else
+					{
+					// No popup menu if menu not configured
+					DoPopupMenu = FALSE;
+					}
 				}
 			}
 

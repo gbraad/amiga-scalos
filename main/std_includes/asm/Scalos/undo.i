@@ -37,6 +37,7 @@ UNDO_SetProtection	equ	14
 UNDO_SetComment		equ	15
 UNDO_SetToolTypes	equ	16
 UNDO_ChangeIconObject	equ	17
+UNDO_CloseWindow	equ	18
 
 ;enum ScalosUndoTags
 UNDOTAG_TagBase		equ     TAG_USER+1287
@@ -175,6 +176,19 @@ CLEANUP_ByType		equ	4
 	APTR	uciod_NewIconObject	; Object *
 	LABEL	uciod_SIZEOF
 
+  STRUCTURE 	UndoCloseWindowData,0
+	APTR	ucwd_DirName		; STRPTR
+	APTR	ucwd_WindowTitle	; STRPTR
+	LONG 	ucwd_Left;
+	LONG 	ucwd_Top;
+	ULONG 	ucwd_Width
+	ULONG 	ucwd_Height
+	LONG 	ucwd_VirtX
+	LONG 	ucwd_VirtY
+	UWORD 	ucwd_ViewAll
+	UBYTE 	ucwd_Viewmodes
+	LABEL	ucwd_SIZEOF
+
 ; uev_Data_SIZEOF is the largest of all sizes of the sub-structures
 ; UndoCopyMoveEventData, UndoIconEventData, UndoCleanupData, and UndoSnaphotIconData
 
@@ -208,6 +222,9 @@ uev_Data_SIZEOF	set     ustd_SIZEOF
 	ENDIF
 	IFGT    uciod_SIZEOF-uev_Data_SIZEOF
 uev_Data_SIZEOF	set     uciod_SIZEOF
+	ENDIF
+	IFGT    ucwd_SIZEOF-uev_Data_SIZEOF
+uev_Data_SIZEOF	set     ucwd_SIZEOF
 	ENDIF
 
   STRUCTURE	UndoEvent,0

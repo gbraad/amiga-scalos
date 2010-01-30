@@ -1,9 +1,8 @@
 ;scalos.ct
 ; $Date$
 ; $Revision$
-; $Id$
 ;
-## version $VER: scalos.catalog 41.6 (05 Jan 2009 23:43:19 )
+## version $VER: scalos.catalog 41.7 (30 Jan 2010 11:45:04)
 ## codeset 0
 ## language français
 ;
@@ -1397,6 +1396,16 @@ MSGID_UNDO_CHANGEICON_SINGLE
 MSGID_UNDO_CHANGEICON_MORE
 %s : Changement de %ld icônes
 ;%s: Change %ld icons
+;
+;+++translateme+++
+MSGID_UNDO_CLOSEWINDOW_SINGLE
+%s: Close %s Window
+;%s: Close %s Window
+;
+;+++translateme+++
+MSGID_UNDO_CLOSEWINDOW_MORE
+%s: Close %ld Windows
+;%s: Close %ld Windows
 ;
 ; ==============================================
 ;
