@@ -1313,8 +1313,7 @@ static void ThumbnailCacheFileExists(sqlite3_context *context, LONG x, sqlite3_v
 static int ThumbnailCacheSetTempDir(sqlite3 *db, CONST_STRPTR DirName)
 {
 	STRPTR CmdStr;
-	BOOL Success = FALSE;
-	int rc = SQLITE_DONE;
+	int rc;
 
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
@@ -1327,7 +1326,10 @@ static int ThumbnailCacheSetTempDir(sqlite3 *db, CONST_STRPTR DirName)
 
 		CmdStr = ScalosAlloc(Length);
 		if (NULL == CmdStr)
+			{
+			rc = SQLITE_NOMEM;
 			break;
+			}
 
 		snprintf(CmdStr, Length, Cmd, DirName);
 
@@ -1337,10 +1339,6 @@ static int ThumbnailCacheSetTempDir(sqlite3 *db, CONST_STRPTR DirName)
 			NULL,
 			NULL);
 		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
-		if (SQLITE_OK != rc)
-			break;
-
-		Success = TRUE;
 		} while (0);
 
 	if (CmdStr)

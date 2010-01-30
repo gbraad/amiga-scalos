@@ -40,7 +40,7 @@
 
 #if defined(SQLITE_DEBUG)
 #undef  d2
-#define d2(x)	          x
+#define d1(x)	          x
 #endif /* SQLITE_DEBUG */
 
 //---------------------------------------------------------------------
@@ -133,6 +133,7 @@ extern sqlite3_mutex_methods *sqlite3OtherMutex(void);
 
 static void otherEnterMutex(void);
 static void otherLeaveMutex(void);
+static int otherCheckWriteable(const char *zFilename);
 static int otherDelete(sqlite3_vfs *pVfs, const char *zFilename, int syncDir);
 static int otherAccess(sqlite3_vfs *pVfs, const char *zFilename, int flags, int *pResOut);
 static int otherOpen(sqlite3_vfs *pVfs, const char *zName, sqlite3_file *id, int flags, int *pOutFlags);
@@ -198,6 +199,65 @@ static void otherLeaveMutex(void)
 
 //---------------------------------------------------------------------
 
+static int otherCheckWriteable(const char *zFilename)
+{
+	int isWriteable = 0;
+	BPTR fLock;
+	struct FileInfoBlock *fib = NULL;
+	struct InfoData *id = NULL;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: zFilename=<%s>\n", __FUNC__, __LINE__, zFilename));
+
+	do	{
+		fLock = Lock(zFilename, ACCESS_READ);
+		d1(KPrintF(__FILE__ "/%s/%ld: fLock=%08lx\n", __FUNC__, __LINE__, fLock));
+		if (0 == fLock)
+			break;
+
+		id = sqlite3_malloc(sizeof(struct InfoData));
+		d1(KPrintF(__FILE__ "/%s/%ld: id=%08lx\n", __FUNC__, __LINE__, id));
+		if (NULL == id)
+			break;
+
+		fib = AllocDosObject(DOS_FIB, NULL);
+		d1(KPrintF(__FILE__ "/%s/%ld: fib=%08lx\n", __FUNC__, __LINE__, fib));
+		if (NULL == fib)
+			break;
+
+		if (!Examine(fLock, fib))
+			break;
+
+		d1(KPrintF(__FILE__ "/%s/%ld: Examine() succeeded, fib_Protection=%08lx\n", __FUNC__, __LINE__, fib->fib_Protection));
+
+		if (fib->fib_Protection & FIBF_OTR_WRITE)
+			break;		// read-only!
+
+		// Object seems writebale, but might be on read-only disk
+		if (!Info(fLock, id))
+			break;
+
+		d1(KPrintF(__FILE__ "/%s/%ld: Info() succeeded,  id_DiskState=%ld\n", __FUNC__, __LINE__, id->id_DiskState));
+
+		if (ID_VALIDATED != id->id_DiskState)
+			break;		// not validated or read-only
+
+		isWriteable = 1;
+		} while (0);
+
+	if (fib)
+		FreeDosObject(DOS_FIB, fib);
+	if (id)
+		sqlite3_free(id);
+	if (fLock)
+		UnLock(fLock);
+
+	d1(KPrintF(__FILE__ "/%s/%ld: isWriteable=%ld\n", __FUNC__, __LINE__, isWriteable));
+
+	return isWriteable;
+}
+
+//---------------------------------------------------------------------
+
 /*
 ** Delete the named file
 */
@@ -235,7 +295,7 @@ static int otherAccess(sqlite3_vfs *pVfs, const char *zFilename, int flags, int 
 		fLock = Lock(zFilename, ACCESS_READ);
 		break;
 	case SQLITE_ACCESS_READWRITE:
-		fLock = Lock(zFilename, ACCESS_WRITE);
+		exists = otherCheckWriteable(zFilename);
 		break;
 	default:
 		assert(!"Invalid flags argument");
@@ -246,6 +306,10 @@ static int otherAccess(sqlite3_vfs *pVfs, const char *zFilename, int flags, int 
 		{
 		exists = 1;
 		UnLock(fLock);
+		}
+	else
+		{
+		d1(KPrintF(__FILE__ "/%s/%ld: Lock(9 failed, IoErr=%ld\n", __FUNC__, __LINE__, IoErr()));
 		}
 
 	d1(KPrintF(__FILE__ "/%s/%ld: exists=%ld\n", __FUNC__, __LINE__, exists));
