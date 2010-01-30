@@ -1399,11 +1399,11 @@ MSGID_UNDO_CHANGEICON_MORE
 ;%s: Change %ld icons
 ;
 MSGID_UNDO_CLOSEWINDOW_SINGLE
-%s: fermeture de la fenêtre %s
+%s : Fermeture de la fenêtre %s
 ;%s: Close %s Window
 ;
 MSGID_UNDO_CLOSEWINDOW_MORE
-%s: Fermeture de %ld fenêtres
+%s : Fermeture de %ld fenêtres
 ;%s: Close %ld Windows
 ;
 ; ==============================================
