@@ -237,6 +237,8 @@ static SAVEDS(APTR) INTERRUPT AddMenuHookFunc(struct Hook *hook, Object *o, Msg 
 static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(APTR) INTERRUPT AddMenuItemHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(APTR) INTERRUPT RemoveEntryHookFunc(struct Hook *hook, Object *o, Msg msg);
+static SAVEDS(APTR) INTERRUPT CollapseSelectedHookFunc(struct Hook *hook, Object *o, Msg msg);
+static SAVEDS(APTR) INTERRUPT ExpandSelectedHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(APTR) INTERRUPT CollapseAllHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(APTR) INTERRUPT ExpandAllHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg);
@@ -246,8 +248,15 @@ static SAVEDS(APTR) INTERRUPT SettingsChangedHookFunc(struct Hook *hook, Object 
 static SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, Msg msg);
 static SAVEDS(void) INTERRUPT HideObsoleteHookFunc(struct Hook *hook, Object *o, Msg msg);
 
+static SAVEDS(void) INTERRUPT MenuCopyHookFunc(struct Hook *hook, Object *o, Msg msg);
+static SAVEDS(void) INTERRUPT MenuCutHookFunc(struct Hook *hook, Object *o, Msg msg);
+static SAVEDS(void) INTERRUPT MenuPasteHookFunc(struct Hook *hook, Object *o, Msg msg);
+
 static struct MUI_NListtree_TreeNode *MoveMenuTree(struct MenuPrefsInst *inst,
 	ULONG DestListtreeIndex, ULONG SrcListtreeIndex, ULONG EntryIndex);
+static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct MenuPrefsInst *inst,
+	struct MUI_NListtree_TreeNode *tnToListNode, struct MUI_NListtree_TreeNode *tnToPrevNode,
+	struct MUI_NListtree_TreeNode *tnFrom, 	ULONG destList, ULONG srcList);
 static LONG CopyMenuTree(struct MenuPrefsInst *inst,
 	Object *ListTreeDest, Object *ListTreeSrc,
 	struct MUI_NListtree_TreeNode *Src, struct MUI_NListtree_TreeNode *DestParent);
@@ -297,6 +306,12 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst);
 static void ParseToolTypes(struct MenuPrefsInst *inst, struct MUIP_ScalosPrefs_ParseToolTypes *ptt);
 static void InsertMenuRootEntries(struct MenuPrefsInst *inst);
 static Object *GetMenuEntryListtree(struct MenuPrefsInst *inst);
+static struct MUI_NListtree_TreeNode *GetParentNodeForMenu(struct MenuPrefsInst *inst, struct MUI_NListtree_TreeNode **PrevNode);
+static struct MUI_NListtree_TreeNode *GetParentNodeForMenuItem(struct MenuPrefsInst *inst, struct MUI_NListtree_TreeNode **PrevNode);
+static BOOL MayPasteOnto(struct MenuPrefsInst *inst,
+	struct MUI_NListtree_TreeNode *tnTo, struct MUI_NListtree_TreeNode *tnFrom);
+static struct MUI_NListtree_TreeNode *MayPasteBelow(struct MenuPrefsInst *inst,
+	struct MUI_NListtree_TreeNode *tnTo, struct MUI_NListtree_TreeNode *tnFrom);
 #if !defined(__SASC) && !defined(__MORPHOS__)
 static char *stpblk(const char *q);
 #if !defined(__amigaos4__)
@@ -377,6 +392,8 @@ static const struct Hook MenuPrefsHooks[] =
 	{ { NULL, NULL }, HOOKFUNC_DEF(AddMenuItemHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(RemoveEntryHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(AboutHookFunc), NULL },
+	{ { NULL, NULL }, HOOKFUNC_DEF(CollapseSelectedHookFunc), NULL },
+	{ { NULL, NULL }, HOOKFUNC_DEF(ExpandSelectedHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(CollapseAllHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(ExpandAllHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(CmdSelectedHookFunc), NULL },
@@ -385,6 +402,10 @@ static const struct Hook MenuPrefsHooks[] =
 	{ { NULL, NULL }, HOOKFUNC_DEF(SettingsChangedHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(AslIntuiMsgHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(HideObsoleteHookFunc), NULL },
+
+	{ { NULL, NULL }, HOOKFUNC_DEF(MenuCopyHookFunc), NULL },
+	{ { NULL, NULL }, HOOKFUNC_DEF(MenuCutHookFunc), NULL },
+	{ { NULL, NULL }, HOOKFUNC_DEF(MenuPasteHookFunc), NULL },
 };
 
 static struct Locale *MenuPrefsLocale;
@@ -407,65 +428,64 @@ static STRPTR CmdModeStrings[] =
 
 struct CommandTableEntry CommandsTable[] =
 	{
-	{ "backdrop",		MSGID_COM1NAME },
-	{ "executecommand",	MSGID_COM2NAME },
-	{ "redrawall",		MSGID_COM3NAME },
-	{ "updateall",		MSGID_COM4NAME },
-	{ "about",		MSGID_COM5NAME },
-	{ "quit",		MSGID_COM6NAME },
-	{ "makedir",		MSGID_COM7NAME },
-	{ "parent",		MSGID_COM8NAME },
-	{ "close",		MSGID_COM9NAME },
-	{ "update",		MSGID_COM10NAME },
-	{ "selectall",		MSGID_COM11NAME },
-	{ "cleanup",		MSGID_COM12NAME },
-	{ "snapshotwindow",	MSGID_COM13NAME },
-	{ "snapshotall",	MSGID_COM14NAME },
-	{ "showonlyicons",	MSGID_COM15NAME },
-	{ "showallfiles",	MSGID_COM16NAME },
-	{ "showdefault",	MSGID_COM48NAME },
-	{ "open",		MSGID_COM19NAME },
-	{ "openinnewwindow",    MSGID_COM_OPENNEWWINDOW },
-	{ "reset",		MSGID_COM20NAME },
-	{ "rename",		MSGID_COM21NAME },
-	{ "iconinfo",		MSGID_COM22NAME },
-	{ "iconproperties",	MSGID_COM_ICONPROPERTIES },
-	{ "windowproperties",	MSGID_COM_WINDOWPROPERTIES },
-	{ "snapshot",		MSGID_COM23NAME },
-	{ "unsnapshot",		MSGID_COM24NAME },
-	{ "leaveout",		MSGID_COM25NAME },
-	{ "putaway",		MSGID_COM26NAME },
-	{ "delete",		MSGID_COM27NAME },
-	{ "clone",		MSGID_COM28NAME },
-	{ "emptytrashcan",	MSGID_COM29NAME },
-	{ "lastmsg",		MSGID_COM30NAME },
-	{ "redraw",		MSGID_COM31NAME },
-	{ "iconify",		MSGID_COM32NAME },
-	{ "find",		MSGID_COM_FIND },
-	{ "formatdisk",		MSGID_COM33NAME },
-	{ "shutdown",		MSGID_COM34NAME },
-	{ "sizetofit",		MSGID_COM35NAME },
-	{ "thumbnailcachecleanup", MSGID_COM_THUMBNAILCACHECLEANUP },
-	{ "clearselection",	MSGID_COM36NAME },
-	{ "viewbyicon",		MSGID_COM17NAME },
-	{ "viewbytext",		MSGID_COM18NAME },
-	{ "viewbysize",		MSGID_COM37NAME },
-	{ "viewbydate",		MSGID_COM38NAME },
-	{ "viewbytype",		MSGID_COM42NAME },
-	{ "viewbydefault",	MSGID_COM47NAME },
-	{ "copy",		MSGID_COM39NAME },
-	{ "cut",		MSGID_COM40NAME },
-	{ "copyto",		MSGID_COM49NAME },
-	{ "moveto",		MSGID_COM50NAME },
-	{ "paste",		MSGID_COM41NAME },
-	{ "cleanupbyname",	MSGID_COM43NAME },
-	{ "cleanupbydate",	MSGID_COM44NAME },
-	{ "cleanupbysize",	MSGID_COM45NAME },
-	{ "cleanupbytype",	MSGID_COM46NAME },
-	{ "createthumbnail",	MSGID_COM51NAME },
-	{ "undo",		MSGID_COM_UNDO },
-	{ "redo",		MSGID_COM_REDO },
-
+	{ "about",			MSGID_COM5NAME },
+	{ "backdrop",			MSGID_COM1NAME },
+	{ "cleanup",			MSGID_COM12NAME },
+	{ "cleanupbydate",		MSGID_COM44NAME },
+	{ "cleanupbyname",		MSGID_COM43NAME },
+	{ "cleanupbysize",		MSGID_COM45NAME },
+	{ "cleanupbytype",		MSGID_COM46NAME },
+	{ "clearselection",		MSGID_COM36NAME },
+	{ "clone",			MSGID_COM28NAME },
+	{ "close",			MSGID_COM9NAME },
+	{ "copy",			MSGID_COM39NAME },
+	{ "copyto",			MSGID_COM49NAME },
+	{ "createthumbnail",		MSGID_COM51NAME },
+	{ "cut",			MSGID_COM40NAME },
+	{ "delete",			MSGID_COM27NAME },
+	{ "emptytrashcan",		MSGID_COM29NAME },
+	{ "executecommand",		MSGID_COM2NAME },
+	{ "find",			MSGID_COM_FIND },
+	{ "formatdisk",			MSGID_COM33NAME },
+	{ "iconify",			MSGID_COM32NAME },
+	{ "iconinfo",			MSGID_COM22NAME },
+	{ "iconproperties",		MSGID_COM_ICONPROPERTIES },
+	{ "lastmsg",			MSGID_COM30NAME },
+	{ "leaveout",			MSGID_COM25NAME },
+	{ "makedir",			MSGID_COM7NAME },
+	{ "moveto",			MSGID_COM50NAME },
+	{ "open",			MSGID_COM19NAME },
+	{ "openinnewwindow",    	MSGID_COM_OPENNEWWINDOW },
+	{ "parent",			MSGID_COM8NAME },
+	{ "paste",			MSGID_COM41NAME },
+	{ "putaway",			MSGID_COM26NAME },
+	{ "quit",			MSGID_COM6NAME },
+	{ "redo",			MSGID_COM_REDO },
+	{ "redraw",			MSGID_COM31NAME },
+	{ "redrawall",			MSGID_COM3NAME },
+	{ "rename",			MSGID_COM21NAME },
+	{ "reset",			MSGID_COM20NAME },
+	{ "selectall",			MSGID_COM11NAME },
+	{ "showallfiles",		MSGID_COM16NAME },
+	{ "showdefault",		MSGID_COM48NAME },
+	{ "showonlyicons",		MSGID_COM15NAME },
+	{ "shutdown",			MSGID_COM34NAME },
+	{ "sizetofit",			MSGID_COM35NAME },
+	{ "snapshot",			MSGID_COM23NAME },
+	{ "snapshotall",		MSGID_COM14NAME },
+	{ "snapshotwindow",		MSGID_COM13NAME },
+	{ "thumbnailcachecleanup", 	MSGID_COM_THUMBNAILCACHECLEANUP },
+	{ "undo",			MSGID_COM_UNDO },
+	{ "unsnapshot",			MSGID_COM24NAME },
+	{ "update",			MSGID_COM10NAME },
+	{ "updateall",			MSGID_COM4NAME },
+	{ "viewbydate",			MSGID_COM38NAME },
+	{ "viewbydefault",		MSGID_COM47NAME },
+	{ "viewbyicon",			MSGID_COM17NAME },
+	{ "viewbysize",			MSGID_COM37NAME },
+	{ "viewbytext",			MSGID_COM18NAME },
+	{ "viewbytype",			MSGID_COM42NAME },
+	{ "windowproperties",		MSGID_COM_WINDOWPROPERTIES },
 	};
 
 struct CommandTableEntry *CommandsArray[1 + Sizeof(CommandsTable)];
@@ -481,8 +501,15 @@ static struct NewMenu ContextMenus[] =
 	{  NM_SUB,  (STRPTR) MSGID_MENU_PROJECT_IMPORT_TD, 	(STRPTR) MSGID_MENU_PROJECT_IMPORT_TD_SHORT, 	0,	0, (APTR) HOOKNDX_ImportTD },
 	{  NM_SUB,  (STRPTR) MSGID_MENU_PROJECT_IMPORT_P, 	(STRPTR) MSGID_MENU_PROJECT_IMPORT_P_SHORT, 	0,	0, (APTR) HOOKNDX_ImportP },
 	{  NM_ITEM, NM_BARLABEL,				NULL, 						0,	0, NULL },
+	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_COLLAPSE,	 	NULL, 						NM_ITEMDISABLED,	0, (APTR) HOOKNDX_CollapseSelected },
+	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_EXPAND, 		NULL, 						NM_ITEMDISABLED,	0, (APTR) HOOKNDX_ExpandSelected },
+	{  NM_ITEM, NM_BARLABEL,				NULL, 						0,			0, NULL },
 	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_COLLAPSEALL, 	NULL, 						0,	0, (APTR) HOOKNDX_CollapseAll },
 	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_EXPANDALL, 	NULL, 						0,	0, (APTR) HOOKNDX_ExpandAll },
+	{  NM_ITEM, NM_BARLABEL,				NULL, 						0,	0, NULL },
+	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_COPY, 		NULL, 						0,	0, (APTR) HOOKNDX_MenuCopy },
+	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_CUT, 		NULL, 						0,	0, (APTR) HOOKNDX_MenuCut  },
+	{  NM_ITEM, (STRPTR) MSGID_MENU_EDIT_PASTE, 		NULL, 						NM_ITEMDISABLED,      0, (APTR) HOOKNDX_MenuPaste },
 	{  NM_ITEM, NM_BARLABEL,				NULL, 						0,	0, NULL },
 	{  NM_ITEM, (STRPTR) MSGID_MENU_SETTINGS_HIDEOBSOLETE, 	NULL, 						CHECKIT|MENUTOGGLE,	 0, (APTR) HOOKNDX_HideObsolete },
 	{  NM_ITEM, NM_BARLABEL,				NULL, 						0,	0, NULL },
@@ -496,6 +523,40 @@ static const LONG StopChunkList[] =
 	ID_PREF, ID_MENU,
 	};
 
+#define	ENTRYTYPE_MAX 	(1 + SCAMENUTYPE_ToolsMenu)
+
+//                                       dest           source
+static const BOOL MayPasteAfterMatrix[ENTRYTYPE_MAX][ENTRYTYPE_MAX] =
+	{
+	//    0      1      2      3      4
+	/* 0 SCAMENUTYPE_MainMenu */
+	{ FALSE, FALSE, FALSE, FALSE, FALSE, },
+	/* 1 SCAMENUTYPE_Menu */
+	{ FALSE,  TRUE,  TRUE, FALSE, FALSE, },
+	/* 2 SCAMENUTYPE_MenuItem */
+	{ FALSE,  TRUE,  TRUE,  TRUE, FALSE, },
+	/* 3 SCAMENUTYPE_Command */
+	{ FALSE, FALSE, FALSE,  TRUE, FALSE, },
+	/* 4 SCAMENUTYPE_ToolsMenu */
+	{ FALSE,  TRUE, FALSE, FALSE, FALSE, },
+	//    0      1      2      3      4
+	};
+//                                       dest           source
+static const BOOL MayPasteIntoMatrix[ENTRYTYPE_MAX][ENTRYTYPE_MAX] =
+	{
+	//    0      1      2      3      4
+	/* 0 SCAMENUTYPE_MainMenu */
+	{ FALSE,  TRUE, FALSE, FALSE, FALSE, },
+	/* 1 SCAMENUTYPE_Menu */
+	{ FALSE,  TRUE,  TRUE, FALSE, FALSE, },
+	/* 2 SCAMENUTYPE_MenuItem */
+	{ FALSE, FALSE, FALSE,  TRUE, FALSE, },
+	/* 3 SCAMENUTYPE_Command */
+	{ FALSE, FALSE, FALSE,  TRUE, FALSE, },
+	/* 4 SCAMENUTYPE_ToolsMenu */
+	{ FALSE,  TRUE,  TRUE, FALSE, FALSE, },
+	//    0      1      2      3      4
+	};
 //----------------------------------------------------------------------------
 
 void closePlugin(struct PluginBase *PluginBase)
@@ -840,8 +901,18 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 
 	inst->mpb_Objects[OBJNDX_ContextMenu] = MUI_MakeObject(MUIO_MenustripNM, ContextMenus, 0);
 
+	inst->mpb_Objects[OBJNDX_Menu_Copy] = (Object *) DoMethod(inst->mpb_Objects[OBJNDX_ContextMenu],
+			MUIM_FindUData, HOOKNDX_MenuCopy);
+	inst->mpb_Objects[OBJNDX_Menu_Cut] = (Object *) DoMethod(inst->mpb_Objects[OBJNDX_ContextMenu],
+			MUIM_FindUData, HOOKNDX_MenuCut);
+	inst->mpb_Objects[OBJNDX_Menu_Paste] = (Object *) DoMethod(inst->mpb_Objects[OBJNDX_ContextMenu],
+			MUIM_FindUData, HOOKNDX_MenuPaste);
 	inst->mpb_Objects[OBJNDX_Menu_HideObsolete] = (Object *) DoMethod(inst->mpb_Objects[OBJNDX_ContextMenu],
 			MUIM_FindUData, HOOKNDX_HideObsolete);
+	inst->mpb_Objects[OBJNDX_Menu_CollapseSelected] = (Object *) DoMethod(inst->mpb_Objects[OBJNDX_ContextMenu],
+			MUIM_FindUData, HOOKNDX_CollapseSelected);
+	inst->mpb_Objects[OBJNDX_Menu_ExpandSelected] = (Object *) DoMethod(inst->mpb_Objects[OBJNDX_ContextMenu],
+			MUIM_FindUData, HOOKNDX_ExpandSelected);
 
 	inst->mpb_Objects[OBJNDX_Group_Main] = VGroup,
 		MUIA_Background, MUII_PageBack,
@@ -850,185 +921,235 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 			MUIA_Frame, MUIV_Frame_Group,
 			MUIA_FrameTitle, GetLocString(MSGID_FRAMETITLE),
 
-			Child, inst->mpb_Objects[OBJNDX_MainListView] = NListviewObject,
-				MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_MainListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
-					MUIA_CycleChain, TRUE,
-					MUIA_ContextMenu, inst->mpb_Objects[OBJNDX_ContextMenu],
-					MUIA_NList_PrivateData, inst,
-					MUIA_NList_Format, ",",
-					InputListFrame,
-					MUIA_Background, MUII_ListBack,
-					MUIA_NListtree_DisplayHook, &inst->mpb_Hooks[HOOKNDX_TreeDisplay],
-					MUIA_NListtree_ConstructHook, &inst->mpb_Hooks[HOOKNDX_TreeConstruct],
-					MUIA_NListtree_DestructHook, &inst->mpb_Hooks[HOOKNDX_TreeDestruct],
-					MUIA_NListtree_DragDropSort, TRUE,
-					MUIA_NList_ShowDropMarks, TRUE,
-					MUIA_NListtree_AutoVisible, MUIV_NListtree_AutoVisible_Expand,
-					End,
-				MUIA_ObjectID, MAKE_ID('M','T','R','E'),
-				MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-				End,
-
-			Child, NListviewObject,
-				MUIA_ShowMe, FALSE,
-				MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_HiddenListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
-					MUIA_CycleChain, TRUE,
-					MUIA_NList_PrivateData, inst,
-					MUIA_NList_Format, ",",
-					InputListFrame,
-					MUIA_Background, MUII_ListBack,
-					MUIA_NListtree_DisplayHook, &inst->mpb_Hooks[HOOKNDX_TreeDisplay],
-					MUIA_NListtree_ConstructHook, &inst->mpb_Hooks[HOOKNDX_TreeConstruct],
-					MUIA_NListtree_DestructHook, &inst->mpb_Hooks[HOOKNDX_TreeDestruct],
-					MUIA_NListtree_DragDropSort, TRUE,
-					MUIA_NList_ShowDropMarks, TRUE,
-					MUIA_NListtree_AutoVisible, MUIV_NListtree_AutoVisible_Expand,
-					End,
-				MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-				End,
-
 			Child, HGroup,
-				Child, inst->mpb_Objects[OBJNDX_Lamp_Changed] = LampObject,
-					MUIA_Lamp_Type, MUIV_Lamp_Type_Huge, 
-					MUIA_Lamp_Color, MUIV_Lamp_Color_Off,
-					MUIA_ShortHelp, GetLocString(MSGID_SHORTHELP_LAMP_CHANGED),
-					End, //LampObject
-
-				Child, inst->mpb_Objects[OBJNDX_Group_Buttons1] = HGroup,
-					MUIA_Group_SameWidth, TRUE,
-					Child, inst->mpb_Objects[OBJNDX_NewMenuButton] = KeyButtonHelp(GetLocString(MSGID_NEWNAME), 
-							'm', GetLocString(MSGID_SHORTHELP_NEWMENUBUTTON)),
-					Child, inst->mpb_Objects[OBJNDX_NewItemButton] = KeyButtonHelp(GetLocString(MSGID_NEWINAME), 
-							'i', GetLocString(MSGID_SHORTHELP_NEWITEMBUTTON)),
-					Child, inst->mpb_Objects[OBJNDX_NewCommandButton] = KeyButtonHelp(GetLocString(MSGID_NEW2NAME), 
-							'c', GetLocString(MSGID_SHORTHELP_NEWCOMMANDBUTTON)),
-					Child, inst->mpb_Objects[OBJNDX_DelButton] = KeyButtonHelp(GetLocString(MSGID_DELNAME), 
-							'd', GetLocString(MSGID_SHORTHELP_DELBUTTON)),
-					End, //HGroup
-				End, //HGroup
-
-			Child, BalanceObject,
-				End, //Balance
-
-			Child, inst->mpb_Objects[OBJNDX_Group_Name] = HGroup,
-				Child, inst->mpb_Objects[OBJNDX_NameString] = StringObject,
-					MUIA_CycleChain, TRUE,
-					MUIA_Frame, MUIV_Frame_String,
-					MUIA_String_MaxLen, MAX_NAMESIZE,
-					End,
-				Child, inst->mpb_Objects[OBJNDX_Group_Hotkey] = HGroup,
-					MUIA_Weight, 0,
-					Child, Label(GetLocString(MSGID_HOTKEYNAME)),
-					Child, inst->mpb_Objects[OBJNDX_StringHotkey] = StringObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_String_MaxLen, 2,
-						MUIA_Frame, MUIV_Frame_String,
+				Child, VGroup,
+					Child, inst->mpb_Objects[OBJNDX_MainListView] = NListviewObject,
+						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_MainListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
+							MUIA_CycleChain, TRUE,
+							MUIA_ContextMenu, inst->mpb_Objects[OBJNDX_ContextMenu],
+							MUIA_NList_PrivateData, inst,
+							MUIA_NList_Format, ",",
+							InputListFrame,
+							MUIA_Background, MUII_ListBack,
+							MUIA_NListtree_DisplayHook, &inst->mpb_Hooks[HOOKNDX_TreeDisplay],
+							MUIA_NListtree_ConstructHook, &inst->mpb_Hooks[HOOKNDX_TreeConstruct],
+							MUIA_NListtree_DestructHook, &inst->mpb_Hooks[HOOKNDX_TreeDestruct],
+							MUIA_NListtree_DragDropSort, TRUE,
+							MUIA_NList_ShowDropMarks, TRUE,
+							MUIA_NListtree_AutoVisible, MUIV_NListtree_AutoVisible_Expand,
+							End,
+						MUIA_ObjectID, MAKE_ID('M','T','R','E'),
+						MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
 						End,
-					End,
-				End,
 
-			Child, HGroup,
-				Child, inst->mpb_Objects[OBJNDX_PopAsl_UnselectedImage] = PopaslObject,
-					MUIA_CycleChain, TRUE,
-					MUIA_ShortHelp, GetLocString(MSGID_POPASL_UNSELECTEDIMAGE_SHORTHELP),
-					MUIA_Popasl_Type, ASL_FileRequest,
-					MUIA_Popasl_StartHook, &inst->mpb_Hooks[HOOKNDX_ImagePopAslFileStart],
-					MUIA_Popstring_String, MUI_MakeObject(MUIO_String, NULL, MAX_COMMANDNAME),
-					MUIA_Popstring_Button, PopButton(MUII_PopFile),
-					End, //PopaslObject
+					Child, NListviewObject,
+						MUIA_ShowMe, FALSE,
+						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_HiddenListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
+							MUIA_CycleChain, TRUE,
+							MUIA_NList_PrivateData, inst,
+							MUIA_NList_Format, ",",
+							InputListFrame,
+							MUIA_Background, MUII_ListBack,
+							MUIA_NListtree_DisplayHook, &inst->mpb_Hooks[HOOKNDX_TreeDisplay],
+							MUIA_NListtree_ConstructHook, &inst->mpb_Hooks[HOOKNDX_TreeConstruct],
+							MUIA_NListtree_DestructHook, &inst->mpb_Hooks[HOOKNDX_TreeDestruct],
+							End,
+						MUIA_Listview_DragType, MUIV_Listview_DragType_None,
+						End,
 
-				Child, inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
-					MUIA_ShortHelp, GetLocString(MSGID_SAMPLE_UNSELECTEDIMAGE_SHORTHELP),
-					MUIA_ScaDtpic_Name,  (ULONG) "",
-					End, //DataTypesMCCObject
+					Child, NListviewObject,
+						MUIA_ShowMe, FALSE,
+						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_ListTreeClipboard] = NewObject(myNListTreeClass->mcc_Class, 0,
+							MUIA_CycleChain, TRUE,
+							MUIA_NList_PrivateData, inst,
+							MUIA_NList_Format, ",",
+							InputListFrame,
+							MUIA_Background, MUII_ListBack,
+							MUIA_NListtree_DisplayHook, &inst->mpb_Hooks[HOOKNDX_TreeDisplay],
+							MUIA_NListtree_ConstructHook, &inst->mpb_Hooks[HOOKNDX_TreeConstruct],
+							MUIA_NListtree_DestructHook, &inst->mpb_Hooks[HOOKNDX_TreeDestruct],
+							End,
+						MUIA_Listview_DragType, MUIV_Listview_DragType_None,
+						End,
+
+					End, //VGroup
 
 				Child, BalanceObject,
 					End, //Balance
 
-				Child, inst->mpb_Objects[OBJNDX_PopAsl_SelectedImage] = PopaslObject,
-					MUIA_CycleChain, TRUE,
-					MUIA_ShortHelp, GetLocString(MSGID_POPASL_SELECTEDIMAGE_SHORTHELP),
-					MUIA_Popasl_Type, ASL_FileRequest,
-					MUIA_Popasl_StartHook, &inst->mpb_Hooks[HOOKNDX_ImagePopAslFileStart],
-					MUIA_Popstring_String, MUI_MakeObject(MUIO_String, NULL, MAX_COMMANDNAME),
-					MUIA_Popstring_Button, PopButton(MUII_PopFile),
-					End, //PopaslObject
+				Child, VGroup,
 
-				Child, inst->mpb_Objects[OBJNDX_DtImage_SelectedImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
-					MUIA_ShortHelp, GetLocString(MSGID_SAMPLE_SELECTEDIMAGE_SHORTHELP),
-					MUIA_ScaDtpic_Name,  (ULONG) "",
-					End, //DataTypesMCCObject
+					Child, inst->mpb_Objects[OBJNDX_Group_Name] = VGroup,
+						Child, VGroup,
+							Child, LLabel(GetLocString(MSGID_ENTRY_STRING_NAME)),
+							Child, inst->mpb_Objects[OBJNDX_NameString] = StringObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Frame, MUIV_Frame_String,
+								MUIA_String_MaxLen, MAX_NAMESIZE,
+								End,
+							End, //VGroup
+						Child, HGroup,
+							MUIA_Weight, 0,
+							Child, Label(GetLocString(MSGID_HOTKEYNAME)),
+							Child, inst->mpb_Objects[OBJNDX_StringHotkey] = StringObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_String_MaxLen, 2,
+								MUIA_Weight, 10,
+								MUIA_Frame, MUIV_Frame_String,
+								End,
+							End,
+						Child, HVSpace,
+						End, //VGroup
 
+					Child, HVSpace,
+
+					Child, ColGroup(2),
+						MUIA_FrameTitle, GetLocString(MSGID_ENTRY_GROUP_UNSELECTEDIMAGE),
+						MUIA_Background, MUII_GroupBack,
+						GroupFrame,
+
+						Child, inst->mpb_Objects[OBJNDX_PopAsl_UnselectedImage] = PopaslObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_ShortHelp, GetLocString(MSGID_POPASL_UNSELECTEDIMAGE_SHORTHELP),
+							MUIA_Popasl_Type, ASL_FileRequest,
+							MUIA_Popasl_StartHook, &inst->mpb_Hooks[HOOKNDX_ImagePopAslFileStart],
+							MUIA_Popstring_String, MUI_MakeObject(MUIO_String, NULL, MAX_COMMANDNAME),
+							MUIA_Popstring_Button, PopButton(MUII_PopFile),
+							End, //PopaslObject
+
+						Child, inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
+							MUIA_ShortHelp, GetLocString(MSGID_SAMPLE_UNSELECTEDIMAGE_SHORTHELP),
+							MUIA_ScaDtpic_Name,  (ULONG) "",
+							End, //DataTypesMCCObject
+						End, //ColGroup
+
+					Child, ColGroup(2),
+						MUIA_FrameTitle, GetLocString(MSGID_ENTRY_GROUP_SELECTEDIMAGE),
+						MUIA_Background, MUII_GroupBack,
+						GroupFrame,
+
+						Child, inst->mpb_Objects[OBJNDX_PopAsl_SelectedImage] = PopaslObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_ShortHelp, GetLocString(MSGID_POPASL_SELECTEDIMAGE_SHORTHELP),
+							MUIA_Popasl_Type, ASL_FileRequest,
+							MUIA_Popasl_StartHook, &inst->mpb_Hooks[HOOKNDX_ImagePopAslFileStart],
+							MUIA_Popstring_String, MUI_MakeObject(MUIO_String, NULL, MAX_COMMANDNAME),
+							MUIA_Popstring_Button, PopButton(MUII_PopFile),
+							End, //PopaslObject
+
+						Child, inst->mpb_Objects[OBJNDX_DtImage_SelectedImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
+							MUIA_ShortHelp, GetLocString(MSGID_SAMPLE_SELECTEDIMAGE_SHORTHELP),
+							MUIA_ScaDtpic_Name,  (ULONG) "",
+							End, //DataTypesMCCObject
+
+						End, //ColGroup
+
+					Child, HVSpace,
+
+					Child, inst->mpb_Objects[OBJNDX_Group_CmdProperties] = VGroup,
+						MUIA_FrameTitle, GetLocString(MSGID_MENU_GROUP_COMMAND_PROPERTIES),
+						MUIA_Background, MUII_GroupBack,
+						GroupFrame,
+
+						Child, inst->mpb_Objects[OBJNDX_Group_String] = VGroup,
+							Child, inst->mpb_Objects[OBJNDX_CycleGad] = CycleObject,
+								MUIA_Cycle_Entries, CmdModeStrings,
+								MUIA_Weight, 5,
+								MUIA_CycleChain, TRUE,
+								End,
+
+							Child, HGroup,
+								Child, inst->mpb_Objects[OBJNDX_PopObject] = PopobjectObject,
+									MUIA_ShowMe, FALSE,
+									MUIA_CycleChain, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopUp),
+									MUIA_Popobject_Object, inst->mpb_Objects[OBJNDX_CmdListView] = NListviewObject,
+										MUIA_NListview_NList, NListObject,
+											InputListFrame,
+											MUIA_Background, MUII_ListBack,
+											MUIA_NList_Format, ",",
+											MUIA_NList_ConstructHook2, &inst->mpb_Hooks[HOOKNDX_CmdListConstruct],
+											MUIA_NList_DestructHook2, &inst->mpb_Hooks[HOOKNDX_CmdListDestruct],
+											MUIA_NList_DisplayHook2, &inst->mpb_Hooks[HOOKNDX_CmdListDisplay],
+											MUIA_NList_CompareHook2, &inst->mpb_Hooks[HOOKNDX_CmdListCompare],
+											MUIA_NList_AdjustWidth, TRUE,
+											MUIA_NList_SortType, 1,
+											MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 1,
+											MUIA_NList_SourceArray, CommandsArray,
+										End, //NListObject
+									End, //NListviewObject
+								End, //PopobjectObject
+
+								Child, inst->mpb_Objects[OBJNDX_Popbutton] = PopButton(MUII_PopUp),
+
+								Child, inst->mpb_Objects[OBJNDX_StringCmd] = StringObject,
+									MUIA_CycleChain, TRUE,
+									MUIA_String_MaxLen, MAX_LINESIZE,
+									MUIA_Frame, MUIV_Frame_String,
+									End,
+								End, //HGroup
+							End, //VGroup
+
+						Child, HVSpace,
+
+						Child, ColGroup(4),
+							Child, HVSpace,
+
+							Child, Label(GetLocString(MSGID_ARGSNAME)),
+							Child, inst->mpb_Objects[OBJNDX_CheckArgs] = CheckMark(FALSE),
+
+							Child, HVSpace,
+							Child, HVSpace,
+
+							Child, Label(GetLocString(MSGID_STACKNAME)),
+							Child, inst->mpb_Objects[OBJNDX_StringStack] = StringObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Frame, MUIV_Frame_String,
+								MUIA_Weight, 30,
+								MUIA_String_Accept, "0123456789",
+								MUIA_String_MaxLen, 10,
+								MUIA_String_Integer, DEFAULT_STACKSIZE,
+								End,
+
+							Child, HVSpace,
+							End, //ColGroup
+
+						Child, ColGroup(2),
+							Child, Label(GetLocString(MSGID_PRIORITY_SLIDER_NAME)),
+							Child, inst->mpb_Objects[OBJNDX_SliderPriority] = SliderObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Group_Horiz, TRUE,
+								MUIA_Numeric_Min, -128,
+								MUIA_Numeric_Max, 127,
+								MUIA_Numeric_Value, 0,
+								MUIA_ShortHelp, GetLocString(MSGID_PRIORITY_SLIDER_BUBBLE),
+								End,
+							End, //ColGroup
+						End, //VGroup
+					Child, HVSpace,
+					End, //VGroup
 				End, //HGroup
 
-			Child, VGroup,
-				MUIA_FrameTitle, GetLocString(MSGID_MENU_GROUP_COMMAND_PROPERTIES),
-				MUIA_Background, MUII_GroupBack,
-				GroupFrame,
+				Child, HGroup,
+					Child, inst->mpb_Objects[OBJNDX_Lamp_Changed] = LampObject,
+						MUIA_Lamp_Type, MUIV_Lamp_Type_Huge,
+						MUIA_Lamp_Color, MUIV_Lamp_Color_Off,
+						MUIA_ShortHelp, GetLocString(MSGID_SHORTHELP_LAMP_CHANGED),
+						End, //LampObject
 
-				Child, inst->mpb_Objects[OBJNDX_Group_String] = HGroup,
-					Child, inst->mpb_Objects[OBJNDX_CycleGad] = CycleObject,
-						MUIA_Cycle_Entries, CmdModeStrings,
-						MUIA_Weight, 5,
-						MUIA_CycleChain, TRUE,
-						End,
-
-					Child, inst->mpb_Objects[OBJNDX_PopObject] = PopobjectObject,
-						MUIA_ShowMe, FALSE,
-						MUIA_CycleChain, TRUE,
-						MUIA_Popstring_Button, PopButton(MUII_PopUp),
-						MUIA_Popobject_Object, inst->mpb_Objects[OBJNDX_CmdListView] = NListviewObject,
-							MUIA_NListview_NList, NListObject,
-								InputListFrame,
-								MUIA_Background, MUII_ListBack,
-								MUIA_NList_Format, ",",
-								MUIA_NList_ConstructHook2, &inst->mpb_Hooks[HOOKNDX_CmdListConstruct],
-								MUIA_NList_DestructHook2, &inst->mpb_Hooks[HOOKNDX_CmdListDestruct],
-								MUIA_NList_DisplayHook2, &inst->mpb_Hooks[HOOKNDX_CmdListDisplay],
-								MUIA_NList_CompareHook2, &inst->mpb_Hooks[HOOKNDX_CmdListCompare],
-								MUIA_NList_AdjustWidth, TRUE,
-								MUIA_NList_SortType, 1,
-								MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 1,
-								MUIA_NList_SourceArray, CommandsArray,
-							End, //NListObject
-						End, //NListviewObject
-					End, //PopobjectObject
-
-					Child, inst->mpb_Objects[OBJNDX_Popbutton] = PopButton(MUII_PopUp),
-
-					Child, inst->mpb_Objects[OBJNDX_StringCmd] = StringObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_String_MaxLen, MAX_LINESIZE,
-						MUIA_Frame, MUIV_Frame_String,
-						End,
-					End,
-
-				Child, inst->mpb_Objects[OBJNDX_Group_CmdMisc] = HGroup,
-					Child, Label(GetLocString(MSGID_ARGSNAME)),
-					Child, inst->mpb_Objects[OBJNDX_CheckArgs] = CheckMark(FALSE),
-
-					Child, Label(GetLocString(MSGID_STACKNAME)),
-					Child, inst->mpb_Objects[OBJNDX_StringStack] = StringObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Frame, MUIV_Frame_String,
-						MUIA_Weight, 30,
-						MUIA_String_Accept, "0123456789",
-						MUIA_String_MaxLen, 10,
-						MUIA_String_Integer, DEFAULT_STACKSIZE,
-						End,
-
-					Child, Label(GetLocString(MSGID_PRIORITY_SLIDER_NAME)),
-					Child, inst->mpb_Objects[OBJNDX_SliderPriority] = SliderObject,
-						MUIA_CycleChain, TRUE,
-						MUIA_Group_Horiz, TRUE,
-						MUIA_Numeric_Min, -128,
-						MUIA_Numeric_Max, 127,
-						MUIA_Numeric_Value, 0,
-						MUIA_ShortHelp, GetLocString(MSGID_PRIORITY_SLIDER_BUBBLE),
-						End,
-					End,
-				End, //VGroup
-			End,
+					Child, inst->mpb_Objects[OBJNDX_Group_Buttons1] = HGroup,
+						MUIA_Group_SameWidth, TRUE,
+						Child, inst->mpb_Objects[OBJNDX_NewMenuButton] = KeyButtonHelp(GetLocString(MSGID_NEWNAME),
+								'm', GetLocString(MSGID_SHORTHELP_NEWMENUBUTTON)),
+						Child, inst->mpb_Objects[OBJNDX_NewItemButton] = KeyButtonHelp(GetLocString(MSGID_NEWINAME),
+								'i', GetLocString(MSGID_SHORTHELP_NEWITEMBUTTON)),
+						Child, inst->mpb_Objects[OBJNDX_NewCommandButton] = KeyButtonHelp(GetLocString(MSGID_NEW2NAME),
+								'c', GetLocString(MSGID_SHORTHELP_NEWCOMMANDBUTTON)),
+						Child, inst->mpb_Objects[OBJNDX_DelButton] = KeyButtonHelp(GetLocString(MSGID_DELNAME),
+								'd', GetLocString(MSGID_SHORTHELP_DELBUTTON)),
+						End, //HGroup
+					End, //HGroup
+			End, //VGroup
 
 		MUIA_ContextMenu, inst->mpb_Objects[OBJNDX_ContextMenu],
 	End;
@@ -2054,6 +2175,7 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 
 		if (mle)
 			{
+			struct MUI_NListtree_TreeNode *tnShadow;
 			BOOL MayAddNewMenu, MayAddNewItem, MayAddCommand;
 			BOOL MayChangeName, MayDelete, MayHaveHotkey;
 			BOOL MayHaveImage;
@@ -2101,6 +2223,19 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 					MUIM_NListtree_GetEntry, TreeNode, MUIV_NListtree_GetEntry_Position_Parent, 0);
 				}
 
+			// Cannot cut or copy entire main/tool/popup menus
+			if ((SCAMENUTYPE_MainMenu == mle->llist_EntryType)
+				|| (SCAMENUTYPE_ToolsMenu == mle->llist_EntryType))
+				{
+				set(inst->mpb_Objects[OBJNDX_Menu_Copy], MUIA_Menuitem_Enabled, FALSE);
+				set(inst->mpb_Objects[OBJNDX_Menu_Cut], MUIA_Menuitem_Enabled, FALSE);
+				}
+			else
+				{
+				set(inst->mpb_Objects[OBJNDX_Menu_Copy], MUIA_Menuitem_Enabled, TRUE);
+				set(inst->mpb_Objects[OBJNDX_Menu_Cut], MUIA_Menuitem_Enabled, TRUE);
+				}
+
 			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: tn_Name=%08lx\n", __LINE__, TreeNode->tn_Name));
 
 			set(inst->mpb_Objects[OBJNDX_NameString], MUIA_String_Contents, (ULONG) TreeNode->tn_Name);
@@ -2118,9 +2253,38 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 			set(inst->mpb_Objects[OBJNDX_PopAsl_UnselectedImage], MUIA_Disabled, !MayHaveImage);
 			set(inst->mpb_Objects[OBJNDX_PopAsl_SelectedImage], MUIA_Disabled, !MayHaveImage);
 
+			set(inst->mpb_Objects[OBJNDX_Menu_CollapseSelected], MUIA_Menuitem_Enabled, TRUE);
+			set(inst->mpb_Objects[OBJNDX_Menu_ExpandSelected], MUIA_Menuitem_Enabled, TRUE);
+
 			set(inst->mpb_Objects[OBJNDX_StringHotkey], MUIA_Disabled, !MayHaveHotkey);
 			set(inst->mpb_Objects[OBJNDX_Group_String], MUIA_Disabled, (SCAMENUTYPE_Command != mle->llist_EntryType));
-			set(inst->mpb_Objects[OBJNDX_Group_CmdMisc], MUIA_Disabled, (SCAMENUTYPE_Command != mle->llist_EntryType));
+			set(inst->mpb_Objects[OBJNDX_Group_CmdProperties], MUIA_Disabled, (SCAMENUTYPE_Command != mle->llist_EntryType));
+
+			tnShadow = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_ListTreeClipboard],
+				MUIM_NListtree_GetEntry,
+				MUIV_NListtree_Insert_ListNode_Root,
+				MUIV_NListtree_GetEntry_Position_Head,
+				0);
+
+			if (tnShadow)
+				{
+				if (MayPasteBelow(inst, TreeNode, tnShadow))
+					{
+					set(inst->mpb_Objects[OBJNDX_Menu_Paste], MUIA_Menuitem_Enabled, TRUE);
+					}
+				else if (MayPasteOnto(inst, TreeNode, tnShadow))
+					{
+					set(inst->mpb_Objects[OBJNDX_Menu_Paste], MUIA_Menuitem_Enabled, TRUE);
+					}
+				else
+					{
+					set(inst->mpb_Objects[OBJNDX_Menu_Paste], MUIA_Menuitem_Enabled, FALSE);
+					}
+				}
+			else
+				{
+				set(inst->mpb_Objects[OBJNDX_Menu_Paste], MUIA_Menuitem_Enabled, FALSE);
+				}
 
 			if (SCAMENUTYPE_Command == mle->llist_EntryType)
 				{
@@ -2142,13 +2306,21 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 		}
 	else
 		{
+		set(inst->mpb_Objects[OBJNDX_Menu_Copy], MUIA_Menuitem_Enabled, FALSE);
+		set(inst->mpb_Objects[OBJNDX_Menu_Cut], MUIA_Menuitem_Enabled, FALSE);
+		set(inst->mpb_Objects[OBJNDX_Menu_CollapseSelected], MUIA_Menuitem_Enabled, FALSE);
+		set(inst->mpb_Objects[OBJNDX_Menu_ExpandSelected], MUIA_Menuitem_Enabled, FALSE);
+
 		set(inst->mpb_Objects[OBJNDX_NameString], MUIA_Disabled, TRUE);
 		set(inst->mpb_Objects[OBJNDX_StringHotkey], MUIA_Disabled, TRUE);
 		set(inst->mpb_Objects[OBJNDX_DelButton], MUIA_Disabled, TRUE);
 		set(inst->mpb_Objects[OBJNDX_Group_String], MUIA_Disabled, TRUE);
-		set(inst->mpb_Objects[OBJNDX_Group_CmdMisc], MUIA_Disabled, TRUE);
+		set(inst->mpb_Objects[OBJNDX_Group_CmdProperties], MUIA_Disabled, TRUE);
 		set(inst->mpb_Objects[OBJNDX_PopAsl_UnselectedImage], MUIA_Disabled, TRUE);
 		set(inst->mpb_Objects[OBJNDX_PopAsl_SelectedImage], MUIA_Disabled, TRUE);
+#if 0
+		set(inst->mpb_Objects[OBJNDX_Menu_Paste], MUIA_Menuitem_Enabled, FALSE);
+#endif
 		}
 
 	inst->mpb_QuietFlag = FALSE;
@@ -2280,37 +2452,13 @@ static SAVEDS(APTR) INTERRUPT PopButtonHookFunc(struct Hook *hook, Object *o, Ms
 
 static SAVEDS(APTR) INTERRUPT AddMenuHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	BOOL Finished = FALSE;
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *ParentNode;
-	struct MUI_NListtree_TreeNode *PrevNode = (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail;
+	struct MUI_NListtree_TreeNode *PrevNode;
 
 	SetChangedFlag(inst, TRUE);
 
-	ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
-		MUIM_NListtree_GetEntry, 0, MUIV_NListtree_GetEntry_Position_Active, 0);
-
-	while (ParentNode && !Finished)
-		{
-		struct MenuListEntry *mle = (struct MenuListEntry *) ParentNode->tn_User;
-
-		switch (mle->llist_EntryType)
-			{
-		case SCAMENUTYPE_MainMenu:
-		case SCAMENUTYPE_Menu:
-		case SCAMENUTYPE_ToolsMenu:
-			Finished = TRUE;
-			break;
-
-		case SCAMENUTYPE_MenuItem:
-		case SCAMENUTYPE_Command:
-			PrevNode = ParentNode;
-			ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
-				MUIM_NListtree_GetEntry, ParentNode, 
-				MUIV_NListtree_GetEntry_Position_Parent, 0);
-			break;
-			}
-		}
+	ParentNode = GetParentNodeForMenu(inst, &PrevNode);
 
 	DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 		MUIM_NListtree_Insert, GetLocString(MSGID_NEW_MENU),
@@ -2387,31 +2535,11 @@ static SAVEDS(APTR) INTERRUPT AddMenuItemHookFunc(struct Hook *hook, Object *o, 
 {
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *ParentNode;
-	struct MUI_NListtree_TreeNode *PrevNode = (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail;
+	struct MUI_NListtree_TreeNode *PrevNode;
 
 	SetChangedFlag(inst, TRUE);
 
-	ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
-		MUIM_NListtree_GetEntry, 0, MUIV_NListtree_GetEntry_Position_Active, 0);
-
-	while (ParentNode)
-		{
-		struct MenuListEntry *mle = (struct MenuListEntry *) ParentNode->tn_User;
-
-		if ((SCAMENUTYPE_MainMenu == mle->llist_EntryType)
-			&& (mle->llist_Flags & LLISTFLGF_MayNotHaveChildren))
-			break;
-
-		if (SCAMENUTYPE_Menu == mle->llist_EntryType)
-			break;
-		if (SCAMENUTYPE_ToolsMenu == mle->llist_EntryType)
-			break;
-
-		PrevNode = ParentNode;
-		ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
-			MUIM_NListtree_GetEntry, ParentNode, 
-			MUIV_NListtree_GetEntry_Position_Parent, 0);
-		}
+	ParentNode = GetParentNodeForMenuItem(inst, &PrevNode);
 
 	if (ParentNode)
 		{
@@ -3868,6 +3996,112 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 }
 
 
+//----------------------------------------------------------------------------
+
+static SAVEDS(APTR) INTERRUPT CollapseSelectedHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
+	struct MUI_NListtree_TreeNode *tn;
+
+	set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
+
+	tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry,
+		MUIV_NListtree_GetEntry_ListNode_Active,
+		MUIV_NListtree_GetEntry_Position_Active,
+		0);
+	d1(kprintf("%s/%ld: active tn=%08lx  <%s>\n", __FUNC__, __LINE__, tn, tn ? tn->tn_Name : (STRPTR) ""));
+
+	if (tn)
+		{
+		struct MUI_NListtree_TreeNode *tnChild;
+
+		tnChild = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+			MUIM_NListtree_GetEntry,
+			tn,
+			MUIV_NListtree_GetEntry_Position_Head,
+			0);
+		d1(kprintf("%s/%ld: Head tn=%08lx  <%s>\n", __FUNC__, __LINE__, tnChild, tnChild ? tnChild->tn_Name : (STRPTR) ""));
+
+		if (tnChild)
+			{
+			set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Active, (ULONG) tnChild);
+
+			DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+				MUIM_NListtree_Close,
+				MUIV_NListtree_Close_ListNode_Active,
+				MUIV_NListtree_Close_TreeNode_All,
+				0);
+			}
+
+		set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Active, (ULONG) tn);
+		}
+
+	DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_Close,
+		MUIV_NListtree_Close_ListNode_Active,
+		tn,
+		0);
+
+	set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_None);
+
+	return NULL;
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(APTR) INTERRUPT ExpandSelectedHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
+	struct MUI_NListtree_TreeNode *tn;
+
+	set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
+
+	tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry,
+		MUIV_NListtree_GetEntry_ListNode_Active,
+		MUIV_NListtree_GetEntry_Position_Active,
+		0);
+	d1(kprintf("%s/%ld: active tn=%08lx  <%s>\n", __FUNC__, __LINE__, tn, tn ? tn->tn_Name : (STRPTR) ""));
+
+	DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_Open,
+		MUIV_NListtree_Open_ListNode_Active,
+		MUIV_NListtree_Open_TreeNode_Active,
+		0);
+
+	if (tn)
+		{
+		struct MUI_NListtree_TreeNode *tnChild;
+
+		tnChild = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+			MUIM_NListtree_GetEntry,
+			tn,
+			MUIV_NListtree_GetEntry_Position_Head,
+			0);
+		d1(kprintf("%s/%ld: Head tn=%08lx  <%s>\n", __FUNC__, __LINE__, tnChild, tnChild ? tnChild->tn_Name : (STRPTR) ""));
+
+		if (tnChild)
+			{
+			set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Active, (ULONG) tnChild);
+
+			DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+				MUIM_NListtree_Open,
+				MUIV_NListtree_Open_ListNode_Active,
+				MUIV_NListtree_Open_TreeNode_All,
+				0);
+			}
+
+		set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Active, (ULONG) tn);
+		}
+
+	set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_None);
+
+	return NULL;
+}
+
+//----------------------------------------------------------------------------
+
 static SAVEDS(APTR) INTERRUPT CollapseAllHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
@@ -3878,6 +4112,7 @@ static SAVEDS(APTR) INTERRUPT CollapseAllHookFunc(struct Hook *hook, Object *o, 
 	return 0;
 }
 
+//----------------------------------------------------------------------------
 
 static SAVEDS(APTR) INTERRUPT ExpandAllHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
@@ -3889,6 +4124,7 @@ static SAVEDS(APTR) INTERRUPT ExpandAllHookFunc(struct Hook *hook, Object *o, Ms
 	return 0;
 }
 
+//----------------------------------------------------------------------------
 
 static SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
@@ -3908,6 +4144,7 @@ static SAVEDS(APTR) INTERRUPT CmdSelectedHookFunc(struct Hook *hook, Object *o, 
 	return 0;
 }
 
+//----------------------------------------------------------------------------
 
 static SAVEDS(APTR) INTERRUPT ContextMenuTriggerHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
@@ -4127,6 +4364,139 @@ static SAVEDS(void) INTERRUPT HideObsoleteHookFunc(struct Hook *hook, Object *o,
 
 //----------------------------------------------------------------------------
 
+static SAVEDS(void) INTERRUPT MenuCopyHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
+	struct MUI_NListtree_TreeNode *TreeNode;
+
+	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: START\n", __LINE__));
+
+	if (inst->mpb_QuietFlag)
+		return;
+
+	TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry,
+		MUIV_NListtree_GetEntry_ListNode_Active,
+		MUIV_NListtree_GetEntry_Position_Active, 0);
+
+	if (TreeNode)
+		{
+		DoMethod(inst->mpb_Objects[OBJNDX_ListTreeClipboard], MUIM_NListtree_Clear);
+
+		CopyFileTypesEntry(inst,
+			(struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_ListNode_Root,
+			(struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail,
+			TreeNode,
+			OBJNDX_ListTreeClipboard,
+			OBJNDX_MainListTree);
+		}
+
+	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: END\n", __LINE__));
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) INTERRUPT MenuCutHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
+	struct MUI_NListtree_TreeNode *TreeNode;
+
+	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: START\n", __LINE__));
+
+	if (inst->mpb_QuietFlag)
+		return;
+
+	TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry,
+		MUIV_NListtree_GetEntry_ListNode_Active,
+		MUIV_NListtree_GetEntry_Position_Active, 0);
+
+	if (TreeNode)
+		{
+		DoMethod(inst->mpb_Objects[OBJNDX_ListTreeClipboard], MUIM_NListtree_Clear);
+
+		CopyFileTypesEntry(inst,
+			(struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_ListNode_Root,
+			(struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail,
+			TreeNode,
+			OBJNDX_ListTreeClipboard,
+			OBJNDX_MainListTree);
+
+		DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], MUIM_NListtree_Remove,
+			MUIV_NListtree_Remove_ListNode_Active,
+			MUIV_NListtree_Remove_TreeNode_Active, 0);
+		}
+
+	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: END\n", __LINE__));
+}
+
+//----------------------------------------------------------------------------
+
+static SAVEDS(void) INTERRUPT MenuPasteHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
+	struct MUI_NListtree_TreeNode *tn;
+
+	d2(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry,
+		MUIV_NListtree_GetEntry_ListNode_Active,
+		MUIV_NListtree_GetEntry_Position_Active,
+		0);
+	d1(kprintf("%s/%ld: active tn=%08lx  <%s>\n", __FUNC__, __LINE__, tn, tn ? tn->tn_Name : (STRPTR) ""));
+
+	if (tn)
+		{
+		struct MUI_NListtree_TreeNode *tnParent;
+		struct MUI_NListtree_TreeNode *tnShadow;
+
+		tnParent = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+			MUIM_NListtree_GetEntry,
+			tn,
+			MUIV_NListtree_GetEntry_Position_Parent,
+			0);
+
+		tnShadow = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_ListTreeClipboard],
+			MUIM_NListtree_GetEntry,
+			MUIV_NListtree_Insert_ListNode_Root,
+			MUIV_NListtree_GetEntry_Position_Head,
+			0);
+
+		set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
+
+		if (MayPasteBelow(inst, tn, tnShadow))
+			{
+			CopyFileTypesEntry(inst,
+				tnParent, tn,
+				tnShadow,
+				OBJNDX_MainListTree, OBJNDX_ListTreeClipboard);
+
+//			  EntryHasChanged(inst, tnParent);
+			}
+		else if (MayPasteOnto(inst, tn, tnShadow))
+			{
+			CopyFileTypesEntry(inst,
+				tn, (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail,
+				tnShadow,
+				OBJNDX_MainListTree, OBJNDX_ListTreeClipboard);
+
+//			  EntryHasChanged(inst, tn);
+			}
+
+		set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_None);
+
+		DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+			MUIM_NListtree_Redraw,
+			tn,
+			0);
+		}
+
+	d2(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+}
+
+//----------------------------------------------------------------------------
+
 static struct MUI_NListtree_TreeNode *MoveMenuTree(struct MenuPrefsInst *inst,
 	ULONG DestListtreeIndex, ULONG SrcListtreeIndex, ULONG EntryIndex)
 {
@@ -4157,6 +4527,55 @@ static struct MUI_NListtree_TreeNode *MoveMenuTree(struct MenuPrefsInst *inst,
 		}
 
 	return NewNode;
+}
+
+//----------------------------------------------------------------------------
+
+static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct MenuPrefsInst *inst,
+	struct MUI_NListtree_TreeNode *tnToListNode, struct MUI_NListtree_TreeNode *tnToPrevNode,
+	struct MUI_NListtree_TreeNode *tnFrom, 	ULONG destList, ULONG srcList)
+{
+	struct MenuListEntry *fteFrom = (struct MenuListEntry *) tnFrom->tn_User;
+	struct MenuListEntry *fteTo;
+	struct MUI_NListtree_TreeNode *tnNew;
+	struct MUI_NListtree_TreeNode *tnChild;
+
+	if (NULL == tnFrom)
+		return NULL;
+
+	tnChild = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[srcList],
+		MUIM_NListtree_GetEntry,
+		tnFrom,
+		MUIV_NListtree_GetEntry_Position_Head,
+		0);
+
+	tnNew = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[destList],
+		MUIM_NListtree_Insert,
+		tnFrom->tn_Name, NULL,
+		tnToListNode,
+		tnToPrevNode,
+		tnFrom->tn_Flags);
+
+	fteTo = (struct MenuListEntry *) tnNew->tn_User;
+	fteTo->llist_EntryType = fteFrom->llist_EntryType;
+
+	// Copy Children
+	while (tnChild)
+		{
+		d1(kprintf("%s/%ld: tnChild=%08lx <%s>\n", __FUNC__, __LINE__, tnChild, tnChild->tn_Name));
+
+		CopyFileTypesEntry(inst,
+			tnNew, (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail,
+			tnChild, destList, srcList);
+
+		tnChild = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[srcList],
+			MUIM_NListtree_GetEntry,
+			tnChild,
+			MUIV_NListtree_GetEntry_Position_Next,
+			0);
+		}
+
+	return tnNew;
 }
 
 //----------------------------------------------------------------------------
@@ -4413,11 +4832,13 @@ static ULONG GetMaxCountForEntry(enum MenuEntryType type)
 		}
 }
 
+//----------------------------------------------------------------------------
 
 void _XCEXIT(long x)
 {
 }
 
+//----------------------------------------------------------------------------
 
 static void SwitchPopButton(struct MenuPrefsInst *inst, UBYTE CommandType)
 {
@@ -4434,11 +4855,12 @@ static void SwitchPopButton(struct MenuPrefsInst *inst, UBYTE CommandType)
 
 }
 
+//----------------------------------------------------------------------------
 
 DISPATCHER(myNListTree)
 {
 	struct MenuPrefsInst *inst;
-	ULONG result;
+	ULONG Result;
 
 	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: MethodID=%08lx\n", __LINE__, msg->MethodID));
 
@@ -4469,7 +4891,7 @@ DISPATCHER(myNListTree)
 		if (MenuHook)
 			DoMethod(inst->mpb_Objects[OBJNDX_Group_Main], MUIM_CallHook, MenuHook, 0);
 
-		result = 0;
+		Result = 0;
 		}
 		break;
 
@@ -4486,29 +4908,74 @@ DISPATCHER(myNListTree)
 		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
 
 		if (inst->mpb_PageIsActive)
-			result = DoSuperMethodA(cl, obj, msg);
+			Result = DoSuperMethodA(cl, obj, msg);
 		else
 			{
-			result = 0;
+			Result = 0;
 			tpa->res->entry = tpa->res->column = -1;
 			}
 
-		d1(kprintf(__FUNC__ "/%ld: MUIM_NList_TestPos  result=%08lx  x=%ld  y=%ld  tpr=%08lx  entry=%ld  column=%ld\n", \
-			__LINE__, result, tpa->x, tpa->y, tpa->res, tpa->res->entry, tpa->res->column));
+		d1(kprintf(__FUNC__ "/%ld: MUIM_NList_TestPos  Result=%08lx  x=%ld  y=%ld  tpr=%08lx  entry=%ld  column=%ld\n", \
+			__LINE__, Result, tpa->x, tpa->y, tpa->res, tpa->res->entry, tpa->res->column));
 		}
 		break;
 
 	case MUIM_DragDrop:
 		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
 		SetChangedFlag(inst, TRUE);
-		result = DoSuperMethodA(cl, obj, msg);
+		Result = DoSuperMethodA(cl, obj, msg);
+		break;
+
+	// we catch MUIM_DragReport because we want to restrict some dragging for some special objects
+	case MUIM_DragReport:
+		{
+		struct MUIP_DragReport *dr = (struct MUIP_DragReport *)msg;
+		struct MUI_NListtree_TestPos_Result res;
+		struct MUI_NListtree_TreeNode *tnTo, *tnFrom;
+
+		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		DoMethod(obj, MUIM_NListtree_TestPos, dr->x, dr->y, &res);
+
+		tnTo = res.tpr_TreeNode;
+
+		tnFrom = MUIV_NListtree_Active_Off;
+		get(obj, MUIA_NListtree_Active, (APTR) &tnFrom);
+
+		if (tnTo && tnFrom && MUIV_NListtree_Active_Off != tnFrom)
+			{
+			switch (res.tpr_Type)
+				{
+			case MUIV_NListtree_TestPos_Result_Onto:
+				if (MayPasteOnto(inst, tnTo, tnFrom))
+					Result = DoSuperMethodA(cl, obj, msg);
+				else
+					Result = MUIV_DragReport_Abort;
+				break;
+			case MUIV_NListtree_TestPos_Result_Below:
+				if (MayPasteBelow(inst, tnTo, tnFrom))
+					Result = DoSuperMethodA(cl, obj, msg);
+				else
+					Result = MUIV_DragReport_Abort;
+				break;
+			default:
+				Result = MUIV_DragReport_Abort;
+				break;
+				}
+			d1(KPrintF("%s/%ld: END tpr_Type=%ld  MayDrop=%ld\n", __FUNC__, __LINE__, res.tpr_Type, Result));
+			}
+		else
+			{
+			// to rescue the dropping we call the SuperMethod now
+			Result = DoSuperMethodA(cl, obj, msg);
+			}
+		}
 		break;
 
 	default:
-		result = DoSuperMethodA(cl, obj, msg);
+		Result = DoSuperMethodA(cl, obj, msg);
 		}
 
-	return result;
+	return Result;
 }
 DISPATCHER_END
 
@@ -4877,6 +5344,181 @@ static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 static Object *GetMenuEntryListtree(struct MenuPrefsInst *inst)
 {
 	return inst->mpb_Objects[inst->mpb_HideObsoletePopupMenus ? OBJNDX_HiddenListTree : OBJNDX_MainListTree];
+}
+
+//----------------------------------------------------------------------------
+
+static struct MUI_NListtree_TreeNode *GetParentNodeForMenu(struct MenuPrefsInst *inst, struct MUI_NListtree_TreeNode **PrevNode)
+{
+	struct MUI_NListtree_TreeNode *ParentNode;
+	BOOL Finished = FALSE;
+
+	*PrevNode = (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail;
+
+	ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry, 0, MUIV_NListtree_GetEntry_Position_Active, 0);
+
+	while (ParentNode && !Finished)
+		{
+		struct MenuListEntry *mle = (struct MenuListEntry *) ParentNode->tn_User;
+
+		switch (mle->llist_EntryType)
+			{
+		case SCAMENUTYPE_MainMenu:
+		case SCAMENUTYPE_Menu:
+		case SCAMENUTYPE_ToolsMenu:
+			Finished = TRUE;
+			break;
+
+		case SCAMENUTYPE_MenuItem:
+		case SCAMENUTYPE_Command:
+			*PrevNode = ParentNode;
+			ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+				MUIM_NListtree_GetEntry, ParentNode,
+				MUIV_NListtree_GetEntry_Position_Parent, 0);
+			break;
+			}
+		}
+
+	return ParentNode;
+}
+
+//----------------------------------------------------------------------------
+
+static struct MUI_NListtree_TreeNode *GetParentNodeForMenuItem(struct MenuPrefsInst *inst, struct MUI_NListtree_TreeNode **PrevNode)
+{
+	struct MUI_NListtree_TreeNode *ParentNode;
+
+	*PrevNode = (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail;
+
+	ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry, 0, MUIV_NListtree_GetEntry_Position_Active, 0);
+
+	while (ParentNode)
+		{
+		struct MenuListEntry *mle = (struct MenuListEntry *) ParentNode->tn_User;
+
+		if ((SCAMENUTYPE_MainMenu == mle->llist_EntryType)
+			&& (mle->llist_Flags & LLISTFLGF_MayNotHaveChildren))
+			break;
+
+		if (SCAMENUTYPE_Menu == mle->llist_EntryType)
+			break;
+		if (SCAMENUTYPE_ToolsMenu == mle->llist_EntryType)
+			break;
+
+		*PrevNode = ParentNode;
+		ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+			MUIM_NListtree_GetEntry, ParentNode,
+			MUIV_NListtree_GetEntry_Position_Parent, 0);
+		}
+
+	return ParentNode;
+}
+
+//----------------------------------------------------------------------------
+
+static BOOL MayPasteOnto(struct MenuPrefsInst *inst,
+	struct MUI_NListtree_TreeNode *tnTo, struct MUI_NListtree_TreeNode *tnFrom)
+{
+	const struct MenuListEntry *fteFrom = (const struct MenuListEntry *) tnFrom->tn_User;
+	const struct MenuListEntry *fteTo = (const struct MenuListEntry *) tnTo->tn_User;
+	BOOL MayPaste = FALSE;
+
+	d1(kprintf("%s/%ld: fteTo=%08lx <%s> %ld  fteFrom=%08lx <%s> %ld\n", __FUNC__, __LINE__, \
+		fteTo, tnTo->tn_Name, fteTo->llist_EntryType, fteFrom, tnFrom->tn_Name, fteFrom->llist_EntryType));
+
+	if (fteTo->llist_EntryType >= ENTRYTYPE_MAX || fteFrom->llist_EntryType >= ENTRYTYPE_MAX)
+		return FALSE;
+
+	d1(kprintf("%s/%ld: MayPaste=%ld\n", __FUNC__, __LINE__, \
+		MayPasteIntoMatrix[fteTo->llist_EntryType][fteFrom->llist_EntryType]));
+
+	if (MayPasteIntoMatrix[fteTo->llist_EntryType][fteFrom->llist_EntryType])
+		{
+		MayPaste = TRUE;
+
+		if ((SCAMENUTYPE_MainMenu == fteTo->llist_EntryType)
+			&& (SCAMENUTYPE_Menu != fteFrom->llist_EntryType)
+			&& !IsPopupMenu(inst, tnTo))
+			{
+			// Only menus may be dropped onto Main menu
+			MayPaste = FALSE;
+			}
+		if ( 0 == strlen(tnTo->tn_Name) )
+			{
+			// Nothing may be dropped onto a separator
+			MayPaste = FALSE;
+			}
+		}
+
+	return MayPaste;
+}
+
+//----------------------------------------------------------------------------
+
+static struct MUI_NListtree_TreeNode *MayPasteBelow(struct MenuPrefsInst *inst,
+	struct MUI_NListtree_TreeNode *tnTo, struct MUI_NListtree_TreeNode *tnFrom)
+{
+	const struct MenuListEntry *fteFrom = (const struct MenuListEntry *) tnFrom->tn_User;
+	const struct MenuListEntry *fteTo = (const struct MenuListEntry *) tnTo->tn_User;
+	struct MUI_NListtree_TreeNode *tn;
+	BOOL Result = FALSE;
+
+	d1(KPrintF("%s/%ld: START fteTo=%08lx <%s> %ld  fteFrom=%08lx <%s> %ld\n", __FUNC__, __LINE__, \
+		fteTo, tnTo->tn_Name, fteTo->llist_EntryType, fteFrom, tnFrom->tn_Name, fteFrom->llist_EntryType));
+
+	do	{
+		if (fteTo->llist_EntryType >= ENTRYTYPE_MAX || fteFrom->llist_EntryType >= ENTRYTYPE_MAX)
+			break;
+
+		if (tnTo->tn_Flags & TNF_OPEN)
+			{
+			tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+				MUIM_NListtree_GetEntry,
+				tnTo,
+				MUIV_NListtree_GetEntry_Position_Head,
+				MUIV_NListtree_GetEntry_Flag_Visible);
+			d1(KPrintF("%s/%ld: tn=%08lx\n", __FUNC__, __LINE__, tn));
+
+			if (tn)
+				break;
+			}
+
+		do	{
+			tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+				MUIM_NListtree_GetEntry,
+				tnTo,
+				MUIV_NListtree_GetEntry_Position_Next,
+				MUIV_NListtree_GetEntry_Flag_SameLevel | MUIV_NListtree_GetEntry_Flag_Visible);
+			d1(KPrintF("%s/%ld: tn=%08lx\n", __FUNC__, __LINE__, tn));
+			if (tn)
+				break;
+
+			tnTo = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+				MUIM_NListtree_GetEntry,
+				tnTo,
+				MUIV_NListtree_GetEntry_Position_Parent,
+				MUIV_NListtree_GetEntry_Flag_Visible);
+			d1(KPrintF("%s/%ld: tnTo=%08lx\n", __FUNC__, __LINE__, tnTo));
+
+			if (tnTo)
+				{
+				fteTo = (const struct MenuListEntry *) tnTo->tn_User;
+
+				Result =  MayPasteAfterMatrix[fteTo->llist_EntryType][fteFrom->llist_EntryType];
+				}
+			} while (tnTo && !Result);
+
+		if (NULL == tnTo)
+			break;
+
+		Result =  MayPasteAfterMatrix[fteTo->llist_EntryType][fteFrom->llist_EntryType];
+		} while (0);
+
+	d1(KPrintF("%s/%ld: END MayPaste=%ld\n", __FUNC__, __LINE__, Result));
+
+	return Result ? tnTo : NULL;
 }
 
 //----------------------------------------------------------------------------

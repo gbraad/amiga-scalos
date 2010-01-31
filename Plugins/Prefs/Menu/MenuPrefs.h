@@ -45,6 +45,8 @@ enum HookIndex
 	HOOKNDX_AddMenuItem,
 	HOOKNDX_RemoveEntry,
 	HOOKNDX_About,
+	HOOKNDX_CollapseSelected,
+	HOOKNDX_ExpandSelected,
 	HOOKNDX_CollapseAll,
 	HOOKNDX_ExpandAll,
 	HOOKNDX_CmdSelected,
@@ -53,6 +55,10 @@ enum HookIndex
 	HOOKNDX_SettingsChanged,
 	HOOKNDX_AslIntuiMsg,
 	HOOKNDX_HideObsolete,
+
+	HOOKNDX_MenuCopy,
+	HOOKNDX_MenuCut,
+	HOOKNDX_MenuPaste,
 
 	HOOKNDX_MAX
 };
@@ -66,9 +72,8 @@ enum ObjectIndex
 	OBJNDX_Group_List,
 	OBJNDX_Group_Buttons1,
 	OBJNDX_Group_Name,
-	OBJNDX_Group_Hotkey,
 	OBJNDX_Group_String, 
-	OBJNDX_Group_CmdMisc,
+	OBJNDX_Group_CmdProperties,
 
 	OBJNDX_StringHotkey,
 	OBJNDX_CycleGad,
@@ -76,6 +81,7 @@ enum ObjectIndex
 	OBJNDX_MainListView,
 	OBJNDX_MainListTree,
 	OBJNDX_HiddenListTree,
+	OBJNDX_ListTreeClipboard,
 	OBJNDX_NameString,
 	OBJNDX_NewMenuButton, 
 	OBJNDX_NewItemButton, 
@@ -95,6 +101,11 @@ enum ObjectIndex
 
 	OBJNDX_ContextMenu,
 	OBJNDX_Menu_HideObsolete,
+	OBJNDX_Menu_Copy,
+	OBJNDX_Menu_Cut,
+	OBJNDX_Menu_Paste,
+	OBJNDX_Menu_CollapseSelected,
+	OBJNDX_Menu_ExpandSelected,
 
 	OBJNDX_MAX
 };
@@ -128,7 +139,7 @@ enum DefaultMenuParentNode
 
 struct DefaultMenuEntry
 	{
-	ULONG dme_EntryType;
+	enum ScalosMenuType dme_EntryType;
 	ULONG dme_Level;
 	ULONG dme_NameId;
 	ULONG dme_MenuShortId;
