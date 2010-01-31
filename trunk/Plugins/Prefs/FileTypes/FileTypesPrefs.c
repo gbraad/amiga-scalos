@@ -3875,12 +3875,49 @@ static SAVEDS(APTR) INTERRUPT HideEmptyEntriesHookFunc(struct Hook *hook, Object
 static SAVEDS(APTR) INTERRUPT CollapseHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
+	struct MUI_NListtree_TreeNode *tn;
 
-	DoMethod(inst->fpb_Objects[OBJNDX_MainListTree], 
-		MUIM_NListtree_Close, 
-		MUIV_NListtree_Close_ListNode_Active,
-		MUIV_NListtree_Close_TreeNode_All,
+	set(inst->fpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_Full);
+
+	tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_GetEntry,
+		MUIV_NListtree_GetEntry_ListNode_Active,
+		MUIV_NListtree_GetEntry_Position_Active,
 		0);
+	d1(kprintf("%s/%ld: active tn=%08lx  <%s>\n", __FUNC__, __LINE__, tn, tn ? tn->tn_Name : (STRPTR) ""));
+
+	if (tn)
+		{
+		struct MUI_NListtree_TreeNode *tnChild;
+
+		tnChild = (struct MUI_NListtree_TreeNode *) DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
+			MUIM_NListtree_GetEntry,
+			tn,
+			MUIV_NListtree_GetEntry_Position_Head,
+			0);
+		d1(kprintf("%s/%ld: Head tn=%08lx  <%s>\n", __FUNC__, __LINE__, tnChild, tnChild ? tnChild->tn_Name : (STRPTR) ""));
+
+		if (tnChild)
+			{
+			set(inst->fpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Active, (ULONG) tnChild);
+
+			DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
+				MUIM_NListtree_Close,
+				MUIV_NListtree_Close_ListNode_Active,
+				MUIV_NListtree_Close_TreeNode_All,
+				0);
+			}
+
+		set(inst->fpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Active, (ULONG) tn);
+		}
+
+	DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_Close,
+		MUIV_NListtree_Close_ListNode_Active,
+		tn,
+		0);
+
+	set(inst->fpb_Objects[OBJNDX_MainListTree], MUIA_NList_Quiet, MUIV_NList_Quiet_None);
 
 	return NULL;
 }

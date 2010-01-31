@@ -2123,6 +2123,12 @@ Additions/changes:
 
 --------------------Scalos Menu Preferences---------------------------------
 
+ 40.19	20100131	jl	- Improvement: redesigned layout for better overview.
+				- Improvement: added Workbench popup menu to
+				  default menu preferences.
+				- Improvement: added copy/cut/paste functionality
+				  for easier menu configuration.
+ 40.18	20100125	jl	- (internal version only)
  40.17	20100119	jl	- Bugfix: With Scalos menu preferences, it was not possible to 
 				  add menu items to an empty popup menu
 	20071003	jl	- Improvement: Automatically use Zune instead of MUI if present. 
