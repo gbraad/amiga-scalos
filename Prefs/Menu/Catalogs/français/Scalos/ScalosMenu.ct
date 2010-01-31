@@ -1,6 +1,8 @@
 ; ScalosMenu.ct
 ; $Date$
 ; $Revision$
+; $Id$
+;
 ## version $VER: ScalosMenu.catalog 40.18 (24 Aug 2006 23:56:40)
 ## codeset 0s
 ## language français
@@ -254,29 +256,24 @@ ne seront pas visibles.
 ;If checked, obsolete popup menus which are now\n\
 ;defined via filetypes prefs are not shown.
 ;
-;+++translateme+++
 MSGID_MENU_EDIT_COPY
-Copy
+Copier
 ;Copy
 ;
-;+++translateme+++
 MSGID_MENU_EDIT_CUT
-Cut
+Couper
 ;Cut
 ;
-;+++translateme+++
 MSGID_MENU_EDIT_PASTE
-Paste
+Coller
 ;Paste
 ;
-;+++translateme+++
 MSGID_MENU_EDIT_COLLAPSE
-Collapse Selected
+Plier l'entrée sélectionnée
 ;Collapse Selected
 ;
-;+++translateme+++
 MSGID_MENU_EDIT_EXPAND
-Expand Selected
+Déplier l'entrée sélectionnée
 ;Expand Selected
 ;
 ;---------------------------------------------
@@ -805,19 +802,16 @@ nom du menu, lorsque le menu sera sélectionné.
 ;This is a sample of the iconic image that will be shown\n\
 ;left of the menu item name, in selected menu item state.
 ;
-;+++translateme+++
 MSGID_ENTRY_STRING_NAME
-Name:
+Nom :
 ;Name:
 ;
-;+++translateme+++
 MSGID_ENTRY_GROUP_UNSELECTEDIMAGE
-Unselected State Image
+Image pour l'état non sélectionné
 ;Unselected State Image
 ;
-;+++translateme+++
 MSGID_ENTRY_GROUP_SELECTEDIMAGE
-Selected State Image
+Image pour l'état sélectionné
 ;Selected State Image
 ;
 ;-----------------------------------------------------------
@@ -1369,119 +1363,96 @@ MSGID_DEFAULT_MENU_PREFS_SCALOS_SHORT
 MSGID_DEFAULT_MENU_EMPTY_SHORT
 
 ;
-;+++translateme+++
 MSGID_DEFAULT_TOOLS
-Tools
+Outils
 ;Tools
 ;
-;+++translateme+++
 MSGID_DEFAULT_UTILITIES
-Utilities
+Utilités
 ;Utilities
 ;
-;+++translateme+++
 MSGID_DEFAULT_PREFERENCES
-Preferences
+Préférences
 ;Preferences
 ;
-;+++translateme+++
 MSGID_DEFAULT_EXCHANGE
-Exchange
+Commodité Exchange
 ;Exchange
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_MOUNTER
-Mounter
+Monter
 ;Mounter
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_SCSICONFIG
-SCSIConfig
+Configuration avec SCSIConfig
 ;SCSIConfig
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_SNOOPIUM
 Snoopium
 ;Snoopium
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_DEFRAG
-Defrag
+Défragmentation
 ;Defrag
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_FTMANAGER
-FTManager
+Configuration avec FTManager
 ;FTManager
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_MUISHELL
-MUIShell
+Shell MUI
 ;MUIShell
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_SFSDOCTOR
-SFSDoctor
+Gestion SFS sous SFSDoctor
 ;SFSDoctor
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_UNITCONTROL
-UnitControl
+Configuration avec UnitControl
 ;UnitControl
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_FILEIMAGECTRL
 FileImageCtrl
 ;FileImageCtrl
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_HDCONFIG
-HDConfig
+Configuration avec HDConfig
 ;HDConfig
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_REGTOOL
-RegTool
+Enregistement avec RegTool
 ;RegTool
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_SHELL
 Shell
 ;Shell
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_EDITOR
-Editor
+Editeur
 ;Editor
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_FRAGMENT
-Fragment
+Fragmentation
 ;Fragment
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_GRABBER
-Grabber
+Capture d'écran
 ;Grabber
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_GRAPHICBOARDS
-GraphicBoards
+Carte graphique
 ;GraphicBoards
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_KEYSTROKE
 Keystroke
 ;Keystroke
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_MINICALC
-MiniCalc
+Mini Calculette
 ;MiniCalc
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_MORE
-More
+Visionneur More
 ;More
 ;
 ;+++translateme+++
@@ -1529,19 +1500,16 @@ MSGID_DEFAULT_MENU_UTILITIES_AMIPDF
 AmiPDF
 ;AmiPDF
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_SGRAB
-SGrab
+capture d'écran avec SGrab
 ;SGrab
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_CALCULATOR
-Calculator
+Calculette
 ;Calculator
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_CLOCK
-Clock
+Horloge
 ;Clock
 ;
 ;+++translateme+++
@@ -1549,9 +1517,8 @@ MSGID_DEFAULT_MENU_UTILITIES_GRAPHICDUMP
 GraphicDump
 ;GraphicDump
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_ICONEDIT
-IconEdit
+Editeur d'icônes
 ;IconEdit
 ;
 ;+++translateme+++
@@ -1594,9 +1561,8 @@ MSGID_DEFAULT_MENU_UTILITIES_PRINTFILES
 PrintFiles
 ;PrintFiles
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_UTILITIES_RAWDISK
-RawDisk
+Volume Raw
 ;RawDisk
 ;
 ;+++translateme+++
@@ -1624,14 +1590,13 @@ MSGID_DEFAULT_MENU_PREFS_ASL
 ASL
 ;ASL
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_COMPATIBILITY
-Compatibility
+Compatibilité
 ;Compatibility
 ;
 ;
 MSGID_DEFAULT_MENU_PREFS_DEFICONS
-DefIcons
+Icônes par défaut
 ;DefIcons
 ;
 ;+++translateme+++
@@ -1639,9 +1604,8 @@ MSGID_DEFAULT_MENU_PREFS_DOS
 DOS
 ;DOS
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_FONT
-Font
+Polices de caractères
 ;Font
 ;
 ;+++translateme+++
@@ -1659,9 +1623,8 @@ MSGID_DEFAULT_MENU_PREFS_INTERNET
 Internet
 ;Internet
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_LOCALE
-Locale
+Localité
 ;Locale
 ;
 ;+++translateme+++
@@ -1679,9 +1642,8 @@ MSGID_DEFAULT_MENU_PREFS_PICASSO96MODE
 Picasso96Mode
 ;Picasso96Mode
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_POINTER
-Pointer
+Curseur
 ;Pointer
 ;
 ;+++translateme+++
@@ -1689,49 +1651,40 @@ MSGID_DEFAULT_MENU_PREFS_POPUPMENU
 PopupMenu
 ;PopupMenu
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_PRINTER
-Printer
+Imprimante
 ;Printer
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_PRINTERGFX
-PrinterGFX
+Imprimante GFX
 ;PrinterGFX
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_PRINTERPS
-PrinterPS
+Imprimante PS
 ;PrinterPS
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_SCREENBLANKER
-ScreenBlanker
+Economiseur d'écran
 ;ScreenBlanker
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_SCREENMODE
-ScreenMode
+Modes d'écran
 ;ScreenMode
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_SCREENS
-Screens
+Ecrans
 ;Screens
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_SERIAL
-Serial
+Série
 ;Serial
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_SOUND
-Sound
+Son
 ;Sound
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_TIME
-Time
+Heure
 ;Time
 ;
 ;+++translateme+++
@@ -1744,14 +1697,12 @@ MSGID_DEFAULT_MENU_PREFS_USB
 USB
 ;USB
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_WBPATTERN
-WBPattern
+Motifs de fonds
 ;WBPattern
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_PREFS_WBSTARTUP
-WBStartup
+Démarrage WB
 ;WBStartup
 ;
 ;+++translateme+++
@@ -1809,9 +1760,8 @@ MSGID_DEFAULT_MENU_TOOLS_BENCHTRASH
 BenchTrash
 ;BenchTrash
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_TOOLS_CALCULATOR
-Calculator
+Calculette
 ;Calculator
 ;
 ;+++translateme+++
