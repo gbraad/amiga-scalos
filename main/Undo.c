@@ -301,25 +301,37 @@ BOOL UndoAddEventTagList(struct internalScaWindowTask *iwt, enum ScalosUndoType 
 					break;
 					}
 
+				d1(kprintf("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
 				if (Success)
 					{
 					uev->uev_UndoStep = ust;
 					ust->ust_EventCount++;
 
+					d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 					AddTail(&ust->ust_EventList, &uev->uev_Node);
 					uev = NULL;
+
+					d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 					if (NULL == ustMulti)
 						{
 						UndoEndStep(iwt, (APTR) ust);
 						}
+
+					d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 					}
 				}
 			}
 
+		d1(kprintf("%s/%s/%ld: uev=%08lx\n", __FILE__, __FUNC__, __LINE__, uev));
+
 		if (uev)
 			UndoDisposeEvent(uev);
 		}
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return TRUE;
 }
@@ -345,6 +357,8 @@ void UndoEndStep(struct internalScaWindowTask *iwt, APTR event)
 {
 	struct UndoStep *ust = (struct UndoStep *) event;
 
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
 	do	{
 		if (NULL == ust)
 			break;
@@ -368,10 +382,16 @@ void UndoEndStep(struct internalScaWindowTask *iwt, APTR event)
 		ScalosReleaseSemaphore(&UndoListListSemaphore);
 		} while (0);
 
+	d1(kprintf("%s/%s/%ld: ust=%08lx\n", __FILE__, __FUNC__, __LINE__, ust));
+
 	if (ust)
 		UndoDisposeStep(ust);
 
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 	SetMenuOnOff(iwt);
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------
@@ -751,6 +771,8 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 	BOOL Success = FALSE;
 	STRPTR name;
 
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
 	do	{
 		BPTR dirLock;
 		CONST_STRPTR fName;
@@ -901,6 +923,8 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 	if (name)
 		FreePathBuffer(name);
+
+	d1(kprintf("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }

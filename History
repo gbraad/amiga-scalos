@@ -10,6 +10,7 @@ Additions/changes:
 
 41.7    20100130	jl	- Improvement: added capability to undo/redo closing windows.
 				- Bugfix: sqlite3.library reported read-only state for "RAM:t".
+				- Bugfix: scalos crashed when drag-copying a disk into an icon window.
 	20100128	jl	- Bugfix: thumbnail cache database sometimes was left open if ThumbnailCacheOpen() failed.
 	20100117	jl	- Improvement: added user configuration for SQLite3 thumbnail
 				  database temporary files directory.

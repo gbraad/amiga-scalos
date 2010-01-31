@@ -310,6 +310,7 @@ static void SetIconMenuOnOff(struct internalScaWindowTask *iwt)
 	ULONG IconSupportsFlags = GetSelectedIconsSupportFlags();
 
 	// 0xff, 7 : "only enable if icon selected"
+	d1(KPrintF("%s/%s/%ld: IconSupportsFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, IconSupportsFlags));
 
 	if (ScalosAttemptSemaphoreShared(&ParseMenuListSemaphore))
 		{
@@ -317,6 +318,8 @@ static void SetIconMenuOnOff(struct internalScaWindowTask *iwt)
 
 		ScalosReleaseSemaphore(&ParseMenuListSemaphore);
 		}
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 
@@ -448,12 +451,13 @@ static void internalSetMenuOnOff(struct internalScaWindowTask *iwt,
 				{
 				d1(kprintf("%s/%s/%ld: mTree=%08lx  Type=%ld\n", __FILE__, __FUNC__, __LINE__, mTree, mTree->mtre_type));
 
-				if (SCAMENUTYPE_Command == mTree->mtre_type)
+				if (SCAMENUTYPE_Command == mTree->mtre_type && mTree->MenuCombo.MenuCommand.mcom_name)
 					{
 					d1(kprintf("%s/%s/%ld: mTree=%08lx  name=<%s>  type=%ld\n", __FILE__, __FUNC__, __LINE__, \
 						mTree, mTree->MenuCombo.MenuCommand.mcom_name, mTree->MenuCombo.MenuCommand.mcom_type));
 
-					if (SCAMENUCMDTYPE_Command == mTree->MenuCombo.MenuCommand.mcom_type)
+					if (SCAMENUCMDTYPE_Command == mTree->MenuCombo.MenuCommand.mcom_type
+						&& mTree->MenuCombo.MenuCommand.mcom_name)
 						{
 						ULONG n;
 
@@ -855,7 +859,8 @@ static void GenerateMainMenu(struct ScalosMenuTree *mTree, struct NewMenu **nm, 
 					d1(kprintf("%s/%s/%ld: MenuCommand  Name=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, \
 						mTreeChild->MenuCombo.MenuCommand.mcom_name, mTreeChild->MenuCombo.MenuCommand.mcom_name));
 
-					if (SCAMENUCMDTYPE_Command == mTreeChild->MenuCombo.MenuCommand.mcom_type)
+					if (SCAMENUCMDTYPE_Command == mTreeChild->MenuCombo.MenuCommand.mcom_type
+						&& mTreeChild->MenuCombo.MenuCommand.mcom_name)
 						{
 						if (CompareCommand(mTreeChild->MenuCombo.MenuCommand.mcom_name, "undo"))
 							{
@@ -1114,6 +1119,7 @@ static struct PopupMenu *MakePopupMenuItem(struct ScalosMenuTree *mTree)
 					{
 					if (SCAMENUTYPE_Command == subTree->mtre_type
 						&& SCAMENUCMDTYPE_Command == subTree->MenuCombo.MenuCommand.mcom_type
+						&& subTree->MenuCombo.MenuCommand.mcom_name
 						&& 0 == stricmp(subTree->MenuCombo.MenuCommand.mcom_name, "open"))
 						{
 						isDefaultCommand = TRUE;
@@ -1180,34 +1186,39 @@ BOOL CompareCommand(CONST_STRPTR MenuComName, CONST_STRPTR CommandName)
 {
 	BOOL Match = FALSE;
 
-	d1(kprintf("%s/%s/%ld: MenuCom=<%s>  Command=<%s>\n", __FILE__, __FUNC__, __LINE__, MenuComName, CommandName));
+	d1(kprintf("%s/%s/%ld: MenuCom=%08lx  Command=%08lx\n", __FILE__, __FUNC__, __LINE__, MenuComName, CommandName));
 
-	while (*MenuComName && *CommandName && ' ' != *MenuComName)
+	if (MenuComName && CommandName)
 		{
-		UBYTE ch1, ch2;
+		d1(kprintf("%s/%s/%ld: MenuCom=<%s>  Command=<%s>\n", __FILE__, __FUNC__, __LINE__, MenuComName, CommandName));
 
-		// For same reason, GCC 2.95.3 omitsthe comparison 
-		// without the auxiliary variables ch1,ch2
-		ch1 = ToUpper(*MenuComName);
-		ch2 = ToUpper(*CommandName);
-
-		if (ch1 != ch2)
-			break;
-
-		MenuComName++;
-		CommandName++;
-		}
-
-	d1(kprintf("%s/%s/%ld: CommandName=<%s>\n", __FILE__, __FUNC__, __LINE__, CommandName));
-
-	if ('\0' == *CommandName)
-		{
-		switch (*MenuComName)
+		while (*MenuComName && *CommandName && ' ' != *MenuComName)
 			{
-		case ' ':
-		case '\0':
-			Match = TRUE;
-			break;
+			UBYTE ch1, ch2;
+
+			// For same reason, GCC 2.95.3 omits the comparison
+			// without the auxiliary variables ch1,ch2
+			ch1 = ToUpper(*MenuComName);
+			ch2 = ToUpper(*CommandName);
+
+			if (ch1 != ch2)
+				break;
+
+			MenuComName++;
+			CommandName++;
+			}
+
+		d1(kprintf("%s/%s/%ld: CommandName=<%s>\n", __FILE__, __FUNC__, __LINE__, CommandName));
+
+		if ('\0' == *CommandName)
+			{
+			switch (*MenuComName)
+				{
+			case ' ':
+			case '\0':
+				Match = TRUE;
+				break;
+				}
 			}
 		}
 
