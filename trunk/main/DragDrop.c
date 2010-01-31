@@ -124,6 +124,8 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 	LONG x = 0, y = 0;
 	struct DropOps drops;
 
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
 	drops.drop_Copy = drops.drop_Move = drops.drop_CreateLink = drops.drop_PutAway = drops.drop_LeaveOut = FALSE;
 	if (isMakeLinkQualifier(Qualifier))
 		{
@@ -302,6 +304,8 @@ void DragDrop(struct Window *win, LONG MouseX, LONG MouseY, ULONG Qualifier,
 
 	RestoreDragIcons(iwt);
 	SCA_UnLockWindowList();
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 
@@ -679,7 +683,8 @@ static void Icon2IconDrop(struct ScalosArg **ArgList,
 				RESULT_UserAborted != Result && DrInfo->drin_Arg;
 				DrInfo->drin_Arg = (struct ScalosArg *) DrInfo->drin_Arg->scarg_Node.mln_Succ)
 			{
-			d1(kprintf("%s/%s/%ld: DrInfo->drin_Arg=%08lx <%s>  IconType=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			d1(kprintf("%s/%s/%ld: DrInfo->drin_Arg=%08lx <%s>  IconType=%ld\n", \
+				__FILE__, __FUNC__, __LINE__, \
 				DrInfo->drin_Arg, DrInfo->drin_Arg->scarg_name, DrInfo->drin_Arg->scarg_icontype));
 
 			switch (DrInfo->drin_Arg->scarg_icontype)
@@ -1252,8 +1257,9 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 	BPTR oldDir = NOT_A_LOCK;
 	struct MsgPort *replyPort = NULL;
 	BOOL WindowsLocked = TRUE;
+	APTR undoStep = NULL;
 
-	d1(KPrintF("%s/%s/%ld: Src=%08lx <%s>  Dest=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
+	d1(KPrintF("%s/%s/%ld: START Src=%08lx <%s>  Dest=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
 		wsSrc, wsSrc->ws_Name, wsDest, wsDest->ws_Name));
 
 	if (NULL == wsSrc || NULL == wsDest)
@@ -1267,7 +1273,6 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 	do	{
 		ULONG Result = RETURN_OK;
-		APTR undoStep;
 		struct ScaIconNode *in;
 
 		if (wsSrc->ws_Lock)
@@ -1289,6 +1294,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 		in = CheckMouseIcon(&iwtDest->iwt_WindowTask.wt_IconList,
 			iwtDest, DrInfo->drin_x, DrInfo->drin_y);
+		d1(kprintf("%s/%s/%ld: in=%08lx  iwtDest=%08lx\n", __FILE__, __FUNC__, __LINE__, in, iwtDest));
 		if (in)
 			{
 			ULONG IconType;
@@ -1327,6 +1333,8 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 		ScalosUnLockIconList(iwtDest);
 
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 		CurrentDir(oldDir);
 		oldDir = NOT_A_LOCK;
 
@@ -1336,10 +1344,13 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 		undoStep = UndoBeginStep();
 
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 		for (DrInfo->drin_Arg = *ArgList; DrInfo->drin_Arg; DrInfo->drin_Arg = (struct ScalosArg *) DrInfo->drin_Arg->scarg_Node.mln_Succ)
 			{
 			d1(kprintf("%s/%s/%ld: DrInfo->drin_Arg=%08lx <%s>  IconType=%ld\n", \
-				__LINE__, DrInfo->drin_Arg, DrInfo->drin_Arg->scarg_name, DrInfo->drin_Arg->scarg_icontype));
+				__FILE__, __FUNC__, __LINE__, \
+				DrInfo->drin_Arg, DrInfo->drin_Arg->scarg_name, DrInfo->drin_Arg->scarg_icontype));
 
 			if (WBDISK == DrInfo->drin_Arg->scarg_icontype)
 				continue;
@@ -1350,6 +1361,8 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 			if (LOCK_SAME == ScaSameLock(DrInfo->drin_DestLock, DrInfo->drin_Arg->scarg_lock))
 				{
 				// drop left-out icon back into its native window
+				d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 				DrInfo->drin_Drops.drop_PutAway = TRUE;
 
 				UndoAddEvent(iwtSrc, UNDO_PutAway,
@@ -1364,7 +1377,8 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
                                         CurrentPrefs.pref_AutoLeaveOut);
 
 				d1(kprintf("%s/%s/%ld: PutAwayIcon(name=<%s>)  IconType=%ld\n", \
-					__LINE__, DrInfo->drin_Arg->scarg_name, DrInfo->drin_Arg->scarg_icontype));
+					__FILE__, __FUNC__, __LINE__, \
+					DrInfo->drin_Arg->scarg_name, DrInfo->drin_Arg->scarg_icontype));
 
 				if (NO_ICON_POSITION_SHORT == DrInfo->drin_x)
 					{
@@ -1417,9 +1431,10 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 						}
 					}
 				}
+			d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 			}
 
-		UndoEndStep(iwtSrc, undoStep);
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 		DeleteMsgPort(replyPort);
 		replyPort = NULL;
@@ -1478,8 +1493,11 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 						StripTrailingColon(Name);
 
+						d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 						if (DrInfo->drin_Drops.drop_CreateLink)
 							{
+							d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 							UndoAddEvent(iwtSrc, UNDO_CreateLink,
 								UNDOTAG_UndoMultiStep, undoStep,
 								UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
@@ -1497,6 +1515,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 							}
 						else
 							{
+							d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 							UndoAddEvent(iwtSrc, UNDO_Copy,
 								UNDOTAG_UndoMultiStep, undoStep,
 								UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
@@ -1506,14 +1525,17 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 								UNDOTAG_IconPosX, xi,
 								UNDOTAG_IconPosY, yi,
 								TAG_END);
+							d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 							Result = DoMethod(DrInfo->drin_FileTransObj,
 								SCCM_FileTrans_Copy,
 								DrInfo->drin_Arg->scarg_lock,
                                                                 DrInfo->drin_DestLock,
 								"", Name,
 								xi, yi);
+							d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 							}
 
+						d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 						} while (0);
 
 					if (Name)
@@ -1523,12 +1545,19 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 					}
 				break;
 				}
+			d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 			}
 
-		UndoEndStep(iwtSrc, undoStep);
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
 		ClassDragFinish_IconWin(ArgList);
+		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 		} while (0);
 
+	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
+
+	if (undoStep)
+		UndoEndStep(iwtSrc, undoStep);
 	if (replyPort)
 		DeleteMsgPort(replyPort);
 	if (IS_VALID_LOCK(oldDir))
@@ -1546,6 +1575,8 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 		ScalosReleaseSemaphore(iwtSrc->iwt_WindowTask.wt_WindowSemaphore);
 		ScalosReleaseSemaphore(iwtDest->iwt_WindowTask.wt_WindowSemaphore);
 		}
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 
