@@ -1636,5 +1636,25 @@ ShowConfig
 MSGID_DEFAULT_MENU_TOOLS_UNARC (//)
 Unarc
 ;
+;
+MSGID_DEFAULT_SYSTEM (//)
+System
+;
+;
+MSGID_DEFAULT_MENU_SYSTEM_FIND (//)
+Find...
+;
+;
+MSGID_DEFAULT_MENU_SYSTEM_FIXFONT (//)
+FixFont
+;
+;
+MSGID_DEFAULT_MENU_SYSTEM_FORMAT (//)
+Format...
+;
+;
+MSGID_DEFAULT_MENU_SYSTEM_SHELL (//)
+Shell
+;
 ;-----------------------------------------------------------
 ;
