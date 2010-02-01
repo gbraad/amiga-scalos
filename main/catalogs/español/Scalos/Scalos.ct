@@ -1070,6 +1070,16 @@ Please use Scalos Menu Preferences to create preferences!
 ;Due to this error, you won't have any menus available.\n\
 ;Please use Scalos Menu Preferences to create preferences!
 ;
+;+++translateme+++
+MSGID_FILETRANSTITLE_DELETE
+Deleting...
+;Deleting...
+;
+;+++translateme+++
+MSGID_PREPARING_DELETE
+Counting Objects to Delete...
+;Counting Objects to Delete...
+;
 ; ==============================================
 ;+++translateme+++
 MSGID_DROPMENU_DROPMENUTITLE

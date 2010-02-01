@@ -86,6 +86,7 @@ static ULONG FileTransClass_Dispose(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_Copy(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_Move(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_CreateLink(Class *cl, Object *o, Msg msg);
+static ULONG FileTransClass_Delete(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_CheckAbort(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_DelayedOpenWindow(Class *cl, Object *o, Msg msg);
@@ -100,6 +101,7 @@ static void ProcessFTOps(Class *cl, Object *o);
 static LONG DoFileTransCopy(Class *cl, Object *o, struct FileTransOp *fto);
 static LONG DoFileTransMove(Class *cl, Object *o, struct FileTransOp *fto);
 static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto);
+static LONG DoFileTransDelete(Class *cl, Object *o, struct FileTransOp *fto);
 static void PutIcon2(CONST_STRPTR SrcName, BPTR srcLock, 
 	CONST_STRPTR DestName, BPTR destLock, LONG x, LONG y);
 static void FreeFTO(struct FileTransOp *fto);
@@ -161,6 +163,10 @@ static SAVEDS(ULONG) FileTransClass_Dispatcher(Class *cl, Object *o, Msg msg)
 
 	case SCCM_FileTrans_CreateLink:
 		Result = FileTransClass_CreateLink(cl, o, msg);
+		break;
+
+	case SCCM_FileTrans_Delete:
+		Result = FileTransClass_Delete(cl, o, msg);
 		break;
 
 	case SCCM_FileTrans_CheckAbort:
@@ -454,6 +460,23 @@ static ULONG FileTransClass_CreateLink(Class *cl, Object *o, Msg msg)
 }
 
 
+static ULONG FileTransClass_Delete(Class *cl, Object *o, Msg msg)
+{
+	struct FileTransClassInstance *inst = INST_DATA(cl, o);
+	struct msg_Delete *mmd = (struct msg_Delete *) msg;
+
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: Name=<%s> \n", __FILE__, __FUNC__, __LINE__, mmd->mmd_Name));
+
+	AddFTOp(inst, FTOPCODE_Delete,
+		mmd->mmd_DirLock, mmd->mmd_Name,
+		mmd->mmd_DirLock, mmd->mmd_Name,
+		0, 0);
+
+	return RETURN_OK;
+}
+
+
 static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg)
 {
 	struct FileTransClassInstance *inst = INST_DATA(cl, o);
@@ -473,6 +496,9 @@ static ULONG FileTransClass_OpenWindow(Class *cl, Object *o, Msg msg)
 			break;
 		case FTOPCODE_Move:
 			WinTitle = GetLocString(MSGID_FILETRANSTITLE_MOVE);
+			break;
+		case FTOPCODE_Delete:
+			WinTitle = GetLocString(MSGID_FILETRANSTITLE_DELETE);
 			break;
 		default:
 			WinTitle = "";
@@ -637,20 +663,32 @@ static void ProcessFTOps(Class *cl, Object *o)
 		{
 		struct FileTransOp *fto;
 		LONG Result = RETURN_OK;
+		CONST_STRPTR OpString;
 
 		DoMethod(o, SCCM_FileTrans_OpenWindowDelayed);
 
 		fto = (struct FileTransOp *) inst->ftci_OpList.lh_Head;
 
+		switch (fto->fto_OpCode)
+			{
+		case FTOPCODE_Copy:
+			OpString = GetLocString(MSGID_PREPARING_COPY);
+			break;
+		case FTOPCODE_Move:
+			OpString = GetLocString(MSGID_PREPARING_MOVE);
+			break;
+		case FTOPCODE_Delete:
+			OpString = GetLocString(MSGID_PREPARING_DELETE);
+			break;
+		default:
+			OpString = "";
+			break;
+			}
 #ifdef SHOW_EVERY_OBJECT
-		stccpy(inst->ftci_Line1Buffer, 
-			GetLocString((FTOPCODE_Copy == fto->fto_OpCode) ? MSGID_PREPARING_COPY : MSGID_PREPARING_MOVE), 
-			Max_PathLen);
+		stccpy(inst->ftci_Line1Buffer, OpString, Max_PathLen);
 		strcpy(inst->ftci_Line2Buffer, "");
 #else
-		stccpy(inst->ftci_Line2Buffer, 
-			GetLocString((FTOPCODE_Copy == fto->fto_OpCode) ? MSGID_PREPARING_COPY : MSGID_PREPARING_MOVE), 
-			Max_PathLen);
+		stccpy(inst->ftci_Line2Buffer, OpString, Max_PathLen);
 #endif /* SHOW_EVERY_OBJECT */
 
 		DoMethod(o, SCCM_FileTrans_UpdateWindow,
@@ -700,6 +738,10 @@ static void ProcessFTOps(Class *cl, Object *o)
 
 				case FTOPCODE_CreateLink:
 					Result = DoFileTransCreateLink(cl, o, fto);
+					break;
+
+				case FTOPCODE_Delete:
+					Result = DoFileTransDelete(cl, o, fto);
 					break;
 					}
 
@@ -1082,6 +1124,34 @@ static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto)
 }
 
 
+static LONG DoFileTransDelete(Class *cl, Object *o, struct FileTransOp *fto)
+{
+	//struct FileTransClassInstance *ftci = INST_DATA(cl, o);
+	LONG Result;
+
+	Result = DeleteCommand(cl, o, fto->fto_SrcDirLock, fto->fto_SrcName);
+
+	d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+
+	if (RETURN_OK == Result)
+		{
+		// object deleted successfully
+		// Now try to delete the acompanying icon
+
+		BPTR oldDir = CurrentDir(fto->fto_SrcDirLock);
+
+		d1(kprintf("%s/%s/%ld: SrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fto->fto_SrcName));
+
+		// update destination window
+		ScalosDropRemoveIcon(fto->fto_SrcDirLock, fto->fto_SrcName);
+
+		CurrentDir(oldDir);
+		}
+
+	return Result;
+}
+
+
 static void PutIcon2(CONST_STRPTR SrcName, BPTR srcLock, 
 	CONST_STRPTR DestName, BPTR destLock, LONG x, LONG y)
 {
@@ -1162,7 +1232,7 @@ static LONG CountFTOps(Class *cl, Object *o, struct FileTransOp *fto)
 
 	case FTOPCODE_Copy:
 		d1(KPrintF("%s/%s/%ld: FTOPCODE_Copy\n", __FILE__, __FUNC__, __LINE__));
-		CountCommand(cl, o, fto->fto_SrcDirLock, fto->fto_SrcName, TRUE);
+		Result = CountCommand(cl, o, fto->fto_SrcDirLock, fto->fto_SrcName, TRUE);
 		break;
 
 	case FTOPCODE_Move:
@@ -1178,6 +1248,10 @@ static LONG CountFTOps(Class *cl, Object *o, struct FileTransOp *fto)
 			Result = CountCommand(cl, o, fto->fto_SrcDirLock, fto->fto_SrcName, TRUE);
 			break;
 			}
+		break;
+
+	case FTOPCODE_Delete:
+		Result = CountCommand(cl, o, fto->fto_SrcDirLock, fto->fto_SrcName, TRUE);
 		break;
 		}
 

@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+221)
+** next Tag to use :	(SCC_Dummy+222)
 */
 
 #ifndef DOS_DOS_H
@@ -1613,7 +1613,7 @@ enum sgttGadgetIDs
 // Name: "FileTransfer.sca"
 // ---------------------------------------------------------------------------
 
-enum ftOpCodes { FTOPCODE_Copy=1, FTOPCODE_Move, FTOPCODE_CreateLink };
+enum ftOpCodes { FTOPCODE_Copy=1, FTOPCODE_Move, FTOPCODE_CreateLink, FTOPCODE_Delete };
 
 // -------------- Attributes -----------
 
@@ -1799,6 +1799,12 @@ enum FileTransOperation
 //	  ULONG mlns_SuggestedGadgetTextId;
 
 enum LinksNotSupportedReqResult { LINKSNOTSUPPORTEDREQ_Ignore = 1, LINKSNOTSUPPORTEDREQ_IgnoreAll, LINKSNOTSUPPORTEDREQ_Copy, LINKSNOTSUPPORTEDREQ_CopyAll, LINKSNOTSUPPORTEDREQ_Abort };
+
+// ---------------------------------------------------------------------------
+
+#define SCCM_FileTrans_Delete		       (SCC_Dummy+221)
+// BPTR DirLock
+// CONST_STRPTR	Name
 
 // ---------------------------------------------------------------------------
 // ------------------------------------------------------------------
@@ -2634,6 +2640,13 @@ struct msg_LinksNotSupportedRequest
 	CONST_STRPTR mlns_DestName;
 	ULONG mlns_SuggestedBodyTextId;
 	ULONG mlns_SuggestedGadgetTextId;
+	};
+
+struct msg_Delete
+	{
+	ULONG mmd_MethodID;
+	BPTR mmd_DirLock;
+	CONST_STRPTR mmd_Name;
 	};
 
 /****************************************************************************/
