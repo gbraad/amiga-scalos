@@ -892,6 +892,11 @@ SCCM_DeviceList_Filter		EQU	SCC_Dummy+135
 ; ------------- FileTransfer Class ---------------------------
 ; Name: TBC
 
+FTOPCODE_Copy			EQU	1
+FTOPCODE_Move			EQU	2
+FTOPCODE_CreateLink		EQU	3
+FTOPCODE_Delete			EQU	4
+
 ; -------------- Attributes -----------
 
 SCCA_FileTrans_Number           equ	SCC_Dummy+5
@@ -1059,6 +1064,12 @@ LINKSNOTSUPPORTEDREQ_IgnoreAll	equ	2
 LINKSNOTSUPPORTEDREQ_Copy	equ	3
 LINKSNOTSUPPORTEDREQ_CopyAll	equ	4
 LINKSNOTSUPPORTEDREQ_Abort	equ	5
+
+; ---------------------------------------------------------------------------
+
+SCCM_FileTrans_Delete			equ	SCC_Dummy+221
+;	BPTR DirLock
+;	CONST_STRPTR Name
 
 ;------------------------------------------------------------------
 	IF	0
@@ -1491,6 +1502,12 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
 	ULONG	mov_SuggestedBodyTextId
 	ULONG	mov_SuggestedGadgetTextId
 	LABEL	mov_SIZEOF
+
+    STRUCTURE msg_Delete
+	ULONG 	mmd_MethodID
+	BPTR 	mmd_DirLock
+	APTR	mmd_Name	; CONST_STRPTR
+	LABEL	mmd_SIZEOF
 
 ;-----------------------------------------------------------------------
 

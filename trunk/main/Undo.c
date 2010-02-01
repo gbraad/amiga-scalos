@@ -882,7 +882,11 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		ucmed->ucmed_srcName = AllocCopyString(fName);
 		if (NULL == ucmed->ucmed_srcName)
 			break;
-	
+
+		// special handling for volume copying: here is ucmed_srcName empty
+		if ((NULL == ucmed->ucmed_srcName) || (0 == strlen(ucmed->ucmed_srcName)))
+			uev->uev_DescrObjName = &ucmed->ucmed_srcDirName;
+
 		fName = (CONST_STRPTR) GetTagData(UNDOTAG_CopyDestName, (ULONG) ucmed->ucmed_srcName, TagList);
 		if (NULL == fName)
 			fName = ucmed->ucmed_srcName;
@@ -2256,10 +2260,8 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	do	{
 		struct UndoCopyMoveEventData *ucmed = &uev->uev_Data.uev_CopyMoveData;
 		STRPTR destName;
-		BPTR oldDir;
+		CONST_STRPTR iconExt = ".info";
 		LONG Result;
-		LONG IconResult;
-		struct ScaUpdateIcon_IW upd;
 
 		destDirLock = Lock(ucmed->ucmed_destDirName, ACCESS_READ);
 		d1(kprintf("%s/%s/%ld: destDirLock=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, destDirLock, ucmed->ucmed_destDirName));
@@ -2270,29 +2272,22 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 		if (0 == strlen(destName))
 			destName = ucmed->ucmed_srcName;
 
-		upd.ui_iw_Lock = destDirLock;
-		upd.ui_iw_Name = destName;
+		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj,
+			SCCM_FileTrans_Delete,
+			destDirLock, destName);
+		if (RETURN_OK != Result)
+			break;
 
-		iconName = UndoBuildIconName(destName);
+		iconName = ScalosAlloc(1 + strlen(destName) + strlen(iconExt));
 		if (NULL == iconName)
 			break;
 
-		oldDir = CurrentDir(destDirLock);
+		strcpy(iconName, destName);
+		strcat(iconName, iconExt);
 
-		Result = DeleteFile(destName);
-		d1(kprintf("%s/%s/%ld: ucmed_destName=<%s>  Result=%ld  IoErr=%ld\n", __FILE__, __FUNC__, \
-			__LINE__, destName, Result, IoErr()));
-
-		// try to also to remove associated icon
-		IconResult = DeleteFile(iconName);
-		d1(kprintf("%s/%s/%ld: IconResult=%ld\n", __FILE__, __FUNC__, __LINE__, IconResult));
-
-		SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
-
-		CurrentDir(oldDir);
-
-		if (!Result)
-			break;	// DeleteFile failed
+		/*Result =*/ DoMethod(uev->uev_UndoStep->ust_FileTransObj,
+			SCCM_FileTrans_Delete,
+			destDirLock, iconName);
 
 		Success = TRUE;
 		} while (0);
@@ -2300,7 +2295,7 @@ static SAVEDS(LONG) UndoCopyEvent(struct Hook *hook, APTR object, struct UndoEve
 	if (BNULL != destDirLock)
 		UnLock(destDirLock);
 	if (iconName)
-		FreePathBuffer(iconName);
+		ScalosFree(iconName);
 
 	return Success;
 }
@@ -3881,7 +3876,7 @@ static SAVEDS(LONG) UndoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 {
 	BOOL Success = FALSE;
 	BPTR srcDirLock;
-	STRPTR IconName = NULL;
+	STRPTR iconName = NULL;
 
 	(void) hook;
 	(void) object;
@@ -3890,7 +3885,6 @@ static SAVEDS(LONG) UndoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 
 	do	{
 		struct UndoNewDrawerData *und = &uev->uev_Data.uev_NewDrawerData;
-		BPTR oldDir;
 		LONG Result;
 
 		srcDirLock = Lock(und->und_DirName, ACCESS_READ);
@@ -3901,43 +3895,39 @@ static SAVEDS(LONG) UndoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 		if (0 == strlen(und->und_srcName))
 			break;
 
-		oldDir = CurrentDir(srcDirLock);
+		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj,
+			SCCM_FileTrans_Delete,
+			srcDirLock, und->und_srcName);
 
-		Result = DeleteFile(und->und_srcName);
-		if (!Result)
-			break;
+		if (RETURN_OK != Result)
+			break;	// SCCM_FileTrans_Delete failed
 
 		if (und->und_CreateIcon)
 			{
-			// Remove associated icon
-			struct ScaUpdateIcon_IW upd;
+			CONST_STRPTR iconExt = ".info";
 
-			IconName = UndoBuildIconName(und->und_srcName);
-			if (NULL == IconName)
+			iconName = ScalosAlloc(1 + strlen(und->und_srcName) + strlen(iconExt));
+			if (NULL == iconName)
 				break;
 
-			Result = DeleteFile(IconName);
-			if (!Result)
-				break;
+			strcpy(iconName, und->und_srcName);
+			strcat(iconName, iconExt);
 
-			upd.ui_iw_Lock = srcDirLock;
-			upd.ui_iw_Name = und->und_srcName;
+			Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj,
+				SCCM_FileTrans_Delete,
+				srcDirLock, iconName);
 
-			SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
+			if (RETURN_OK != Result)
+				break;	// SCCM_FileTrans_Delete failed
 			}
-
-		CurrentDir(oldDir);
-
-		if (!Result)
-			break;	// DeleteFile failed
 
 		Success = TRUE;
 		} while (0);
 
 	if (BNULL != srcDirLock)
 		UnLock(srcDirLock);
-	if (IconName)
-		FreePathBuffer(IconName);
+	if (iconName)
+		ScalosFree(iconName);
 
 	return Success;
 }

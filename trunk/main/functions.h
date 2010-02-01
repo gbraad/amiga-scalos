@@ -344,6 +344,7 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 LONG MoveCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, CONST_STRPTR FileName);
 LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 	CONST_STRPTR SrcFileName, CONST_STRPTR DestFileName);
+LONG DeleteCommand(Class *cl, Object *o, BPTR DirLock, CONST_STRPTR FileName);
 LONG CountCommand(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Name, BOOL Recursive);
 ///
 /* ------------------------------------------------- */
