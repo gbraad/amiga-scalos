@@ -1845,9 +1845,8 @@ MSGID_DEFAULT_MENU_SYSTEM_SHELL
 Nouveau Shell
 ;Shell
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_SYSTEM_FORMATCDRW
-FormatCDRW
+Formater le CDRW
 ;FormatCDRW
 ;
 ;+++translateme+++
@@ -1865,9 +1864,8 @@ MSGID_DEFAULT_MENU_SYSTEM_TYPEMANAGER
 TypeManager
 ;TypeManager
 ;
-;+++translateme+++
 MSGID_DEFAULT_MENU_SYSTEM_HELP
-Help
+Aide
 ;Help
 ;
 ;-----------------------------------------------------------
