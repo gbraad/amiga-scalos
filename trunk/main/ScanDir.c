@@ -60,7 +60,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct internalScaWindowTask *iwt,
 	struct ScaReadIconArg *ria, BOOL CheckForDuplicates);
 static struct ScaIconNode *ScanDirInitIcon(struct internalScaWindowTask *iwt,
 	const struct ReadIconListData *rild, struct BackDropList *bdl,
-	struct ScaReadIconArg *ria, BOOL isDefIcon, Object *IconObj);
+	struct ScaReadIconArg *ria, BOOL isDefIcon, BOOL isLink, Object *IconObj);
 static struct ScaIconNode *CreateIcon(struct internalScaWindowTask *iwt,
 	const struct ReadIconListData *rild, struct BackDropList *bdl, struct ScaReadIconArg *ria);
 static SAVEDS(LONG) CompareNameFunc(struct Hook *hook, struct ScaIconNode *in2,
@@ -76,7 +76,7 @@ static void DisposeIconScanEntry(struct IconScanEntry *ise);
 static void RilcDisposeData(void *data);
 static void RilcDisposeKey(void *key);
 static int RilcCompare(const void *data1, const void *data2);
-static ULONG AdjustIconType(Object *IconObj, LONG DirEntryType);
+static ULONG AdjustIconType(Object *IconObj, LONG DirEntryType, BOOL isLink);
 static BOOL ScanDirFindIcon(struct internalScaWindowTask *iwt, CONST_STRPTR IconName);
 
 //----------------------------------------------------------------------------
@@ -885,7 +885,7 @@ BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropLis
 
 static struct ScaIconNode *ScanDirInitIcon(struct internalScaWindowTask *iwt,
 	const struct ReadIconListData *rild, struct BackDropList *bdl,
-	struct ScaReadIconArg *ria, BOOL isDefIcon, Object *IconObj)
+	struct ScaReadIconArg *ria, BOOL isDefIcon, BOOL isLink, Object *IconObj)
 {
 	BPTR currentDirLock;
 	struct ExtGadget *gg = (struct ExtGadget *) IconObj;
@@ -905,11 +905,12 @@ static struct ScaIconNode *ScanDirInitIcon(struct internalScaWindowTask *iwt,
 	if (NULL == IconObj)
 		return NULL;
 
-	IconType = AdjustIconType(IconObj, rild->rild_Type);
+	IconType = AdjustIconType(IconObj, rild->rild_Type, isLink);
 	d1(KPrintF("%s/%s/%ld: IconType=%ld\n", __FILE__, __FUNC__, __LINE__, IconType));
 
 	if (WBDISK == IconType)
 		{
+		d1(KPrintF("%s/%s/%ld: IconType=%ld\n", __FILE__, __FUNC__, __LINE__, IconType));
 		DisposeIconObject(IconObj);
 		return NULL;
 		}
@@ -1134,7 +1135,7 @@ static struct ScaIconNode *CreateIcon(struct internalScaWindowTask *iwt,
 		return CreateDefaultIcon(iwt, rild, bdl, ria, FALSE);
 		}
 
-	return ScanDirInitIcon(iwt, rild, bdl, ria, FALSE, IconObj);
+	return ScanDirInitIcon(iwt, rild, bdl, ria, FALSE, isLink, IconObj);
 }
 
 
@@ -1215,7 +1216,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct internalScaWindowTask *iwt,
 	if (PathBuffer)
 		FreePathBuffer(PathBuffer);
 
-	return ScanDirInitIcon(iwt, rild, bdl, NULL, TRUE, IconObj);
+	return ScanDirInitIcon(iwt, rild, bdl, NULL, TRUE, FALSE, IconObj);
 }
 
 
@@ -1856,7 +1857,7 @@ static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *ril
 						__FILE__, __FUNC__, __LINE__, ise->ise_Fib.fib_FileName, ise->ise_IconObj));
 				if (ise->ise_IconObj)
 					{
-					ise->ise_IconType = AdjustIconType(ise->ise_IconObj, rild->rild_Type);
+					ise->ise_IconType = AdjustIconType(ise->ise_IconObj, rild->rild_Type, ise->ise_Flags & ISEFLG_IsLink);
 
 					d1(KPrintF("%s/%s/%ld: IconType=%ld\n", \
 						__FILE__, __FUNC__, __LINE__, ise->ise_IconType));
@@ -2252,7 +2253,7 @@ BOOL IsFileHidden(CONST_STRPTR Filename, ULONG Protection)
 }
 
 
-static ULONG AdjustIconType(Object *IconObj, LONG DirEntryType)
+static ULONG AdjustIconType(Object *IconObj, LONG DirEntryType, BOOL isLink)
 {
 	ULONG IconType;
 	ULONG NewIconType;
@@ -2266,7 +2267,11 @@ static ULONG AdjustIconType(Object *IconObj, LONG DirEntryType)
 	switch (DirEntryType)
 		{
 	case ST_ROOT:
-		if (WBDISK != IconType)
+		if (isLink && WBDRAWER != IconType)
+			{
+			NewIconType = WBDRAWER;
+			}
+		if (!isLink && WBDISK != IconType)
 			{
 			NewIconType = WBDISK;
 			}

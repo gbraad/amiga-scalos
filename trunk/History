@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20100201	jl	- Bugfix: Unfo/Redo function was unable to remove copied (non-empty) directories.
+41.7    20100202	jl	- Bugfix: links to volumes could not be created.
+				- Bugfix: drop menu didnt work when dragging volumes into icon windows.
+	20100201	jl	- Bugfix: Undo/Redo function was unable to remove copied (non-empty) directories.
 	20100130	jl	- Improvement: added capability to undo/redo closing windows.
 				- Bugfix: sqlite3.library reported read-only state for "RAM:t".
 				- Bugfix: scalos crashed when drag-copying a disk into an icon window.

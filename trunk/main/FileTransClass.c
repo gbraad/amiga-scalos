@@ -445,16 +445,16 @@ static ULONG FileTransClass_Move(Class *cl, Object *o, Msg msg)
 static ULONG FileTransClass_CreateLink(Class *cl, Object *o, Msg msg)
 {
 	struct FileTransClassInstance *inst = INST_DATA(cl, o);
-	struct msg_Move *mmv = (struct msg_Move *) msg;
+	struct msg_Copy *mcp = (struct msg_Copy *) msg;
 
 	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-	d1(kprintf("%s/%s/%ld: Name=<%s>  x=%ld  y=%ld\n", \
-		__LINE__, mmv->mmv_Name, mmv->mmv_MouseX, mmv->mmv_MouseY));
+	d1(kprintf("%s/%s/%ld: SrcName=<%s>  DestName=<%s>  x=%ld  y=%ld\n", \
+		__LINE__, mcp->mcp_SrcName, mcp->mcp_DestName, mcp->mcp_MouseX, mcp->mcp_MouseY));
 
 	AddFTOp(inst, FTOPCODE_CreateLink,
-		mmv->mmv_SrcDirLock, mmv->mmv_Name,
-		mmv->mmv_DestDirLock, mmv->mmv_Name,
-		mmv->mmv_MouseX, mmv->mmv_MouseY);
+		mcp->mcp_SrcDirLock, mcp->mcp_SrcName,
+		mcp->mcp_DestDirLock, mcp->mcp_DestName,
+		mcp->mcp_MouseX, mcp->mcp_MouseY);
 
 	return RETURN_OK;
 }
@@ -1005,7 +1005,7 @@ static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto)
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 	LONG Result;
 
-	Result = CreateLinkCommand(cl, o, fto->fto_SrcDirLock, fto->fto_DestDirLock, fto->fto_SrcName);
+	Result = CreateLinkCommand(cl, o, fto->fto_SrcDirLock, fto->fto_DestDirLock, fto->fto_SrcName,  fto->fto_DestName);
 
 	d1(KPrintF("%s/%s/%ld: Result=%ld  ftci_MostCurrentReplaceMode=%ld\n", __FILE__, __FUNC__, __LINE__, Result, ftci->ftci_MostCurrentReplaceMode));
 
@@ -1014,41 +1014,53 @@ static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto)
 		// Link to object created successfully
 		// Now try to copy the object's icon
 
-		BPTR oldDir = CurrentDir(fto->fto_DestDirLock);
+		BPTR oldDir = CurrentDir(fto->fto_SrcDirLock);
 		Object *IconObj;
 		LONG existsResult = EXISTREQ_Replace;
 
-		d1(KPrintF("%s/%s/%ld: SrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fto->fto_SrcName));
+		d1(KPrintF("%s/%s/%ld: fto_SrcName=<%s>  fto_DestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fto->fto_SrcName, fto->fto_DestName));
 
-		IconObj = NewIconObjectTags(fto->fto_DestName, TAG_END);
+		IconObj = NewIconObjectTags(fto->fto_SrcName, TAG_END);
+		d1(KPrintF("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 		if (IconObj)
 			{
-			STRPTR IconName;
+			STRPTR SrcIconName;
 
 			switch (ftci->ftci_MostCurrentReplaceMode)
 				{
 			case SCCV_ReplaceMode_Ask:
-				IconName = AllocPathBuffer();
-				if (IconName)
+				SrcIconName = AllocPathBuffer();
+				if (SrcIconName)
 					{
-					CONST_STRPTR Extension = "";
+					STRPTR DestIconName;
 
-					GetAttr(IDTA_Extention, IconObj, (APTR) &Extension);
+					DestIconName = AllocPathBuffer();
+					if (DestIconName)
+						{
+						CONST_STRPTR Extension = "";
 
-					stccpy(IconName, fto->fto_DestName, Max_PathLen);
-					SafeStrCat(IconName, Extension, Max_PathLen);
+						GetAttr(IDTA_Extention, IconObj, (APTR) &Extension);
 
-					existsResult = ftci->ftci_MostCurrentReplaceMode = DoMethod(o, SCCM_FileTrans_OverwriteRequest,
-						OVERWRITEREQ_CopyIcon,
-						fto->fto_SrcDirLock, IconName,
-						fto->fto_DestDirLock, IconName,
-						ftci->ftci_Window, 
-						MSGID_EXISTSICON_COPY, MSGID_EXISTS_GNAME_NEW);
+						stccpy(DestIconName, fto->fto_DestName, Max_PathLen);
+						SafeStrCat(DestIconName, Extension, Max_PathLen);
 
-					d1(KPrintF("%s/%s/%ld: Result=%08lx  ftci_MostCurrentReplaceMode=%ld\n", \
-						__LINE__, Result, ftci->ftci_MostCurrentReplaceMode));
+						stccpy(SrcIconName, fto->fto_SrcName, Max_PathLen);
+						SafeStrCat(SrcIconName, Extension, Max_PathLen);
 
-					FreePathBuffer(IconName);
+						existsResult = ftci->ftci_MostCurrentReplaceMode = DoMethod(o, SCCM_FileTrans_OverwriteRequest,
+							OVERWRITEREQ_CopyIcon,
+							fto->fto_SrcDirLock, SrcIconName,
+							fto->fto_DestDirLock, DestIconName,
+							ftci->ftci_Window, 
+							MSGID_EXISTSICON_COPY, MSGID_EXISTS_GNAME_NEW);
+
+						d1(KPrintF("%s/%s/%ld: Result=%08lx  ftci_MostCurrentReplaceMode=%ld\n", \
+							__LINE__, Result, ftci->ftci_MostCurrentReplaceMode));
+
+						FreePathBuffer(DestIconName);
+						}
+
+					FreePathBuffer(SrcIconName);
 					}
 				break;
 			case SCCV_ReplaceMode_Never:
@@ -1076,6 +1088,7 @@ static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto)
 			DisposeIconObject(IconObj);
 			}
 
+		d1(KPrintF("%s/%s/%ld: existsResult=%ld\n", __FILE__, __FUNC__, __LINE__, existsResult));
 		if (EXISTREQ_Replace == existsResult)
 			{
 			if (0 == strlen(fto->fto_SrcName))
@@ -1091,13 +1104,14 @@ static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto)
 					struct ExtGadget *gg = (struct ExtGadget *) IconObj;
 
 					d1(KPrintF("%s/%s/%ld: x=%ld  y=%ld\n", \
-						__LINE__, fto->fto_MouseX, fto->fto_MouseY));
+						__FILE__, __FUNC__, __LINE__, fto->fto_MouseX, fto->fto_MouseY));
 
 					gg->LeftEdge = fto->fto_MouseX;
 					gg->TopEdge = fto->fto_MouseY;
 
+					CurrentDir(fto->fto_DestDirLock);
+
 					PutIconObjectTags(IconObj, fto->fto_DestName,
-						ICONA_NoNewImage, TRUE,
 						TAG_END);
 
 					DisposeIconObject(IconObj);
@@ -1109,6 +1123,9 @@ static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto)
 					fto->fto_DestName, fto->fto_DestDirLock,
 					fto->fto_MouseX, fto->fto_MouseY);
 				}
+
+			debugLock_d1(fto->fto_DestDirLock);
+			d1(KPrintF("%s/%s/%ld: fto_DestName=<%s>\n", __FILE__, __FUNC__, __LINE__, fto->fto_DestName));
 
 			// update destination window
 			ScalosDropAddIcon(fto->fto_DestDirLock, fto->fto_DestName,

@@ -103,7 +103,8 @@ static LONG CopyLinkContents(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 //----------------------------------------------------------------------------
 
-LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, CONST_STRPTR FileName)
+LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
+	CONST_STRPTR SrcFileName, CONST_STRPTR DestFileName)
 {
 	LONG Result = RETURN_OK;
 	LONG reqResult = COPYERR_nop;
@@ -113,21 +114,25 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 
 	d1(KPrintF("%s/%s/%ld: ftci=%08lx\n", __FILE__, __FUNC__, __LINE__, ftci));
+	debugLock_d1(SrcDirLock);
+	debugLock_d1(DestDirLock);
+	d1(KPrintF("%s/%s/%ld: SrcFileName=<%s>\n", __FILE__, __FUNC__, __LINE__, SrcFileName));
+	d1(KPrintF("%s/%s/%ld: DestFileName=<%s>\n", __FILE__, __FUNC__, __LINE__, DestFileName));
 
-	if (!ExistsObject(SrcDirLock, FileName))
+	if (!ExistsObject(SrcDirLock, SrcFileName))
 		{
 		// silently return if source object is non-existing
-		d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_OK));
-		return RETURN_OK;
+		d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, ERROR_OBJECT_NOT_FOUND));
+		return ERROR_OBJECT_NOT_FOUND;
 		}
 
 	if (SCCV_ReplaceMode_Abort == ftci->ftci_ReplaceMode)
 		{
-		d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
+		d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
 		return RETURN_WARN;
 		}
 	
-	if (ExistsObject(DestDirLock, FileName))
+	if (ExistsObject(DestDirLock, DestFileName))
 		{
 		LONG existsResult = EXISTREQ_Replace;
 
@@ -136,14 +141,14 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 		case SCCV_ReplaceMode_Ask:
 			existsResult = DoMethod(o, SCCM_FileTrans_OverwriteRequest,
 				OVERWRITEREQ_Move,
-				SrcDirLock, FileName,
-				DestDirLock, FileName,
+				SrcDirLock, SrcFileName,
+				DestDirLock, DestFileName,
 				ftci->ftci_Window, 
 				MSGID_EXISTSNAME_MOVE, MSGID_EXISTS_GNAME_NEW);
 			break;
 
 		case SCCV_ReplaceMode_Never:
-			d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_OK));
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, RETURN_OK));
 			return RETURN_OK;
 			break;
 
@@ -162,7 +167,7 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 
 		case EXISTREQ_Replace:
 			do	{
-				Result = DeleteEntry(cl, o, DestDirLock, FileName, FALSE);
+				Result = DeleteEntry(cl, o, DestDirLock, DestFileName, FALSE);
 
 				if (Result != RETURN_OK && Result != RESULT_UserAborted)
 					reqResult = ReportError(cl, o, &Result, MSGID_DELETEERRORNAME, MSGID_COPYERRORGNAME);
@@ -170,26 +175,26 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 
 			if (COPYERR_Abort == reqResult)
 				{
-				d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
+				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
 				return RETURN_WARN;
 				}
 			break;
 
 		case EXISTREQ_SkipAll:
-			d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_OK));
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, RETURN_OK));
 			ftci->ftci_ReplaceMode = SCCV_ReplaceMode_Never;
 			return RETURN_OK;
 			break;
 
 		case EXISTREQ_Skip:
-			d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_OK));
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, RETURN_OK));
 			return RETURN_OK;
 			break;
 
 		case EXISTREQ_Abort:
 			ftci->ftci_ReplaceMode = SCCV_ReplaceMode_Abort;
 			
-			d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
 			return RETURN_WARN;
 			break;
 			}
@@ -197,7 +202,7 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 
 	DoMethod(o, SCCM_FileTrans_UpdateWindow,
 		FTUPDATE_EnterNewDir,
-		SrcDirLock, DestDirLock, FileName);
+		SrcDirLock, DestDirLock, SrcFileName);
 
 	oldDir = CurrentDir(DestDirLock);
 
@@ -229,20 +234,20 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 
 				if (!NameFromLock(SrcDirLock, Buffer, Max_PathLen))
 					{
-					Result = RememberError(cl, o, FileName, ftta_CreateSoftLink, fto_Lock);
+					Result = RememberError(cl, o, SrcFileName, ftta_CreateSoftLink, fto_Lock);
 					break;
 					}
-				if (!AddPart(Buffer, (STRPTR) FileName, Max_PathLen))
+				if (!AddPart(Buffer, (STRPTR) SrcFileName, Max_PathLen))
 					{
-					Result = RememberError(cl, o, FileName, ftta_CreateSoftLink, fto_AddPart);
+					Result = RememberError(cl, o, SrcFileName, ftta_CreateSoftLink, fto_AddPart);
 					break;
 					}
 
-				d1(kprintf("%s/%s/%ld: FileName=<%s> Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, FileName, Buffer));
+				d1(kprintf("%s/%s/%ld: SrcFileName=<%s> Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, SrcFileName, Buffer));
 
-				if (!MakeLink((STRPTR) FileName, (LONG) Buffer, LINK_SOFT))
+				if (!MakeLink((STRPTR) DestFileName, (LONG) Buffer, LINK_SOFT))
 					{
-					Result = RememberError(cl, o, FileName, ftta_CreateSoftLink, fto_MakeLink);
+					Result = RememberError(cl, o, DestFileName, ftta_CreateSoftLink, fto_MakeLink);
 					break;
 					}
 				}
@@ -250,18 +255,18 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 				{
 				CurrentDir(SrcDirLock);
 
-				fLock = Lock((STRPTR) FileName, ACCESS_READ);
+				fLock = Lock((STRPTR) SrcFileName, ACCESS_READ);
 				if ((BPTR)NULL == fLock)
 					{
-					Result = RememberError(cl, o, FileName, ftta_CreateHardLink, fto_Lock);
+					Result = RememberError(cl, o, SrcFileName, ftta_CreateHardLink, fto_Lock);
 					break;
 					}
 
 				CurrentDir(DestDirLock);
 
-				if (!MakeLink((STRPTR) FileName, (LONG) fLock, LINK_HARD))
+				if (!MakeLink((STRPTR) DestFileName, (LONG) fLock, LINK_HARD))
 					{
-					Result = RememberError(cl, o, FileName, ftta_CreateHardLink, fto_MakeLink);
+					Result = RememberError(cl, o, DestFileName, ftta_CreateHardLink, fto_MakeLink);
 					break;
 					}
 				}
@@ -274,11 +279,11 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 
 	DoMethod(o, SCCM_FileTrans_UpdateWindow,
 		FTUPDATE_Final,
-		SrcDirLock, DestDirLock, FileName);
+		SrcDirLock, DestDirLock, SrcFileName);
 
 	if (RESULT_UserAborted == Result)
 		{
-		d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
+		d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, RETURN_WARN));
 		Result = RETURN_WARN;
 		}
 
@@ -289,7 +294,7 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, 
 	if (Buffer)
 		FreePathBuffer(Buffer);
 		
-	d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, Result));
+	d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }
@@ -769,15 +774,10 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 LONG DeleteCommand(Class *cl, Object *o, BPTR DirLock, CONST_STRPTR FileName)
 {
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
-	STRPTR allocSrcFileName = NULL;
 	BPTR oldDir;
 	BPTR fLock = (BPTR)NULL;
 	T_ExamineData *fib;
 	LONG Result;
-	BOOL SourceIsVolume = FALSE;
-	STRPTR allocatedName = NULL;
-	struct FibOverride fOverride;
-	struct FibOverride *pOverride = NULL;
 
 	d1(kprintf("\n" "%s/%s/%ld: FileName=%08lx <%s>  \n", __FILE__, __FUNC__, __LINE__, \
 		FileName, FileName ? FileName : (CONST_STRPTR) "" ));
@@ -808,12 +808,6 @@ LONG DeleteCommand(Class *cl, Object *o, BPTR DirLock, CONST_STRPTR FileName)
 			break;
 			}
 
-		if (0 == strlen(FileName))
-			{
-			// Source is an absolute filename, i.e. "Volume:"
-			SourceIsVolume = TRUE;
-			}
-
 		fLock = Lock((STRPTR) FileName, ACCESS_READ);
 		if ((BPTR)NULL == fLock)
 			{
@@ -834,28 +828,6 @@ LONG DeleteCommand(Class *cl, Object *o, BPTR DirLock, CONST_STRPTR FileName)
 			break;
 			}
 		eName = ScalosExamineGetName(fib);
-
-		if (SourceIsVolume)
-			{
-			pOverride = &fOverride;
-			fOverride.for_DirEntryType = ST_ROOT;
-			fOverride.for_Name = eName = allocatedName = ScalosAlloc(2 + strlen(ScalosExamineGetName(fib)));
-			if (eName)
-				{
-				strcpy(allocatedName, ScalosExamineGetName(fib));
-				strcat(allocatedName, ":");
-				}
-			}
-		else if (IsSoftLink(FileName))
-			{
-			pOverride = &fOverride;
-			fOverride.for_DirEntryType = ST_SOFTLINK;
-			fOverride.for_Name = eName = allocatedName = ScalosAlloc(1 + strlen(FileName));
-			if (eName)
-				{
-				strcpy(allocatedName, FileName);
-				}
-			}
 
 		DoMethod(o, SCCM_FileTrans_UpdateWindow,
 			FTUPDATE_EnterNewDir,
@@ -884,10 +856,6 @@ LONG DeleteCommand(Class *cl, Object *o, BPTR DirLock, CONST_STRPTR FileName)
 		UnLock(fLock);
 
 	ScalosExamineEnd(&fib);
-	if (allocSrcFileName)
-		FreePathBuffer(allocSrcFileName);
-	if (allocatedName)
-		ScalosFree(allocatedName);
 
 	if (RESULT_UserAborted == Result)
 		Result = RETURN_WARN;
