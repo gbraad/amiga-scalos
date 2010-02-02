@@ -1333,7 +1333,7 @@ static ULONG IconWindowClass_AddIcon(Class *cl, Object *o, Msg msg)
 		SCCM_IconWin_ReadIcon,
 		mai->mai_Name, &ria);
 
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
 	CurrentDir(oldDir);
 

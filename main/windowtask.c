@@ -177,6 +177,8 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 			iwt->iwt_OldFileSys = SetFileSysTask(fLock->fl_Task);
 
 			iwt->iwt_ReadOnly = !ClassIsDiskWritable(ws->ws_Lock);
+
+			UndoWindowSignalOpening(iwt);
 			}
 
 		if (ws->ws_Width < MIN_WINDOW_WIDTH)

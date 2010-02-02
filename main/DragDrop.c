@@ -964,7 +964,9 @@ static ULONG Icon2Icon_CreateLink(struct internalScaWindowTask *iwtSrc, struct D
 
 	Result = DoMethod(DrInfo->drin_FileTransObj, SCCM_FileTrans_CreateLink,
 		DrInfo->drin_Arg->scarg_lock, DrInfo->drin_DestLock,
-                DrInfo->drin_Arg->scarg_name, xi, yi);
+		DrInfo->drin_Arg->scarg_name,
+		DrInfo->drin_Arg->scarg_name,
+		xi, yi);
 
 	d1(kprintf("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, Result));
 
@@ -1473,13 +1475,22 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 				if (LOCK_DIFFERENT == ScaSameLock(DrInfo->drin_DestLock, DrInfo->drin_Arg->scarg_lock) ||
 						DrInfo->drin_Drops.drop_Copy || DrInfo->drin_Drops.drop_CreateLink)
 					{
-					STRPTR Name;
-					BPTR oldDir2;
+					STRPTR Name = NULL;
+					BPTR oldDir2 = BNULL;
 
 					debugLock_d1(DrInfo->drin_DestLock);
 					debugLock_d1(DrInfo->drin_Arg->scarg_lock);
 
 					do	{
+						struct DropOps AllowedDrops;
+
+						AllowedDrops.drop_CreateLink = TRUE;
+						AllowedDrops.drop_Copy = TRUE;
+						AllowedDrops.drop_Move = FALSE;
+
+						if (!DropPopupMenu(iwtSrc, DrInfo, &AllowedDrops))
+							break;
+
 						oldDir2 = CurrentDir(DrInfo->drin_DestLock);
 
 						Name = AllocPathBuffer();
@@ -1502,7 +1513,8 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 								UNDOTAG_UndoMultiStep, undoStep,
 								UNDOTAG_CopySrcDirLock, DrInfo->drin_Arg->scarg_lock,
 								UNDOTAG_CopyDestDirLock, DrInfo->drin_DestLock,
-								UNDOTAG_CopySrcName, Name,
+								UNDOTAG_CopySrcName, "",
+								UNDOTAG_CopyDestName, Name,
 								UNDOTAG_IconPosX, xi,
 								UNDOTAG_IconPosY, yi,
 								TAG_END);
@@ -1510,7 +1522,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 								SCCM_FileTrans_CreateLink,
 								DrInfo->drin_Arg->scarg_lock,
                                                                 DrInfo->drin_DestLock,
-								Name,
+								"", Name,
 								xi, yi);
 							}
 						else
@@ -1654,8 +1666,11 @@ ULONG ScalosDropAddIcon(BPTR DirLock, CONST_STRPTR IconName, WORD x, WORD y)
 		{
 		if (ws->ws_Lock && LOCK_SAME == SameLock(DirLock, ws->ws_Lock))
 			{
+			d1(kprintf("%s/%s/%ld: found Window\n", __FILE__, __FUNC__, __LINE__));
+
 			if (&ws->ws_Task->pr_Task == FindTask(NULL))
 				{
+				d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 				Result = DoMethod(ws->ws_WindowTask->mt_MainObject,
 					SCCM_IconWin_AddIcon,
 					SCCM_ADDICON_MAKEXY(x, y),
@@ -1664,6 +1679,7 @@ ULONG ScalosDropAddIcon(BPTR DirLock, CONST_STRPTR IconName, WORD x, WORD y)
 				}
 			else
 				{
+				d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 				Result = DropAddIcon(ReplyPort,
 					ws,
 					DirLock,
@@ -1677,7 +1693,7 @@ ULONG ScalosDropAddIcon(BPTR DirLock, CONST_STRPTR IconName, WORD x, WORD y)
 
 	SCA_UnLockWindowList();
 
-	d1(KPrintF("%s/%s/%ld: Result=%08lx\n", __FILE__, __FUNC__, __LINE__, Result));
+	d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	DeleteMsgPort(ReplyPort);
 

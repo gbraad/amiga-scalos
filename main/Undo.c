@@ -2478,6 +2478,7 @@ static SAVEDS(LONG) RedoCreateLinkEvent(struct Hook *hook, APTR object, struct U
 		Result = DoMethod(uev->uev_UndoStep->ust_FileTransObj, SCCM_FileTrans_CreateLink,
 			srcDirLock, destDirLock,
 			ucmed->ucmed_srcName,
+			ucmed->ucmed_destName,
 			uev->uev_NewPosX, uev->uev_NewPosY);
 		if (RETURN_OK != Result)
 			break;
@@ -4466,6 +4467,70 @@ static SAVEDS(LONG) RedoCloseWindowEvent(struct Hook *hook, APTR object, struct 
 	d1(kprintf("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
+}
+
+//----------------------------------------------------------------------------
+
+// If window <iwt> is about to close, walk through Undo list
+// and remove all entries which refer to the opening window
+void UndoWindowSignalOpening(struct internalScaWindowTask *iwt)
+{
+	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock)
+		{
+		struct UndoStep *ust;
+
+		ScalosObtainSemaphore(&UndoListListSemaphore);
+
+		for (ust = (struct UndoStep *) globalUndoList.lh_Head;
+			ust != (struct UndoStep *) &globalUndoList.lh_Tail; )
+			{
+			struct UndoStep *ustNext = (struct UndoStep *) ust->ust_Node.ln_Succ;
+			BOOL Found = FALSE;
+			struct UndoEvent *uev;
+
+			d1(kprintf("%s/%s/%ld: ust=%08lx  \n", __FILE__, __FUNC__, __LINE__, ust));
+
+			for (uev = (struct UndoEvent *) ust->ust_EventList.lh_Head;
+				uev != (struct UndoEvent *) &ust->ust_EventList.lh_Tail;
+				uev = (struct UndoEvent *) uev->uev_Node.ln_Succ)
+				{
+				d1(kprintf("%s/%s/%ld: uev=%08lx  uev_Type=%ld  uev_UndoHook=%08lx\n", __FILE__, __FUNC__, __LINE__, uev, uev->uev_Type, uev->uev_UndoHook));
+				if (UNDO_CloseWindow == uev->uev_Type)
+					{
+					BPTR dirLock;
+
+					dirLock = Lock(uev->uev_Data.uev_CloseWindowData.ucwd_DirName, ACCESS_READ);
+					if (dirLock)
+						{
+						if (LOCK_SAME == SameLock(dirLock, iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock))
+							Found = TRUE;
+
+						UnLock(dirLock);
+						}
+					if (Found)
+						break;
+					}
+				}
+
+			if (Found)
+				{
+				UndoCount--;
+				Remove(&ust->ust_Node);
+				UndoDisposeStep(ust);
+				}
+
+			ust = ustNext;
+			d1(kprintf("%s/%s/%ld: ust=%08lx  \n", __FILE__, __FUNC__, __LINE__, ust));
+			}
+
+		ScalosReleaseSemaphore(&UndoListListSemaphore);
+
+		SetMenuOnOff(iwt);
+		}
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------

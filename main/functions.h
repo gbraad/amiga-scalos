@@ -340,7 +340,8 @@ Class *initDtImageClass(void);
 
 // defined in FileCommands.c
 ///
-LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, CONST_STRPTR FileName);
+LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
+	CONST_STRPTR SrcFileName, CONST_STRPTR DestFileName);
 LONG MoveCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock, CONST_STRPTR FileName);
 LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 	CONST_STRPTR SrcFileName, CONST_STRPTR DestFileName);
@@ -962,6 +963,7 @@ BOOL Undo(struct internalScaWindowTask *iwt);
 BOOL Redo(struct internalScaWindowTask *iwt);
 CONST_STRPTR UndoGetDescription(void);
 CONST_STRPTR RedoGetDescription(void);
+void UndoWindowSignalOpening(struct internalScaWindowTask *iwt);
 void UndoWindowSignalClosing(struct internalScaWindowTask *iwt);
 ///
 /* ------------------------------------------------- */

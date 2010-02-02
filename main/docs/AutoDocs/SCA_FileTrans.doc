@@ -4,6 +4,7 @@ FileTrans.sca/--background
 FileTrans.sca/SCCM_FileTrans_CreateLink
 FileTrans.sca/SCCM_FileTrans_Copy
 FileTrans.sca/SCCM_FileTrans_CountTimeout
+FileTrans.sca/SCCM_FileTrans_Delete
 FileTrans.sca/SCCM_FileTrans_ErrorRequest
 FileTrans.sca/SCCM_FileTrans_LinksNotSupportedRequest
 FileTrans.sca/SCCM_FileTrans_Move
@@ -49,11 +50,11 @@ FileTrans.sca/SCCM_FileTrans_WriteProtectedRequest
 
     SYNOPSIS
 	LONG Result = DoMethod(obj,SCCM_FileTrans_CreateLink,BPTR srcLock,
-		BPTR destLock,CONST_STRPTR srcName,
+		BPTR destLock,CONST_STRPTR srcName,CONST_STRPTR destName,
 		LONG MouseX,LONG MouseY);
 
     FUNCTION
-	Creates a link to the specifired object (file or directory) and 
+	Creates a link to the specified object (file or directory) and
 	updates the current progress window on the scalos screen with some 
 	message about the link currently being created.	
 
@@ -61,6 +62,7 @@ FileTrans.sca/SCCM_FileTrans_WriteProtectedRequest
 	srcLock - Lock on source directory.
 	destLock - Lock on destination directory.
 	srcName - Name of object to create link from.
+	destName - Name of the created link object
 	MouseX,MouseY - position for destination link icon.
 
     RESULT
@@ -281,6 +283,29 @@ FileTrans.sca/SCCM_FileTrans_WriteProtectedRequest
     RESULT
 	Result - non-zero value if CountTimeout is exceeded and 
 	   counting should be aborted.
+
+    SEE ALSO
+FileTrans.sca/SCCM_FileTrans_Delete
+
+    NAME
+        SCCM_FileTrans_Delete
+
+    SYNOPSIS
+	ULONG Result = DoMethod(obj,SCCM_FileTrans_Delete
+		BPTR dirLock, CONST_STRPTR name);
+
+    FUNCTION
+	Deletes the given file system object. Directories are
+	deleted recursively, including all contents.
+
+    INPUTS
+	dirLock - Lock on parent directory of object
+	srcName - file name of object
+
+    RESULT
+	Result - 0 = RETURN_OK = deleted successfully
+		5 = RETURN_WARN = Deleting was aborted by user
+		... other DOS error code if something went wrong
 
     SEE ALSO
 FileTrans.sca/SCCM_FileTrans_ErrorRequest
