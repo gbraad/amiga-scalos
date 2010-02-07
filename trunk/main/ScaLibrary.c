@@ -2187,7 +2187,8 @@ LIBFUNC_P4(ULONG, sca_MakeWBArgs,
 
 	if (NULL == in && 0 == ArgCount)
 		{
-		for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+		for (ws=winlist.wl_WindowStruct; (ArgCount < MaxArg) && ws;
+				ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 			{
 			if (!(ws->ws_Flags & WSV_FlagF_TaskSleeps) 
 				&& ws->ws_Window
@@ -2217,7 +2218,7 @@ static ULONG MakeWindowWBArgs(struct ScaWindowStruct *ws,
 
 	ScalosLockIconListShared(iwt);
 
-	for (in = iwt->iwt_WindowTask.wt_IconList; ArgCount < MaxArg && in;
+	for (in = iwt->iwt_WindowTask.wt_IconList; (ArgCount < MaxArg) && in;
 			in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 		{
 		struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;

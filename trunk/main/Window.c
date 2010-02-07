@@ -543,7 +543,7 @@ static void RunMenuCmd_WBStart(struct internalScaWindowTask *iwt,
 	*lp = ch;
 	args[0].wa_Name = FilePart(mtr->MenuCombo.MenuCommand.mcom_name);
 
-	if (mtr->MenuCombo.MenuCommand.mcom_flags & MCOMFLGF_Args)
+	if ((NumberOfWbArgs > 1) && (mtr->MenuCombo.MenuCommand.mcom_flags & MCOMFLGF_Args))
 		{
 		if (in)
 			{
@@ -571,8 +571,11 @@ static void RunMenuCmd_WBStart(struct internalScaWindowTask *iwt,
 		SCA_Priority, Priority,
 		TAG_END);
 
-	SCA_FreeWBArgs(&args[1], ArgCount - 1, 
-		Success ? (SCAF_FreeNames) : (SCAF_FreeNames | SCAF_FreeLocks));
+	if (NumberOfWbArgs > 1)
+		{
+		SCA_FreeWBArgs(&args[1], ArgCount - 1,
+			Success ? (SCAF_FreeNames) : (SCAF_FreeNames | SCAF_FreeLocks));
+		}
 
 	if (!Success)
 		UnLock(args[0].wa_Lock);
