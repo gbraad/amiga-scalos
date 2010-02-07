@@ -46,15 +46,9 @@ struct GlobalCopyArgs
 	enum ExistsReqResult gca_Replace;
 	};
 
-struct FibOverride
-	{
-	LONG for_DirEntryType;
-	CONST_STRPTR for_Name;
-	};
-
 typedef LONG (*ENTRYFUNC)(Class *cl, Object *o, 
 	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock, 
-	const T_ExamineData *fib, const struct FibOverride *pOverride, CONST_STRPTR DestName);
+	const T_ExamineData *fib, CONST_STRPTR DestName, LONG DirEntryType, CONST_STRPTR eName);
 
 //----------------------------------------------------------------------------
 
@@ -75,18 +69,18 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 	BPTR SrcParentLock, BPTR DestParentLock, CONST_STRPTR SrcName, CONST_STRPTR DestName);
 static LONG CopyEntry(Class *cl, Object *o,
 	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock, 
-	const T_ExamineData *fib, const struct FibOverride *pOverride, CONST_STRPTR DestName);
+	const T_ExamineData *fib, CONST_STRPTR DestName, LONG DirEntryType, CONST_STRPTR eName);
 static BOOL ExistsObject(BPTR DirLock, CONST_STRPTR Name);
 static LONG ReportError(Class *cl, Object *o, LONG *Result, ULONG BodyTextID, ULONG GadgetTextID);
 static LONG DeleteEntry(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Name, BOOL DoCount);
 static LONG ScaDeleteFile(Class *cl, Object *o, BPTR ParentLock, CONST_STRPTR Name);
 static LONG ScaDeleteDir(Class *cl, Object *o, BPTR ParentLock, CONST_STRPTR Name, BOOL DoCount);
 static LONG CountEntry(Class *cl, Object *o, BPTR srcDirLock, T_ExamineData *fib,
-	const struct FibOverride *pOverride, BOOL recursive);
+	BOOL recursive, LONG DirEntryType, CONST_STRPTR eName);
 static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Name);
 static LONG CopyAndDeleteEntry(Class *cl, Object *o, 
-	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock, 
-	const T_ExamineData *fib, const struct FibOverride *pOverride, CONST_STRPTR DestName);
+	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock,
+	const T_ExamineData *fib, CONST_STRPTR DestName, LONG DirEntryType, CONST_STRPTR eName);
 static LONG RememberError(Class *cl, Object *o, CONST_STRPTR FileName,
 	enum FileTransTypeAction LastAction, enum FileTransOperation LastOp);
 static void ClearError(Class *cl, Object *o);
@@ -524,8 +518,6 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 	BPTR parentLock = (BPTR)NULL;
 	T_ExamineData *fib;
 	LONG Result;
-	struct FibOverride fOverride;
-	struct FibOverride *pOverride = NULL;
 	BOOL SourceIsVolume = FALSE;
 	STRPTR allocatedName = NULL;
 	struct GlobalCopyArgs gca;
@@ -545,6 +537,7 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 
 	do	{
 		CONST_STRPTR eName;
+		LONG DirEntryType;
 
 		oldDir = CurrentDir(SrcDirLock);
 
@@ -583,9 +576,8 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 
 		if (SourceIsVolume)
 			{
-			pOverride = &fOverride;
-			fOverride.for_DirEntryType = ST_ROOT;
-			fOverride.for_Name = eName = allocatedName = ScalosAlloc(2 + strlen(ScalosExamineGetName(fib)));
+			DirEntryType = ST_ROOT;
+			eName = allocatedName = ScalosAlloc(2 + strlen(ScalosExamineGetName(fib)));
 			if (eName)
 				{
 				strcpy(allocatedName, ScalosExamineGetName(fib));
@@ -595,6 +587,7 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 		else
 			{
 			eName = ScalosExamineGetName(fib);
+			DirEntryType = ScalosExamineGetDirEntryType(fib);
 			parentLock = ParentDir(fLock);
 			if ((BPTR)NULL == parentLock)
 				{
@@ -612,7 +605,9 @@ static LONG MoveCommand_CopyAndDelete(Class *cl, Object *o,
 			SrcDirLock, DestDirLock,
 			eName);
 
-		Result = CopyAndDeleteEntry(cl, o, &gca, SrcDirLock, DestDirLock, fib, pOverride, FileName);
+		Result = CopyAndDeleteEntry(cl, o, &gca, SrcDirLock,
+			DestDirLock, fib,
+			FileName, DirEntryType, eName);
 		} while (0);
 
 	DoMethod(o, SCCM_FileTrans_UpdateWindow,
@@ -653,8 +648,6 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 	BOOL SourceIsVolume = FALSE;
 	STRPTR allocatedName = NULL;
 	struct GlobalCopyArgs gca;
-	struct FibOverride fOverride;
-	struct FibOverride *pOverride = NULL;
 
 	d1(kprintf("\n" "%s/%s/%ld: SrcFileName=%08lx <%s>  DestFileName=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, \
 		SrcFileName, SrcFileName ? SrcFileName : (CONST_STRPTR) "", \
@@ -679,6 +672,7 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 
 	do	{
 		CONST_STRPTR eName;
+		LONG DirEntryType;
 
 		oldDir = CurrentDir(SrcDirLock);
 
@@ -715,12 +709,12 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 			break;
 			}
 		eName = ScalosExamineGetName(fib);
+		DirEntryType = ScalosExamineGetDirEntryType(fib);
 
 		if (SourceIsVolume)
 			{
-			pOverride = &fOverride;
-			fOverride.for_DirEntryType = ST_ROOT;
-			fOverride.for_Name = eName = allocatedName = ScalosAlloc(2 + strlen(ScalosExamineGetName(fib)));
+			DirEntryType = ST_ROOT;
+			eName = allocatedName = ScalosAlloc(2 + strlen(ScalosExamineGetName(fib)));
 			if (eName)
 				{
 				strcpy(allocatedName, ScalosExamineGetName(fib));
@@ -729,9 +723,8 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 			}
 		else if (IsSoftLink(SrcFileName))
 			{
-			pOverride = &fOverride;
-			fOverride.for_DirEntryType = ST_SOFTLINK;
-			fOverride.for_Name = eName = allocatedName = ScalosAlloc(1 + strlen(SrcFileName));
+			DirEntryType = ST_SOFTLINK;
+			eName = allocatedName = ScalosAlloc(1 + strlen(SrcFileName));
 			if (eName)
 				{
 				strcpy(allocatedName, SrcFileName);
@@ -746,7 +739,8 @@ LONG CopyCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 		d1(kprintf("%s/%s/%ld: fib=%08lx\n", __FILE__, __FUNC__, __LINE__, fib));
 
 		Result = CopyEntry(cl, o, &gca, SrcDirLock, 
-				DestDirLock, fib, pOverride, DestFileName);
+				DestDirLock, fib, DestFileName,
+				DirEntryType, eName);
 		} while (0);
 
 	DoMethod(o, SCCM_FileTrans_UpdateWindow,
@@ -1205,6 +1199,9 @@ static LONG CopyDir(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 			srcDirLock, DestDirLock, SrcName);
 
 		do	{
+			LONG DirEntryType;
+			CONST_STRPTR eName;
+
 			if (!ScalosExamineDir(srcDirLock, &edh, &fib))
 				{
 				Result = RememberExNextError(cl, o, SrcName, ftta_CopyDir, fto_ExNext);
@@ -1212,7 +1209,12 @@ static LONG CopyDir(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 				break;
 				}
 
-			Result = CopyEntry(cl, o, gca, srcDirLock, DestDirLock, fib, NULL, ScalosExamineGetName(fib));
+			eName = ScalosExamineGetName(fib);
+			DirEntryType = ScalosExamineGetDirEntryType(fib);
+
+			Result = CopyEntry(cl, o, gca, srcDirLock,
+				DestDirLock, fib, eName,
+				DirEntryType, eName);
 			} while (RETURN_OK == Result);
 
 		if (ERROR_NO_MORE_ENTRIES == Result)
@@ -1301,6 +1303,9 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 			srcDirLock, DestDirLock, SrcName);
 
 		do	{
+			LONG DirEntryType;
+			CONST_STRPTR eName;
+
 			if (!ScalosExamineDir(srcDirLock, &edh, &fib))
 				{
 				Result = RememberExNextError(cl, o, SrcName, ftta_CopyVolume, fto_ExNext);
@@ -1308,7 +1313,12 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 				break;
 				}
 
-			Result = CopyEntry(cl, o, gca, srcDirLock, DestDirLock, fib, NULL, ScalosExamineGetName(fib));
+			eName = ScalosExamineGetName(fib);
+			DirEntryType = ScalosExamineGetDirEntryType(fib);
+
+			Result = CopyEntry(cl, o, gca, srcDirLock,
+				DestDirLock, fib,
+				eName, DirEntryType, eName);
 			} while (RETURN_OK == Result);
 		} while (0);
 
@@ -1328,14 +1338,12 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 static LONG CopyEntry(Class *cl, Object *o, 
 	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock, 
-	const T_ExamineData *fib, const struct FibOverride *pOverride, CONST_STRPTR DestName)
+	const T_ExamineData *fib, CONST_STRPTR DestName, LONG DirEntryType, CONST_STRPTR eName)
 {
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 	LONG Result = RETURN_OK;
 	LONG reqResult;
 	BOOL fExists;
-	LONG DirEntryType = pOverride ? pOverride->for_DirEntryType : ScalosExamineGetDirEntryType(fib);
-	CONST_STRPTR eName = pOverride ? pOverride->for_Name :  ScalosExamineGetName(fib);
 
 	d1(kprintf("%s/%s/%ld: SrcName=<%s>  DestName=<%s>  Type=%ld  current=%lu\n", \
 		__FILE__, __FUNC__, __LINE__, eName, DestName, DirEntryType, ftci->ftci_CurrentItems));
@@ -1808,8 +1816,6 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 	T_ExamineData *fib;
 	BPTR fLock = (BPTR)NULL;
 	STRPTR allocatedName = NULL;
-	struct FibOverride fOverride;
-	struct FibOverride *pOverride = NULL;
 	BPTR oldDir;
 
 	d1(kprintf("%s/%s/%ld: Name=<%s>\n", __FILE__, __FUNC__, __LINE__, SrcFileName));
@@ -1819,6 +1825,7 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 
 	do	{
 		CONST_STRPTR eName;
+		LONG DirEntryType;
 
 		oldDir = CurrentDir(SrcDirLock);
 
@@ -1855,11 +1862,13 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 			break;
 			}
 
+		eName = ScalosExamineGetName(fib);
+		DirEntryType = ScalosExamineGetDirEntryType(fib);
+
 		if (SourceIsVolume)
 			{
-			pOverride = &fOverride;
-			fOverride.for_DirEntryType = ST_ROOT;
-			fOverride.for_Name = eName = allocatedName = ScalosAlloc(2 + strlen(ScalosExamineGetName(fib)));
+			DirEntryType = ST_ROOT;
+			eName = allocatedName = ScalosAlloc(2 + strlen(ScalosExamineGetName(fib)));
 			if (eName)
 				{
 				strcpy(allocatedName, ScalosExamineGetName(fib));
@@ -1868,9 +1877,8 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 			}
 		else if (IsSoftLink(SrcFileName))
 			{
-			pOverride = &fOverride;
-			fOverride.for_DirEntryType = ST_SOFTLINK;
-			fOverride.for_Name = eName = allocatedName = ScalosAlloc(1 + strlen(SrcFileName));
+			DirEntryType = ST_SOFTLINK;
+			eName = allocatedName = ScalosAlloc(1 + strlen(SrcFileName));
 			if (eName)
 				{
 				strcpy(allocatedName, SrcFileName);
@@ -1878,7 +1886,7 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 			}
 
 		if (RETURN_OK == Result)
-			Result = CountEntry(cl, o, SrcDirLock, fib, pOverride, Recursive);
+			Result = CountEntry(cl, o, SrcDirLock, fib, Recursive, DirEntryType, eName);
 		} while (0);
 
 	if (RETURN_OK == Result)
@@ -1899,12 +1907,10 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 
 
 static LONG CountEntry(Class *cl, Object *o, BPTR srcDirLock, T_ExamineData *fib,
-	const struct FibOverride *pOverride, BOOL recursive)
+	BOOL recursive, LONG DirEntryType, CONST_STRPTR eName)
 {
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 	LONG Result = RETURN_OK;
-	LONG DirEntryType = pOverride ? pOverride->for_DirEntryType : ScalosExamineGetDirEntryType(fib);
-	CONST_STRPTR eName = pOverride ? pOverride->for_Name :  ScalosExamineGetName(fib);
 
 	d1(kprintf("%s/%s/%ld: SrcName=<%s>  Type=%ld  Total=%lu\n", \
 		__FILE__, __FUNC__, __LINE__, eName, DirEntryType, ftci->ftci_TotalFiles));
@@ -2004,6 +2010,9 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 			}
 
 		do	{
+			CONST_STRPTR eName;
+			LONG DirEntryType;
+
 			if (!ScalosExamineDir(dirLock, &edh, &fib))
 				{
 				Result = RememberExNextError(cl, o, Name, ftta_CountDir, fto_ExNext);
@@ -2011,7 +2020,10 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 				break;
 				}
 
-			Result = CountEntry(cl, o, dirLock, fib, NULL, TRUE);
+			eName = ScalosExamineGetName(fib);
+			DirEntryType = ScalosExamineGetDirEntryType(fib);
+
+			Result = CountEntry(cl, o, dirLock, fib, TRUE, DirEntryType, eName);
 			} while (RETURN_OK == Result);
 		} while (0);
 
@@ -2028,14 +2040,12 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 
 static LONG CopyAndDeleteEntry(Class *cl, Object *o, 
 	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock, 
-	const T_ExamineData *fib, const struct FibOverride *pOverride, CONST_STRPTR DestName)
+	const T_ExamineData *fib, CONST_STRPTR DestName, LONG DirEntryType, CONST_STRPTR eName)
 {
 	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
 	LONG Result = RETURN_OK;
 	LONG reqResult;
 	BOOL fExists;
-	LONG DirEntryType = pOverride ? pOverride->for_DirEntryType : ScalosExamineGetDirEntryType(fib);
-	CONST_STRPTR eName = pOverride ? pOverride->for_Name :  ScalosExamineGetName(fib);
 
 	d1(kprintf("%s/%s/%ld: SrcName=<%s>  DestName=<%s>  Type=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, eName, DestName, DirEntryType));
@@ -2368,6 +2378,8 @@ static LONG CopyLinkContents(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 	ClearError(cl, o);
 
 	do	{
+		LONG DirEntryType;
+
 		oldDir = CurrentDir(DestDirLock);
 
 		if (!ScalosExamineBegin(&fib))
@@ -2402,12 +2414,15 @@ static LONG CopyLinkContents(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 			break;
 			}
 
+		DirEntryType = ScalosExamineGetDirEntryType(fib);
+
 		Result = CopyEntry(cl, o,
 			gca,
 			LinkSrcDirLock,
 			DestDirLock,
 			fib,
-			NULL,
+			DestName,
+			DirEntryType,
 			DestName);
 		} while (0);
 
