@@ -961,14 +961,17 @@ void AsyncRenameProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 
 		nArgs = 1;	// first argument is program itself
 
-		if (mcArg->mca_IconNode)
+		if (NumberOfWbArgs > 1)
 			{
-			nArgs += DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
-				mcArg->mca_IconNode, &wbArg[1]);
-			}
-		else
-			{
-			nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
+			if (mcArg->mca_IconNode)
+				{
+				nArgs += DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
+					mcArg->mca_IconNode, &wbArg[1]);
+				}
+			else
+				{
+				nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
+				}
 			}
 
 		d1(KPrintF("%s/%s/%ld: nArgs=%lu\n", __FILE__, __FUNC__, __LINE__, nArgs));
@@ -1018,8 +1021,11 @@ void AsyncRenameProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 
 			d1(KPrintF("%s/%s/%ld: Success=%lu\n", __FILE__, __FUNC__, __LINE__, Success));
 
-			SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
+			if (NumberOfWbArgs > 1)
+				{
+				SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
 					Success ? SCAF_FreeNames : SCAF_FreeNames | SCAF_FreeLocks);
+				}
 			if (Success)
 				wbArg[0].wa_Lock = (BPTR)NULL;
 
@@ -1028,7 +1034,10 @@ void AsyncRenameProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 		else
 			{
 			// Rename done by TextInputHook
-			SCA_FreeWBArgs(&wbArg[1], nArgs - 1, SCAF_FreeNames | SCAF_FreeLocks);
+			if (NumberOfWbArgs > 1)
+				{
+				SCA_FreeWBArgs(&wbArg[1], nArgs - 1, SCAF_FreeNames | SCAF_FreeLocks);
+				}
 			}
 
 		} while (0);
@@ -1066,15 +1075,18 @@ void AsyncDeleteProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 		if (NULL == wbArg)
 			return;
 
-		if (mcArg->mca_IconNode)
+		if (NumberOfWbArgs > 1)
 			{
-			nArgs += DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
-				mcArg->mca_IconNode, &wbArg[1]
-				);
-			}
-		else
-			{
-			nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
+			if (mcArg->mca_IconNode)
+				{
+				nArgs += DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
+					mcArg->mca_IconNode, &wbArg[1]
+					);
+				}
+			else
+				{
+				nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
+				}
 			}
 
 		DoForAppIcons(AMCLASSICON_Delete);
@@ -1109,8 +1121,11 @@ void AsyncDeleteProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 					SCA_WaitTimeout, 0,
 					TAG_END);
 
-			SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
+			if (NumberOfWbArgs > 1)
+				{
+				SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
 					Success ? SCAF_FreeNames : SCAF_FreeNames | SCAF_FreeLocks);
+				}
 			if (Success)
 				wbArg[0].wa_Lock = (BPTR)NULL;
 			}
@@ -1994,18 +2009,25 @@ static void FindProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 			break;
 
 		nArgs++;
+		d1(KPrintF("%s/%s/%ld: nArgs=%ld\n", __FILE__, __FUNC__, __LINE__, nArgs));
 
-		if (mcArg->mca_IconNode)
+		if (NumberOfWbArgs > 1)
 			{
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
-				mcArg->mca_IconNode, &wbArg[1]
-				);
-			nArgs++;
+			if (mcArg->mca_IconNode)
+				{
+				d1(KPrintF("%s/%s/%ld: NumberOfWbArgs=%ld\n", __FILE__, __FUNC__, __LINE__, NumberOfWbArgs));
+				DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
+					mcArg->mca_IconNode, &wbArg[1]);
+				nArgs++;
+				}
+			else
+				{
+				d1(KPrintF("%s/%s/%ld: NumberOfWbArgs=%ld\n", __FILE__, __FUNC__, __LINE__, NumberOfWbArgs));
+				nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
+				}
 			}
-		else
-			{
-			nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
-			}
+
+		d1(KPrintF("%s/%s/%ld: nArgs=%ld\n", __FILE__, __FUNC__, __LINE__, nArgs));
 
 		// SCA_WBStart()
 		Success = SCA_WBStartTags(wbArg, nArgs,
@@ -2014,13 +2036,18 @@ static void FindProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg 
 //				  SCA_WaitTimeout, 0,
 				TAG_END);
 
-		SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
+		d1(KPrintF("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+
+		if (NumberOfWbArgs > 1)
+			{
+			SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
 				Success ? SCAF_FreeNames : SCAF_FreeNames | SCAF_FreeLocks);
+			}
 		if (Success)
 			wbArg[0].wa_Lock = (BPTR)NULL;
 		} while (0);
 
-	d1(KPrintF("%s/%s/%ld: START wbArg=%08lx\n", __FILE__, __FUNC__, __LINE__, wbArg));
+	d1(KPrintF("%s/%s/%ld: wbArg=%08lx\n", __FILE__, __FUNC__, __LINE__, wbArg));
 
 	if (wbArg)
 		{
@@ -2062,16 +2089,19 @@ static void FormatDiskProg(struct internalScaWindowTask *iwt, const struct MenuC
 
 		nArgs++;
 
-		if (mcArg->mca_IconNode)
+		if (NumberOfWbArgs > 1)
 			{
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
-				mcArg->mca_IconNode, &wbArg[1]
-				);
-			nArgs++;
-			}
-		else
-			{
-			nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
+			if (mcArg->mca_IconNode)
+				{
+				DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
+					mcArg->mca_IconNode, &wbArg[1]
+					);
+				nArgs++;
+				}
+			else
+				{
+				nArgs += SCA_MakeWBArgs(&wbArg[1], NULL, NumberOfWbArgs - 1);
+				}
 			}
 
 		DoForAppIcons(AMCLASSICON_FormatDisk);
@@ -2086,8 +2116,11 @@ static void FormatDiskProg(struct internalScaWindowTask *iwt, const struct MenuC
 				SCA_WaitTimeout, 0,
 				TAG_END);
 
-		SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
+		if (NumberOfWbArgs > 1)
+			{
+			SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
 				Success ? SCAF_FreeNames : SCAF_FreeNames | SCAF_FreeLocks);
+			}
 		if (Success)
 			wbArg[0].wa_Lock = (BPTR)NULL;
 		} while (0);
@@ -2996,60 +3029,63 @@ static void EmptyTrashProg(struct internalScaWindowTask *iwt, const struct MenuC
 
 		nArgs++;
 
-		if (mcArg->mca_IconNode)
+		if (NumberOfWbArgs > 1)
 			{
-			ULONG IconType;
-
-			GetAttr(IDTA_Type, mcArg->mca_IconNode->in_Icon, &IconType);
-
-			if (WBGARBAGE != IconType)
-				break;
-
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
-				mcArg->mca_IconNode, &wbArg[1]
-				);
-			nArgs++;
-			}
-		else
-			{
-			struct ScaWindowStruct *ws;
-			struct WBArg *WBArgPtr = &wbArg[1];
-
-			SCA_LockWindowList(SCA_LockWindowList_Shared);
-
-			for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+			if (mcArg->mca_IconNode)
 				{
-				struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) ws->ws_WindowTask;
-				struct ScaIconNode *in;
+				ULONG IconType;
 
-				ScalosLockIconListShared(iwtx);
+				GetAttr(IDTA_Type, mcArg->mca_IconNode->in_Icon, &IconType);
 
-				for (in=iwtx->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
+				if (WBGARBAGE != IconType)
+					break;
+
+				DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
+					mcArg->mca_IconNode, &wbArg[1]
+					);
+				nArgs++;
+				}
+			else
+				{
+				struct ScaWindowStruct *ws;
+				struct WBArg *WBArgPtr = &wbArg[1];
+
+				SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+				for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
 					{
-					struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
+					struct internalScaWindowTask *iwtx = (struct internalScaWindowTask *) ws->ws_WindowTask;
+					struct ScaIconNode *in;
 
-					if (gg->Flags & GFLG_SELECTED)
+					ScalosLockIconListShared(iwtx);
+
+					for (in=iwtx->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 						{
-						ULONG IconType;
+						struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 
-						GetAttr(IDTA_Type, in->in_Icon, &IconType);
-
-						if (WBGARBAGE == IconType)
+						if (gg->Flags & GFLG_SELECTED)
 							{
-							if (DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
-								in, WBArgPtr))
+							ULONG IconType;
+
+							GetAttr(IDTA_Type, in->in_Icon, &IconType);
+
+							if (WBGARBAGE == IconType)
 								{
-								nArgs++;
-								WBArgPtr++;
+								if (DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_MakeWBArg,
+									in, WBArgPtr))
+									{
+									nArgs++;
+									WBArgPtr++;
+									}
 								}
 							}
 						}
+
+					ScalosUnLockIconList(iwtx);
 					}
 
-				ScalosUnLockIconList(iwtx);
+				SCA_UnLockWindowList();
 				}
-
-			SCA_UnLockWindowList();
 			}
 
 		DoForAppIcons(AMCLASSICON_EmptyTrash);
@@ -3075,8 +3111,11 @@ static void EmptyTrashProg(struct internalScaWindowTask *iwt, const struct MenuC
 					SCA_WaitTimeout, 0,
 					TAG_END);
 
-			SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
+			if (NumberOfWbArgs > 1)
+				{
+				SCA_FreeWBArgs(&wbArg[1], nArgs - 1,
 					Success ? SCAF_FreeNames : SCAF_FreeNames | SCAF_FreeLocks);
+				}
 			if (Success)
 				wbArg[0].wa_Lock = (BPTR)NULL;
 
