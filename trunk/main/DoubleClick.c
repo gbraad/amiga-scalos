@@ -124,7 +124,7 @@ static Object *DoubleClick_GetIconObject(struct internalScaWindowTask *iwt, stru
 		IconObject = (Object *) DoMethod(iwt->iwt_WindowTask.mt_MainObject, 
 			SCCM_IconWin_GetDefIcon,
 			in->in_Name, 
-			ScalosExamineGetDirEntryType(fib),
+			ScalosExamineGetDirEntryTypeRoot(fib, fLock),
 			ScalosExamineGetProtection(fib));
 
 		*isDefIcon = TRUE;		
