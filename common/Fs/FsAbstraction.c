@@ -226,6 +226,40 @@ LONG ScalosExamineGetDirEntryType(const T_ExamineData *exd)
 
 //----------------------------------------------------------------------------
 
+LONG ScalosExamineGetDirEntryTypeRoot(const T_ExamineData *exd, BPTR fLock)
+{
+	if (NULL == exd)
+		return ST_FILE;
+#ifdef __amigaos4__
+	if( EXD_IS_FILE(exd) )
+		return ST_FILE;
+	else if ( EXD_IS_DIRECTORY(exd) )
+		{
+		// Special handling (expensive!) since AmigaOS4 ExamineObject() has no means to recognize volumes
+		BPTR parentLock = ParentDir(fLock);
+		if (parentLock)
+			{
+			UnLock(parentLock);
+			return ST_USERDIR;
+			}
+		else
+			{
+			return ST_ROOT;
+			}
+		}
+	else if (EXD_IS_SOFTLINK(exd))
+		return ST_SOFTLINK;
+	else if (EXD_IS_PIPE(exd))
+		return ST_PIPEFILE;
+	else
+		return ST_FILE;
+#else //__amigaos4__
+	return exd->fib_DirEntryType;
+#endif //__amigaos4__
+}
+
+//----------------------------------------------------------------------------
+
 LONG ScalosExamineIsDrawer(const T_ExamineData *exd)
 {
 #ifdef __amigaos4__

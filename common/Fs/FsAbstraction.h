@@ -32,6 +32,7 @@ ULONG ScalosExamineGetBlockCount(const T_ExamineData *exd);
 CONST_STRPTR ScalosExamineGetName(const T_ExamineData *exd);
 CONST_STRPTR ScalosExamineGetComment(const T_ExamineData *exd);
 LONG ScalosExamineGetDirEntryType(const T_ExamineData *exd);
+LONG ScalosExamineGetDirEntryTypeRoot(const T_ExamineData *exd, BPTR fLock);
 LONG ScalosExamineIsDrawer(const T_ExamineData *exd);
 ULONG ScalosExamineGetDirUID(const T_ExamineData *exd);
 ULONG ScalosExamineGetDirGID(const T_ExamineData *exd);

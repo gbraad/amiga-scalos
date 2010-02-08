@@ -385,7 +385,7 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 						if (!ScalosExamineLock(fLock, &fib))
 							break;
 
-						DirEntryType = ScalosExamineGetDirEntryType(fib);
+						DirEntryType = ScalosExamineGetDirEntryTypeRoot(fib, fLock);
 						fName = ScalosExamineGetName(fib);
 						fSize = ScalosExamineGetSize(fib);
 						Protection = ScalosExamineGetProtection(fib);
@@ -435,7 +435,7 @@ static void DisplayToolTip(struct internalScaWindowTask *iwt, ULONG FirstTag, ..
 								}
 							else
 								{
-								DirEntryType = ScalosExamineGetDirEntryType(fib);
+								DirEntryType = ScalosExamineGetDirEntryTypeRoot(fib, fLock);
 								fName = ScalosExamineGetName(fib);
 								}
 
