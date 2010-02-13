@@ -621,6 +621,7 @@ ULONG NewWindowPatternMsg(struct internalScaWindowTask *iwt, struct Message *Msg
 void FreeBackFill(struct PatternInfo *);
 BOOL SetBackFill(struct internalScaWindowTask *iwt, struct PatternNode *ptNode,
 	struct PatternInfo *ptInfo, ULONG Flags, struct Screen *Scr);
+void SetScreenBackfillHook(struct Hook *bfHook);
 ///
 /* ------------------------------------------------- */
 
