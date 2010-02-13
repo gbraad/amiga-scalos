@@ -4407,7 +4407,7 @@ static SAVEDS(LONG) RedoChangeIconObjectEvent(struct Hook *hook, APTR object, st
 
 static SAVEDS(LONG) UndoCloseWindowEvent(struct Hook *hook, APTR object, struct UndoEvent *uev)
 {
-	BOOL Success = FALSE;
+	BOOL Success;
 
 	(void) hook;
 	(void) object;
