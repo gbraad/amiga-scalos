@@ -132,29 +132,9 @@ void PatternsOff(struct MainTask *mt, struct MsgPort *ReplyPort)
 
 	if (mt->screenbackfill)
 		{
-		struct Layer *newLayer;
-
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-		ScaLockScreenLayers();
-
-		InstallLayerInfoHook(&iInfos.xii_iinfos.ii_Screen->LayerInfo, NULL);
-
-		newLayer = CreateBehindLayer(&iInfos.xii_iinfos.ii_Screen->LayerInfo,
-			iInfos.xii_iinfos.ii_Screen->RastPort.BitMap,
-			iInfos.xii_iinfos.ii_Screen->LeftEdge,
-			iInfos.xii_iinfos.ii_Screen->TopEdge,
-			iInfos.xii_iinfos.ii_Screen->LeftEdge + iInfos.xii_iinfos.ii_Screen->Width - 1,
-			iInfos.xii_iinfos.ii_Screen->TopEdge + iInfos.xii_iinfos.ii_Screen->Height - 1,
-			LAYERBACKDROP | LAYERSIMPLE,
-			NULL
-			);
-
-		DeleteLayer(0L, newLayer);
-
-		ScaUnlockScreenLayers();
-
+		SetScreenBackfillHook(NULL);
 		mt->screenbackfill = FALSE;
-
 		FreeBackFill(&mt->mwt.iwt_WindowTask.wt_PatternInfo);
 		}
 
@@ -194,8 +174,6 @@ void PatternsOn(struct MainTask *mt)
 	ScreenPatternNode = GetPatternNode(PatternPrefs.patt_DefScreenPatternNr);
 	if (ScreenPatternNode)
 		{
-		struct Layer *newLayer;
-
 		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.xii_iinfos.ii_Screen->Width;
 		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_height = iInfos.xii_iinfos.ii_Screen->Height;
 
@@ -204,25 +182,8 @@ void PatternsOn(struct MainTask *mt)
 		if (SetBackFill(NULL, ScreenPatternNode, &mt->mwt.iwt_WindowTask.wt_PatternInfo, SETBACKFILLF_NOASYNC, iInfos.xii_iinfos.ii_Screen))
 			{
 			mt->screenbackfill = TRUE;
-
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-			ScaLockScreenLayers();
-
-			InstallLayerInfoHook(&iInfos.xii_iinfos.ii_Screen->LayerInfo, NULL);
-
-			newLayer = CreateBehindLayer(&iInfos.xii_iinfos.ii_Screen->LayerInfo,
-				iInfos.xii_iinfos.ii_Screen->RastPort.BitMap,
-				iInfos.xii_iinfos.ii_Screen->LeftEdge,
-				iInfos.xii_iinfos.ii_Screen->TopEdge,
-				iInfos.xii_iinfos.ii_Screen->LeftEdge + iInfos.xii_iinfos.ii_Screen->Width - 1,
-				iInfos.xii_iinfos.ii_Screen->TopEdge + iInfos.xii_iinfos.ii_Screen->Height - 1,
-				LAYERBACKDROP | LAYERSIMPLE,
-				NULL
-				);
-
-			DeleteLayer(0L, newLayer);
-
-			ScaUnlockScreenLayers();
+			SetScreenBackfillHook(&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook);
 			}
 		}
 }
@@ -1389,4 +1350,31 @@ static BOOL PatternBackgroundSingleColor(struct PatternNode *ptNode,
 	return TRUE;
 }
 
+
+void SetScreenBackfillHook(struct Hook *bfHook)
+{
+	struct Layer *newLayer;
+
+	d1(KPrintF("%s/%s/%ld: START  bfHook=%08lx\n", __FILE__, __FUNC__, __LINE__, bfHook));
+
+	ScaLockScreenLayers();
+
+	InstallLayerInfoHook(&iInfos.xii_iinfos.ii_Screen->LayerInfo, bfHook);
+
+	newLayer = CreateBehindLayer(&iInfos.xii_iinfos.ii_Screen->LayerInfo,
+		iInfos.xii_iinfos.ii_Screen->RastPort.BitMap,
+		iInfos.xii_iinfos.ii_Screen->LeftEdge,
+		iInfos.xii_iinfos.ii_Screen->TopEdge,
+		iInfos.xii_iinfos.ii_Screen->LeftEdge + iInfos.xii_iinfos.ii_Screen->Width - 1,
+		iInfos.xii_iinfos.ii_Screen->TopEdge + iInfos.xii_iinfos.ii_Screen->Height - 1,
+		LAYERBACKDROP | LAYERSIMPLE,
+		NULL
+		);
+
+	DeleteLayer(0L, newLayer);
+
+	ScaUnlockScreenLayers();
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+}
 

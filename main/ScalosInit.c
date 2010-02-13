@@ -1582,30 +1582,8 @@ static void ScalosMain(LONG *ArgArray)
 			if (SetBackFill(&MainWindowTask->mwt, patNode, 
 				&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo, 1, iInfos.xii_iinfos.ii_Screen))
 				{
-				struct Layer *newLayer;
-
 				MainWindowTask->screenbackfill = TRUE;
-
-				ScaLockScreenLayers();
-
-				LINE_TRACE;
-
-				InstallLayerInfoHook(&iInfos.xii_iinfos.ii_Screen->LayerInfo, 
-					&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook);
-
-				newLayer = CreateBehindLayer(&iInfos.xii_iinfos.ii_Screen->LayerInfo,
-					iInfos.xii_iinfos.ii_Screen->RastPort.BitMap,
-					iInfos.xii_iinfos.ii_Screen->LeftEdge, iInfos.xii_iinfos.ii_Screen->TopEdge,
-					iInfos.xii_iinfos.ii_Screen->LeftEdge + iInfos.xii_iinfos.ii_Screen->Width - 1,
-					iInfos.xii_iinfos.ii_Screen->TopEdge + iInfos.xii_iinfos.ii_Screen->Height - 1,
-					LAYERBACKDROP | LAYERSIMPLE,
-					NULL);
-
-				DeleteLayer(0, newLayer);
-
-				LINE_TRACE;
-
-				ScaUnlockScreenLayers();
+				SetScreenBackfillHook(&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook);
 				}
 			}
 
