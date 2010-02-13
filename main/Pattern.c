@@ -133,7 +133,7 @@ void PatternsOff(struct MainTask *mt, struct MsgPort *ReplyPort)
 	if (mt->screenbackfill)
 		{
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-		SetScreenBackfillHook(NULL);
+		SetScreenBackfillHook(LAYERS_BACKFILL);
 		mt->screenbackfill = FALSE;
 		FreeBackFill(&mt->mwt.iwt_WindowTask.wt_PatternInfo);
 		}
@@ -177,13 +177,11 @@ void PatternsOn(struct MainTask *mt)
 		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.xii_iinfos.ii_Screen->Width;
 		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_height = iInfos.xii_iinfos.ii_Screen->Height;
 
-		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook.h_Data = mt;
-
-		if (SetBackFill(NULL, ScreenPatternNode, &mt->mwt.iwt_WindowTask.wt_PatternInfo, SETBACKFILLF_NOASYNC, iInfos.xii_iinfos.ii_Screen))
+		if (SetBackFill(&mt->mwt, ScreenPatternNode, &mt->mwt.iwt_WindowTask.wt_PatternInfo, SETBACKFILLF_NOASYNC, iInfos.xii_iinfos.ii_Screen))
 			{
 			mt->screenbackfill = TRUE;
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-			SetScreenBackfillHook(&MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook);
+			SetScreenBackfillHook(&mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_hook);
 			}
 		}
 }
