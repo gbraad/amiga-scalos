@@ -1099,8 +1099,9 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							Child, inst->mpb_Objects[OBJNDX_CheckArgs] = CheckMark(FALSE),
 
 							Child, HVSpace,
-							Child, HVSpace,
+							End, //ColGroup
 
+						Child, ColGroup(2),
 							Child, Label(GetLocString(MSGID_STACKNAME)),
 							Child, inst->mpb_Objects[OBJNDX_StringStack] = StringObject,
 								MUIA_CycleChain, TRUE,
@@ -1111,10 +1112,6 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 								MUIA_String_Integer, DEFAULT_STACKSIZE,
 								End,
 
-							Child, HVSpace,
-							End, //ColGroup
-
-						Child, ColGroup(2),
 							Child, Label(GetLocString(MSGID_PRIORITY_SLIDER_NAME)),
 							Child, inst->mpb_Objects[OBJNDX_SliderPriority] = SliderObject,
 								MUIA_CycleChain, TRUE,
@@ -1165,26 +1162,25 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 
 	DoMethod(inst->mpb_Objects[OBJNDX_CmdListView], MUIM_Notify, MUIA_Listview_DoubleClick, TRUE,
 		inst->mpb_Objects[OBJNDX_CmdListView], 2, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_CmdSelected]);
-	DoMethod(inst->mpb_Objects[OBJNDX_StringHotkey], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, 
+	DoMethod(inst->mpb_Objects[OBJNDX_StringHotkey], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
 		inst->mpb_Objects[OBJNDX_MainListTree], 3, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_ChangeHotkey], MUIV_TriggerValue);
 
-
-	DoMethod(inst->mpb_Objects[OBJNDX_PopAsl_UnselectedImage], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
+	DoMethod(inst->mpb_Objects[OBJNDX_PopAsl_UnselectedImage], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
 		inst->mpb_Objects[OBJNDX_MainListTree], 3, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_ChangeUnselectedImage], MUIV_TriggerValue);
 
-	DoMethod(inst->mpb_Objects[OBJNDX_PopAsl_SelectedImage], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime,
+	DoMethod(inst->mpb_Objects[OBJNDX_PopAsl_SelectedImage], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
 		inst->mpb_Objects[OBJNDX_MainListTree], 3, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_ChangeSelectedImage], MUIV_TriggerValue);
 
-	DoMethod(inst->mpb_Objects[OBJNDX_NameString], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, 
+	DoMethod(inst->mpb_Objects[OBJNDX_NameString], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
 		inst->mpb_Objects[OBJNDX_MainListTree], 3, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_RenameEntry], MUIV_TriggerValue);
 
 	DoMethod(inst->mpb_Objects[OBJNDX_SliderPriority], MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime, 
 		inst->mpb_Objects[OBJNDX_MainListTree], 2, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_ChangeEntry3]);
 
-	DoMethod(inst->mpb_Objects[OBJNDX_StringStack], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, 
+	DoMethod(inst->mpb_Objects[OBJNDX_StringStack], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
 		inst->mpb_Objects[OBJNDX_MainListTree], 2, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_ChangeEntry3]);
 
-	DoMethod(inst->mpb_Objects[OBJNDX_StringCmd], MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, 
+	DoMethod(inst->mpb_Objects[OBJNDX_StringCmd], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
 		inst->mpb_Objects[OBJNDX_MainListTree], 2, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_ChangeEntry3]);
 
 	DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, 
