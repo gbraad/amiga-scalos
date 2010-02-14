@@ -11,17 +11,10 @@ address command
 
 "version"
 
-'gcc -dumpmachine > ' tmpfname;
-
-rc = open( 'tmpfile', tmpfname, 'R' )
-machinestring = readln( 'tmpfile' )
-rc = close( 'tmpfile' )
-'delete ' || tmpfname || ' quiet'
-say machinestring
-
+os = GetOsName()
 
 /* system-specific language catalog names */
-if machinestring = "ppc-amigaos" then do
+if os = "AmigaOS4" then do
 	/* Amiga OS4 */
 	LangGerman = "german";
 	LangFrench = "french";
@@ -99,7 +92,9 @@ say "Copying Preferences..."
 'copy Plugins/Prefs/Palette/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
 'copy Plugins/Prefs/Pattern/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
 'copy Plugins/Prefs/Menu/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
-'copy Plugins/Prefs/Popupmenu/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+if os ~= "AmigaOS4" then do
+	'copy Plugins/Prefs/Popupmenu/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+end
 
 
 say "Copying Modules..."
@@ -124,7 +119,9 @@ say "Copying Libraries..."
 'copy libraries/preferences/preferences.library "RAM:ScalosBeta/libs/" clone quiet'
 'copy libraries/sqlite/sqlite3.library "RAM:ScalosBeta/libs/" clone quiet'
 'copy libraries/scalosgfx/scalosgfx.library "RAM:ScalosBeta/libs/" clone quiet'
-'copy libraries/popupmenu/popupmenu.library "RAM:ScalosBeta/libs/" clone quiet'
+if os ~= "AmigaOS4" then do
+	'copy libraries/popupmenu/popupmenu.library "RAM:ScalosBeta/libs/" clone quiet'
+end
 'copy libs/#?.library#? "RAM:ScalosBeta/libs/" clone quiet'
 'copy libs/OS4/#?.library "RAM:ScalosBeta/libs/OS4" clone quiet'
 
@@ -135,7 +132,9 @@ say "Copying Datatypes..."
 'copy datatypes/GlowIconObject/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
 'copy datatypes/IconObject/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
 'copy datatypes/PNGIcons/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
-'copy datatypes/NewIcons/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
+if os ~= "AmigaOS4" then do
+	'copy datatypes/NewIcons/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
+end
 
 'copy datatypes/devs/#? "RAM:ScalosBeta/Devs/Datatypes/" clone quiet'
 
@@ -247,3 +246,33 @@ TempName = 't:xx123'
 'lha -r -e -x a ' || LHAName || ' RAM:ScalosBeta.info '
 
 lha t LHAName
+
+exit
+
+/* -------------------------------------------------------------------------------- */
+
+GetOsName: procedure
+
+'version >' tmpfname
+rc = open( 'tmpfile', tmpfname, 'R' )
+versionstring = readln( 'tmpfile' )
+rc = close( 'tmpfile' )
+'delete ' || tmpfname || ' quiet'
+if index(versionstring, "MorphOS") > 0 then
+	do
+	os = "MorphOS"
+	end
+else
+	do
+	versionstring =	strip(subword(versionstring, 2, 1), 'B', ',')
+	if versionstring > 50 then
+		os = "AmigaOS4"
+	else
+		os = "AmigaOS3"
+	end
+
+return os
+
+END
+
+/* -------------------------------------------------------------------------------- */
