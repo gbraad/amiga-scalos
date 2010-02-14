@@ -13,23 +13,7 @@ versionfilename = "ram:versions.txt"
 
 call addlib("rexxsupport.library", 0, -30, 0)
 
-'version >' tmpfname
-rc = open( 'tmpfile', tmpfname, 'R' )
-versionstring = readln( 'tmpfile' )
-rc = close( 'tmpfile' )
-'delete ' || tmpfname || ' quiet'
-if index(versionstring, "MorphOS") > 0 then
-	do
-	os = "MorphOS"
-	end
-else
-	do
-	versionstring =	strip(subword(versionstring, 2, 1), 'B', ',')
-	if versionstring > 50 then
-		os = "AmigaOS4"
-	else
-		os = "AmigaOS3"
-	end
+os = GetOsName();
 
 PkgPath = PkgPath || os || "/"
 LocalPkgPath = "RAM:" || strip(PkgPath, 'L', '/')
@@ -361,6 +345,32 @@ DO WHILE (binlength > 0)
 END
 
 return b64string
+
+/* -------------------------------------------------------------------------------- */
+
+GetOsName: procedure
+
+'version >' tmpfname
+rc = open( 'tmpfile', tmpfname, 'R' )
+versionstring = readln( 'tmpfile' )
+rc = close( 'tmpfile' )
+'delete ' || tmpfname || ' quiet'
+if index(versionstring, "MorphOS") > 0 then
+	do
+	os = "MorphOS"
+	end
+else
+	do
+	versionstring =	strip(subword(versionstring, 2, 1), 'B', ',')
+	if versionstring > 50 then
+		os = "AmigaOS4"
+	else
+		os = "AmigaOS3"
+	end
+
+return os
+
+END
 
 /* -------------------------------------------------------------------------------- */
 
