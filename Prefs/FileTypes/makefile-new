@@ -34,10 +34,10 @@ SUBDIRS	=       Catalogs/deutsch/Scalos		\
 #
 # Some lame deps
 
-$(OBJDIR)/FileTypes.o : ScalosFileTypes_locale.h
+$(OBJDIR)/FileTypes.o $(OBJDIR)/FileTypes.d : ScalosFileTypes_locale.h
 
 ScalosFileTypes_locale.h : ScalosFileTypes.cd
-	$(ECHO) "CatComp $@"
+	@$(ECHO) "CatComp $@"
 	catcomp $< cfile=$@
 
 ##############################################################################
@@ -73,7 +73,8 @@ install: install_subdirs
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.i \
         	$(OBJDIR)/*.d.* $(OBJDIR)/*.s \
-		$(NAME) $(NAME).debug *.dump *_str.*
+		$(NAME) $(NAME).debug *.dump *_str.* \
+                ScalosFileTypes_locale.h
 
 clean:  clean_subdirs
 

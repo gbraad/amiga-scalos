@@ -50,7 +50,7 @@ SUBDIRS		= $(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
 #
 # Some lame deps
 
-$(OBJDIR)/Palette.o : ScalosPalette_locale.h
+$(OBJDIR)/Palette.o $(OBJDIR)/Palette.d : ScalosPalette_locale.h
 
 ScalosPalette_locale.h : ScalosPalette.cd
 	$(ECHO) "CatComp $@"
@@ -88,9 +88,10 @@ install: install_subdirs
 
 
 clean:
-	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(NAME) $(NAME).debug *.dump *_str.* ScalosPalette_locale.h
+		$(NAME) $(NAME).debug *.dump *_str.* \
+		ScalosPalette_locale.h
 
 clean:  clean_subdirs
 
