@@ -50,7 +50,7 @@ SUBDIRS =	$(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
 #
 # Some lame deps
 
-$(OBJDIR)/Menu.o : ScalosMenu_locale.h
+$(OBJDIR)/Menu.o $(OBJDIR)/Menu.d : ScalosMenu_locale.h
 
 ScalosMenu_locale.h : ScalosMenu.cd
 	@$(ECHO) "CatComp $@"

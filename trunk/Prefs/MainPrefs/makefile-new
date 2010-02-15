@@ -68,7 +68,7 @@ $(OBJDIR)/%.o: $(DATATYPESMCC_DIR)/%.c
 $(OBJDIR)/%.o: $(MCPGFX_DIR)/%.c
 	@$(run-cc)
 
-$(OBJDIR)/Hooks.o : ScalosPrefs_locale.h
+$(OBJDIR)/Hooks.o $(OBJDIR)/Hooks.d $(OBJDIR)/Scalos.o $(OBJDIR)/Scalos.d : ScalosPrefs_locale.h
 
 ScalosPrefs_locale.h : Scalos_Prefs.cd
 	@$(ECHO) "CatComp $@"
@@ -105,7 +105,8 @@ install: install_subdirs
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.i \
         	$(OBJDIR)/*.d.* $(OBJDIR)/*.s \
-		@$(NAME) $(NAME).debug *.dump *_str.*
+		@$(NAME) $(NAME).debug *.dump *_str.* \
+                ScalosPrefs_locale.h
 
 clean:  clean_subdirs
 
