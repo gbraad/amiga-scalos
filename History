@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20100213	jl	- Bugfix: screen backdrop pattern didnät work.
+41.7    20100216	jl	- Bugfix: Reboot button in about window didn't work with MorphOS 1.x.
+	20100213	jl	- Bugfix: screen backdrop pattern didnät work.
 	20100202	jl	- Bugfix: links to volumes could not be created.
 				- Bugfix: drop menu didnt work when dragging volumes into icon windows.
 	20100201	jl	- Bugfix: Undo/Redo function was unable to remove copied (non-empty) directories.
