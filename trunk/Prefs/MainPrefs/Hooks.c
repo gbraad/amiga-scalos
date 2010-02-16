@@ -1204,10 +1204,14 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetBrowserChangedHookFunc(struct Hook *hook,
 					MUIA_ScaDtpic_Name, (ULONG) cgy->cgy_NormalImage,
 					TAG_END); //DataTypesMCC
 
+				set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_ScaDtpic_Name,
+					cgy->cgy_NormalImage);
 				d1(KPrintF("%s/%s/%ld:  <%s>  cgy_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy->cgy_NormalImage, cgy->cgy_Image));
 				}
 			else
 				{
+				set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_ScaDtpic_Name,
+					(STRPTR) "");
 				cgy->cgy_Image = NULL;
 				}
 
@@ -1224,6 +1228,9 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetBrowserChangedHookFunc(struct Hook *hook,
 			if (cgy->cgy_SelectedImage)
 				free(cgy->cgy_SelectedImage);
 			cgy->cgy_SelectedImage = strdup(str);
+
+			set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE], MUIA_ScaDtpic_Name,
+				cgy->cgy_SelectedImage);
 			}
 
 		get(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_String_Contents, &str);
@@ -1235,6 +1242,9 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetBrowserChangedHookFunc(struct Hook *hook,
 			if (cgy->cgy_DisabledImage)
 				free(cgy->cgy_DisabledImage);
 			cgy->cgy_DisabledImage = strdup(str);
+
+			set(app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE], MUIA_ScaDtpic_Name,
+				cgy->cgy_DisabledImage);
 			}
 
 		get(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_ACTION], MUIA_String_Contents, &str);
@@ -1305,10 +1315,15 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetNormalChangedHookFunc(struct Hook *hook, 
 					MUIA_ScaDtpic_Name, (ULONG) cgy->cgy_NormalImage,
 					TAG_END); //DataTypesMCC
 
+				set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_ScaDtpic_Name,
+					cgy->cgy_NormalImage);
+
 				d1(KPrintF("%s/%s/%ld:  <%s>  cgy_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy->cgy_NormalImage, cgy->cgy_Image));
 				}
 			else
 				{
+				set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_ScaDtpic_Name,
+					(STRPTR) "");
 				cgy->cgy_Image = NULL;
 				}
 
@@ -1325,6 +1340,9 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetNormalChangedHookFunc(struct Hook *hook, 
 			if (cgy->cgy_SelectedImage)
 				free(cgy->cgy_SelectedImage);
 			cgy->cgy_SelectedImage = strdup(str);
+
+			set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE], MUIA_ScaDtpic_Name,
+				cgy->cgy_SelectedImage);
 			}
 
 		get(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_String_Contents, &str);
@@ -1336,6 +1354,9 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetNormalChangedHookFunc(struct Hook *hook, 
 			if (cgy->cgy_DisabledImage)
 				free(cgy->cgy_DisabledImage);
 			cgy->cgy_DisabledImage = strdup(str);
+
+			set(app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE], MUIA_ScaDtpic_Name,
+				cgy->cgy_DisabledImage);
 			}
 
 		get(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], MUIA_String_Contents, &str);

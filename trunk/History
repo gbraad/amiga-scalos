@@ -9,6 +9,7 @@ NEXT VERSION TO RELEASE 41.7
 Additions/changes:
 
 41.7    20100216	jl	- Bugfix: Reboot button in about window didn't work with MorphOS 1.x.
+				- Bugfix: control bar gadget image previews were not updated correctly when image was changed.
 	20100213	jl	- Bugfix: screen backdrop pattern didnät work.
 	20100202	jl	- Bugfix: links to volumes could not be created.
 				- Bugfix: drop menu didnt work when dragging volumes into icon windows.
