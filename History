@@ -9,8 +9,7 @@ NEXT VERSION TO RELEASE 41.7
 Additions/changes:
 
 41.7    20100216	jl	- Bugfix: Reboot button in about window didn't work with MorphOS 1.x.
-				- Bugfix: control bar gadget image previews were not updated correctly when image was changed.
-	20100213	jl	- Bugfix: screen backdrop pattern didnät work.
+	20100213	jl	- Bugfix: screen backdrop pattern didn't work.
 	20100202	jl	- Bugfix: links to volumes could not be created.
 				- Bugfix: drop menu didnt work when dragging volumes into icon windows.
 	20100201	jl	- Bugfix: Undo/Redo function was unable to remove copied (non-empty) directories.
@@ -1937,7 +1936,8 @@ Additions/changes:
 
 --------------------Scalos main Preferences---------------------------------
 
- 40.26  20091230	jl	- Improvement: Add configuration for drag&drop pop-open windows open delay.
+ 40.26 	20100216	jl	- Bugfix: control bar gadget image previews were not updated correctly when image was changed.
+	20091230	jl	- Improvement: Add configuration for drag&drop pop-open windows open delay.
 	20091011	jl	- Improvement: Add support for control bar also for standard (non-browser) windows,
 				  standard and browser-mode control bars can be configured independently.
 
