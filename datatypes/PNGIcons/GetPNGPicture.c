@@ -76,12 +76,20 @@ BOOL GetPngPicture(struct InstanceData *inst, BPTR file,
 		if (NULL == info_ptr)
 			break;
 
+		d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx\n", __FILE__, __FUNC__, __LINE__, png_ptr));
+		d1(KPrintF("%s/%s/%ld:  sizeof(jmp_buf)=%lu  png_jmpbuf=%08lx\n", __FILE__, __FUNC__, __LINE__, sizeof(jmp_buf), png_jmpbuf(png_ptr)));
+		// safety check against jmp_buf size mismatch between libpng and Scalos
+		if (NULL == png_jmpbuf(png_ptr))
+			break;
+
 		if (setjmp(png_jmpbuf(png_ptr)))
 			{
 			d1(KPrintF("%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
 			success = FALSE;
 			break;
 			}
+
+		d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx\n", __FILE__, __FUNC__, __LINE__, png_ptr));
 
 		png_set_read_fn(png_ptr, (voidp) file, user_read_data);
 
@@ -108,7 +116,7 @@ BOOL GetPngPicture(struct InstanceData *inst, BPTR file,
 
 		png_get_IHDR(png_ptr, info_ptr,
 			&width, &height, &bit_depth, &color_type,
-			&interlace_type, int_p_NULL, int_p_NULL);
+			&interlace_type, NULL, NULL);
 
 		d1(KPrintF("%s/%s/%ld:  width=%ld  height=%ld  depth=%ld color_type=%ld\n", __FILE__, __FUNC__, __LINE__, width, height, bit_depth, color_type));
 

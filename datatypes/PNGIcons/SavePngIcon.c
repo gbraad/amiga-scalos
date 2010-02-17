@@ -134,6 +134,10 @@ static BOOL WritePng(struct InstanceData *inst, BPTR file,
 		if (info_ptr == NULL)
 			break;
 
+		d1(KPrintF("%s/%s/%ld:  png_jmpbuf=%08lx\n", __FILE__, __FUNC__, __LINE__, png_jmpbuf(png_ptr)));
+		if (NULL == png_jmpbuf(png_ptr))
+			break;
+
 		/* Set error handling.  REQUIRED if you aren't supplying your own
 		 * error handling functions in the png_create_write_struct() call.
 		 */
