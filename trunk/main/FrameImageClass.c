@@ -854,7 +854,7 @@ static BOOL GetPngPicture(BPTR file, struct ARGBHeader *argbh)
 			PNG_HANDLE_CHUNK_IF_SAFE, NULL, 0);
 
 		png_set_palette_to_rgb(png_ptr);
-		png_set_gray_1_2_4_to_8(png_ptr);
+		png_set_expand_gray_1_2_4_to_8(png_ptr);
 		png_set_tRNS_to_alpha(png_ptr);
 		png_set_gray_to_rgb(png_ptr);
 		png_set_add_alpha(png_ptr, ~0, PNG_FILLER_BEFORE);
@@ -946,7 +946,7 @@ static void PngError(png_structp png_ptr, png_const_charp error_message)
 	d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx  message=<%s>\n", \
 		__FILE__, __FUNC__, __LINE__, png_ptr, error_message));
 
-	longjmp(png_ptr->jmpbuf, 1);
+	longjmp(png_jmpbuf(png_ptr), 1);
 }
 
 
