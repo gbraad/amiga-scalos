@@ -1,4 +1,5 @@
 40.26
+Bugfix: control bar gadget image previews were not updated correctly when image was changed
 Improvement: Add configuration for drag&drop pop-open windows open delay
 Improvement: Add support for control bar also for standard (non-browser) windows, standard and browser-mode control bars can be configured independently
 

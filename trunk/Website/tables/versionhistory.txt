@@ -1,4 +1,18 @@
 V41.7
+Bugfix: Reboot button in about window didn't work with MorphOS 1.x
+Bugfix: screen backdrop pattern didn't work
+Bugfix: links to volumes could not be created
+Bugfix: drop menu didnt work when dragging volumes into icon windows
+Bugfix: Undo/Redo function was unable to remove copied (non-empty) directories
+Improvement: added capability to undo/redo closing windows
+Bugfix: sqlite3.library reported read-only state for &quot;RAM:t&quot;
+Bugfix: scalos crashed when drag-copying a disk into an icon window
+Bugfix: thumbnail cache database sometimes was left open if ThumbnailCacheOpen() failed
+Improvement: added user configuration for SQLite3 thumbnail database temporary files directory
+Improvement: implemented large file (4 >GBytes) support for AmigaOS4
+Improvement: added new popup menu for desktop
+Improvement: Updated sqlite3.library to SQLite3 V3.6.22
+Bugfix: fixed GR with AmigaOS4 when user attempted to run a second Scalos instance
 Bugfix: improved DosList locking fixed occasional crash when volumes/devices go away
 Improvement: requester informs user if Scalos is run a second time
 Improvement: requesters informs user if menu preferences cannot be read
