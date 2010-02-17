@@ -252,7 +252,7 @@ static void PngError(png_structp png_ptr, png_const_charp error_message)
 	d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx  message=<%s>\n", \
 		__FILE__, __FUNC__, __LINE__, png_ptr, error_message));
 
-	longjmp(png_ptr->jmpbuf, 1);
+	longjmp(png_jmpbuf(png_ptr), 1);
 }
 
 
