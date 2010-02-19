@@ -938,7 +938,7 @@ static ULONG InitMainWindow(void)
 		wsMain->ws_WindowType = WSV_Type_DeviceWindow;
 
 		wsMain->ws_PatternNumber = PATTERNNR_WorkbenchDefault;
-		wsMain->ws_PatternNode = GetPatternNode(wsMain->ws_PatternNumber);
+		wsMain->ws_PatternNode = GetPatternNode(wsMain->ws_PatternNumber, NULL);
 		d1(kprintf("%s/%s/%ld: ws_PatternNode=%08lx\n", __FILE__, __FUNC__, __LINE__, wsMain->ws_PatternNode));
 
 		wsMain->ms_ClassName = (STRPTR) "DeviceWindow.sca";
@@ -1572,7 +1572,7 @@ static void ScalosMain(LONG *ArgArray)
 
 		LINE_TRACE;
 
-		patNode = GetPatternNode(PatternPrefs.patt_DefScreenPatternNr);
+		patNode = GetPatternNode(PatternPrefs.patt_DefScreenPatternNr, NULL);
 		if (patNode)
 			{
 			MainWindowTask->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.xii_iinfos.ii_Screen->Width;

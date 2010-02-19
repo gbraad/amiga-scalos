@@ -40,6 +40,7 @@ IconWindow.sca/SCCM_IconWin_NewPath
 IconWindow.sca/SCCM_IconWin_NewPatternNumber
 IconWindow.sca/SCCM_IconWin_NewViewMode
 IconWindow.sca/SCCM_IconWin_Open
+IconWindow.sca/SCCM_IconWin_RandomizePatternNumber
 IconWindow.sca/SCCM_IconWin_RawKey
 IconWindow.sca/SCCM_IconWin_ReadIcon
 IconWindow.sca/SCCM_IconWin_ReadIconList
@@ -1048,6 +1049,26 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
     RESULT
 	Success - TRUE if new window could be opened
 		FALSE if anything went wrong
+
+    SEE ALSO
+IconWindow.sca/SCCM_IconWin_RandomizePatternNumber
+
+    NAME
+        SCCM_IconWin_RandomizePatternNumber
+
+    SYNOPSIS
+	void DoMethod(obj,SCCM_IconWin_RandomizePatternNumber);
+
+    FUNCTION
+	If multiple patterns are configured for the IconWindow, a new
+	pseudo-random pattern is selected. This Method doesn't do anything
+	if there is only a single pattern defined for this window.
+
+    INPUTS
+	nothing
+
+    RESULT
+	nothing
 
     SEE ALSO
 IconWindow.sca/SCCM_IconWin_RawKey

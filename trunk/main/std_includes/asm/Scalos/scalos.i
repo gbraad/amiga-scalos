@@ -845,6 +845,9 @@ SCCM_IconWin_BeginUndoStep	equ	SCC_Dummy+219
 SCCM_IconWin_EndUndoStep	equ	SCC_Dummy+220
 ; APTR UndoStep
 
+SCCM_IconWin_RandomizePatternNumber equ	SCC_Dummy+222
+; ./.
+
 ;---------------- DeviceWindow Class ----------------------------
 ;Name: "DeviceWindow.sca"
 
