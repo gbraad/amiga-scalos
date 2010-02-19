@@ -92,12 +92,30 @@ static BOOL PatternBackgroundVerticalGradient(struct internalScaWindowTask *iwt,
 	struct PatternNode *ptNode, struct PatternInfo *ptInfo, struct RastPort *rp);
 static BOOL PatternBackgroundSingleColor(struct PatternNode *ptNode,
 	struct PatternInfo *ptInfo, struct RastPort *rp);
+static struct PatternNode *CountPatternNodes(WORD PatternNo, ULONG *ptnCount);
 
 //----------------------------------------------------------------------------
 
 // local data items
 
 //----------------------------------------------------------------------------
+
+void RandomizePatterns(void)
+{
+	struct ScaWindowStruct *ws;
+
+	SCA_LockWindowList(SCA_LockWindowList_Shared);
+
+	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+	for (ws=winlist.wl_WindowStruct; ws; ws = (struct ScaWindowStruct *) ws->ws_Node.mln_Succ)
+		{
+		DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_RandomizePatternNumber);
+		}
+
+	SCA_UnLockWindowList();
+}
+
 
 void PatternsOff(struct MainTask *mt, struct MsgPort *ReplyPort)
 {
@@ -155,7 +173,7 @@ void PatternsOn(struct MainTask *mt)
 		{
 		struct PatternNode *pNode;
 
-		pNode = GetPatternNode(ws->ws_PatternNumber);
+		pNode = GetPatternNode(ws->ws_PatternNumber, NULL);
 		if (pNode)
 			{
 			struct SM_NewPattern *sMsg = (struct SM_NewPattern *) SCA_AllocMessage(MTYP_NewPattern, 0);
@@ -171,7 +189,7 @@ void PatternsOn(struct MainTask *mt)
 
 	SCA_UnLockWindowList();
 
-	ScreenPatternNode = GetPatternNode(PatternPrefs.patt_DefScreenPatternNr);
+	ScreenPatternNode = GetPatternNode(PatternPrefs.patt_DefScreenPatternNr, NULL);
 	if (ScreenPatternNode)
 		{
 		mt->mwt.iwt_WindowTask.wt_PatternInfo.ptinf_width = iInfos.xii_iinfos.ii_Screen->Width;
@@ -187,13 +205,12 @@ void PatternsOn(struct MainTask *mt)
 }
 
 
-struct PatternNode *GetPatternNode(WORD PatternNo)
+struct PatternNode *GetPatternNode(WORD PatternNo, const struct PatternNode *pNodeOld)
 {
+	ULONG ptnCount;
 	struct PatternNode *pNode;
 
 	d1(KPrintF("\n" "%s/%s/%ld: START PatternNo=%ld\n", __FILE__, __FUNC__, __LINE__, PatternNo));
-
-	ScalosObtainSemaphoreShared(&PatternSema);
 
 	switch (PatternNo)
 		{
@@ -206,47 +223,45 @@ struct PatternNode *GetPatternNode(WORD PatternNo)
 	case PATTERNNR_TextWindowDefault:
 		PatternNo = PatternPrefs.patt_DefTextWinPatternNr;
 		break;
+	default:
+		break;
 		}
 
 	d1(kprintf("%s/%s/%ld: PatternNo=%ld\n", __FILE__, __FUNC__, __LINE__, PatternNo));
 
-	pNode = PatternNodes;
-	while (pNode && pNode->ptn_number != PatternNo)
-		{
-		pNode = (struct PatternNode *) pNode->ptn_Node.mln_Succ;
-		}
+	ScalosObtainSemaphoreShared(&PatternSema);
 
-	d1(kprintf("%s/%s/%ld: pNode=%08lx\n", __FILE__, __FUNC__, __LINE__, pNode));
+	pNode = CountPatternNodes(PatternNo, &ptnCount);
+
+	d1(kprintf("%s/%s/%ld: pNode=%08lx  ptnCount=%ld\n", __FILE__, __FUNC__, __LINE__, pNode, ptnCount));
 
 	if (pNode)
 		{
-		struct PatternNode *pNode2 = pNode;
-		LONG ptnCount = 1;
-
 		d1(kprintf("%s/%s/%ld: pNode=%08lx  type=%ld\n", __FILE__, __FUNC__, __LINE__, pNode, pNode->ptn_type));
-
-		// count PatternNode's with given number
-		while (pNode2)
-			{
-			if (pNode2->ptn_number == PatternNo)
-				ptnCount++;
-			pNode2 = (struct PatternNode *) pNode2->ptn_Node.mln_Succ;
-			}
-
-		d1(kprintf("%s/%s/%ld: ptnCount=%ld\n", __FILE__, __FUNC__, __LINE__, ptnCount));
 
 		if (ptnCount > 1)
 			{
-			ptnCount = RandomNumber(ptnCount - 1) - 1;
+			struct PatternNode *pNode2;
 
-			d1(kprintf("%s/%s/%ld: Random=%ld\n", __FILE__, __FUNC__, __LINE__, ptnCount));
+			// if pNodeOld is not NULL, make sure we return
+			// a PatternNode different from pNodeOld
+			do	{
+				ULONG ptnNdx = RandomNumber(ptnCount - 1);
 
-			while (pNode && ptnCount > 0)
-				{
-				if (pNode->ptn_number == PatternNo)
-					ptnCount--;
-				pNode = (struct PatternNode *) pNode->ptn_Node.mln_Succ;
-				}
+				d1(kprintf("%s/%s/%ld: Random=%ld\n", __FILE__, __FUNC__, __LINE__, ptnNdx));
+
+				pNode2 = pNode;
+				while (pNode2 && ptnNdx > 0)
+					{
+					if (pNode2->ptn_number == PatternNo)
+						ptnNdx--;
+					pNode2 = (struct PatternNode *) pNode2->ptn_Node.mln_Succ;
+					}
+				} while (pNodeOld && (pNodeOld == pNode2));
+
+			pNode = pNode2;
+
+			d1(kprintf("%s/%s/%ld: pNode=%08lx\n", __FILE__, __FUNC__, __LINE__, pNode));
 			}
 
 		d1(kprintf("%s/%s/%ld: pNode=%08lx  type=%ld\n", __FILE__, __FUNC__, __LINE__, pNode, pNode->ptn_type));
@@ -1374,5 +1389,42 @@ void SetScreenBackfillHook(struct Hook *bfHook)
 	ScaUnlockScreenLayers();
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+}
+
+
+static struct PatternNode *CountPatternNodes(WORD PatternNo, ULONG *ptnCount)
+{
+	struct PatternNode *pNode = PatternNodes;
+
+	*ptnCount = 0;
+
+	while (pNode && pNode->ptn_number != PatternNo)
+		{
+		pNode = (struct PatternNode *) pNode->ptn_Node.mln_Succ;
+		}
+
+	d1(kprintf("%s/%s/%ld: pNode=%08lx\n", __FILE__, __FUNC__, __LINE__, pNode));
+
+	if (pNode)
+		{
+		const struct PatternNode *pNode2 = pNode;
+
+		d1(kprintf("%s/%s/%ld: pNode=%08lx  type=%ld\n", __FILE__, __FUNC__, __LINE__, pNode, pNode->ptn_type));
+
+		// count PatternNode's with given number
+		while (pNode2)
+			{
+			if (pNode2->ptn_number == PatternNo)
+				(*ptnCount)++;
+			else
+				break;
+
+			pNode2 = (const struct PatternNode *) pNode2->ptn_Node.mln_Succ;
+			}
+		}
+
+	d1(kprintf("%s/%s/%ld: pNode=%08lx\n", __FILE__, __FUNC__, __LINE__, pNode));
+
+	return pNode;
 }
 

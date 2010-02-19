@@ -614,9 +614,10 @@ void ShowPopupMenu(struct internalScaWindowTask *iwt, struct msg_ShowPopupMenu *
 
 // defined in Patterns.c
 ///
+void RandomizePatterns(void);
 void PatternsOff(struct MainTask *mt, struct MsgPort *ReplyPort);
 void PatternsOn(struct MainTask *mt);
-struct PatternNode *GetPatternNode(WORD PatternNo);
+struct PatternNode *GetPatternNode(WORD PatternNo, const struct PatternNode *pNodeOld);
 ULONG NewWindowPatternMsg(struct internalScaWindowTask *iwt, struct Message *Msg, APTR p);
 void FreeBackFill(struct PatternInfo *);
 BOOL SetBackFill(struct internalScaWindowTask *iwt, struct PatternNode *ptNode,

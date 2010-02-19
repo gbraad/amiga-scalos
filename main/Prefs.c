@@ -1575,9 +1575,11 @@ void FreePatternPrefs(void)
 
 ULONG RandomNumber(ULONG MaxRand)
 {
-	RandomSeed = (RandomSeed * 51479u) + 3715436908u;
-
-	return (((RandomSeed & 0xffff) * MaxRand) / 65535u) & 0xffff;
+	RandomSeed = RandomSeed * 1103515245 + 12345;
+	return (ULONG)(RandomSeed / 65536) % (1 + MaxRand);
+//	  RandomSeed = (RandomSeed * 51479u) + 3715436908u;
+//
+//	  return (((RandomSeed & 0xffff) * MaxRand) / 65535u) & 0xffff;
 }
 
 
@@ -1613,6 +1615,10 @@ BOOL ChangedPatternPrefs(struct MainTask *mt)
 		FreePatternPrefs();
 		ReadPatternPrefs();
 		PatternsOn(mt);
+		}
+	else
+		{
+		RandomizePatterns();
 		}
 
 	return Changed;

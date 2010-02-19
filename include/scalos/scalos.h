@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+222)
+** next Tag to use :	(SCC_Dummy+223)
 */
 
 #ifndef DOS_DOS_H
@@ -1517,6 +1517,11 @@ enum sgttGadgetIDs
 
 #define SCCM_IconWin_EndUndoStep		(SCC_Dummy+220)
 // APTR UndoStep
+
+// ---------------------------------------------------------------------------
+
+#define SCCM_IconWin_RandomizePatternNumber	(SCC_Dummy+222)
+// ./.
 
 // ---------------------------------------------------------------------------
 

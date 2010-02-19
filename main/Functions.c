@@ -270,7 +270,7 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 		wsNew->ws_yoffset = GetTagData(SCA_YOffset, wsNew->ws_yoffset, TagList);
 
 		wsNew->ws_PatternNumber = GetTagData(SCA_PatternNumber, wsNew->ws_PatternNumber, TagList);
-		wsNew->ws_PatternNode = GetPatternNode(wsNew->ws_PatternNumber);
+		wsNew->ws_PatternNode = GetPatternNode(wsNew->ws_PatternNumber, NULL);
 
 		wsNew->ws_Viewmodes = GetTagData(SCA_ViewModes, wsNew->ws_Viewmodes, TagList);
 

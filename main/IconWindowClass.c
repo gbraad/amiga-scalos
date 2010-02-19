@@ -141,6 +141,7 @@ static ULONG IconWindowClass_ImmediateCheckUpdate(Class *cl, Object *o, Msg msg)
 static ULONG IconWindowClass_GetIconFileType(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_ClearIconFileTypes(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_NewPatternNumber(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_RandomizePatternNumber(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_HistoryBack(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_HistoryForward(Class *cl, Object *o, Msg msg);
@@ -452,6 +453,10 @@ static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 
 	case SCCM_IconWin_NewPatternNumber:
 		Result = IconWindowClass_NewPatternNumber(cl, o, msg);
+		break;
+
+	case SCCM_IconWin_RandomizePatternNumber:
+		Result = IconWindowClass_RandomizePatternNumber(cl, o, msg);
 		break;
 
 	case SCCM_IconWin_NewPath:
@@ -2849,8 +2854,28 @@ static ULONG IconWindowClass_NewPatternNumber(Class *cl, Object *o, Msg msg)
 		{
 		ws->ws_PatternNumber = npn->npn_PatternNumber;
 
-		ws->ws_PatternNode = GetPatternNode(ws->ws_PatternNumber);
+		ws->ws_PatternNode = GetPatternNode(ws->ws_PatternNumber, NULL);
 
+		NewWindowPatternMsg(iwt, NULL, (struct PatternNode **) &ws->ws_PatternNode);
+		}
+
+	return 0;
+}
+
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_RandomizePatternNumber(Class *cl, Object *o, Msg msg)
+{
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
+	struct ScaWindowStruct *ws = iwt->iwt_WindowTask.mt_WindowStruct;
+	struct PatternNode *NewPatternNode;
+
+	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  NewPatternNr=%lu\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, npn->npn_PatternNumber));
+
+	NewPatternNode = GetPatternNode(ws->ws_PatternNumber, (struct PatternNode *) ws->ws_PatternNode);
+	if (NewPatternNode != (struct PatternNode *) ws->ws_PatternNode)
+		{
+		ws->ws_PatternNode = NewPatternNode;
 		NewWindowPatternMsg(iwt, NULL, (struct PatternNode **) &ws->ws_PatternNode);
 		}
 
