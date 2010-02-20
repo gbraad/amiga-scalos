@@ -218,6 +218,11 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 			stccpy(rild.rild_Name, ScalosExamineGetName(fib), sizeof(rild.rild_Name));
 			}
 
+		if (NULL == fib)
+			{
+			break;
+			}
+
 		stccpy(rild.rild_Comment, ScalosExamineGetComment(fib), sizeof(rild.rild_Comment));
 		rild.rild_OwnerUID = ScalosExamineGetDirUID(fib);
 		rild.rild_OwnerGID = ScalosExamineGetDirGID(fib);
