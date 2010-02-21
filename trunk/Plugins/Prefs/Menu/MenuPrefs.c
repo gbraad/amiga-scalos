@@ -4547,13 +4547,15 @@ static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct MenuPrefsInst *i
 
 	tnNew = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[destList],
 		MUIM_NListtree_Insert,
-		tnFrom->tn_Name, NULL,
+		tnFrom->tn_Name,
+		CombineEntryTypeAndFlags(fteFrom->llist_EntryType, fteFrom->llist_Flags),
 		tnToListNode,
 		tnToPrevNode,
 		tnFrom->tn_Flags);
 
 	fteTo = (struct MenuListEntry *) tnNew->tn_User;
-	fteTo->llist_EntryType = fteFrom->llist_EntryType;
+
+	*fteTo = *fteFrom;
 
 	// Copy Children
 	while (tnChild)
