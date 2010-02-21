@@ -1232,7 +1232,8 @@ SAVEDS(void) INTERRUPT AddFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *msg
 		NewTn.tn_Name,
 		&NewTn,
 		MUIV_NListtree_Insert_ListNode_Active,
-		MUIV_NListtree_Insert_PrevNode_Active);
+		MUIV_NListtree_Insert_PrevNode_Active,
+		TNF_LIST);
 
 	if (ln)
 		{
