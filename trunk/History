@@ -2137,6 +2137,8 @@ Additions/changes:
 				  default menu preferences.
 				- Improvement: added copy/cut/paste functionality
 				  for easier menu configuration.
+				- Improvement: "Save As" dialog uses path of "Open"
+				  dialog as default.
  40.18	20100125	jl	- (internal version only)
  40.17	20100119	jl	- Bugfix: With Scalos menu preferences, it was not possible to 
 				  add menu items to an empty popup menu

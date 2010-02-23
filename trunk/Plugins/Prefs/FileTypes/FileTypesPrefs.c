@@ -5506,7 +5506,7 @@ DISPATCHER(myFileTypesNListTree)
 		struct MUI_NListtree_TreeNode *ln;
 
 		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
-		d1(kprintf("%s/%ld: MUIP_DragDrop obj=%08lx\n", __FUNC__, __LINE__, dq->obj));
+		d2(kprintf("%s/%ld: MUIP_DragDrop obj=%08lx\n", __FUNC__, __LINE__, obj));
 
 		Result = DoSuperMethodA(cl, obj, msg);
 
@@ -5516,7 +5516,7 @@ DISPATCHER(myFileTypesNListTree)
 			MUIV_NListtree_GetEntry_Position_Active,
 			0);
 
-		d1(kprintf("%s/%ld: ln=%08lx  tn_User=%08lx\n", __FUNC__, __LINE__, ln, ln->tn_User));
+		d2(kprintf("%s/%ld: ln=%08lx  tn_User=%08lx\n", __FUNC__, __LINE__, ln, ln->tn_User));
 
 		if (ln)
 			{

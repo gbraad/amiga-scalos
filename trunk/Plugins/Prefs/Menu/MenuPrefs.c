@@ -204,6 +204,7 @@ static SAVEDS(APTR) INTERRUPT CmdListConstructHookFunc(struct Hook *hook, APTR o
 static SAVEDS(void) INTERRUPT CmdListDestructHookFunc(struct Hook *hook, APTR obj, struct NList_DestructMessage *msg);
 static SAVEDS(ULONG) INTERRUPT CmdListDisplayHookFunc(struct Hook *hook, APTR obj, struct NList_DisplayMessage *ltdm);
 static SAVEDS(LONG) INTERRUPT CmdListCompareHookFunc(struct Hook *hook, Object *obj, struct NList_CompareMessage *msg);
+static SAVEDS(LONG) INTERRUPT CmdListPopupOpenHookFunc(struct Hook *hook, Object *list, Object *str);
 
 static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, struct MUIP_NListtree_ConstructMessage *ltcm);
 static SAVEDS(void) INTERRUPT TreeDestructFunc(struct Hook *hook, APTR obj, struct MUIP_NListtree_DestructMessage *ltdm);
@@ -369,6 +370,7 @@ static const struct Hook MenuPrefsHooks[] =
 	{ { NULL, NULL }, HOOKFUNC_DEF(CmdListDestructHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(CmdListDisplayHookFunc),  },
 	{ { NULL, NULL }, HOOKFUNC_DEF(CmdListCompareHookFunc), NULL },
+	{ { NULL, NULL }, HOOKFUNC_DEF(CmdListPopupOpenHookFunc), NULL },
 
 	{ { NULL, NULL }, HOOKFUNC_DEF(ImagePopAslFileStartHookFunc), NULL },
 
@@ -1063,8 +1065,9 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 									MUIA_ShowMe, FALSE,
 									MUIA_CycleChain, TRUE,
 									MUIA_Popstring_Button, PopButton(MUII_PopUp),
+									MUIA_Popobject_StrObjHook, &inst->mpb_Hooks[HOOKNDX_CmdListPopupOpen],
 									MUIA_Popobject_Object, inst->mpb_Objects[OBJNDX_CmdListView] = NListviewObject,
-										MUIA_NListview_NList, NListObject,
+										MUIA_NListview_NList, NListObject, 
 											InputListFrame,
 											MUIA_Background, MUII_ListBack,
 											MUIA_NList_Format, ",",
@@ -1551,6 +1554,43 @@ static SAVEDS(LONG) INTERRUPT CmdListCompareHookFunc(struct Hook *hook, Object *
 
 //----------------------------------------------------------------------------
 
+static SAVEDS(LONG) INTERRUPT CmdListPopupOpenHookFunc(struct Hook *hook, Object *list, Object *str)
+{
+	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
+	ULONG entries = 0;
+	ULONG n;
+	CONST_STRPTR string = "";
+	size_t length;
+
+	get(list, MUIA_NList_Entries, &entries);
+	get(inst->mpb_Objects[OBJNDX_StringCmd], MUIA_String_Contents, &string);
+
+	length = strlen(string);
+
+	d1(KPrintF(__FILE__ "/%s/%ld: string=<%s>  entries=%lu  length=%lu\n", __FUNC__, __LINE__, string, entries, length));
+
+	for (n = 0; n < entries; n++)
+		{
+		struct CommandTableEntry *cte = NULL;
+
+		DoMethod(list, MUIM_NList_GetEntry, n, &cte);
+		if (cte)
+			{
+			if (0 == Strnicmp(cte->cte_Command, string, length))
+				{
+				d1(KPrintF(__FILE__ "/%s/%ld: found!\n", __FUNC__, __LINE__, cte));
+				set(list, MUIA_NList_Active, n);
+				DoMethod(list, MUIM_NList_Jump, n);
+				break;
+				}
+			}
+		}
+
+	return TRUE;
+}
+
+//----------------------------------------------------------------------------
+
 static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, struct MUIP_NListtree_ConstructMessage *ltcm)
 {
 	struct MenuListEntry *mle = AllocPooled(ltcm->MemPool, sizeof(struct MenuListEntry));
@@ -1650,7 +1690,7 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 static SAVEDS(ULONG) INTERRUPT ImagePopAslFileStartHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct TagItem *TagList = (struct TagItem *) msg;
-//	  struct MenuPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
+//	  struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 
 	d1(KPrintF("%s/%ld: inst=%08lx\n", __FUNC__, __LINE__, inst));
 
@@ -1879,10 +1919,24 @@ static SAVEDS(APTR) INTERRUPT SaveAsHookFunc(struct Hook *hook, Object *o, Msg m
 
 	if (NULL == inst->mpb_SaveReq)
 		{
+		CONST_STRPTR InitialDrawer;
+		CONST_STRPTR InitialFile;
+
+		if (inst->mpb_LoadReq)
+			{
+			InitialDrawer = inst->mpb_LoadReq->fr_Drawer;
+			InitialFile  = inst->mpb_LoadReq->fr_File;
+			}
+		else
+			{
+			InitialDrawer = "SYS:Prefs/presets";
+			InitialFile = "Menu.pre";
+			}
+
 		inst->mpb_SaveReq = MUI_AllocAslRequestTags(ASL_FileRequest,
-			ASLFR_InitialFile, "Menu.pre",
+			ASLFR_InitialFile, InitialFile,
 			ASLFR_DoSaveMode, TRUE,
-			ASLFR_InitialDrawer, "SYS:Prefs/presets",
+			ASLFR_InitialDrawer, InitialDrawer,
 			ASLFR_UserData, inst,
 			ASLFR_IntuiMsgFunc, &inst->mpb_Hooks[HOOKNDX_AslIntuiMsg],
 			TAG_END);

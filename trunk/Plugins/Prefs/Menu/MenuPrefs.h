@@ -21,6 +21,7 @@ enum HookIndex
 	HOOKNDX_CmdListDestruct,
 	HOOKNDX_CmdListDisplay,
 	HOOKNDX_CmdListCompare,
+	HOOKNDX_CmdListPopupOpen,
 
 	HOOKNDX_ImagePopAslFileStart,
 
