@@ -4487,7 +4487,7 @@ static SAVEDS(void) INTERRUPT MenuPasteHookFunc(struct Hook *hook, Object *o, Ms
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *tn;
 
-	d2(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	tn = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 		MUIM_NListtree_GetEntry,
@@ -4542,7 +4542,7 @@ static SAVEDS(void) INTERRUPT MenuPasteHookFunc(struct Hook *hook, Object *o, Ms
 			0);
 		}
 
-	d2(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------

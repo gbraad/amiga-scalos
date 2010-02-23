@@ -2252,7 +2252,7 @@ static LONG ReadOldPrefsFile(CONST_STRPTR Filename, struct oldPopupMenuPrefs *pr
 	struct IFFHandle *iff;
 	BOOL iffOpened = FALSE;
 
-	d2(KPrintF("%s/%s/%ld:  Filename=<%s>  LocaleBase=%08lx  IFFParseBase=%08lx\n", \
+	d1(KPrintF("%s/%s/%ld:  Filename=<%s>  LocaleBase=%08lx  IFFParseBase=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, Filename, LocaleBase, IFFParseBase));
 
 	do	{
@@ -2334,7 +2334,7 @@ static LONG ReadOldPrefsFile(CONST_STRPTR Filename, struct oldPopupMenuPrefs *pr
 
 	d1(KPrintF("%s/%s/%ld: pmp_MenuTitles=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->mpb_PMPrefs.pmp_MenuTitles));
 	d1(KPrintF("%s/%s/%ld: pmp_MenuItems=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->mpb_PMPrefs.pmp_MenuItems));
-	d2(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+	d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }
@@ -2387,7 +2387,7 @@ static void ConvertPmPrefs(CONST_STRPTR prefsFileOld, CONST_STRPTR prefsFileNew)
 
 		ReadOldPrefsFile(prefsFileOld,  &LoadedPrefs, &DefaultPrefs);
 
-		d2(KPrintF("%s/%s/%ld: pmp_Animation=%ld\n", __FILE__, __FUNC__, __LINE__, LoadedPrefs.pmp_Animation));
+		d1(KPrintF("%s/%s/%ld: pmp_Animation=%ld\n", __FILE__, __FUNC__, __LINE__, LoadedPrefs.pmp_Animation));
 
 		myPrefsHandle = AllocPrefsHandle("PopupMenuPrefs");
 		if (myPrefsHandle)
