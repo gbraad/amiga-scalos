@@ -499,6 +499,8 @@ struct FileTypesPrefsInst
 	BYTE fpb_TTfAntialias;
 	WORD fpb_TTfGamma;
 
+	BOOL fpb_MenuTreeMayDrop;
+
 	BPTR fpb_FileTypesDirLock;
 
 	Object *fpb_IconObject;
