@@ -534,7 +534,7 @@ static const BOOL MayPasteAfterMatrix[ENTRYTYPE_MAX][ENTRYTYPE_MAX] =
 	/* 0 SCAMENUTYPE_MainMenu */
 	{ FALSE, FALSE, FALSE, FALSE, FALSE, },
 	/* 1 SCAMENUTYPE_Menu */
-	{ FALSE,  TRUE,  TRUE, FALSE, FALSE, },
+	{ FALSE,  TRUE,  TRUE, FALSE,  TRUE, },
 	/* 2 SCAMENUTYPE_MenuItem */
 	{ FALSE,  TRUE,  TRUE,  TRUE, FALSE, },
 	/* 3 SCAMENUTYPE_Command */
@@ -4978,51 +4978,65 @@ DISPATCHER(myNListTree)
 		Result = DoSuperMethodA(cl, obj, msg);
 		break;
 
-	// we catch MUIM_DragReport because we want to restrict some dragging for some special objects
-	case MUIM_DragReport:
+	case MUIM_NList_DropType:
 		{
-		struct MUIP_DragReport *dr = (struct MUIP_DragReport *)msg;
-		struct MUI_NListtree_TestPos_Result res;
+		struct MUIP_NList_DropType *dr = (struct MUIP_NList_DropType *)msg;
 		struct MUI_NListtree_TreeNode *tnTo, *tnFrom;
+		struct MUI_NListtree_TestPos_Result res;
 
 		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
-		DoMethod(obj, MUIM_NListtree_TestPos, dr->x, dr->y, &res);
+
+		inst->mpb_MenuTreeMayDrop = FALSE;
+
+		Result = DoSuperMethodA(cl, obj, msg);
+		d1(KPrintF("%s/%ld: DropType=%ld  pos=%ld\n", __FUNC__, __LINE__, *(dr->type), *(dr->pos)));
+
+		DoMethod(obj, MUIM_NListtree_TestPos, dr->mousex, dr->mousey, &res);
 
 		tnTo = res.tpr_TreeNode;
 
 		tnFrom = MUIV_NListtree_Active_Off;
 		get(obj, MUIA_NListtree_Active, (APTR) &tnFrom);
 
-		if (tnTo && tnFrom && MUIV_NListtree_Active_Off != tnFrom)
+		d1(KPrintF("%s/%ld: tnFrom=%08lx  tnTo=%08lx\n", __FUNC__, __LINE__, tnFrom, tnTo));
+
+		if (tnTo && tnFrom)
 			{
-			switch (res.tpr_Type)
+			switch (*(dr->type))
 				{
-			case MUIV_NListtree_TestPos_Result_Onto:
-				if (MayPasteOnto(inst, tnTo, tnFrom))
-					Result = DoSuperMethodA(cl, obj, msg);
-				else
-					Result = MUIV_DragReport_Abort;
-				break;
-			case MUIV_NListtree_TestPos_Result_Below:
-				if (MayPasteBelow(inst, tnTo, tnFrom))
-					Result = DoSuperMethodA(cl, obj, msg);
-				else
-					Result = MUIV_DragReport_Abort;
-				break;
+			case MUIV_NListtree_DropType_None:
+			case MUIV_NListtree_DropType_Sorted:
 			default:
-				Result = MUIV_DragReport_Abort;
+				break;
+			case MUIV_NListtree_DropType_Above:
+			case MUIV_NListtree_DropType_Below:
+				if (MayPasteBelow(inst, tnTo, tnFrom))
+					inst->mpb_MenuTreeMayDrop = TRUE;
+				break;
+			case MUIV_NListtree_DropType_Onto:
+				if (MayPasteOnto(inst, tnTo, tnFrom))
+					inst->mpb_MenuTreeMayDrop = TRUE;
 				break;
 				}
-			d1(KPrintF("%s/%ld: END tpr_Type=%ld  MayDrop=%ld\n", __FUNC__, __LINE__, res.tpr_Type, Result));
-			}
-		else
-			{
-			// to rescue the dropping we call the SuperMethod now
-			Result = DoSuperMethodA(cl, obj, msg);
+			d1(KPrintF("%s/%ld: DropType=%ld\n", __FUNC__, __LINE__, *(dr->type)));
 			}
 		}
 		break;
 
+	// we catch MUIM_DragReport because we want to restrict some dragging for some special objects
+	case MUIM_DragReport:
+		{
+		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+
+		d1(KPrintF("%s/%ld: MUIM_DragReport\n", __FUNC__, __LINE__));
+
+		Result = DoSuperMethodA(cl, obj, msg);
+		if (!inst->mpb_MenuTreeMayDrop)
+			Result = MUIV_DragReport_Abort;
+
+		d1(KPrintF("%s/%ld: MUIM_DragReport\n", __FUNC__, __LINE__));
+		}
+		break;
 	default:
 		Result = DoSuperMethodA(cl, obj, msg);
 		}

@@ -170,6 +170,8 @@ struct MenuPrefsInst
 	BOOL	mpb_QuietFlag;
 	BOOL	mpb_HideObsoletePopupMenus;
 
+	BOOL	mpb_MenuTreeMayDrop;
+
 	struct Screen *mpb_WBScreen;
 
 	struct FileRequester *mpb_LoadReq;
