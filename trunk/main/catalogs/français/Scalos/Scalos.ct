@@ -1084,7 +1084,7 @@ Terminé : %lU / %lU Objets
 ;
 MSGID_FILETRANSFER_DETAILS_SIZE
 Copié : %s / %s
-;Copied: %s / %s
+;Processed: %s / %s
 ;
 MSGID_FILETRANSFER_DETAILS_SPEED
 Vitesse moyenne : %s/s
@@ -1118,6 +1118,30 @@ Deleting...
 MSGID_PREPARING_DELETE
 Counting Objects to Delete...
 ;Counting Objects to Delete...
+;
+;+++translateme+++
+MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT_NOTOTAL
+Finished: %lU Objects
+;Finished: %lU Objects
+;
+;+++translateme+++
+MSGID_FILETRANSFER_DETAILS_SIZE_NOTOTAL
+Processed: %s
+;Processed: %s
+;
+;+++translateme+++
+MSGID_FILETRANSFER_INSUFFICIENTSPACE_BODY
+Insufficient space on destination %s\n\
+Required: %s\n\
+Available: %s
+;Insufficient space on destination %s\n\
+;Required: %s\n\
+;Available: %s
+;
+;+++translateme+++
+MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS
+Proceed anyway|Abort
+;Proceed anyway|Abort
 ;
 ; ==============================================
 ;

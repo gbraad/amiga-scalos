@@ -1823,6 +1823,10 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 
 	DoMethod(o, SCCM_FileTrans_OpenWindowDelayed);
 
+	DoMethod(o, SCCM_FileTrans_UpdateWindow,
+		FTUPDATE_Entry,
+		SrcDirLock, SrcDirLock, SrcFileName);
+
 	do	{
 		CONST_STRPTR eName;
 		LONG DirEntryType;
@@ -1900,6 +1904,10 @@ LONG CountCommand(Class *cl, Object *o, BPTR SrcDirLock, CONST_STRPTR SrcFileNam
 	if (allocatedName)
 		ScalosFree(allocatedName);
 
+	DoMethod(o, SCCM_FileTrans_UpdateWindow,
+		FTUPDATE_Entry,
+		SrcDirLock, SrcDirLock, SrcFileName);
+
 	d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
@@ -1917,15 +1925,19 @@ static LONG CountEntry(Class *cl, Object *o, BPTR srcDirLock, T_ExamineData *fib
 
 	DoMethod(o, SCCM_FileTrans_OpenWindowDelayed);
 
+	DoMethod(o, SCCM_FileTrans_UpdateWindow,
+		FTUPDATE_Entry,
+		srcDirLock, srcDirLock, eName);
+
 	do	{
 		switch (DirEntryType)
 			{
 		case ST_FILE:
 		case ST_LINKFILE:
 		case ST_PIPEFILE:
-			ftci->ftci_TotalFiles++;
+			ftci->ftci_CurrentItems++;
 
-			ftci->ftci_TotalBytes = Add64(ftci->ftci_TotalBytes, ScalosExamineGetSize(fib));
+			ftci->ftci_CurrentBytes = Add64(ftci->ftci_CurrentBytes, ScalosExamineGetSize(fib));
 
 			d1(kprintf("%s/%s/%ld: Name=<%s>  Size=%ld  Total=%lu\n", \
 				__FILE__, __FUNC__, __LINE__, eName, ULONG64_LOW(ScalosExamineGetSize(fib)), ULONG64_LOW(ftci->ftci_TotalBytes)));
@@ -1939,6 +1951,7 @@ static LONG CountEntry(Class *cl, Object *o, BPTR srcDirLock, T_ExamineData *fib
 		case ST_USERDIR:
 			if (recursive)
 				Result = FileTrans_CountDir(cl, o, srcDirLock, eName);	    // count directory contents
+			d1(if (RETURN_OK != Result) kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			ftci->ftci_TotalDirs++;
 			break;
 
@@ -1946,13 +1959,13 @@ static LONG CountEntry(Class *cl, Object *o, BPTR srcDirLock, T_ExamineData *fib
 			if (DirEntryType < 0)
 				{
 				// generally speaking <0 is file
-				ftci->ftci_TotalItems++;
+				ftci->ftci_CurrentItems++;
 				ftci->ftci_TotalFiles++;
 
-				ftci->ftci_TotalBytes = Add64(ftci->ftci_TotalBytes, ScalosExamineGetSize(fib));
+				ftci->ftci_CurrentBytes = Add64(ftci->ftci_CurrentBytes, ScalosExamineGetSize(fib));
 
-				d1(kprintf("%s/%s/%ld: Name=<%s>  Size=%ld  Total=%lu\n", \
-					__FILE__, __FUNC__, __LINE__, eName, ULONG64_LOW(ScalosExamineGetSize(fib)), ULONG64_LOW(ftci->ftci_TotalBytes)));
+				d1(kprintf("%s/%s/%ld: Name=<%s>  Size=%ld  Current=%lu\n", \
+					__FILE__, __FUNC__, __LINE__, eName, ULONG64_LOW(ScalosExamineGetSize(fib)), ULONG64_LOW(ftci->ftci_CurrentBytes)));
 				}
 			else
 				{
@@ -1960,17 +1973,23 @@ static LONG CountEntry(Class *cl, Object *o, BPTR srcDirLock, T_ExamineData *fib
 				// count directory contents
 				if (recursive)
 					Result = FileTrans_CountDir(cl, o, srcDirLock, eName);
+				d1(if (RETURN_OK != Result) kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				ftci->ftci_TotalDirs++;
 				}
 			break;
 			}
 
 		if (RETURN_OK == Result)
+			{
 			Result = DoMethod(o, SCCM_FileTrans_CheckAbort);
+			d1(if (RETURN_OK != Result) kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+			}
 
 		} while (0);
 
-	ftci->ftci_TotalItems++;
+	ftci->ftci_CurrentItems++;
+
+	d1(if (RETURN_OK != Result) kprintf("%s/%s/%ld: SrcName=<%s> Result=%ld\n", __FILE__, __FUNC__, __LINE__, eName, Result));
 
 	return Result;
 }
@@ -1993,19 +2012,24 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 	debugLock_d1(parentLock);
 
 	if (DoMethod(o, SCCM_FileTrans_CountTimeout))
+		{
+		d1(kprintf("%s/%s/%ld: Timeout: Result=RETURN_WARN\n", __FILE__, __FUNC__, __LINE__));
 		return RETURN_WARN;
+		}
 
 	do	{
 		dirLock = Lock((STRPTR) Name, ACCESS_READ);
 		if ((BPTR)NULL == dirLock)
 			{
 			Result = RememberError(cl, o, Name, ftta_CountDir, fto_Lock);
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
 		if (!ScalosExamineDirBegin(dirLock, &edh))
 			{
 			Result = RememberError(cl, o, Name, ftta_CountDir, fto_AllocDosObject);
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
@@ -2017,6 +2041,7 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 				{
 				Result = RememberExNextError(cl, o, Name, ftta_CountDir, fto_ExNext);
 				d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+				d1(if (RETURN_OK != Result) kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 				break;
 				}
 
@@ -2024,6 +2049,7 @@ static LONG FileTrans_CountDir(Class *cl, Object *o, BPTR parentLock, CONST_STRP
 			DirEntryType = ScalosExamineGetDirEntryType(fib);
 
 			Result = CountEntry(cl, o, dirLock, fib, TRUE, DirEntryType, eName);
+			d1(if (RETURN_OK != Result) kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			} while (RETURN_OK == Result);
 		} while (0);
 

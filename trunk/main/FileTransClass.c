@@ -113,10 +113,13 @@ static ULONG FileTransClass_OverwriteRequest(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_WriteProtectedRequest(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_ErrorRequest(Class *cl, Object *o, Msg msg);
 static ULONG FileTransClass_LinksNotSupportedRequest(Class *cl, Object *o, Msg msg);
+static ULONG FileTransClass_InsufficientSpaceRequest(Class *cl, Object *o, Msg msg);
 static void FileTransClass_UpdateTextGadget(struct Window *win, struct Gadget *gad, CONST_STRPTR NewText);
 static void FileTransClass_ChangeGadgetWidth(struct Window *win, struct Gadget *gad, ULONG NewWidth);
 static void FileTransClass_ResizeWindow(struct FileTransClassInstance *inst);
 static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst);
+static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
+	struct FileTransOp *fto, ULONG BodyTextId, ULONG GadgetTextId);
 
 //----------------------------------------------------------------------------
 
@@ -203,6 +206,10 @@ static SAVEDS(ULONG) FileTransClass_Dispatcher(Class *cl, Object *o, Msg msg)
 
 	case SCCM_FileTrans_LinksNotSupportedRequest:
 		Result = FileTransClass_LinksNotSupportedRequest(cl, o, msg);
+		break;
+
+	case SCCM_FileTrans_InsufficientSpaceRequest:
+		Result = FileTransClass_InsufficientSpaceRequest(cl, o, msg);
 		break;
 
 	default:
@@ -704,7 +711,16 @@ static void ProcessFTOps(Class *cl, Object *o)
 			}
 
 		inst->ftci_CountValid = RETURN_OK == Result;
-		d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+		d1(kprintf("%s/%s/%ld: ftci_CountValid=%ld  Result=%ld\n", __FILE__, __FUNC__, __LINE__, inst->ftci_CountValid, Result));
+
+		if (inst->ftci_CountValid)
+			{
+			inst->ftci_TotalItems = inst->ftci_CurrentItems;
+			inst->ftci_TotalBytes = inst->ftci_CurrentBytes;
+			}
+
+		inst->ftci_CurrentItems = 0;
+		inst->ftci_CurrentBytes = MakeU64(0);
 
 		GetSysTime(&inst->ftci_CopyStartTime);
 
@@ -768,8 +784,13 @@ static LONG DoFileTransCopy(Class *cl, Object *o, struct FileTransOp *fto)
 	BPTR VoldDir;
 	Object* OldIconObj = NULL;
 
+	if (!FileTransClass_CheckSufficientSpace(cl, o, fto,
+		MSGID_FILETRANSFER_INSUFFICIENTSPACE_BODY, MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS))
+		{
+		return RETURN_WARN;
+		}
 
-	// Check if "fto->fto_SrcName" lenght = 0 from current dir "fto->fto_SrcDirLock", 
+	// Check if "fto->fto_SrcName" length = 0 from current dir "fto->fto_SrcDirLock",
 	// then try to allocate a icon Object for disk icon.
 	// If ok and if icon type = "WBDISK", disk icon image will be used instead to use
 	// the default def_drawer icon image.
@@ -939,6 +960,12 @@ static LONG DoFileTransMove(Class *cl, Object *o, struct FileTransOp *fto)
 	debugLock_d1(fto->fto_SrcDirLock);
 	debugLock_d1(fto->fto_DestDirLock);
 	d1(kprintf("%s/%s/%ld: fto_SrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, fto->fto_SrcName));
+
+	if (!FileTransClass_CheckSufficientSpace(cl, o, fto,
+		MSGID_FILETRANSFER_INSUFFICIENTSPACE_BODY, MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS))
+		{
+		return RETURN_WARN;
+		}
 
 	Result = MoveCommand(cl, o, fto->fto_SrcDirLock, fto->fto_DestDirLock, fto->fto_SrcName);
 
@@ -1428,7 +1455,7 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 
 #ifdef SHOW_REMAINING_TIME
 		d1(KPrintF("%s/%s/%ld: cItem=%lu  tItem=%lu  Current=%lu  Total=%lu  Percent=%ld\n", \
-			__LINE__, inst->ftci_CurrentItems, inst->ftci_TotalItems, \
+			__FILE__, __FUNC__, __LINE__, inst->ftci_CurrentItems, inst->ftci_TotalItems, \
 			ULONG64_LOW(inst->ftci_CurrentBytes), ULONG64_LOW(inst->ftci_TotalBytes), PercentFinished));
 
 		if (GetElapsedTime(&inst->ftci_LastRemainTimeDisplay) >= 200)
@@ -1439,6 +1466,11 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 			ULONG64 Speed;
 			LONG RemainingTime;
 			ULONG elapsedTime = GetElapsedTime(&inst->ftci_CopyStartTime);
+
+			d1(kprintf("%s/%s/%ld: PercentFinishedBytes=%ld  PercentFinishedItems=%ld\n", \
+				__FILE__, __FUNC__, __LINE__, PercentFinishedBytes, PercentFinishedItems));
+			d1(kprintf("%s/%s/%ld: ftci_CurrentItems=%ld  ftci_TotalItems=%ld\n", \
+				__FILE__, __FUNC__, __LINE__, inst->ftci_CurrentItems, inst->ftci_TotalItems));
 
 			// Calculate speed in Bytes/s
 			if (elapsedTime > 1000)
@@ -1458,15 +1490,15 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 				}
 
 			d1(kprintf("%s/%s/%ld: ElapsedTime=%lu cItem=%lu  tItem=%lu  Current=%lu  Total=%lu  Percent=%ld  remTime=%lu\n", \
-				__LINE__, GetElapsedTime(&inst->ftci_CopyStartTime), \
+				__FILE__, __FUNC__, __LINE__, GetElapsedTime(&inst->ftci_CopyStartTime), \
 				inst->ftci_CurrentItems, inst->ftci_TotalItems, \
 				ULONG64_LOW(inst->ftci_CurrentBytes), ULONG64_LOW(inst->ftci_TotalBytes), \
 				PercentFinished, RemainingTime/1000));
 
 			d1(kprintf("%s/%s/%ld: Percent=%ld  RemainingTime=%ld s\n", \
-				__LINE__, PercentFinished, RemainingTime/1000));
+				__FILE__, __FUNC__, __LINE__, PercentFinished, RemainingTime/1000));
 
-			if (PercentFinished > 3)
+			if (inst->ftci_CountValid && PercentFinished > 3)
 				{
 				LONG RemainingSeconds = RemainingTime / 1000;
 				LONG RemainingMinutes = RemainingSeconds / 60;
@@ -1500,14 +1532,27 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 			TitleClass_Convert64KMG(inst->ftci_TotalBytes, TotalBytesBuffer, sizeof(TotalBytesBuffer));
 			TitleClass_Convert64KMGRounded(Speed, SpeedBuffer, sizeof(SpeedBuffer), 99);
 
-			ScaFormatStringMaxLength(inst->ftci_Line4Buffer, sizeof(inst->ftci_Line4Buffer),
-				GetLocString(MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT),
-				inst->ftci_CurrentItems, inst->ftci_TotalItems);
+			if (inst->ftci_CountValid)
+				{
+				ScaFormatStringMaxLength(inst->ftci_Line4Buffer, sizeof(inst->ftci_Line4Buffer),
+					GetLocString(MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT),
+					inst->ftci_CurrentItems, inst->ftci_TotalItems);
 
-			ScaFormatStringMaxLength(inst->ftci_Line5Buffer, sizeof(inst->ftci_Line5Buffer),
-				GetLocString(MSGID_FILETRANSFER_DETAILS_SIZE),
-				(ULONG) CurrentBytesBuffer,
-				(ULONG) TotalBytesBuffer);
+				ScaFormatStringMaxLength(inst->ftci_Line5Buffer, sizeof(inst->ftci_Line5Buffer),
+					GetLocString(MSGID_FILETRANSFER_DETAILS_SIZE),
+					(ULONG) CurrentBytesBuffer,
+					(ULONG) TotalBytesBuffer);
+				}
+			else
+				{
+				ScaFormatStringMaxLength(inst->ftci_Line4Buffer, sizeof(inst->ftci_Line4Buffer),
+					GetLocString(MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT_NOTOTAL),
+					inst->ftci_CurrentItems);
+
+				ScaFormatStringMaxLength(inst->ftci_Line5Buffer, sizeof(inst->ftci_Line5Buffer),
+					GetLocString(MSGID_FILETRANSFER_DETAILS_SIZE_NOTOTAL),
+					(ULONG) CurrentBytesBuffer);
+				}
 
 			ScaFormatStringMaxLength(inst->ftci_Line6Buffer, sizeof(inst->ftci_Line6Buffer),
 				GetLocString(MSGID_FILETRANSFER_DETAILS_SPEED),
@@ -1529,9 +1574,12 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 			}
 #endif
 
-		SetGadgetAttrs(inst->ftci_GaugeGadget, inst->ftci_Window, NULL,
-			SCAGAUGE_Level, PercentFinished,
-			TAG_END);
+		if (inst->ftci_CountValid)
+			{
+			SetGadgetAttrs(inst->ftci_GaugeGadget, inst->ftci_Window, NULL,
+				SCAGAUGE_Level, PercentFinished,
+				TAG_END);
+			}
 		}
 
 	return 0;
@@ -1649,6 +1697,53 @@ static ULONG FileTransClass_LinksNotSupportedRequest(Class *cl, Object *o, Msg m
 
 	if (DestPath)
 		FreePathBuffer(DestPath);
+
+	return (ULONG) result;
+}
+
+
+static ULONG FileTransClass_InsufficientSpaceRequest(Class *cl, Object *o, Msg msg)
+{
+//	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
+	struct msg_InsufficientSpaceRequest *miss = (struct msg_InsufficientSpaceRequest *) msg;
+	enum InsufficientSpaceReqResult result = INSUFFICIENTSPACE_Abort;
+	STRPTR DestPath;
+
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+
+	do	{
+		char RequiredSpaceString[30];
+		char AvailableSpaceString[30];
+
+		DestPath = AllocPathBuffer();
+		d1(KPrintF("%s/%s/%ld: DestPath=%08lx\n", __FILE__, __FUNC__, __LINE__, DestPath));
+		if (NULL == DestPath)
+			break;
+
+		if (!NameFromLock(miss->miss_DestDirLock, DestPath, Max_PathLen))
+			break;
+
+		d1(KPrintF("%s/%s/%ld: DestPath=<%s>\n", __FILE__, __FUNC__, __LINE__, DestPath));
+
+		TitleClass_Convert64KMG(*miss->miss_RequiredSpace, RequiredSpaceString, sizeof(RequiredSpaceString));
+		TitleClass_Convert64KMG(*miss->miss_AvailableSpace, AvailableSpaceString, sizeof(AvailableSpaceString));
+
+		d1(KPrintF("%s/%s/%ld: RequiredSpaceString=<%s>  AvailableSpaceString=<%s>\n", __FILE__, __FUNC__, __LINE__, RequiredSpaceString, AvailableSpaceString));
+
+		result = UseRequestArgs(miss->mlns_ParentWindow,
+			miss->miss_SuggestedBodyTextId,
+			miss->miss_SuggestedGadgetTextId,
+			3,
+			DestPath,
+			RequiredSpaceString,
+			AvailableSpaceString
+			);
+		} while (0);
+
+	if (DestPath)
+		FreePathBuffer(DestPath);
+
+	d1(KPrintF("%s/%s/%ld: result=%ld\n", __FILE__, __FUNC__, __LINE__, result));
 
 	return (ULONG) result;
 }
@@ -1950,4 +2045,58 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 	return Success;
 }
 
+//----------------------------------------------------------------------------
+
+static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
+	struct FileTransOp *fto, ULONG BodyTextId, ULONG GadgetTextId)
+{
+	struct FileTransClassInstance *ftci = INST_DATA(cl, o);
+
+	d1(KPrintF("%s/%s/%ld: START  ftci_CountValid=%ld\n", __FILE__, __FUNC__, __LINE__, ftci->ftci_CountValid));
+
+	if (ftci->ftci_CountValid)
+		{
+		enum InsufficientSpaceReqResult rc;
+		struct InfoData *info = ScalosAllocInfoData();
+		ULONG64 AvailableSpace;
+
+		d1(KPrintF("%s/%s/%ld: info=%08lx\n", __FILE__, __FUNC__, __LINE__, info));
+
+		if (info)
+			{
+			// Check available space on destination device
+			Info(fto->fto_DestDirLock, info);
+
+			d1(KPrintF("%s/%s/%ld: id_NumBlocks=%lu  id_NumBlocksUsed=%lu\n", __FILE__, __FUNC__, __LINE__, info->id_NumBlocks, info->id_NumBlocksUsed));
+
+			AvailableSpace = Mul64(info->id_NumBlocks - info->id_NumBlocksUsed, info->id_BytesPerBlock, NULL);
+			ScalosFreeInfoData(&info);
+
+			if (Cmp64(AvailableSpace, ftci->ftci_TotalBytes) < 0)
+				{
+				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+				rc = DoMethod(o, SCCM_FileTrans_InsufficientSpaceRequest,
+					ftci->ftci_Window,
+					fto->fto_SrcDirLock,
+					fto->fto_SrcName,
+					fto->fto_DestDirLock,
+					fto->fto_DestName,
+					&ftci->ftci_TotalBytes,
+					&AvailableSpace,
+					BodyTextId,
+					GadgetTextId);
+
+				d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+
+				if (INSUFFICIENTSPACE_Ignore != rc)
+					return FALSE;
+				}
+			}
+		}
+
+	return TRUE;
+}
+
+//----------------------------------------------------------------------------
 
