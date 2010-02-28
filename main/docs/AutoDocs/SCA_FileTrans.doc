@@ -6,6 +6,7 @@ FileTrans.sca/SCCM_FileTrans_Copy
 FileTrans.sca/SCCM_FileTrans_CountTimeout
 FileTrans.sca/SCCM_FileTrans_Delete
 FileTrans.sca/SCCM_FileTrans_ErrorRequest
+FileTrans.sca/SCCM_FileTrans_InsufficientSpaceRequest
 FileTrans.sca/SCCM_FileTrans_LinksNotSupportedRequest
 FileTrans.sca/SCCM_FileTrans_Move
 FileTrans.sca/SCCM_FileTrans_CheckAbort
@@ -342,6 +343,42 @@ FileTrans.sca/SCCM_FileTrans_WriteProtectedRequest
 		ERRORREQ_Retry - retry failed operation on this object
 		ERRORREQ_Skip - ignore error and proceed with next object
 		ERRORREQ_Abort - abort copy/move operation
+
+    SEE ALSO
+FileTrans.sca/SCCM_FileTrans_InsufficientSpaceRequest
+    NAME
+        SCCM_FileTrans_InsufficientSpaceRequest
+
+    SYNOPSIS
+	ULONG Result = DoMethod(obj,SCCM_FileTrans_InsufficientSpaceRequest,
+		struct Window *parentWindow,
+		BPTR srcDirLock, CONST_STRPTR srcName,
+		BPTR destDirLock, CONST_STRPTR destName,
+		const ULONG64 *requiredSpace, const ULONG64 *availableSpace,
+		ULONG suggestedBodyTextId, ULONG suggestedGadgetTextId);
+
+    FUNCTION
+	Pops up a requester telling the user that there is insufficient
+	space available on the destination of a copy or move operation.
+	Ask user for decision about what to do,
+	and returns appropriate result.
+
+    INPUTS
+	parentWindow - progress window on Scalos screen, may be NULL.
+	srcDirLock - Lock on parent directory of source object.
+	srcName - file name of source object.
+	destDirLock - Lock on destination directory.
+	destName - desired destination name.
+	requiredSpace - number of octets required for operation.
+	availableSpace - number of octets available on destination.
+	suggestedBodyTextId - Text ID from Scalos catalog that specifies suggested
+		requester body text.
+	suggestedGadgetTextId - Text ID from Scalos catalog that specifies
+		suggested requester gadget contents.
+    RESULT
+	Result - InsufficientSpaceReqResult
+		INSUFFICIENTSPACE_Ignore - proceed with operation
+		INSUFFICIENTSPACE_Abort	- abort operation
 
     SEE ALSO
 FileTrans.sca/SCCM_FileTrans_LinksNotSupportedRequest
