@@ -226,7 +226,7 @@ static const struct ScalosPrefs DefaultPrefs =
 
 	3,					// pref_PopupWindowDelaySeconds
 
-	10000,					// pref_FileCountTimeout
+	60000,					// pref_FileCountTimeout (ms)
 	1000,					// pref_FileTransWindowDelay
 
 	"CON:0/11//150/Scalos Output Window/AUTO/WAIT",	// pref_ConsoleName

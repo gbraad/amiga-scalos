@@ -967,7 +967,7 @@ Finished: %lU / %lU Objects
 ;
 ;
 MSGID_FILETRANSFER_DETAILS_SIZE (//)
-Copied: %s / %s
+Processed: %s / %s
 ;
 ;
 MSGID_FILETRANSFER_DETAILS_SPEED (//)
@@ -993,6 +993,24 @@ Deleting...
 ;
 MSGID_PREPARING_DELETE (//)
 Counting Objects to Delete...
+;
+;
+MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT_NOTOTAL (//)
+Finished: %lU Objects
+;
+;
+MSGID_FILETRANSFER_DETAILS_SIZE_NOTOTAL (//)
+Processed: %s
+;
+;
+MSGID_FILETRANSFER_INSUFFICIENTSPACE_BODY (//)
+Insufficient space on destination %s\n\
+Required: %s\n\
+Available: %s
+;
+;
+MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS (//)
+Proceed anyway|Abort
 ;
 ; ==============================================
 ;

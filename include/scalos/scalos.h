@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+223)
+** next Tag to use :	(SCC_Dummy+224)
 */
 
 #ifndef DOS_DOS_H
@@ -1807,7 +1807,22 @@ enum LinksNotSupportedReqResult { LINKSNOTSUPPORTEDREQ_Ignore = 1, LINKSNOTSUPPO
 
 // ---------------------------------------------------------------------------
 
-#define SCCM_FileTrans_Delete		       (SCC_Dummy+221)
+#define	SCCM_FileTrans_InsufficientSpaceRequest	(SCC_Dummy+223)
+//	  struct Window *mlns_ParentWindow;
+//	  BPTR  miss_SrcDirLock;
+//	  CONST_STRPTR miss_SrcName;
+//	  BPTR  miss_DestDirLock;
+//	  CONST_STRPTR miss_DestName;
+//	  const ULONG64 *miss_RequiredSpace;
+//	  const ULONG64 *miss_AvailableSpace;
+//	  ULONG miss_SuggestedBodyTextId;
+//	  ULONG miss_SuggestedGadgetTextId;
+
+enum InsufficientSpaceReqResult { INSUFFICIENTSPACE_Ignore = 1, INSUFFICIENTSPACE_Abort = 0 };
+
+// ---------------------------------------------------------------------------
+
+#define	SCCM_FileTrans_Delete			(SCC_Dummy+221)
 // BPTR DirLock
 // CONST_STRPTR	Name
 
@@ -2647,6 +2662,22 @@ struct msg_LinksNotSupportedRequest
 	ULONG mlns_SuggestedGadgetTextId;
 	};
 
+// SCCM_FileTrans_InsufficientSpaceRequest
+struct msg_InsufficientSpaceRequest
+	{
+	ULONG miss_MethodID;
+	struct Window *mlns_ParentWindow;
+	BPTR  miss_SrcDirLock;
+	CONST_STRPTR miss_SrcName;
+	BPTR  miss_DestDirLock;
+	CONST_STRPTR miss_DestName;
+	const ULONG64 *miss_RequiredSpace;
+	const ULONG64 *miss_AvailableSpace;
+	ULONG miss_SuggestedBodyTextId;
+	ULONG miss_SuggestedGadgetTextId;
+	};
+
+// SCCM_FileTrans_Delete
 struct msg_Delete
 	{
 	ULONG mmd_MethodID;

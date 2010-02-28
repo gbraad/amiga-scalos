@@ -1070,6 +1070,22 @@ LINKSNOTSUPPORTEDREQ_Abort	equ	5
 
 ; ---------------------------------------------------------------------------
 
+SCCM_FileTrans_InsufficientSpaceRequest	equ	SCC_Dummy+223
+;        struct Window *mlns_ParentWindow;
+;        BPTR  miss_SrcDirLock;
+;        CONST_STRPTR miss_SrcName;
+;        BPTR  miss_DestDirLock;
+;        CONST_STRPTR miss_DestName;
+;        const ULONG64 *miss_RequiredSpace;
+;        const ULONG64 *miss_AvailableSpace;
+;        ULONG miss_SuggestedBodyTextId;
+;        ULONG miss_SuggestedGadgetTextId;
+
+INSUFFICIENTSPACE_Ignore	equ	1
+INSUFFICIENTSPACE_Abort		equ	2
+
+; ---------------------------------------------------------------------------
+
 SCCM_FileTrans_Delete			equ	SCC_Dummy+221
 ;	BPTR DirLock
 ;	CONST_STRPTR Name

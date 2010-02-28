@@ -1260,8 +1260,8 @@ Fertig: %lU / %lU Objekte
 ;
 ;
 MSGID_FILETRANSFER_DETAILS_SIZE
-Kopiert: %s / %s
-;Copied: %s / %s
+Bearbeitet: %s / %s
+;Processed: %s / %s
 ;
 ;
 MSGID_FILETRANSFER_DETAILS_SPEED
@@ -1299,6 +1299,30 @@ Löschen...
 MSGID_PREPARING_DELETE
 Zähle Objekte zum Löschen...
 ;Counting Objects to Delete...
+;
+;
+MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT_NOTOTAL
+Fertig: %lU Objekte
+;Finished: %lU Objects
+;
+;
+MSGID_FILETRANSFER_DETAILS_SIZE_NOTOTAL
+Bearbeitet: %s
+;Processed: %s
+;
+;
+MSGID_FILETRANSFER_INSUFFICIENTSPACE_BODY
+Zuwenig Platz auf dem Ziel %s\n\
+Benötigt: %s\n\
+Verfügbar: %s
+;Insufficient space on destination %s\n\
+;Required: %s\n\
+;Available: %s
+;
+;
+MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS
+Trotzdem fortsetzen|Abbrechen
+;Proceed anyway|Abort
 ;
 ; ==============================================
 ;
