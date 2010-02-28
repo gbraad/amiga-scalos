@@ -1109,38 +1109,32 @@ correctement les préférences !
 ;Due to this error, you won't have any menus available.\n\
 ;Please use Scalos Menu Preferences to create preferences!
 ;
-;+++translateme+++
 MSGID_FILETRANSTITLE_DELETE
-Deleting...
+Effacemment...
 ;Deleting...
 ;
-;+++translateme+++
 MSGID_PREPARING_DELETE
-Counting Objects to Delete...
+Enumération des objets à éffacer...
 ;Counting Objects to Delete...
 ;
-;+++translateme+++
 MSGID_FILETRANSFER_DETAILS_OBJECTCOUNT_NOTOTAL
-Finished: %lU Objects
+Terminé %lU Objets
 ;Finished: %lU Objects
 ;
-;+++translateme+++
 MSGID_FILETRANSFER_DETAILS_SIZE_NOTOTAL
-Processed: %s
+Effectué : %s
 ;Processed: %s
 ;
-;+++translateme+++
 MSGID_FILETRANSFER_INSUFFICIENTSPACE_BODY
-Insufficient space on destination %s\n\
-Required: %s\n\
-Available: %s
+Espace insuffisant dans la destination %s\n\
+Requis : %s\n\
+Disponible : %s
 ;Insufficient space on destination %s\n\
 ;Required: %s\n\
 ;Available: %s
 ;
-;+++translateme+++
 MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS
-Proceed anyway|Abort
+Continuer quand même | Annuler
 ;Proceed anyway|Abort
 ;
 ; ==============================================
