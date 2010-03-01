@@ -51,7 +51,8 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	$(run-cc)
 
-Delete.module.c : Delete_Locale.h
+$(OBJDIR)/Delete.module.o $(OBJDIR)/Delete.module.d \
+$(OBJDIR)/Delete.module_files.o $(OBJDIR)/Delete.module_files.d : Delete_Locale.h
 
 Delete_Locale.h : Delete.cd
 	$(ECHO) "CatComp $@"
