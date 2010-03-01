@@ -2069,7 +2069,7 @@ static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
 
 			d1(KPrintF("%s/%s/%ld: id_NumBlocks=%lu  id_NumBlocksUsed=%lu\n", __FILE__, __FUNC__, __LINE__, info->id_NumBlocks, info->id_NumBlocksUsed));
 
-			AvailableSpace = Mul64(info->id_NumBlocks - info->id_NumBlocksUsed, info->id_BytesPerBlock, NULL);
+			AvailableSpace = Mul64(MakeU64(info->id_NumBlocks - info->id_NumBlocksUsed), MakeU64(info->id_BytesPerBlock), NULL);
 			ScalosFreeInfoData(&info);
 
 			if (Cmp64(AvailableSpace, ftci->ftci_TotalBytes) < 0)
