@@ -586,7 +586,7 @@ LIBFUNC_P3(struct Iconobject *, LIBNewIconObject,
 			// Make sure each datatype starts with 0 file offset
 			Seek(IconFh, 0, OFFSET_BEGINNING);
 
-			obj = NewObject(in->in_Class, NULL,
+			obj = (struct Iconobject *) NewObject(in->in_Class, NULL,
 				DTA_Name, (ULONG) Name,
 				DTA_Handle, (ULONG) IconFh,
 				TAG_MORE, (ULONG) Taglist,
@@ -638,7 +638,7 @@ LIBFUNC_P3(struct Iconobject *, LIBGetDefIconObject,
 		NULL == obj && in != (struct IconNode *) &IconObjectBase->iob_ClassList.lh_Tail;
 		in = (struct IconNode *) in->Node.mln_Succ)
 		{
-		obj = NewObject(in->in_Class, NULL, 
+		obj = (struct Iconobject *) NewObject(in->in_Class, NULL,
 			IDTA_DefType, IconType,
 			DTA_Name, (ULONG) GetTagData(DTA_Name, (ULONG) "", TagList),
 			TAG_MORE, (ULONG) TagList,
@@ -747,7 +747,7 @@ static struct Iconobject *InternalConvert2IconObjectA(
 		NULL == obj && in != (struct IconNode *) &IconObjectBase->iob_ClassList.lh_Tail;
 		in = (struct IconNode *) in->Node.mln_Succ)
 		{
-		obj = NewObject(in->in_Class, (ULONG) NULL,
+		obj = (struct Iconobject *) NewObject(in->in_Class, (ULONG) NULL,
 			AIDTA_Icon, (ULONG) diskobject,
 			DTA_Name, (ULONG) "",
 			TAG_MORE, (ULONG) TagList,

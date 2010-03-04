@@ -55,7 +55,7 @@ struct Image *MakeSysImage(struct PM_Root *p, ULONG image, ULONG ist)
             dri.dri_Pens=TP;
         }*/
 
-        img = NewObject(NULL, SYSICLASS,
+	img = (struct Image *) NewObject(NULL, SYSICLASS,
             //SYSIA_DrawInfo, &dri,
 		SYSIA_DrawInfo, p->DrawInfo,
 		SYSIA_Size, SYSISIZE_HIRES,
@@ -88,13 +88,13 @@ void PM_Image_Allocate(struct PM_Root *p)
 void PM_Image_Free(struct PM_Root *p)
 {
 	if (p->MenuImages[PMIMG_AMIGAKEY])
-		DisposeObject(p->MenuImages[PMIMG_AMIGAKEY]);
+		DisposeObject((Object *) p->MenuImages[PMIMG_AMIGAKEY]);
 	if (p->MenuImages[PMIMG_CHECKMARK])
-		DisposeObject(p->MenuImages[PMIMG_CHECKMARK]);
+		DisposeObject((Object *) p->MenuImages[PMIMG_CHECKMARK]);
 	if (p->MenuImages[PMIMG_EXCLUDE])
-		DisposeObject(p->MenuImages[PMIMG_EXCLUDE]);
+		DisposeObject((Object *) p->MenuImages[PMIMG_EXCLUDE]);
 	/*if (p->MenuImages[PMIMG_SUBMENU])
-		DisposeObject(p->MenuImages[PMIMG_SUBMENU]); */
+		DisposeObject((Object *) p->MenuImages[PMIMG_SUBMENU]); */
 }
 
 struct PrefsImage *PM_Image_Get(ULONG type, struct PopupMenu *item)

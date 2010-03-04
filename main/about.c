@@ -930,7 +930,7 @@ static void AboutFreeButton(struct AboutGadgetInfo *agi)
 			if (agi->agi_Themed)
 				SCA_DisposeScalosObject((Object *) agi->agi_Gadget);
 			else
-				DisposeObject(agi->agi_Gadget);
+				DisposeObject((Object *) agi->agi_Gadget);
 			agi->agi_Gadget	= NULL;
 			}
 		ScalosFree(agi);

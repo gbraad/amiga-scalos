@@ -1153,16 +1153,16 @@ static BOOL GadgetBar_PointInGadget(struct ExtGadget *Parent, struct ExtGadget *
 {
 	ULONG Left, Top, Width, Height;
 
-	GetAttr(GA_Left, Parent, &Left);
-	GetAttr(GA_Top, Parent, &Top);
+	GetAttr(GA_Left, (Object *) Parent, &Left);
+	GetAttr(GA_Top, (Object *) Parent, &Top);
 
 	x += Left;
 	y += Top;
 
-	GetAttr(GA_Left, gg, &Left);
-	GetAttr(GA_Top, gg, &Top);
-	GetAttr(GA_Width, gg, &Width);
-	GetAttr(GA_Height, gg, &Height);
+	GetAttr(GA_Left, (Object *) gg, &Left);
+	GetAttr(GA_Top, (Object *) gg, &Top);
+	GetAttr(GA_Width, (Object *) gg, &Width);
+	GetAttr(GA_Height, (Object *) gg, &Height);
 
 	d1(KPrintF("%s/%s/%ld: x=%ld  y=%ld  Left=%ld  Top=%ld  Width=%ld  Height=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, x, y, Left, Top, Width, Height));

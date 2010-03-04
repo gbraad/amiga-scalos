@@ -162,7 +162,7 @@ BOOL ControlBarAdd(struct internalScaWindowTask *iwt)
 			NULL,		// GadgetInfo is filled in by DoGadgetMethod
 			TRUE);
 
-		GetAttr(GA_Height, iwt->iwt_ControlBar, &Height);
+		GetAttr(GA_Height, (Object *) iwt->iwt_ControlBar, &Height);
 
 		d1(KPrintF("%s/%s/%ld: Height=%ld\n", __FILE__, __FUNC__, __LINE__, Height));
 		d1(KPrintF("%s/%s/%ld: iwt_ExtraHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_ExtraHeight));
@@ -217,7 +217,7 @@ void ControlBarRemove(struct internalScaWindowTask *iwt)
 		d1(KPrintF("%s/%s/%ld: iwt_ExtraHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_ExtraHeight));
 		d1(KPrintF("%s/%s/%ld: iwt_InnerTop=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerTop));
 
-		DisposeObject(iwt->iwt_ControlBar);
+		DisposeObject((Object *) iwt->iwt_ControlBar);
 		iwt->iwt_ControlBar = NULL;
 
 		d1(kprintf("%s/%s/%ld: iwt_InnerBottom=%ld  iwt_SkipBottom=%ld\n", \
@@ -260,7 +260,7 @@ void ControlBarRebuild(struct internalScaWindowTask *iwt)
 
 			iwt->iwt_HighlightedControlBarGadget = NULL;
 
-			GetAttr(GA_Height, iwt->iwt_ControlBar, &OldHeight);
+			GetAttr(GA_Height, (Object *) iwt->iwt_ControlBar, &OldHeight);
 
 			d1(KPrintF("%s/%s/%ld: OldHeight=%ld\n", __FILE__, __FUNC__, __LINE__, OldHeight));
 
@@ -288,7 +288,7 @@ void ControlBarRebuild(struct internalScaWindowTask *iwt)
 
 			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-			GetAttr(GA_Height, iwt->iwt_ControlBar, &NewHeight);
+			GetAttr(GA_Height, (Object *) iwt->iwt_ControlBar, &NewHeight);
 
 			d1(KPrintF("%s/%s/%ld: NewHeight=%ld\n", __FILE__, __FUNC__, __LINE__, NewHeight));
 
@@ -910,7 +910,7 @@ static UWORD ControlBarQueryGadgetID(struct ExtGadget *gg)
 {
 	ULONG Code = 0;
 
-	GetAttr(GBDTA_LastActive, gg, &Code);
+	GetAttr(GBDTA_LastActive, (Object *) gg, &Code);
 	d1(KPrintF("%s/%s/%ld: Code=%04lx\n", __FILE__, __FUNC__, __LINE__, Code));
 
 	return (UWORD) Code;

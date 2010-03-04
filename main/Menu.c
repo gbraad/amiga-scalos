@@ -1711,7 +1711,7 @@ ULONG UpdateIconCount(struct internalScaWindowTask *iwt)
 
 			d1(kprintf("%s/%s/%ld: StatusBarText=<%s>\n", __FILE__, __FUNC__, __LINE__, StatusBarText));
 
-			GetAttr(GBTDTA_Text, iwt->iwt_StatusBarMembers[STATUSBARGADGET_StatusText], (APTR) &oldText);
+			GetAttr(GBTDTA_Text, (Object *) iwt->iwt_StatusBarMembers[STATUSBARGADGET_StatusText], (APTR) &oldText);
 
 			if (NULL == oldText || 0 != strcmp(oldText, StatusBarText))
 				{
