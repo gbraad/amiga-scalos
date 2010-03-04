@@ -2437,7 +2437,7 @@ static ULONG IconWindowClass_UpdateStatusBar(Class *cl, Object *o, Msg msg)
 
 	if (iwt->iwt_StatusBar)
 		{
-		SetAttrsA(mub->mub_Member, (struct TagItem *) mub->mub_TagList);
+		SetAttrsA((Object *) mub->mub_Member, (struct TagItem *) mub->mub_TagList);
 
 		DoGadgetMethod(iwt->iwt_StatusBar,
 			iwt->iwt_WindowTask.wt_Window, NULL,
@@ -2509,7 +2509,7 @@ static ULONG IconWindowClass_UpdateControlBar(Class *cl, Object *o, Msg msg)
 
 	if (iwt->iwt_ControlBar)
 		{
-		SetAttrsA(mub->mub_Member, (struct TagItem *) mub->mub_TagList);
+		SetAttrsA((Object *) mub->mub_Member, (struct TagItem *) mub->mub_TagList);
 
 		DoGadgetMethod(iwt->iwt_ControlBar,
 			iwt->iwt_WindowTask.wt_Window, NULL,

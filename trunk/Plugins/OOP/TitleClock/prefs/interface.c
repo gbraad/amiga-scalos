@@ -125,7 +125,7 @@ void SizeBorders(struct Screen *s, WORD *right, WORD *bottom)
 		if(NULL != (dri = GetScreenDrawInfo(s)) )
 		{
 			if(s->Flags & SCREENHIRES) sis = SYSISIZE_MEDRES; else sis = SYSISIZE_LOWRES;
-			img = NewObject(NULL, "sysiclass",  SYSIA_DrawInfo, dri,
+			img = (struct Image *) NewObject(NULL, "sysiclass",  SYSIA_DrawInfo, dri,
 												SYSIA_Which, SIZEIMAGE,
 												SYSIA_Size, sis,
 												TAG_DONE);
@@ -133,7 +133,7 @@ void SizeBorders(struct Screen *s, WORD *right, WORD *bottom)
 			{
 				if(right) *right = img->Width;
 				if(bottom) *bottom = img->Height;
-				DisposeObject(img);
+				DisposeObject((Object *) img);
 			}
 			FreeScreenDrawInfo(s, dri);
 		} /* drawinfo */

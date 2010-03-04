@@ -117,7 +117,7 @@ BOOL StatusBarAdd(struct internalScaWindowTask *iwt)
 		NULL,		// GadgetInfo is filled in by DoGadgetMethod
 		TRUE);
 
-	GetAttr(GA_Height, iwt->iwt_StatusBar, &Height);
+	GetAttr(GA_Height, (Object *) iwt->iwt_StatusBar, &Height);
 
 	d1(KPrintF("%s/%s/%ld: Height=%ld  gg->Height=%ld  iwt_GadgetBarHeightBottom=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, Height, iwt->iwt_StatusBar->Height, iwt->iwt_GadgetBarHeightBottom));
@@ -153,7 +153,7 @@ void StatusBarRemove(struct internalScaWindowTask *iwt)
 		iwt->iwt_InnerBottom -= iwt->iwt_GadgetBarHeightBottom;
 		iwt->iwt_InnerHeight += iwt->iwt_GadgetBarHeightBottom;
 
-		DisposeObject(iwt->iwt_StatusBar);
+		DisposeObject((Object *) iwt->iwt_StatusBar);
 		iwt->iwt_StatusBar = NULL;
 
 		memset(iwt->iwt_StatusBarMembers, 0, sizeof(iwt->iwt_StatusBarMembers));

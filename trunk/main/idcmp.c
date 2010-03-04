@@ -1294,7 +1294,7 @@ static void SetPropBottom(struct internalScaWindowTask *iwt)
 {
 	ULONG Top;
 
-	GetAttr(PGA_Top, iwt->iwt_PropBottom, &Top);
+	GetAttr(PGA_Top, (Object *) iwt->iwt_PropBottom, &Top);
 
 	Top = (Top << iwt->iwt_BottomScrollerScale) + iwt->iwt_MinX;
 
@@ -1329,7 +1329,7 @@ static void SetPropSide(struct internalScaWindowTask *iwt)
 {
 	ULONG Top;
 
-	GetAttr(PGA_Top, iwt->iwt_PropSide, &Top);
+	GetAttr(PGA_Top, (Object *) iwt->iwt_PropSide, &Top);
 
 	Top = (Top << iwt->iwt_SideScrollerScale) + iwt->iwt_MinY;
 

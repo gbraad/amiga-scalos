@@ -1998,7 +1998,7 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst)
 			if (NULL == inst->ftci_CancelButtonFrame)
 				break;
 
-			gad = inst->ftci_CancelButtonGadget = NewObject(NULL, FRBUTTONCLASS,
+			gad = inst->ftci_CancelButtonGadget = (struct Gadget *) NewObject(NULL, FRBUTTONCLASS,
 				GA_Left, ng.ng_LeftEdge,
 				GA_Top, ng.ng_TopEdge,
 				GA_Width, ng.ng_Width,

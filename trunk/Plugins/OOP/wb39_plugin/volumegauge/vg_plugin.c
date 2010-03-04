@@ -208,7 +208,7 @@ M68KFUNC_P3(ULONG, myHookFunc,
 			if (gad)
 				{
 				RemoveGadget(win, gad);
-				DisposeObject(gad);
+				DisposeObject((Object *) gad);
 				}
 			}
 		Result = DoSuperMethodA(cl, obj, msg);

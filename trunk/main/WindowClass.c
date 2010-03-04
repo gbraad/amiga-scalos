@@ -584,54 +584,54 @@ static void FreeWindowGadgets(struct internalScaWindowTask *iwt)
 {
 	if (iwt->iwt_GadImageRightArrow)
 		{
-		DisposeObject(iwt->iwt_GadImageRightArrow);
+		DisposeObject((Object *) iwt->iwt_GadImageRightArrow);
 		iwt->iwt_GadImageRightArrow = NULL;
 		}
 	if (iwt->iwt_GadImageLeftArrow)
 		{
-		DisposeObject(iwt->iwt_GadImageLeftArrow);
+		DisposeObject((Object *) iwt->iwt_GadImageLeftArrow);
 		iwt->iwt_GadImageLeftArrow = NULL;
 		}
 	if (iwt->iwt_GadImageDownArrow)
 		{
-		DisposeObject(iwt->iwt_GadImageDownArrow);
+		DisposeObject((Object *) iwt->iwt_GadImageDownArrow);
 		iwt->iwt_GadImageDownArrow = NULL;
 		}
 	if (iwt->iwt_GadImageUpArrow)
 		{
-		DisposeObject(iwt->iwt_GadImageUpArrow);
+		DisposeObject((Object *) iwt->iwt_GadImageUpArrow);
 		iwt->iwt_GadImageUpArrow = NULL;
 		}
 
 	if (iwt->iwt_PropBottom)
 		{
-		DisposeObject(iwt->iwt_PropBottom);
+		DisposeObject((Object *) iwt->iwt_PropBottom);
 		iwt->iwt_PropBottom = NULL;
 		}
 	if (iwt->iwt_PropSide)
 		{
-		DisposeObject(iwt->iwt_PropSide);
+		DisposeObject((Object *) iwt->iwt_PropSide);
 		iwt->iwt_PropSide = NULL;
 		}
 
 	if (iwt->iwt_GadgetRightArrow)
 		{
-		DisposeObject(iwt->iwt_GadgetRightArrow);
+		DisposeObject((Object *) iwt->iwt_GadgetRightArrow);
 		iwt->iwt_GadgetRightArrow = NULL;
 		}
 	if (iwt->iwt_GadgetLeftArrow)
 		{
-		DisposeObject(iwt->iwt_GadgetLeftArrow);
+		DisposeObject((Object *) iwt->iwt_GadgetLeftArrow);
 		iwt->iwt_GadgetLeftArrow = NULL;
 		}
 	if (iwt->iwt_GadgetDownArrow)
 		{
-		DisposeObject(iwt->iwt_GadgetDownArrow);
+		DisposeObject((Object *) iwt->iwt_GadgetDownArrow);
 		iwt->iwt_GadgetDownArrow = NULL;
 		}
 	if (iwt->iwt_GadgetUpArrow)
 		{
-		DisposeObject(iwt->iwt_GadgetUpArrow);
+		DisposeObject((Object *) iwt->iwt_GadgetUpArrow);
 		iwt->iwt_GadgetUpArrow = NULL;
 		}
 
@@ -639,12 +639,12 @@ static void FreeWindowGadgets(struct internalScaWindowTask *iwt)
 
 	if (iwt->iwt_IconifyGadget)
 		{
-		DisposeObject(iwt->iwt_IconifyGadget);
+		DisposeObject((Object *) iwt->iwt_IconifyGadget);
 		iwt->iwt_IconifyGadget = NULL;
 		}
 	if (iwt->iwt_IconifyImage)
 		{
-		DisposeObject(iwt->iwt_IconifyImage);
+		DisposeObject((Object *) iwt->iwt_IconifyImage);
 		iwt->iwt_IconifyImage = NULL;
 		}
 
@@ -943,7 +943,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 			if (LeftMostGadget)
 				{
 				// First, try to use "sysiclass" gadget
-				iwt->iwt_IconifyImage = NewObject(NULL, "sysiclass",
+				iwt->iwt_IconifyImage = (struct Image *) NewObject(NULL, "sysiclass",
 					SYSIA_DrawInfo, (ULONG) iwt->iwt_WinDrawInfo,
 					SYSIA_Which, ICONIFYIMAGE,
 					TAG_END);
@@ -951,7 +951,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 				// Second, try to use "tbiclass" gadget
 				if (NULL == iwt->iwt_IconifyImage)
 					{
-					iwt->iwt_IconifyImage = NewObject(NULL, "tbiclass",
+					iwt->iwt_IconifyImage = (struct Image *) NewObject(NULL, "tbiclass",
 						SYSIA_DrawInfo, (ULONG) iwt->iwt_WinDrawInfo,
 						SYSIA_Which, ICONIFYIMAGE,
 						TAG_END);
@@ -962,7 +962,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 				if (NULL == iwt->iwt_IconifyImage)
 					{
 					// if titlebarimageclass" not available, use built-in image class.
-					iwt->iwt_IconifyImage = NewObject(IconifyImageClass, NULL,
+					iwt->iwt_IconifyImage = (struct Image *) NewObject(IconifyImageClass, NULL,
 						IA_Height, LeftMostGadget->Height,
 						SYSIA_DrawInfo, (ULONG) iwt->iwt_WinDrawInfo,
 						SYSIA_Which, ICONIFYIMAGE,
@@ -975,12 +975,12 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 					{
 					LONG ImageWidth;
 
-					GetAttr(IA_Width, iwt->iwt_IconifyImage, (ULONG *) &ImageWidth);
+					GetAttr(IA_Width, (Object *) iwt->iwt_IconifyImage, (ULONG *) &ImageWidth);
 
 					d1(kprintf("%s/%s/%ld: gad->LeftEdge=%ld  Width=%ld\n", \
 					__FILE__, __FUNC__, __LINE__, LeftMostGadget->LeftEdge - ImageWidth, ImageWidth));
 
-					iwt->iwt_IconifyGadget = NewObject(NULL, BUTTONGCLASS,
+					iwt->iwt_IconifyGadget = (struct Gadget *) NewObject(NULL, BUTTONGCLASS,
 						GA_TopBorder, TRUE,
 						GA_Top, 0,
 //+++						GA_RelRight, TBI_RELPOS(iwt->iwt_IconifyImage,2),
@@ -1001,7 +1001,7 @@ static struct Window *ScaOpenWindow(struct internalScaWindowTask *iwt, Class *cl
 					{
 					if (iwt->iwt_IconifyImage)
 						{
-						DisposeObject(iwt->iwt_IconifyImage);
+						DisposeObject((Object *) iwt->iwt_IconifyImage);
 						iwt->iwt_IconifyImage = NULL;
 						}
 					}
@@ -1123,7 +1123,7 @@ static struct Gadget *InitWindowGadgets(struct internalScaWindowTask *iwt)
 		Left = iwt->iwt_WinScreen->WBorLeft - 1;
 
 		// Bottom/horizontal slider
-		iwt->iwt_PropBottom = NewObject(NULL, PROPGCLASS,
+		iwt->iwt_PropBottom = (struct Gadget *) NewObject(NULL, PROPGCLASS,
 			GA_RelWidth, -(w2 + Left + 3),
 			GA_Left, Left,
 			GA_RelBottom, (h >= 12) ? (-h + 4) : (-h + 3),
@@ -1190,7 +1190,7 @@ static struct Gadget *InitWindowGadgets(struct internalScaWindowTask *iwt)
 		Top = iwt->iwt_WinScreen->WBorTop + iwt->iwt_WinScreen->Font->ta_YSize + 2;
 
 		// Right/vertical slider
-		iwt->iwt_PropSide = NewObject(NULL, PROPGCLASS,
+		iwt->iwt_PropSide = (struct Gadget *) NewObject(NULL, PROPGCLASS,
 			GA_Top, Top,
 			GA_RelHeight, -(Top + h2 + 2),
 			GA_Width, w - 8,
