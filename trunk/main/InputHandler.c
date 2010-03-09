@@ -382,7 +382,7 @@ static BOOL IsMenuPending(const struct Screen *scr)
 		if ((win->Flags == (WFLG_RMBTRAP | WFLG_NW_EXTENDED | WFLG_REPORTMOUSE | WFLG_BORDERLESS))
 			&& (NULL == win->Title) && (0 == win->IDCMPFlags))
 			{
-			d2(kprintf("%s/%s/%ld: win=%08lx  <%s>  w=%ld  h=%ld  Flags=%08lx  IDCMPFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, \
+			d1(kprintf("%s/%s/%ld: win=%08lx  <%s>  w=%ld  h=%ld  Flags=%08lx  IDCMPFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, \
 				win, win->Title ? win->Title : (UBYTE *) "", win->Width, win->Height, win->Flags, win->IDCMPFlags));
 			return TRUE;
 			}
