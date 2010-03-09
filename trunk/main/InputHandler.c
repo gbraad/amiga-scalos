@@ -8,6 +8,7 @@
 #include <utility/hooks.h>
 #include <devices/input.h>
 #include <devices/inputevent.h>
+#include <intuition/IntuitionBase.h>
 
 #define	__USE_SYSBASE
 
@@ -48,6 +49,7 @@ M68KFUNC_P2_PROTO(struct InputEvent *, ScalosInputHandler,
 	A1, APTR, isData);
 static BOOL PretestPopupMenu(const struct InputEvent *ie);
 static BOOL SendPopupMenuMsg(struct internalScaWindowTask *iwt, const struct InputEvent *ie);
+static BOOL IsMenuPending(const struct Screen *scr);
 
 //----------------------------------------------------------------------------
 
@@ -213,6 +215,9 @@ static BOOL PretestPopupMenu(const struct InputEvent *ie)
 		if (MouseScreen->LayerInfo.Lock.ss_NestCount != 0)
 			break;
 
+		if (IsMenuPending(MouseScreen))
+			break;
+
 		QueryObjectUnderPointer(&iwtUnderPointer, &inUnderPointer, NULL, &win);
 
 		if (NULL == iwtUnderPointer)
@@ -353,3 +358,38 @@ BOOL PointInGadget(WORD x, WORD y, const struct Window *win, const struct Gadget
 		&& (y >= GadgetRect.MinY) && (y <= GadgetRect.MaxY));
 ///
 }
+
+
+static BOOL IsMenuPending(const struct Screen *scr)
+{
+#if defined(__MORPHOS__)
+	// Workaround against "menu-open-lockup":
+	// when a menu has been opened with a short RMB click (RMB not held!),
+	// and RMB is clicked somewhere on Scalos windows' area, the menu cannot
+	// be closed and intuition is completely locked up.
+	// Unfortunately, there seems to be not system-conforming way to detect
+	// pending (open) menu state, so this nasty hack had to be implemented.
+	// This hack relies on MorphOS menu implementation with windows,
+	// and specific properties of those windows. It it likely that is
+	// will stop working with any new MorphOS release :(
+	const struct Window *win;
+
+	for (win = scr->FirstWindow; win; win = win->NextWindow)
+		{
+		d1(kprintf("%s/%s/%ld: win=%08lx  Title=%08lx  <%s>  w=%ld  h=%ld  Flags=%08lx  IDCMPFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, \
+			win, win->Title, win->Title ? win->Title : (UBYTE *) "", win->Width, win->Height, win->Flags, win->IDCMPFlags));
+
+		if ((win->Flags == (WFLG_RMBTRAP | WFLG_NW_EXTENDED | WFLG_REPORTMOUSE | WFLG_BORDERLESS))
+			&& (NULL == win->Title) && (0 == win->IDCMPFlags))
+			{
+			d2(kprintf("%s/%s/%ld: win=%08lx  <%s>  w=%ld  h=%ld  Flags=%08lx  IDCMPFlags=%08lx\n", __FILE__, __FUNC__, __LINE__, \
+				win, win->Title ? win->Title : (UBYTE *) "", win->Width, win->Height, win->Flags, win->IDCMPFlags));
+			return TRUE;
+			}
+		}
+#endif //__MORPHOS__
+
+	return FALSE;
+}
+
+
