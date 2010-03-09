@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.7
 
 Additions/changes:
 
-41.7    20100228	jl	- Improvement: added check for sufficient space on copy/move operations.
+41.7    20100309	jl	- Bugfix: added Workaround against "menu-open-lockup" with MorphOS.
+	20100228	jl	- Improvement: added check for sufficient space on copy/move operations.
 				- Bugfix: corrected handling of copy/move progress without valid totals count.
 	20100219	jl	- Improvement: touching pattern.prefs trigger selection
 				  of new random background patterns, even when prefs have not changed.
