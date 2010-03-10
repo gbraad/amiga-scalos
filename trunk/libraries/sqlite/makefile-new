@@ -33,6 +33,7 @@ OBJS	+=	$(OBJDIR)/alter.o \
                 $(OBJDIR)/build.o \
 		$(OBJDIR)/callback.o \
                 $(OBJDIR)/complete.o \
+		$(OBJDIR)/ctime.o \
                 $(OBJDIR)/date.o \
                 $(OBJDIR)/delete.o \
          	$(OBJDIR)/expr.o \
