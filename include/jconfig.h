@@ -40,6 +40,7 @@
 #undef DONT_USE_B_MODE
 
 /* Define this if you want percent-done progress reports from cjpeg/djpeg. */
-#undef PROGRESS_REPORT
+/* #undef PROGRESS_REPORT */
+#define  PROGRESS_REPORT
 
 #endif /* JPEG_CJPEG_DJPEG */
