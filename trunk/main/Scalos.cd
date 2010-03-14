@@ -1105,6 +1105,10 @@ Only Icons
 MSGID_CONTROLBAR_SHOW_ALLFILES (//)
 All Files
 ;
+;
+MSGID_CONTROLBAR_VIEWBY_TYPE (//)
+Type
+;
 ; ==============================================
 ;
 MSGID_ICONTYPE_WBDISK (10600//)

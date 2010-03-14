@@ -1420,6 +1420,11 @@ MSGID_CONTROLBAR_SHOW_ALLFILES
 All Files
 ;All Files
 ;
+;+++translateme+++
+MSGID_CONTROLBAR_VIEWBY_TYPE
+Type
+;Type
+;
 ; ==============================================
 ;+++translateme+++
 MSGID_ICONTYPE_WBDISK
