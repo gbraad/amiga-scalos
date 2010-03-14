@@ -1054,7 +1054,7 @@ Gruppe
 ;
 ;
 MSGID_COLFILETYPENAME
-Datei-Typ
+Dateityp
 ;FileType
 ;
 ;
@@ -1447,6 +1447,11 @@ Piktogramme
 MSGID_CONTROLBAR_SHOW_ALLFILES
 Alles
 ;All Files
+;
+;
+MSGID_CONTROLBAR_VIEWBY_TYPE
+Dateityp
+;Type
 ;
 ; ==============================================
 ;

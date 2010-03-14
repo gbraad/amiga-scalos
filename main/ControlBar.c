@@ -366,6 +366,9 @@ static ULONG ControlbarCodeFromViewMode(UBYTE ViewByType)
 	case IDTV_ViewModes_Protection:
 		Code = 6;
 		break;
+	case IDTV_ViewModes_Type:
+		Code = 7;
+		break;
 	default:
 		Code = 1;
 		break;
@@ -402,6 +405,9 @@ UBYTE ControlBarViewModeFromCode(ULONG Code)
 		break;
 	case 6:
 		ViewMode = IDTV_ViewModes_Protection;
+		break;
+	case 7:
+		ViewMode = IDTV_ViewModes_Type;
 		break;
 	default:
 		ViewMode = IDTV_ViewModes_Default;
@@ -465,6 +471,7 @@ static struct ControlBarMember *ControlBarCreateViewByCycle(struct internalScaWi
 		MSGID_CONTROLBAR_VIEWBY_TIME,
 		MSGID_CONTROLBAR_VIEWBY_COMMENT,
 		MSGID_CONTROLBAR_VIEWBY_PROTECTION,
+		MSGID_CONTROLBAR_VIEWBY_TYPE,
 		};
 	static CONST_STRPTR CycleLabels[1 + Sizeof(CycleLabelMsgIds)];
 	struct ControlBarMember *Member;
