@@ -1,3 +1,12 @@
+V40.19
+Improvement: redesigned layout for better overview
+Improvement: added Workbench popup menu to default menu preferences
+Improvement: added copy/cut/paste functionality for easier menu configuration
+Improvement: &quot;Save As&quot; dialog uses path of &quot;Open&quot; dialog as default
+
+V40.18
+(internal version only)
+
 V40.17
 Improvement: Automatically use Zune instead of MUI if present. Fixes crashes with prefs pugins with AFA OS installed
 Improvement: thumbnail menu image is now optionally loaded from &quot;THEME:prefs/plugins/menu&quot;

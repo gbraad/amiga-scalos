@@ -1,3 +1,6 @@
+15-03-2010
+releases
+After lots of work on improvements and bugfixes, Scalos V41.7 is finally released for <b>AmigaOS 3.x/68K</b>, <b>AmigaOS 4.0/PPC</b>, and <b>MorphOS/PPC</b> ! User archives can be downloaded here <a href="downloads.php#beta">Downloads page</a> !!
 29-03-2009
 website
 Finally, the <a href="http://scalos.noname.fr/reportbug.php">bug report</a> and <a href="http://scalos.noname.fr/submitidea.php">idea submission</a> forms are working again!
