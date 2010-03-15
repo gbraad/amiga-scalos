@@ -28,17 +28,25 @@
       <td><center><font size="2" face="helvetica" color="#dddddd"><b>--- HOT NEWS ---</b></font></center></td>
     </tr>
 
+    <tr bgcolor="#88ff88">
+      <td><div class="cell"><div align="center"><b>After lots of improvements and bugfixes, Scalos V41.7 finally has been released!!<br>Major new features are <b>Undo/Redo</b> for most desktop and icon actions, and an <b>online updater</b> module.<br>Download archives for AmigaOS 3.x/68K, AmigaOS 4.0/PPC, and MorphOS are available on the <a href="downloads.php#beta"> Downloads page.</a></b></div></div></td>
+    </tr>
     <tr bgcolor="#cccccc">
-      <td><div class="cell">We have set up two new opportunities to contact the Scalos developers:You may either join the <b>new</b> Scalos mailing list <a href="links.php">here</a>, or contact us via our new mail address <a href="mailto:Scalos@VFEmail.net">Scalos@VFEmail.net</a> !
+      <td><div class="cell">Updated Scalos Developers' Pack for Scalos V41.7 is available for download on the <a href="developers.php#archives">Developers page</a>!</div></td>
     </tr>
 
     <tr bgcolor="#88ff88">
+      <td><div class="cell">We have set up two new opportunities to contact the Scalos developers:You may either join the <b>new</b> Scalos mailing list <a href="links.php">here</a>, or contact us via our new mail address <a href="mailto:Scalos@VFEmail.net">Scalos@VFEmail.net</a> !
+    </tr>
+
+    <tr bgcolor="#cccccc">
       <td><div class="cell"><div align="center"><b>The long wait is over! Scalos V41.6 has been released!!<br>Download archives for AmigaOS 3.x/68K, AmigaOS 4.0/PPC, and MorphOS are available on the <a href="downloads.php#beta"> Downloads page.</a></b></div></div></td>
     </tr>
-    <tr bgcolor="#cccccc">
+    <tr bgcolor="#88ff88">
       <td><div class="cell">Updated Scalos Developers' Pack for Scalos V41.6 is available for download on the <a href="developers.php#archives">Developers page</a>!</div></td>
     </tr>
-    <tr bgcolor="#88ff88">
+
+    <tr bgcolor="#cccccc">
       <td><div class="cell"><div align="center">Scalos translation kit has also been updated to V41.6 and can be found at the <a href="developers.php#archives">Developers page</a></div></td>
     </tr>
   </table>

@@ -72,6 +72,13 @@ the latest language catalog from the website. Currently, only the French
 and German catalogs are continously kept up-to-date.
 
 
+Installation on MorphOS 2.x machines
+------------------------------------
+Dragged icons will not display correctly unless both "Allow double
+buffered screens" and "Allow triple buffered screen" in the
+"Display Engine" preferences is disabled!
+
+
 Installation on OS3.0 or OS3.1 machines
 ---------------------------------------
 We strongly recommend that you install the improved ilbm.datatype from
