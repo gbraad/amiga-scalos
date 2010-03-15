@@ -31,8 +31,8 @@ If you would like to see anything specific in this archive please mail us at <a 
 <div align="center">
 <?php
     make_download_table('Development archives', 'Please select a development archive from the table below:');
-    format_line('products/scalos/developers/ScalosTranslation_41.6.lha', 'Scalos V41.6 Translation Kit', '~346KB', '', 'This is a complete translation kit with catalog files for all Scalos components. Unfortunately, due to lack of translators, only French and German catalogs are complete and up-to-date.');
-    format_line('products/scalos/developers/ScalosDev_V41.6.lha', 'Scalos Dev Pack V41.6', '~238KB', '', 'This is version 41.6 of the Scalos Developers\' Pack.');
+    format_line('products/scalos/developers/ScalosTranslation_41.7.lha', 'Scalos V41.7 Translation Kit', '~391KB', '', 'This is a complete translation kit with catalog files for all Scalos components. Unfortunately, due to lack of translators, only French and German catalogs are complete and up-to-date.');
+    format_line('products/scalos/developers/ScalosDev_V41.7.lha', 'Scalos Dev Pack V41.7', '~256KB', '', 'This is version 41.7 of the Scalos Developers\' Pack.');
 ?>
   </table><br>
   <?php back_to_top(); ?>

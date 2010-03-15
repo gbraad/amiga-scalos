@@ -1,4 +1,10 @@
 V41.7
+Improvement: Updated libjpeg to libjpeg V8 for Morphos
+Improvement: Updated sqlite3.library to SQLite3 V3.6.23
+Bugfix: added Workaround against "menu-open-lockup" with MorphOS
+Improvement: added check for sufficient space on copy/move operations
+Bugfix: corrected handling of copy/move progress without valid totals count
+Improvement: touching pattern.prefs trigger selection of new random background patterns, even when prefs have not changed
 Bugfix: Reboot button in about window didn't work with MorphOS 1.x
 Bugfix: screen backdrop pattern didn't work
 Bugfix: links to volumes could not be created
