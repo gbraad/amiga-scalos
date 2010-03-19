@@ -233,5 +233,7 @@
 </div>
       
 <?php
-    include('footer.inc');
+	$this_page = 'versionhistory-orig.php';
+	include('footer.inc');
 ?>
+

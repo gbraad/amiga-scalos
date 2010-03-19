@@ -18,5 +18,7 @@
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'bug-response.php';
+	include('footer.inc');
 ?>
+

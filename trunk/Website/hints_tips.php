@@ -111,5 +111,7 @@ patterns - and they're all free! Cool. If you know of any sites that provide fre
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'hints_tips.php';
+	include('footer.inc');
 ?>
+

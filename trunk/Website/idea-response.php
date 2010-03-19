@@ -18,5 +18,7 @@
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'idea-response.php';
+	include('footer.inc');
 ?>
+

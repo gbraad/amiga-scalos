@@ -57,5 +57,7 @@ like that.</div>
 <br>
 
 <?php
-    include('footer.inc');
+	$this_page = 'submitidea.php';
+	include('footer.inc');
 ?>
+

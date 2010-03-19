@@ -117,5 +117,7 @@ because we're not like that.</div>
 <br>
 
 <?php
-    include('footer.inc');
+	$this_page = 'reportbug.php';
+	include('footer.inc');
 ?>
+

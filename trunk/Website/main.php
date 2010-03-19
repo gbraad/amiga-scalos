@@ -29,7 +29,7 @@
     </tr>
 
     <tr bgcolor="#88ff88">
-      <td><div class="cell"><div align="center">After lots of improvements and bugfixes, Scalos V41.7 finally has been released!!<br>Major new features are <b>Undo/Redo</b> for most desktop and icon actions, and an <b>online updater</b> module.<br>Download archives for AmigaOS 3.x/68K, AmigaOS 4.0/PPC, and MorphOS are available on the <a href="downloads.php#beta"> Downloads page.</a></div></div></td>
+      <td><div class="cell"><div align="center">After lots of improvements and bugfixes, Scalos V41.7 finally has been released!!<br>Major new features are <b>Undo/Redo</b> for most desktop and icon actions, and an <b>online updater</b> module.<br>Download archives for AmigaOS 3.x/68K, AmigaOS 4.x/PPC, and MorphOS are available on the <a href="downloads.php#beta"> Downloads page.</a></div></div></td>
     </tr>
     <tr bgcolor="#cccccc">
       <td><div class="cell"><div align="center">Updated Scalos Developers' Pack for Scalos V41.7 is available for download on the <a href="developers.php#archives">Developers page</a>!</div></div></td>
@@ -173,5 +173,6 @@ author. The majority of images on this site are copyrighted to the author, whils
 individual or organisation, please <a href="mailto:webmaster@scalos.noname.fr">contact me</a> and it will be removed immediately. All trademarks and patents are the property of their respective owners.</div><br>
 
 <?php
-    include('footer.inc');
+	$this_page = 'main.php';
+	include('footer.inc');
 ?>

@@ -61,5 +61,7 @@ more details.</p>
 </table><br>
 
 <?php
-    include('footer.inc');
+	$this_page = 'about.php';
+	include('footer.inc');
 ?>
+

@@ -18,5 +18,7 @@
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'idea-error.php';
+	include('footer.inc');
 ?>
+
