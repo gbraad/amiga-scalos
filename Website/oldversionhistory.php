@@ -161,7 +161,9 @@
     </table>
   </form>
 </div>
-      
+
 <?php
-    include('footer.inc');
+	$this_page = 'oldversionhistory.php';
+	include('footer.inc');
 ?>
+

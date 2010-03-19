@@ -61,5 +61,7 @@
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'devteam.php';
+	include('footer.inc');
 ?>
+

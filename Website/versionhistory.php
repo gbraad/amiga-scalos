@@ -322,7 +322,9 @@
     </table>
   </form>
 </div>
-      
+
 <?php
-    include('footer.inc');
+	$this_page = 'versionhistory.php';
+	include('footer.inc');
 ?>
+

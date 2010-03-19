@@ -33,5 +33,7 @@
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'oldnews.php';
+	include('footer.inc');
 ?>
+

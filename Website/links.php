@@ -65,5 +65,7 @@
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'links.php';
+	include('footer.inc');
 ?>
+

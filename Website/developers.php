@@ -80,4 +80,8 @@ package <a href="developers.php#archives">above</a>. Alternatively, you can read
   <li><a href="manual/autodocs/iconobject_dtc.html">iconobject.datatype</a> - The iconobject.datatype has a special API to work with icons. It makes both images, tooltypes and many more available</li>
 </ul>
 
-<?php include('footer.inc'); ?>
+<?php
+	$this_page = 'developers.php';
+	include('footer.inc');
+?>
+

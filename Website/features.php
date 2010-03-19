@@ -122,5 +122,7 @@ powerful enough. We want to make Scalos, the most configurable, stable desktop r
 <p>The screenshots above show both Birdie and VisualPrefs in action. If you want to find out more about these two programs, please see <a href="hints_tips.php">the Hints &amp; Tips page</a>.</p>
 
 <?php
-    include('footer.inc');
+	$this_page = 'features.php';
+	include('footer.inc');
 ?>
+

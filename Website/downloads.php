@@ -101,7 +101,7 @@ from here.<br><br>
 
     format_line('products/scalos/main/ScalosBeta_41.7_68K.lha', 'Scalos V41.7 for Amiga-OS 3.x/68K', '~4680KB', '15/03/2010', 'This is the complete V41.7 archive with the latest <b>BETA</b> release of the Scalos executable. You can find all the changes in this release on the <a href="versionhistory.php">version history page</a>. German and French language packs are included in the archive.');
     format_line('products/scalos/main/ScalosBeta_41.7_MOS.lha', 'Scalos V41.7 for MorphOS/PPC',      '~5796KB', '15/03/2010', 'This is the native PPC/MorphOS <b>BETA</b> release of Scalos. You can find all the changes in this release on the <a href="versionhistory.php">version history page</a>. German and French language packs are included in the archive.');
-    format_line('products/scalos/main/ScalosBeta_41.7_OS4.lha', 'Scalos V41.7 for AmigaOS 4.0/PPC',  '~5916KB', '15/03/2010', 'This is the native AmigaOS 4.1 <b>BETA</b> release of Scalos. You can find all the changes in this release on the <a href="versionhistory.php">version history page</a>. German and French language packs are included in the archive.');
+    format_line('products/scalos/main/ScalosBeta_41.7_OS4.lha', 'Scalos V41.7 for AmigaOS 4.x/PPC',  '~5916KB', '15/03/2010', 'This is the native AmigaOS 4.1 <b>BETA</b> release of Scalos. You can find all the changes in this release on the <a href="versionhistory.php">version history page</a>. German and French language packs are included in the archive.');
     format_line('manual/index.html', 'Scalos online manual', 'N/A', 'N/A', 'Mike Carter has started writing the online manual for Scalos. You can <a href="manual/index.html">read the current version here</a>. Please note that it is in no way a final version! We are still working on this! Hopefully, it will form the basis of a new integrated help system for Scalos.');
 ?>
   </table><br>
@@ -188,5 +188,7 @@ from here.<br><br>
 </div>
 
 <?php
-    include('footer.inc');
+	$this_page = 'downloads.php';
+	include('footer.inc');
 ?>
+
