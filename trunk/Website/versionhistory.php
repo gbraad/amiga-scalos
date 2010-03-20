@@ -112,7 +112,7 @@
 
 <a name = "Scalos_Filetypes_Prefs"</a>
 <?php
-    new_table('Scalos Filetypes Preferences (V40.18)');
+    new_table('Scalos Filetypes Preferences (V40.24)');
     read_minor_table_file('scalos_filetype_preferences.txt');
 ?>
   </table>
@@ -121,7 +121,7 @@
 
 <a name = "Scalos_Menu_Prefs"</a>
 <?php
-    new_table('Scalos Menu Preferences (V40.17)');
+    new_table('Scalos Menu Preferences (V40.19)');
     read_minor_table_file('scalos_menu_preferences.txt');
 ?>
   </table>
@@ -130,7 +130,7 @@
 
 <a name = "Scalos_Preferences"</a>
 <?php
-    new_table('Scalos Preferences (V40.22)');
+    new_table('Scalos Preferences (V40.26)');
     read_minor_table_file('scalos_preferences.txt');
 ?>
   </table>
@@ -139,7 +139,7 @@
 
 <a name = "Scalos_Pattern_Prefs"</a>
 <?php
-    new_table('Scalos Pattern Preferences (V40.18)');
+    new_table('Scalos Pattern Preferences (V40.21)');
     read_minor_table_file('scalos_pattern_preferences.txt');
 ?>
   </table>
@@ -158,7 +158,7 @@
 
 <a name = "LoadWB.Scalos"</a>
 <?php
-    new_table('LoadWB.Scalos (V1.6)');
+    new_table('LoadWB.Scalos (V1.7)');
     read_minor_table_file('loadwb_scalos.txt');
 ?>
   </table>
@@ -177,7 +177,7 @@
 
 <a name = "iconobject.library"</a>
 <?php
-    new_table('iconobject.library (V40.4)');
+    new_table('iconobject.library (V40.6)');
     read_minor_table_file('iconobject_library.txt');
 ?>
   </table>
@@ -187,7 +187,7 @@
 
 <a name = "amigaiconobj35.datatype"</a>
 <?php
-    new_table('amigaiconobj35.datatype (V40.17)');
+    new_table('amigaiconobj35.datatype (V40.18)');
     read_minor_table_file('amigaiconobj35_datatype.txt');
 ?>
   </table>
@@ -205,7 +205,7 @@
 
 <a name = "glowiconobject.datatype"</a>
 <?php
-    new_table('glowiconobject.datatype (V40.11)');
+    new_table('glowiconobject.datatype (V40.14)');
     read_minor_table_file('glowiconobject_datatype.txt');
 ?>
   </table>
@@ -214,7 +214,7 @@
 
 <a name = "iconobject.datatype"</a>
 <?php
-    new_table('iconobject.datatype (V40.24)');
+    new_table('iconobject.datatype (V40.26)');
     read_minor_table_file('iconobject_datatype.txt');
 ?>
   </table>
@@ -232,7 +232,7 @@
 
 <a name = "pngiconobject.datatype"</a>
 <?php
-    new_table('pngiconobject.datatype (V40.18)');
+    new_table('pngiconobject.datatype (V40.21)');
     read_minor_table_file('pngiconobject_datatype.txt');
 ?>
   </table>
@@ -242,7 +242,7 @@
 
 <a name = "drawercontents.plugin"</a>
 <?php
-    new_table('drawercontents.plugin (V40.3)');
+    new_table('drawercontents.plugin (V40.7)');
     read_minor_table_file('drawercontents_plugin.txt');
 ?>
   </table>
@@ -251,7 +251,7 @@
 
 <a name = "persist.plugin"</a>
 <?php
-    new_table('persist.plugin (V39.21)');
+    new_table('persist.plugin (V39.25)');
     read_minor_table_file('persist_plugin.txt');
 ?>
   </table>
@@ -260,7 +260,7 @@
 
 <a name = "picturedimensions.plugin"</a>
 <?php
-    new_table('picturedimensions.plugin (V40.3)');
+    new_table('picturedimensions.plugin (V40.6)');
     read_minor_table_file('picturedimensions_plugin.txt');
 ?>
   </table>
@@ -278,7 +278,7 @@
 
 <a name = "wb39.plugin"</a>
 <?php
-    new_table('wb39.plugin (V45.32)');
+    new_table('wb39.plugin (V45.34)');
     read_minor_table_file('wb39_plugin.txt');
 ?>
   </table>
@@ -287,7 +287,7 @@
 
 <a name = "wbrexx.plugin"</a>
 <?php
-    new_table('wbrexx.plugin (V39.18)');
+    new_table('wbrexx.plugin (V39.22)');
     read_minor_table_file('wbrexx_plugin.txt');
 ?>
   </table>

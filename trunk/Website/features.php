@@ -39,6 +39,7 @@
 
 <ul>
   <li><b>100% Workbench replacement</b> - All functions work like the original Workbench ones</li>
+  <li><b>Undo and Redo</b> for most window and icon operation</li>
   <li><b>64bit arithmetic</b> - Correctly recognises harddisks over 4GB</li>
   <li><b>Fully multitasking</b> - Every window has its own task. While loading icons, any window function (e.g. Drag&amp;Drop) is available</li>
   <li><b>Icon imagetypes</b> - All types are supported such as backfill or complement. Configurable surrounding iconborder</li>
@@ -65,6 +66,7 @@
   <li><b>Screentitle text</b> - Shows what you want, how you want</li>
   <li><b>Plugin included for 100% support of OS3.9 Workbench features</b></li>
   <li><b>Plugin included for AREXX API compatible to OS3.9 Workbench</b></li>
+  <li><b>Online update</b> with updater.module</li>
 </ul>
 <p>And much, much more...</p>
 <?php back_to_top(); ?>
