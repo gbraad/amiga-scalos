@@ -8,12 +8,12 @@ weeks but all kinds of problems might surface on your own system.
 This archive is NOT FOR DISTRIBUTION on any other websites, CD-ROM etc.
 without out prior permission.
 It is exclusive to the www.scalos.noname.fr website. If you downloaded
-this file from somewhere else, please inform us at info@scalos.noname.fr
+this file from somewhere else, please inform us at Scalos@VFEmail.net
 
 Please inform us of problems!
 Use the form at http://bugs.scalos.noname.fr, and send your reports
 to
-	bugs@scalos.noname.fr,
+	Scalos@VFEmail.net
 	scalos@yahoogroups.com 		mailinglist
 
 or by posting the information in the Scalos forum at
@@ -54,12 +54,12 @@ Here you can find some of the non-standard MUI MCCs required for Scalos Prefs:
 
 http://main.aminet.net/dev/mui/MCC_Urltext.lha
 http://main.aminet.net/dev/mui/MCC_Lamp.lha
-http://vapor.meanmachine.ch/voyager/pophotkey_1715.lha
+http://mui.zerohero.se/mcc/MCC_Popxxx.lha
 http://jabberwocky.amigaworld.de/downloads.php?id=30
 
 
 If anything else is missing, do not hesitate to contact us
-at info@scalos.noname.fr !
+at Scalos@VFEmail.net !
 
 
 If you display "%pr" processor information in the screen title bar, you
@@ -76,7 +76,7 @@ Installation on MorphOS 2.x machines
 ------------------------------------
 Dragged icons will not display correctly unless both "Allow double
 buffered screens" and "Allow triple buffered screen" in the
-"Display Engine" preferences is disabled!
+"Display Engine" preferences are both disabled!
 
 
 Installation on OS3.0 or OS3.1 machines
@@ -272,4 +272,4 @@ copied and put under another distribution licence
 thanks!
 
 The Scalos Team
-[info@scalos.noname.fr]
+[Scalos@VFEmail.net]
