@@ -1,3 +1,6 @@
+40.27
+Bugfix: when saving preferences, Workbench preferences was overwritten, silently removing all chunks Scalos isn't aware of. Now all unknown chunks are written back 1:1
+
 40.26
 Bugfix: control bar gadget image previews were not updated correctly when image was changed
 Improvement: Add configuration for drag&drop pop-open windows open delay
