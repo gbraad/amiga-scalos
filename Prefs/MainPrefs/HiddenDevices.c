@@ -54,32 +54,27 @@ struct HiddenDevice
 	char hd_Name[1];	// variable length
 	};
 
+struct UnknownPrefsChunk
+	{
+	struct Node upc_Node;
+	LONG upc_ID;
+	LONG upc_Type;
+	LONG upc_Size;
+	UBYTE upc_Data[1];	// variable length
+	};
+
 //-----------------------------------------------------------------
 
 static void HandleWBHD(const UBYTE *data, size_t length);
-static void HandleWBNC(const UWORD *Data, size_t Length);
+static LONG CollectUnknownPrefsChunks(struct List *ChunksList, CONST_STRPTR Filename);
+static LONG AddUnknownChunk(struct List *ChunksList, struct IFFHandle *iff, const struct ContextNode *cn);
+static void CleanupUnknownChunks(struct List *ChunksList);
 static void AddHiddenDeviceFromDosList(struct SCAModule *app, struct DosList *dl, struct InfoData *id, BOOL Hidden);
 static void BtoCString(BPTR bstring, STRPTR Buffer, size_t Length);
 static BOOL FindHiddenDevice(CONST_STRPTR Name);
 static void StripTrailingColon(STRPTR Line);
 
 //-----------------------------------------------------------------
-
-static struct WorkbenchPrefs WBPrefs =
-	{
-	8192,			//wbp_DefaultStackSize;
-	3,			//wbp_TypeRestartTime;
-	16,			//wbp_IconPrecision;
-	{ -1, -1, 1, 1 },	//wbp_EmbossRect;
-	FALSE,			//wbp_Borderless;
-	25,			//wbp_MaxNameLength;
-	TRUE,			//wbp_NewIconsSupport;
-	TRUE,			//wbp_ColorIconSupport;
-	MEMF_CHIP,              //wbp_ImageMemType;
-	FALSE,			//wbp_LockPens;
-	FALSE,			//wbp_NoTitleBar;
-	FALSE,			//wbp_NoGauge;
-	};
 
 static struct List HiddenDevicesList;
 
@@ -112,11 +107,9 @@ BOOL ReadWorkbenchPrefs(CONST_STRPTR filename)
 	struct IFFHandle *iff;
 	LONG error;
 	BOOL IffOpened = FALSE;
-	static const ULONG pairs[] = {ID_PREF, ID_WBNC, ID_PREF, ID_WBHD};
-
+	static const ULONG pairs[] = {ID_PREF, ID_PREF, ID_WBHD};
 
 	HiddenDevicesCleanup();
-
 
 	d1(KPrintF(__FILE__ "/%s/%ld: filename=<%s>\n", __FUNC__, __LINE__, filename));
 
@@ -149,13 +142,6 @@ BOOL ReadWorkbenchPrefs(CONST_STRPTR filename)
 			if( ( error = ParseIFF( iff, IFFPARSE_SCAN ) ) == IFFERR_EOC )
 				{
 				struct CollectionItem *ci;
-
-				ci = FindCollection( iff, ID_PREF, ID_WBNC);
-				while( ci )
-					{
-					HandleWBNC(ci->ci_Data, ci->ci_Size);
-					ci = ci->ci_Next;
-					}
 
 				ci = FindCollection( iff, ID_PREF, ID_WBHD);
 				while( ci )
@@ -194,29 +180,27 @@ static void HandleWBHD(const UBYTE *data, size_t length)
 
 //-----------------------------------------------------------------
 
-static void HandleWBNC(const UWORD *Data, size_t Length)
-{
-	const struct WorkbenchPrefs *prefs = (const struct WorkbenchPrefs *) Data;
-	size_t CopyLength = min(Length, sizeof(struct WorkbenchPrefs));
-
-	memcpy(&WBPrefs, prefs, CopyLength);
-}
-
-//-----------------------------------------------------------------
-
 // save workbench.prefs, including WBHD entries for each hidden device
 LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 {
-	struct IFFHandle *iff;
+	struct IFFHandle *iff = NULL;
 	LONG Result;
 	BOOL IffOpen = FALSE;
+	struct List ChunksList;
+
+	NewList(&ChunksList);
 
 	do	{
 		static const struct PrefHeader prefHeader = { 0, 0, 0L };
 		struct HiddenDevice *hd;
-		LONG Length;
+		struct UnknownPrefsChunk *upc;
 
 		d1(KPrintF(__FILE__ "/%s/%ld: Filename=<%s>\n", __FUNC__, __LINE__, Filename));
+
+		Result = CollectUnknownPrefsChunks(&ChunksList, Filename);
+		d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
+		if (RETURN_OK != Result)
+			break;
 
 		iff = AllocIFF();
 		if (NULL == iff)
@@ -270,11 +254,14 @@ LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 				break;
 			}
 
+		d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
+
 		Result = OpenIFF(iff, IFFF_WRITE);
 		if (RETURN_OK != Result)
 			break;
 
 		IffOpen = TRUE;
+		d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
 
 		Result = PushChunk(iff, ID_PREF, ID_FORM, IFFSIZE_UNKNOWN);
 		if (RETURN_OK != Result)
@@ -294,20 +281,7 @@ LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 		if (RETURN_OK != Result)
 			break;
 
-		Result = PushChunk(iff, 0, ID_WBNC, IFFSIZE_UNKNOWN);
-		if (RETURN_OK != Result)
-			break;
-
-		Length = sizeof(WBPrefs);
-		if (Length != WriteChunkBytes(iff, (APTR) &WBPrefs, Length))
-			{
-			Result = IoErr();
-			break;
-			}
-
-		Result = PopChunk(iff);		// WBNC
-		if (RETURN_OK != Result)
-			break;
+		d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
 
 		for (hd = (struct HiddenDevice *) HiddenDevicesList.lh_Head;
 			hd != (struct HiddenDevice *) &HiddenDevicesList.lh_Tail;
@@ -343,14 +317,40 @@ LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 				break;
 			}
 
+		d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
+
 		if (RETURN_OK != Result)
 			break;
+
+		for (upc = (struct UnknownPrefsChunk *) ChunksList.lh_Head;
+			upc != (struct UnknownPrefsChunk *) &ChunksList.lh_Tail;
+			upc = (struct UnknownPrefsChunk *) upc->upc_Node.ln_Succ )
+			{
+			d1(KPrintF("%s/%s/%ld: Write Chunk Type=%08lx, ID=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, \
+				upc->upc_Type, upc->upc_ID, upc->upc_Size));
+
+			Result = PushChunk(iff, 0, upc->upc_ID, IFFSIZE_UNKNOWN);
+			if (RETURN_OK != Result)
+				break;
+
+			if (upc->upc_Size != WriteChunkBytes(iff, (APTR) upc->upc_Data, upc->upc_Size))
+				{
+				Result = IoErr();
+				break;
+				}
+
+			Result = PopChunk(iff);		// upc->upc_ID
+			if (RETURN_OK != Result)
+				break;
+			}
 
 		Result = PopChunk(iff);		// FORM
 		if (RETURN_OK != Result)
 			break;
 
 		} while (0);
+
+	CleanupUnknownChunks(&ChunksList);
 
 	if (iff)
 		{
@@ -372,6 +372,150 @@ LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 		SaveIcon(Filename);
 
 	return Result;
+}
+
+//-----------------------------------------------------------------
+
+static LONG CollectUnknownPrefsChunks(struct List *ChunksList, CONST_STRPTR Filename)
+{
+	LONG Result;
+	struct IFFHandle *iff;
+	BOOL iffOpened = FALSE;
+
+	d1(KPrintF(__FILE__ "/%s/%ld: Filename=<%s>\n", __FUNC__, __LINE__, Filename));
+
+	do	{
+		iff = AllocIFF();
+		if (NULL == iff)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		InitIFFasDOS(iff);
+
+		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
+		if ((BPTR) NULL == iff->iff_Stream)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		Result = OpenIFF(iff, IFFF_READ);
+		if (RETURN_OK != Result)
+			break;
+
+		iffOpened = TRUE;
+
+		while (RETURN_OK == Result)
+			{
+			struct ContextNode *cn;
+
+			Result = ParseIFF(iff, IFFPARSE_RAWSTEP);
+			d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
+			if (IFFERR_EOC == Result)
+				{
+				Result = RETURN_OK;
+				continue;
+				}
+			if (IFFERR_EOF == Result)
+				{
+				Result = RETURN_OK;
+				break;
+				}
+			if (RETURN_OK != Result)
+				break;
+
+			cn = CurrentChunk(iff);
+			if (NULL == cn)
+				continue;
+
+			switch (cn->cn_ID)
+				{
+			case ID_FORM:
+				d1(KPrintF(__FILE__ "/%s/%ld: ID_FORM  Size=%ld\n", __FUNC__, __LINE__, cn->cn_Size));
+				break;
+			case ID_PREF:
+				d1(KPrintF(__FILE__ "/%s/%ld: ID_PREF  Size=%ld\n", __FUNC__, __LINE__, cn->cn_Size));
+				break;
+			case ID_PRHD:
+				d1(KPrintF(__FILE__ "/%s/%ld: ID_PRHD  Size=%ld\n", __FUNC__, __LINE__, cn->cn_Size));
+				break;
+			default:
+				d1(KPrintF("%s/%s/%ld: Found Chunk Type=%08lx, ID=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, \
+					cn->cn_Type, cn->cn_ID, cn->cn_Size));
+				Result = AddUnknownChunk(ChunksList, iff, cn);
+				break;
+				}
+			}
+		} while (0);
+
+	if (iff)
+		{
+		if (iffOpened)
+			CloseIFF(iff);
+
+		if (iff->iff_Stream)
+			Close(iff->iff_Stream);
+
+		FreeIFF(iff);
+		}
+
+	return Result;
+}
+
+//-----------------------------------------------------------------
+
+static LONG AddUnknownChunk(struct List *ChunksList, struct IFFHandle *iff, const struct ContextNode *cn)
+{
+	struct UnknownPrefsChunk *upc;
+	LONG Result = RETURN_OK;
+
+	do	{
+		LONG Length;
+
+		upc = malloc(sizeof(struct UnknownPrefsChunk) + cn->cn_Size);
+		if (NULL == upc)
+			{
+			Result = ERROR_NO_FREE_STORE;
+			break;
+			}
+
+		upc->upc_ID = cn->cn_ID;
+		upc->upc_Type = cn->cn_Type;
+		upc->upc_Size = cn->cn_Size;
+
+		Length = ReadChunkBytes(iff, upc->upc_Data, upc->upc_Size);
+		if (Length != upc->upc_Size)
+			{
+			Result = IoErr();
+			break;
+			}
+
+		AddTail(ChunksList, &upc->upc_Node);
+		upc = NULL;
+		} while (0);
+
+	if (upc)
+		{
+		free(upc);
+		}
+
+	d1(KPrintF(__FILE__ "/%s/%ld: Result=%ld\n", __FUNC__, __LINE__, Result));
+
+	return Result;
+}
+
+//-----------------------------------------------------------------
+
+static void CleanupUnknownChunks(struct List *ChunksList)
+{
+	struct UnknownPrefsChunk *upc;
+
+	while ((upc = (struct UnknownPrefsChunk *) RemTail(ChunksList)))
+		{
+		free(upc);
+		}
 }
 
 //-----------------------------------------------------------------

@@ -1,7 +1,6 @@
 // General.h
 // $Date$
 // $Revision$
-// $Id$
 
 #ifndef GENERAL_H
 #define GENERAL_H
@@ -12,7 +11,7 @@
 
 #define PROGRAM		"Scalos - Preferences"
 #define VERSION_MAJOR	40
-#define VERSION_MINOR	26
+#define VERSION_MINOR	27
 #define AUTHOR 		"ßudda <mike@scalos.noname.fr>"
 #define VERSION		STR(VERSION_MAJOR) "." STR(VERSION_MINOR)
 
