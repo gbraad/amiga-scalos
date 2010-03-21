@@ -139,8 +139,8 @@ from here.<br><br>
     </tr>
     <tr bgcolor="#bbbbbb">
       <td align="center" valign="top"><div class="cellarchive"><a href="http://www.sasg.com/mui/index.html" target="_blank">MUI 3.8 (User)</a></div></td>
-      <td align="center" valign="top"><a href="http://uk.aminet.net/pub/aminet/util/libs/mui38usr.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a> 
-      <a href="http://de2.aminet.net/pub/aminet/util/libs/mui38usr.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
+      <td align="center" valign="top"><a href="http://uk.aminet.net/util/libs/mui38usr.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a>
+      <a href="http://aminet.net/util/libs/mui38usr.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
       <td align="center" valign="top"><div class="cellsize">Unknown</div></td>
       <td valign="top"><div class="cell">Needs no introduction. This software is the basis for many Amiga applications. It lets you customise nearly every pixel of an application's interface, 
       incorporates user-friendly controls and has tons of other features. This is the user archive and some features are not customisable unless you register with 
@@ -148,40 +148,58 @@ from here.<br><br>
     </tr>
     <tr bgcolor="#aaaaaa">
       <td align="center" valign="top"><div class="cellarchive"><a href=" http://www.neoscientists.org/~tmueller/binarydistillery/">Render library</a></div></td>
-      <td align="center" valign="top"><a href="http://uk.aminet.net/pub/aminet/dev/misc/RenderLib.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a> 
-      <a href="http://de2.aminet.net/pub/aminet/gfx/misc/renderlib.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
+      <td align="center" valign="top"><a href="http://uk.aminet.net/dev/misc/renderlib.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a>
+      <a href="http://aminet.net/dev/misc/renderlib.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
       <td align="center" valign="top"><div class="cellsize">169KB</div></td>
       <td valign="top"><div class="cell">Development archive (but includes needed library), used in Scalos for pattern enhancements.</div></td>
     </tr>
     <tr bgcolor="#bbbbbb">
       <td align="center" valign="top"><div class="cellarchive"><a href=" http://www.neoscientists.org/~tmueller/binarydistillery/">GUIGfx library</a></div></td>
-      <td align="center" valign="top"><a href="http://uk.aminet.net/pub/aminet/dev/misc/guigfxlib.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a> 
+      <td align="center" valign="top"><a href="http://uk.aminet.net/dev/misc/guigfxlib.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a>
       <a href="http://de2.aminet.net/pub/aminet/dev/misc/guigfxlib.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
       <td align="center" valign="top"><div class="cellsize">145KB</div></td>
       <td valign="top"><div class="cell">Used in Scalos for pattern enhancements.</div></td>
     </tr>
     <tr bgcolor="#aaaaaa">
       <td align="center" valign="top"><div class="cellarchive">Scalos Extras</div></td>
-      <td align="center" valign="top"><a href="http://uk.aminet.net/pub/aminet/util/wb/scalos_extras.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a> 
+      <td align="center" valign="top"><a href="http://uk.aminet.net/util/wb/scalos_extras.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a>
       <a href="http://ftp.uni-paderborn.de/aminet/dirs/aminet/util/wb/scalos_extras.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
       <td align="center" valign="top"><div class="cellsize">31KB</div></td>
       <td valign="top"><div class="cell">AREXX scripts for Scalos. May need some fiddling to use well.</div></td>
     </tr>
     <tr bgcolor="#aaaaaa">
       <td align="center" valign="top"><div class="cellarchive"><a href="http://www.amiganet.org/newicons/">Newicons</a></div></td>
-      <td align="center" valign="top"><a href="http://uk.aminet.net/pub/aminet/util/wb/NewIcons46.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a> 
+      <td align="center" valign="top"><a href="http://uk.aminet.net/util/wb/NewIcons46.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a>
       <a href="http://de2.aminet.net/pub/aminet/util/wb/NewIcons46.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
       <td align="center" valign="top"><div class="cellsize">659KB</div></td>
       <td valign="top"><div class="cell">NewIcons enhances your Workbench and gives the user much more power and configurability over the appearance of the desktop icons. Allowing upto 256 colours! 
       [<a href="http://uk.aminet.net/pub/aminet/util/wb/NewIcons46.readme">more</a>].</div></td>
     </tr>
     <tr bgcolor="#bbbbbb">
-      <td align="center" valign="top"><div class="cellarchive"><a href="http://main.aminet.net/util/libs/pmuser.lha">Popup Menu Library</a></div></td>
-      <td align="center" valign="top"><a href="http://uk.aminet.net/pub/aminet/util/libs/pmuser.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a> 
-      <a href="http://de2.aminet.net/pub/aminet/util/libs/pmuser.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
-      <td align="center" valign="top"><div class="cellsize">46KB</div></td>
-      <td valign="top"><div class="cell">It's a shared function library offering configurable, context sensitive, popup menus in programs. However, it is not a patch like MagicMenu, therefore only 
-      programs designed to use it do so.</div></td>
+      <td align="center" valign="top"><div class="cellarchive"><a href="products/thirdparty/MCC_Popxxx.lha">PopHotkey.mcc</a></div></td>
+      <td align="center" valign="top"> </td>
+      <td align="center" valign="top"><div class="cellsize">29KB</div></td>
+      <td valign="top"><div class="cell">MUI custom class used in several Scalos utilities.</div></td>
+    </tr>
+    <tr bgcolor="#aaaaaa">
+      <td align="center" valign="top"><div class="cellarchive"><a href="products/thirdparty/MCC_Urltext.lha">Urltext.mcc</div></td>
+      <td align="center" valign="top"><a href="http://main.aminet.net/dev/mui/MCC_Urltext.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a>
+       <a href="http://main.aminet.net/dev/mui/MCC_Urltext.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
+      <td align="center" valign="top"><div class="cellsize">34KB</div></td>
+      <td valign="top"><div class="cell">MUI custom class used in several Scalos utilities.</div></td>
+    </tr>
+    <tr bgcolor="#bbbbbb">
+      <td align="center" valign="top"><div class="cellarchive"><a href="products/thirdparty/MCC_Lamp.lha">Lamp.mcc</a></div></td>
+      <td align="center" valign="top"><a href="http://main.aminet.net/dev/mui/MCC_Lamp.lha"><img src="gfx/links/flag_uk.gif" width="19" height="15" border="0" alt="Download from Aminet UK"></a>
+       <a href="http://main.aminet.net/dev/mui/MCC_Lamp.lha"><img src="gfx/links/flag_germany.gif" width="19" height="15" border="0" alt="Download from Aminet Germany"></a></td>
+      <td align="center" valign="top"><div class="cellsize">71KB</div></td>
+      <td valign="top"><div class="cell">MUI custom class used in several Scalos utilities.</div></td>
+    </tr>
+    <tr bgcolor="#aaaaaa">
+      <td align="center" valign="top"><div class="cellarchive"><a href="products/thirdparty/MCC_TextInput.lha">TextInput.mcc</a></div></td>
+      <td align="center" valign="top"> </td>
+      <td align="center" valign="top"><div class="cellsize">112KB</div></td>
+      <td valign="top"><div class="cell">MUI custom class used in several Scalos utilities.</div></td>
     </tr>
   </table><br>
   <?php back_to_top(); ?>
