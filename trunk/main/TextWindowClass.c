@@ -678,6 +678,7 @@ static ULONG TextWindowClass_New(Class *cl, Object *o, Msg msg)
 		struct RastPort rp;
 		struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 		struct TextWindowClassInstance *inst = INST_DATA(cl, o);
+		struct TextExtent textExtent;
 		SHORT Height, FontHeight;
 
 		d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
@@ -706,7 +707,8 @@ static ULONG TextWindowClass_New(Class *cl, Object *o, Msg msg)
 		iwt->iwt_TextWindowGadgetHeight = Height + 2;
 
 		Scalos_SetFont(&rp, iwt->iwt_IconFont, &iwt->iwt_IconTTFont);
-		iwt->iwt_TextWindowLineHeight = Scalos_GetFontHeight(&rp) + 1;
+		Scalos_TextExtent(&rp, "OÖÄgyM", 6, &textExtent);
+		iwt->iwt_TextWindowLineHeight = 1 + max(textExtent.te_Height, Scalos_GetFontHeight(&rp));
 
 		Scalos_DoneRastPort(&rp);
 
@@ -1392,6 +1394,9 @@ void ReposTextIcons2(struct internalScaWindowTask *iwt)
 			gg->LeftEdge = gg->BoundsLeftEdge = 0;
 			gg->Width = gg->BoundsWidth = BoundsWidth;
 			}
+
+		if (iwt->iwt_TextWindowLineHeight < gg->Height)
+			iwt->iwt_TextWindowLineHeight = gg->Height;
 
 		y += gg->Height;
 		}
