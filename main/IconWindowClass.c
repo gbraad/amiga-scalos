@@ -3662,6 +3662,14 @@ static void SetVirtSize(struct internalScaWindowTask *iwt, ULONG Flags)
 
 	// rearrange thumbnails so visible icons are thumbnailed first
 	RearrangeThumbnailList(iwt);
+
+	if (iwt->iwt_WindowTask.wt_Window)
+		{
+		WindowLimits(iwt->iwt_WindowTask.wt_Window,
+			iwt->iwt_InnerLeft + iwt->iwt_InnerRight + 100,
+			iwt->iwt_InnerTop + iwt->iwt_InnerBottom + 25,
+			~0, ~0);
+		}
 }
 
 

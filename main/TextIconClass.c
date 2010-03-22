@@ -498,7 +498,7 @@ static ULONG TextIcon_Layout(Class *cl, Object *o, Msg msg)
 
 	Scalos_SetFont(iop->iopl_RastPort, inst->txicl_Font, inst->txicl_TTFont);
 
-	gg->Height = gg->BoundsHeight = Scalos_GetFontHeight(iop->iopl_RastPort) + 1;
+	gg->Height = gg->BoundsHeight = inst->txicl_WindowTask->iwt_TextWindowLineHeight;
 
 	for (n=0; n<TXICOL_MAX; n++)
 		{
