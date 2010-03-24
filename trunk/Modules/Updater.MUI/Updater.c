@@ -1565,8 +1565,8 @@ static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len)
 					}
 				else
 					{
-					d2(KPrintF("%s/%s/%ld: ReadArgs failed IoErr=%ld\n", __FILE__, __FUNC__, __LINE__, IoErr()));
-					d2(KPrintF("%s/%s/%ld: text=<%s>\n", __FILE__, __FUNC__, __LINE__, text));
+					d1(KPrintF("%s/%s/%ld: ReadArgs failed IoErr=%ld\n", __FILE__, __FUNC__, __LINE__, IoErr()));
+					d1(KPrintF("%s/%s/%ld: text=<%s>\n", __FILE__, __FUNC__, __LINE__, text));
 					}
 
 				FreeDosObject(DOS_RDARGS, ReadArgs);
@@ -1969,7 +1969,7 @@ static STRPTR GetAssignListVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename
 			{
 			struct AssignList *asl;
 
-			d2(KPrintF("%s/%s/%ld: dl=%08lx\n", __FILE__, __FUNC__, __LINE__, dl, dl->dol_misc.dol_assign.dol_AssignName));
+			d1(KPrintF("%s/%s/%ld: dl=%08lx\n", __FILE__, __FUNC__, __LINE__, dl, dl->dol_misc.dol_assign.dol_AssignName));
 			asl = dl->dol_misc.dol_assign.dol_List;
 
 			while (asl)
@@ -2034,7 +2034,7 @@ static STRPTR GetFileVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRP
 		DirLock = Lock(Dir, ACCESS_READ);
 		if ((BPTR)NULL == DirLock)
 			{
-			d2(KPrintF("%s/%s/%ld: failed to lock dir=<%s>\n", __FILE__, __FUNC__, __LINE__, Dir));
+			d1(KPrintF("%s/%s/%ld: failed to lock dir=<%s>\n", __FILE__, __FUNC__, __LINE__, Dir));
 			break;
 			}
 
@@ -2044,7 +2044,7 @@ static STRPTR GetFileVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRP
 
 		if ((BPTR)NULL == fh)
 			{
-			d2(KPrintF("%s/%s/%ld: failed to open Filename=<%s>\n", __FILE__, __FUNC__, __LINE__, Filename));
+			d1(KPrintF("%s/%s/%ld: failed to open Filename=<%s>\n", __FILE__, __FUNC__, __LINE__, Filename));
 			break;
 			}
 
@@ -2092,7 +2092,7 @@ static STRPTR GetFileVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRP
 			GetSysTime(&currentTime);
 			if ((currentTime.tv_secs - StartTime.tv_secs) > 2)
 				{
-				d2(KPrintF("%s/%s/%ld: timeout\n", __FILE__, __FUNC__, __LINE__));
+				d1(KPrintF("%s/%s/%ld: timeout\n", __FILE__, __FUNC__, __LINE__));
 				break;
 				}
 			} while (ActLen > 0 && !Finished);
@@ -2200,7 +2200,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 	set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_START_UPDATE));
 	set(GaugeProgress, MUIA_Gauge_Current, 0);
-	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 0));
+	d1(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 0));
 
 	get(CheckAskEveryUpdate, MUIA_Selected, &AskEveryUpdate);
 	get(StringScalosWebSite, MUIA_String_Contents, &ScalosWebSite);
@@ -2249,10 +2249,10 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				pgd.pgd_Min = (100 * Count) / TotalUpdateCount;
 				pgd.pgd_Max = (100 * (1 + Count)) / TotalUpdateCount;
-				d2(KPrintF("%s/%s/%ld: pgd_Min=%ld  pgd_Max=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Min, pgd.pgd_Max));
+				d1(KPrintF("%s/%s/%ld: pgd_Min=%ld  pgd_Max=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Min, pgd.pgd_Max));
 
 				set(GaugeProgress, MUIA_Gauge_Current, pgd.pgd_Min);
-				d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Min));
+				d1(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Min));
 
 				len = 1 + strlen(TempFilePath) + strlen(FilePart(cle->cle_Package));
 
@@ -2268,7 +2268,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
 
 				EscapedPackageName = EscapeHttpName(cle->cle_Package);
-				d2(KPrintF("%s/%s/%ld: EscapedPackageName=%08lx\n", __FILE__, __FUNC__, __LINE__, EscapedPackageName));
+				d1(KPrintF("%s/%s/%ld: EscapedPackageName=%08lx\n", __FILE__, __FUNC__, __LINE__, EscapedPackageName));
 				if (NULL == EscapedPackageName)
 					break;
 
@@ -2279,7 +2279,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				snprintf(HttpAddr, len, "%s%s", ScalosWebSite, EscapedPackageName);
 
-				d2(KPrintF("%s/%s/%ld: HttpAddr=<%s>\n", __FILE__, __FUNC__, __LINE__, HttpAddr));
+				d1(KPrintF("%s/%s/%ld: HttpAddr=<%s>\n", __FILE__, __FUNC__, __LINE__, HttpAddr));
 
 				fh = fopen(LhaName, "wb");
 				if (NULL == fh)
@@ -2300,7 +2300,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 				curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
 				curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &pgd);
 
-				d2(KPrintF("%s/%s/%ld: cle_Dir=<%s>  cle_File=<%s>  cle_Package=<%s>\n", \
+				d1(KPrintF("%s/%s/%ld: cle_Dir=<%s>  cle_File=<%s>  cle_Package=<%s>\n", \
 					__FILE__, __FUNC__, __LINE__, cle->cle_Dir, cle->cle_File, cle->cle_Package));
 
 				res = curl_easy_perform(curl);
@@ -2310,7 +2310,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 					ErrorBuffer = curl_easy_strerror(res);
 
-					d2(KPrintF("%s/%s/%ld:  <%s>\n", __FILE__, __FUNC__, __LINE__, ErrorBuffer));
+					d1(KPrintF("%s/%s/%ld:  <%s>\n", __FILE__, __FUNC__, __LINE__, ErrorBuffer));
 
 					AbortUpdate = ErrorMsg(MSGID_ERROR_DOWNLOADING_UPDATE, cle->cle_File, ErrorMsg);
 					AddLogMsg(MSGID_LOG_DOWNLOAD_FAILED_PACKAGE, cle->cle_Package, ErrorMsg);
@@ -2326,7 +2326,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 				if (!VerifyFileSignature(LhaName, cle->cle_Hash))
 					{
-					d2(KPrintF("%s/%s/%ld: File signature mismatch\n", __FILE__, __FUNC__, __LINE__));
+					d1(KPrintF("%s/%s/%ld: File signature mismatch\n", __FILE__, __FUNC__, __LINE__));
 					AddLogMsg(MSGID_LOG_VERIFY_FAIL_SIGNATURE, cle->cle_Package);
 					break;
 					}
@@ -2344,7 +2344,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 						cle->cle_LocalVersion,
 						cle->cle_LocalRevision);
 
-					d2(KPrintF("%s/%s/%ld: ReqRes=%ld\n", __FILE__, __FUNC__, __LINE__, ReqRes));
+					d1(KPrintF("%s/%s/%ld: ReqRes=%ld\n", __FILE__, __FUNC__, __LINE__, ReqRes));
 					if (1 == ReqRes)
 						SkipFile = FALSE;	// "Yes"
 					else if (2 == ReqRes)
@@ -2382,14 +2382,14 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 							LhaName, cle->cle_File, cle->cle_File, cle->cle_Dir);
 						}
 
-					d2(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
+					d1(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
 					AddLogMsg(MSGID_LOG_UNPACK_PACKAGE, cle->cle_Package);
 
 					rc = SystemTags(LhaCmdLine,
 						NP_Input, Input(),
 						NP_Output, Output(),
 						TAG_END);
-					d2(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+					d1(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 					if (RETURN_OK != rc)
 						{
 						AbortUpdate = ErrorMsg(MSGID_ERROR_LHA1, cle->cle_File);
@@ -2407,13 +2407,13 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					snprintf(LhaCmdLine, LhaCmdLineLen, "lha -qI x \"%s\" #?.catalog locale:",
 						LhaName);
 
-					d2(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
+					d1(KPrintF("%s/%s/%ld: LhaCmdLine=<%s>\n", __FILE__, __FUNC__, __LINE__, LhaCmdLine));
 
 					rc = SystemTags(LhaCmdLine,
 						NP_Input, Input(),
 						NP_Output, Output(),
 						TAG_END);
-					d2(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+					d1(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 					if (RETURN_OK != rc)
 						{
 						AbortUpdate = ErrorMsg(MSGID_ERROR_LHA2, cle->cle_File);
@@ -2424,7 +2424,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 					}
 
 				set(GaugeProgress, MUIA_Gauge_Current, pgd.pgd_Max);
-				d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Max));
+				d1(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, pgd.pgd_Max));
 
 				Count++;
 				} while (0);
@@ -2462,7 +2462,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 	set(GaugeProgress, MUIA_Gauge_Current, 100);
 	set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_DONE));
-	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 100));
+	d1(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, 100));
 }
 
 //----------------------------------------------------------------------------
@@ -2675,7 +2675,7 @@ static int PerformUpdateProgressFunc(void *clientp, double dltotal, double dlnow
 	else if (dlLevel > 100)
 		dlLevel = 100;
 
-	d2(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, dlLevel));
+	d1(KPrintF("%s/%s/%ld: MUIA_Gauge_Current=%ld\n", __FILE__, __FUNC__, __LINE__, dlLevel));
 	set(GaugeProgress, MUIA_Gauge_Current, dlLevel);
 
 	return 0;
@@ -2689,7 +2689,7 @@ static BOOL CalculateFileHash(CONST_STRPTR Filename, unsigned char *digest)
 	UBYTE *Buffer = NULL;
 	BOOL Success = FALSE;
 
-	d2(KPrintF("%s/%s/%ld: START  Filename=<%s>\n", __FILE__, __FUNC__, __LINE__, Filename));
+	d1(KPrintF("%s/%s/%ld: START  Filename=<%s>\n", __FILE__, __FUNC__, __LINE__, Filename));
 
 	do	{
 		size_t nBytes;
@@ -2723,7 +2723,7 @@ static BOOL CalculateFileHash(CONST_STRPTR Filename, unsigned char *digest)
 	if (Buffer)
 		free(Buffer);
 
-	d2(KPrintF("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
+	d1(KPrintF("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -2745,7 +2745,7 @@ static RSA *GetScalosPublicKey(void)
 	d1(KPrintF("%s/%s/%ld: START \n", __FILE__, __FUNC__, __LINE__));
 
 	bp = BIO_new_mem_buf((void *) ScalosPubKey, strlen(ScalosPubKey));
-	d2(KPrintF("%s/%s/%ld:  bp=%08lx\n", __FILE__, __FUNC__, __LINE__, bp));
+	d1(KPrintF("%s/%s/%ld:  bp=%08lx\n", __FILE__, __FUNC__, __LINE__, bp));
 	if (bp)
 		{
 		rsa = PEM_read_bio_RSA_PUBKEY(bp, NULL, NULL, NULL);
@@ -2772,7 +2772,7 @@ static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureStr
 {
 	BOOL Success = FALSE;
 
-	d2(KPrintF("%s/%s/%ld: START  Filename=<%s>\n", __FILE__, __FUNC__, __LINE__, FileName));
+	d1(KPrintF("%s/%s/%ld: START  Filename=<%s>\n", __FILE__, __FUNC__, __LINE__, FileName));
 	d1(KPrintF("%s/%s/%ld: SignatureString=<%s>\n", __FILE__, __FUNC__, __LINE__, SignatureString));
 
 	do	{
@@ -2786,7 +2786,7 @@ static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureStr
 		if (!Base64Decode(SignatureString, signature, sizeof(signature)))
 //		if (!HexStringDecode(SignatureString, signature, sizeof(signature)))
 			{
-			d2(KPrintF("%s/%s/%ld: Base64Decode(%s) failed.\n", __FILE__, __FUNC__, __LINE__, SignatureString));
+			d1(KPrintF("%s/%s/%ld: Base64Decode(%s) failed.\n", __FILE__, __FUNC__, __LINE__, SignatureString));
 			break;
 			}
 
@@ -2797,7 +2797,7 @@ static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureStr
 
 		if (!CalculateFileHash(FileName, digest))
 			{
-			d2(KPrintF("%s/%s/%ld:  CalculateFileHash(%s) failed.\n", __FILE__, __FUNC__, __LINE__, FileName));
+			d1(KPrintF("%s/%s/%ld:  CalculateFileHash(%s) failed.\n", __FILE__, __FUNC__, __LINE__, FileName));
 			break;
 			}
 
@@ -2806,7 +2806,7 @@ static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureStr
 		rc = RSA_verify(NID_sha1, digest, sizeof(digest),
 			signature, sizeof(signature), ScalosPubKeyRSA);
 
-		d2(KPrintF("%s/%s/%ld:  RSA_verify returned %ld.\n", __FILE__, __FUNC__, __LINE__, rc));
+		d1(KPrintF("%s/%s/%ld:  RSA_verify returned %ld.\n", __FILE__, __FUNC__, __LINE__, rc));
 
 		if (1 == rc)
 			{
@@ -2838,7 +2838,7 @@ static BOOL VerifyVersionsFileSignature(const struct VersionFileHandle *vfhFile,
 
 		if (!Base64Decode(vfhSig->vfh_AllocatedBuffer, signature, sizeof(signature)))
 			{
-			d2(KPrintF("%s/%s/%ld: Base64Decode(versions.txt.sig) failed.\n", __FILE__, __FUNC__, __LINE__));
+			d1(KPrintF("%s/%s/%ld: Base64Decode(versions.txt.sig) failed.\n", __FILE__, __FUNC__, __LINE__));
 			break;
 			}
 
@@ -2861,7 +2861,7 @@ static BOOL VerifyVersionsFileSignature(const struct VersionFileHandle *vfhFile,
 		rc = RSA_verify(NID_sha1, digest, sizeof(digest),
 			signature, sizeof(signature), ScalosPubKeyRSA);
 
-		d2(KPrintF("%s/%s/%ld:  RSA_verify returned %ld.\n", __FILE__, __FUNC__, __LINE__, rc));
+		d1(KPrintF("%s/%s/%ld:  RSA_verify returned %ld.\n", __FILE__, __FUNC__, __LINE__, rc));
 
 		if (1 == rc)
 			{
@@ -3130,7 +3130,7 @@ static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation)
 	ERR_load_crypto_strings();
 
 	ErrorBuffer = ERR_error_string(ERR_get_error(), NULL);
-	d2(KPrintF("%s/%s/%ld:  <%s>\n", __FILE__, __FUNC__, __LINE__, ErrorBuffer));
+	d1(KPrintF("%s/%s/%ld:  <%s>\n", __FILE__, __FUNC__, __LINE__, ErrorBuffer));
 
 	MUI_Request(APP_Main, WIN_Main, 0, NULL,
 		GetLocString(MSGID_ABOUTREQOK),
@@ -3193,7 +3193,7 @@ static void ParseArguments(void)
 
 		oldDir = CurrentDir(WBenchMsg->sm_ArgList[0].wa_Lock);
 
-		d2(kprintf("%s/%ld: Called from Workbench\n", __FUNC__, __LINE__));
+		d1(kprintf("%s/%ld: Called from Workbench\n", __FUNC__, __LINE__));
 
 		icon = GetDiskObject(WBenchMsg->sm_ArgList[0].wa_Name);
 		if (icon)
@@ -3262,7 +3262,7 @@ static void ParseArguments(void)
 		memset(Args, 0, sizeof(Args));
 
 		ReadArgs = ReadArgs(Template, Args, NULL);
-		d2(kprintf("%s/%ld: ReadArgs=%08lx\n", __FUNC__, __LINE__, ReadArgs));
+		d1(kprintf("%s/%ld: ReadArgs=%08lx\n", __FUNC__, __LINE__, ReadArgs));
 		if (ReadArgs)
 			{
 			fAuto = Args[ARG_AUTO];
@@ -3328,11 +3328,11 @@ static CURLcode DownloadFile(struct VersionFileHandle *vfh, CONST_STRPTR Filenam
 
 			res = curl_easy_perform(curl);
 
-			d2(KPrintF("%s/%s/%ld: res=%ld\n", __FILE__, __FUNC__, __LINE__, res));
+			d1(KPrintF("%s/%s/%ld: res=%ld\n", __FILE__, __FUNC__, __LINE__, res));
 
 			if (0 == res)
 				{
-				d2(KPrintF("%s/%s/%ld: <%s>: vfh->vfh_TotalLength=%ld\n", __FILE__, __FUNC__, __LINE__, Filename, vfh->vfh_TotalLength));
+				d1(KPrintF("%s/%s/%ld: <%s>: vfh->vfh_TotalLength=%ld\n", __FILE__, __FUNC__, __LINE__, Filename, vfh->vfh_TotalLength));
 				}
 			else
 				{
