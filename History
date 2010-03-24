@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8	20100322	jl	- Bugfix: corrected line height calculation for text windows.
+41.8    20100324	jl	- Improvement: Updater.module: added signature check for downloaded versions.txt file.
+	20100322	jl	- Bugfix: corrected line height calculation for text windows.
 				- Bugfix: minimum window size is now adjusted, taking control bar and status bar into account.
 
 41.7   	20100312	jmc	- Improvement: Updated libjpeg to libjpeg V8 for Morphos.

@@ -175,6 +175,7 @@ static int PerformUpdateProgressFunc(void *clientp, double dltotal, double dlnow
 static BOOL CalculateFileHash(CONST_STRPTR Filename, unsigned char *digest);
 static RSA* GetScalosPublicKey(void);
 static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureString);
+static BOOL VerifyVersionsFileSignature(const struct VersionFileHandle *vfhFile, const struct VersionFileHandle *vfhSig);
 static void decodeblock(const unsigned char in[4], unsigned char out[3]);
 static BOOL Base64Decode(CONST_STRPTR Base64String, unsigned char *outbuf, size_t BuffLength);
 //static BOOL HexStringDecode(CONST_STRPTR HexString, unsigned char *outbuf, size_t BuffLength);
@@ -186,6 +187,7 @@ static void OpenSSLError(CONST_STRPTR Function, CONST_STRPTR Operation);
 static BOOL ErrorMsg(ULONG MsgId, ...);
 static void AddLogMsg(ULONG MsgId, ...);
 static void ParseArguments(void);
+static CURLcode DownloadFile(struct VersionFileHandle *vfh, CONST_STRPTR Filename, ULONG ProgressMin, ULONG ProgressMax);
 #if !defined(__SASC) &&!defined(__MORPHOS__)
 size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif //!defined(__SASC) &&!defined(__MORPHOS__)
@@ -2136,85 +2138,51 @@ static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, UL
 static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
 	BOOL Success = FALSE;
-	CURL *curl;
+	struct VersionFileHandle vfhVersions;
+	struct VersionFileHandle vfhSig;
 
-	set(GaugeProgress, MUIA_Gauge_Current, 0);
-	DoMethod(NListComponents, MUIM_NList_Clear);
-	DoMethod(NListHiddenComponents, MUIM_NList_Clear);
+	memset(&vfhVersions, 0, sizeof(vfhVersions));
+	memset(&vfhSig, 0, sizeof(vfhSig));
 
-	curl = curl_easy_init();
-	if (curl)
-		{
-		char addr[255];
+	do	{
 		CURLcode res;
-		struct ProgressData pgd;
-		struct VersionFileHandle vfh;
-		STRPTR ScalosWebSite = "";
 
-		memset(&vfh, 0, sizeof(vfh));
+		set(GaugeProgress, MUIA_Gauge_Current, 0);
+		DoMethod(NListComponents, MUIM_NList_Clear);
+		DoMethod(NListHiddenComponents, MUIM_NList_Clear);
 
-		pgd.pgd_Min = 0;
-		pgd.pgd_Max = 50;
+		res = DownloadFile(&vfhVersions, "/versions.txt", 0, 40);
+		if (0 != res)
+			break;
 
-		get(StringScalosWebSite, MUIA_String_Contents, &ScalosWebSite);
+		res = DownloadFile(&vfhSig, "/versions.txt.sig", 40, 50);
+		if (0 != res)
+			break;
 
-		snprintf(addr, sizeof(addr), "%s%s", ScalosWebSite, "/versions.txt");
-
-		snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
-			GetLocString(MSG_PROGRESS_CONNECTING), ScalosWebSite);
-		set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
-
-		if (SetProxyOptions(curl))
+		if (!VerifyVersionsFileSignature(&vfhVersions, &vfhSig))
 			{
-			curl_easy_setopt(curl, CURLOPT_URL, addr);
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, VersionFileWrite);
-			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &vfh);
-			curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, CheckForUpdatesProgressFunc);
-			curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
-			curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &pgd);
-
-			AddLogMsg(MSGID_LOG_READ_VERSIONINFO, ScalosWebSite);
-
-			res = curl_easy_perform(curl);
- 
-			d2(KPrintF("%s/%s/%ld: res=%ld\n", __FILE__, __FUNC__, __LINE__, res));
-
-			if (0 == res)
-				{
-				d2(KPrintF("%s/%s/%ld: vfh.vfh_TotalLength=%ld\n", __FILE__, __FUNC__, __LINE__, vfh.vfh_TotalLength));
-
-				AddLogMsg(MSGID_LOG_CHECKING_VERSIONS);
-
-				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_PROCESS_HTTP_RESPONSE));
-				Success = ProcessVersionFile(vfh.vfh_AllocatedBuffer, vfh.vfh_TotalLength);
-
-				AddLogMsg(MSGID_LOG_UPDATES_FOUND, SelectedCount);
-
-				if (0 == SelectedCount && fAuto && !fQuiet)
-					{
-					MUI_Request(APP_Main, WIN_Main, 0, NULL,
-						GetLocString(MSGID_ABOUTREQOK),
-						GetLocString(MSGID_REQFORMAT_NO_UPDATES_FOUND),
-						(ULONG) OsName);
-					}
-				}
-			else
-				{
-				snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
-					GetLocString(MSG_PROGRESS_FAILURE), ScalosWebSite, curl_easy_strerror(res));
-
-				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
-
-				ErrorMsg(MSG_PROGRESS_FAILURE, ScalosWebSite, curl_easy_strerror(res));
-				AddLogMsg(MSGID_LOG_ERROR_READ_VERSIONINFO, ScalosWebSite, curl_easy_strerror(res));
-				}
-
-			/* always cleanup */
-			curl_easy_cleanup(curl);
+			break;
 			}
 
-		free(vfh.vfh_AllocatedBuffer);
-		}
+		AddLogMsg(MSGID_LOG_CHECKING_VERSIONS);
+
+		set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(MSG_PROGRESS_PROCESS_HTTP_RESPONSE));
+		Success = ProcessVersionFile(vfhVersions.vfh_AllocatedBuffer, vfhVersions.vfh_TotalLength);
+
+		AddLogMsg(MSGID_LOG_UPDATES_FOUND, SelectedCount);
+
+		if (0 == SelectedCount && fAuto && !fQuiet)
+			{
+			MUI_Request(APP_Main, WIN_Main, 0, NULL,
+				GetLocString(MSGID_ABOUTREQOK),
+				GetLocString(MSGID_REQFORMAT_NO_UPDATES_FOUND),
+				(ULONG) OsName);
+			}
+
+		} while (0);
+
+	free(vfhVersions.vfh_AllocatedBuffer);
+	free(vfhSig.vfh_AllocatedBuffer);
 
 	set(GaugeProgress, MUIA_Gauge_Current, 100);
 	set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) GetLocString(Success ? MSG_PROGRESS_DONE : MSG_PROGRESS_FAILED));
@@ -2855,6 +2823,61 @@ static BOOL VerifyFileSignature(CONST_STRPTR FileName, CONST_STRPTR SignatureStr
 
 //----------------------------------------------------------------------------
 
+static BOOL VerifyVersionsFileSignature(const struct VersionFileHandle *vfhFile, const struct VersionFileHandle *vfhSig)
+{
+	BOOL Success = FALSE;
+
+	do	{
+		unsigned char signature[128];
+		unsigned char digest[SHA_DIGEST_LENGTH];
+		SHA_CTX	ctx;
+		int rc;
+
+		if (RSA_size(ScalosPubKeyRSA) != sizeof(signature))
+			break;
+
+		if (!Base64Decode(vfhSig->vfh_AllocatedBuffer, signature, sizeof(signature)))
+			{
+			d2(KPrintF("%s/%s/%ld: Base64Decode(versions.txt.sig) failed.\n", __FILE__, __FUNC__, __LINE__));
+			break;
+			}
+
+		d1(KPrintF("%s/%s/%ld: signature=%08lx\n", __FILE__, __FUNC__, __LINE__, signature));
+		//ByteDump(signature, sizeof(signature));
+		d1(KPrintF("%s/%s/%ld: digest=%08lx\n", __FILE__, __FUNC__, __LINE__, digest));
+		//ByteDump(digest, sizeof(digest));
+
+		// calculate digest from versions file contents in vfhFile
+		memset(&ctx, 0, sizeof(ctx));
+		SHA1_Init(&ctx);
+
+		d1(KPrintF("%s/%s/%ld: nBytes=%ld\n", __FILE__, __FUNC__, __LINE__, vfhSig->vfh_TotalLength));
+		SHA1_Update(&ctx, vfhFile->vfh_AllocatedBuffer, vfhFile->vfh_TotalLength);
+
+		SHA1_Final(digest, &ctx);
+
+		d1(KPrintF("%s/%s/%ld:  RSA_size=%ld.\n", __FILE__, __FUNC__, __LINE__, RSA_size(ScalosPubKeyRSA)));
+
+		rc = RSA_verify(NID_sha1, digest, sizeof(digest),
+			signature, sizeof(signature), ScalosPubKeyRSA);
+
+		d2(KPrintF("%s/%s/%ld:  RSA_verify returned %ld.\n", __FILE__, __FUNC__, __LINE__, rc));
+
+		if (1 == rc)
+			{
+			Success = TRUE;
+			}
+		else
+			{
+			OpenSSLError(__FUNCTION__, "RSA_verify");
+			}
+		} while (0);
+
+	return Success;
+}
+
+//----------------------------------------------------------------------------
+
 /*
 ** decodeblock
 **
@@ -3265,6 +3288,69 @@ static void ParseArguments(void)
 			FreeArgs(ReadArgs);
 			}
 		}
+}
+
+//----------------------------------------------------------------------------
+
+static CURLcode DownloadFile(struct VersionFileHandle *vfh, CONST_STRPTR Filename, ULONG ProgressMin, ULONG ProgressMax)
+{
+	CURLcode res = CURLE_FAILED_INIT;
+	CURL *curl;
+
+	curl = curl_easy_init();
+	if (curl)
+		{
+		char addr[255];
+		struct ProgressData pgd;
+		STRPTR ScalosWebSite = "";
+
+		pgd.pgd_Min = ProgressMin;
+		pgd.pgd_Max = ProgressMax;
+
+		get(StringScalosWebSite, MUIA_String_Contents, &ScalosWebSite);
+
+		snprintf(addr, sizeof(addr), "%s%s", ScalosWebSite, Filename);
+
+		snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
+			GetLocString(MSG_PROGRESS_CONNECTING), ScalosWebSite);
+		set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
+
+		if (SetProxyOptions(curl))
+			{
+			curl_easy_setopt(curl, CURLOPT_URL, addr);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, VersionFileWrite);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, vfh);
+			curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, CheckForUpdatesProgressFunc);
+			curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+			curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &pgd);
+
+			AddLogMsg(MSGID_LOG_READ_VERSIONINFO, ScalosWebSite);
+
+			res = curl_easy_perform(curl);
+
+			d2(KPrintF("%s/%s/%ld: res=%ld\n", __FILE__, __FUNC__, __LINE__, res));
+
+			if (0 == res)
+				{
+				d2(KPrintF("%s/%s/%ld: <%s>: vfh->vfh_TotalLength=%ld\n", __FILE__, __FUNC__, __LINE__, Filename, vfh->vfh_TotalLength));
+				}
+			else
+				{
+				snprintf(TextProgressBuffer, sizeof(TextProgressBuffer),
+					GetLocString(MSG_PROGRESS_FAILURE), ScalosWebSite, curl_easy_strerror(res));
+
+				set(GaugeProgress, MUIA_Gauge_InfoText, (ULONG) TextProgressBuffer);
+
+				ErrorMsg(MSG_PROGRESS_FAILURE, ScalosWebSite, curl_easy_strerror(res));
+				AddLogMsg(MSGID_LOG_ERROR_READ_VERSIONINFO, ScalosWebSite, curl_easy_strerror(res));
+				}
+
+			/* always cleanup */
+			curl_easy_cleanup(curl);
+			}
+		}
+
+	return res;
 }
 
 //----------------------------------------------------------------------------
