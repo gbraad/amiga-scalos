@@ -1,3 +1,9 @@
+26-03-2010
+modules
+A few days ago we have released the hotfix V40.2 of Scalos Updater.module. It offers improved security agains tampering by checking the signature of the version and file list. The Hotfix can be installed with the online Updater module, To scan for available updates, select menu item &quot;Check for Updates...&quot; in tools menu.
+26-03-2010
+bugfixes
+A few days ago we have released the hotfix V40.27 of Scalos Prefs. It no longer overwrites parts of Workbench configuration, especially on AmigaOS4.x. The Hotfix can be installed with the online Updater module, To scan for available updates, select menu item &quot;Check for Updates...&quot; in tools menu.
 19-03-2010
 website
 Finally, we have fixed the &quot;last updated&quot; time stamps in our page footers!
