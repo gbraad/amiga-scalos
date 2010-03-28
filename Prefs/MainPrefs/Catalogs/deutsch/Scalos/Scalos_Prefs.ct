@@ -2,7 +2,7 @@
 ; $Date$
 ; $Revision$
 ;
-## version $VER: Scalos_Prefs.catalog 40.23 (15 Jul 2008 18:16:49)
+## version $VER: Scalos_Prefs.catalog 40.28 (28 Mar 2010 19:20:49)
 ## codeset 0s
 ## language deutsch
 ;
@@ -2731,6 +2731,35 @@ die innere Füllung der Auswahlmarkierung in\n\
 Textfenstern eingestellt.
 ;Adjust degree of transparency for the interior\n\
 ;fill of the text window icon selection marker.
+;
+;
+MSGID_TEXTWINDOWPAGE_DRAWERSORT_TOP
+vor Dateien
+;Before Files
+;
+;
+MSGID_TEXTWINDOWPAGE_DRAWERSORT_BOTTOM
+nach Dateien
+;After files
+;
+;
+MSGID_TEXTWINDOWPAGE_DRAWERSORT_MIXED
+wwischen Dateien
+;With files
+;
+;
+MSGID_TEXTWINDOWSPAGE_DRAWERSORT
+Schubladen anzeigen:
+;Drawer sorting:
+;
+;
+MSGID_TEXTWINDOWSPAGE_DRAWERSORT_SHORTHELP
+Wo sollen Schubladen in Textfenstern angezeigt werden?\n\
+Schubladen können vor allen Dateien, nach allen Dateien\n\
+oder zwischen den Dateien angezeigt werden.
+;Select how drawers are sorted in text windows.\n\
+;Drawers can be displayed always on top, always\n\
+;on bottom, or mixed between files.
 ;
 ;-----------------------------------------------------------
 ;

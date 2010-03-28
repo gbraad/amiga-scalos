@@ -274,7 +274,7 @@ static ULONG ControlBarGadgetImageIndex = 0;
 static ULONG HiddenDevicesImageIndex = 0;
 static ULONG HiddenDevicesEntryIndex = 1;
 
-CONST_STRPTR cFileDisplayColumns[] =
+CONST_STRPTR cTextWindowsColumns[] =
 {
 	(CONST_STRPTR) MSGID_FILEDISP_COLUMN_NAME,
 	(CONST_STRPTR) MSGID_FILEDISP_COLUMN_SIZE,
@@ -501,6 +501,14 @@ static CONST_STRPTR cIconLayoutModes[] =
 {
 	(CONST_STRPTR) MSGID_ICONLAYOUT_COLUMNS,
 	(CONST_STRPTR) MSGID_ICONLAYOUT_ROWS,
+	NULL
+};
+
+static CONST_STRPTR cDrawerSortMode[] =
+{
+	(CONST_STRPTR) MSGID_TEXTWINDOWPAGE_DRAWERSORT_TOP,
+	(CONST_STRPTR) MSGID_TEXTWINDOWPAGE_DRAWERSORT_BOTTOM,
+	(CONST_STRPTR) MSGID_TEXTWINDOWPAGE_DRAWERSORT_MIXED,
 	NULL
 };
 
@@ -886,7 +894,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
         AboutMUIHook.h_Data = app;
         UpdateSelectMarkerSampleHook.h_Data = app;
 
-	TranslateStringArray(cFileDisplayColumns);
+	TranslateStringArray(cTextWindowsColumns);
 	TranslateStringArray(cDesktopPages);
 	TranslateStringArray(cIconPages);
 	TranslateStringArray(cTitleph);
@@ -898,6 +906,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	TranslateStringArray(cWindowRefresh);
 	TranslateStringArray(cShowAllDefault);
 	TranslateStringArray(cIconLayoutModes);
+	TranslateStringArray(cDrawerSortMode);
 	TranslateStringArray(cViewByDefault);
 	TranslateStringArray(cFileDisplayPages);
 	TranslateStringArray(cIconSizes);
@@ -1069,7 +1078,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 								MUIA_Text_Contents, (ULONG) GetLocString(MSGID_SAVEBUTTON),
 								MUIA_CycleChain, 1,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SAVEBUTTON_SHORTHELP),
-					End, //Text
+					End, //TextObject
 					Child, app->Obj[USE] = TextObject,
 								ButtonFrame,
 								MUIA_Background, MUII_ButtonBack,
@@ -1080,7 +1089,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 								MUIA_Text_Contents, (ULONG) GetLocString(MSGID_USEBUTTON),
 								MUIA_CycleChain, 1,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_USEBUTTON_SHORTHELP),
-					End, //Text
+					End, //TextObject
 					Child, app->Obj[CANCEL] = TextObject,
 								ButtonFrame,
 								MUIA_Background, MUII_ButtonBack,
@@ -1091,7 +1100,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 								MUIA_Text_Contents, (ULONG) GetLocString(MSGID_CANCELBUTTON),
 								MUIA_CycleChain, 1,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CANCELBUTTON_SHORTHELP),
-					End, //Text
+					End, //TextObject
 				End, //HGroup
 
 			End, //VGroup
@@ -1615,7 +1624,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 	{ STRPTR xxx = strdup("TestTestTest"); if (xxx) free(xxx); }
 
-	// --- Filedisplay Page
+	// --- TextWindows Page
 	// Selecting a new font updates font sample
 	DoMethod(app->Obj[POP_TEXTMODEFONT], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, 
 		app->Obj[STRING_TEXTMODEFONT_SAMPLE], 3, MUIM_Set, MUIA_FontSample_StdFontDesc, MUIV_TriggerValue);
@@ -2386,7 +2395,7 @@ static SAVEDS(ULONG) INTERRUPT FileDisplayHookFunc(struct Hook *hook, APTR unuse
 		{
 		struct FileDisplayListEntry *fdle = (struct FileDisplayListEntry *) nldm->entry;
 
-		nldm->strings[0] = (STRPTR) cFileDisplayColumns[fdle->fdle_Index];
+		nldm->strings[0] = (STRPTR) cTextWindowsColumns[fdle->fdle_Index];
 		}
 	else
 		{
@@ -2971,7 +2980,7 @@ static ULONG TextWindowColumnsListDragDrop(struct IClass *cl,Object *obj,struct 
 		** have become an active destination object otherwise.
 		*/
 
-		LONG idArray[Sizeof(cFileDisplayColumns)];
+		LONG idArray[Sizeof(cTextWindowsColumns)];
 		LONG dropmark;
 		LONG sortable;
 		LONG id = MUIV_NList_NextSelected_Start;
@@ -4526,7 +4535,9 @@ Object *CreatePrefsPage(struct SCAModule *app, Object *Page, struct NewPageListE
 		{
 		Object *nlistview;
 
-		result = VGroup,
+		result = ScrollgroupObject,
+			MUIA_Scrollgroup_AutoBars, TRUE,
+			MUIA_Scrollgroup_Contents, VGroupV,
 				MUIA_Group_VertSpacing, 0,
 				Child, nlistview = NListviewObject,
 						MUIA_VertWeight, 0,
@@ -4553,7 +4564,8 @@ Object *CreatePrefsPage(struct SCAModule *app, Object *Page, struct NewPageListE
 //						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PREFGROUPS_SHORTHELP),
 					End, //NListviewObject
 				Child, Page,
-			End; //VGroup
+				End, //VGroupV
+			End; //ScrollgroupObject
 
 		if (result)
 			{
@@ -7257,6 +7269,25 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 					Child, HVSpace,
 
 					Child, ColGroup(2),
+						Child, Label1((ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_DRAWERSORT)),
+						Child, app->Obj[CYCLE_DRAWERSORTMODE] = CycleObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_Cycle_Entries, cDrawerSortMode,
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TEXTWINDOWSPAGE_DRAWERSORT_SHORTHELP),
+							End, //CycleObject
+					End, //ColGroup
+					Child, HVSpace,
+
+				End, //HGroup
+
+				Child, HGroup,
+					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
+
+					Child, HVSpace,
+
+					Child, ColGroup(2),
+
 						Child, Label1((ULONG) GetLocString(MSGID_FILEDISPLAYPAGE_SOFTLINKS_UNDERLINED)),
 						Child, app->Obj[SOFTTEXTSLINK] = CheckMarkHelp(FALSE, MSGID_FILEDISPLAYPAGE_SOFTLINKS_UNDERLINED_SHORTHELP),
 
@@ -7269,7 +7300,6 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 					Child, HVSpace,
 
 				End, //HGroup
-
 				Child, HVSpace,
 
 			End, //VGroup

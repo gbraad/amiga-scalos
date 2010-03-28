@@ -67,6 +67,7 @@ enum ObjIndex
 	MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE,
 	CHECK_TEXTWINDOW_TTTEXTWINDOWFONT_ENABLE,
 	POPSTRING_TEXTWINDOW_TTTEXTWINDOWFONT,
+	CYCLE_DRAWERSORTMODE,
 	SOFTTEXTSLINK,
 	SOFTICONSLINK,
 	TOOLTIP_SETTINGSGROUP,
@@ -481,6 +482,15 @@ struct HiddenDeviceListEntry
 	char hde_CheckboxString[20];
 	char hde_DeviceName[128];		// device name
 	char hde_VolumeName[128];		// volume name
+	};
+
+//--------------------------------------------------------------------
+
+enum ScalosDrawerSortType
+	{
+	DRAWER_SORT_First,
+	DRAWER_SORT_Last,
+	DRAWER_SORT_Inbetween,
 	};
 
 //--------------------------------------------------------------------

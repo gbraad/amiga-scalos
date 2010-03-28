@@ -112,41 +112,43 @@ static void TextWindowDrawSortMark(struct internalScaWindowTask *iwt,
 	struct RastPort *rp, const struct Rectangle *TextRect);
 
 static LONG TextIconCompareNameAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareNameDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareSizeAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareSizeDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareDateAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareDateDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareTimeAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareTimeDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareCommentAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareCommentDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareProtAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareProtDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareOwnerAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareOwnerDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareGroupAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareGroupDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareFileTypeAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 static LONG TextIconCompareFileTypeDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1);
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1);
+
+static LONG TextIconCompareIsDrawer(const struct ScaIconNode *in2, const struct ScaIconNode *in1);
 
 //----------------------------------------------------------------------------
 
@@ -1408,20 +1410,15 @@ void ReposTextIcons2(struct internalScaWindowTask *iwt)
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareNameAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
+
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	return Stricmp(in2->in_Name, in1->in_Name);
 }
@@ -1430,20 +1427,15 @@ static LONG TextIconCompareNameAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareNameDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
+
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	return Stricmp(in1->in_Name, in2->in_Name);
 }
@@ -1452,22 +1444,16 @@ static LONG TextIconCompareNameDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareSizeAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Size1, Size2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Size, in1->in_Icon, &Size1);
 	GetAttr(TIDTA_Size, in2->in_Icon, &Size2);
@@ -1479,22 +1465,16 @@ static LONG TextIconCompareSizeAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareSizeDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Size1, Size2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Size, in1->in_Icon, &Size1);
 	GetAttr(TIDTA_Size, in2->in_Icon, &Size2);
@@ -1506,22 +1486,16 @@ static LONG TextIconCompareSizeDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareDateAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	struct DateStamp ds1, ds2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Days, in1->in_Icon, (ULONG *) &ds1.ds_Days);
 	GetAttr(TIDTA_Days, in2->in_Icon, (ULONG *) &ds2.ds_Days);
@@ -1537,22 +1511,16 @@ static LONG TextIconCompareDateAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareDateDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	struct DateStamp ds1, ds2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Days, in1->in_Icon, (ULONG *) &ds1.ds_Days);
 	GetAttr(TIDTA_Days, in2->in_Icon, (ULONG *) &ds2.ds_Days);
@@ -1568,22 +1536,16 @@ static LONG TextIconCompareDateDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareTimeAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	struct DateStamp ds1, ds2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	ds1.ds_Days = ds2.ds_Days = 0;
 	GetAttr(TIDTA_Mins, in1->in_Icon, (ULONG *) &ds1.ds_Minute);
@@ -1598,22 +1560,16 @@ static LONG TextIconCompareTimeAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareTimeDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	struct DateStamp ds1, ds2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	ds1.ds_Days = ds2.ds_Days = 0;
 	GetAttr(TIDTA_Mins, in1->in_Icon, (ULONG *) &ds1.ds_Minute);
@@ -1628,22 +1584,16 @@ static LONG TextIconCompareTimeDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareCommentAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
-	STRPTR Comment1, Comment2;
+	LONG Result;
+	CONST_STRPTR Comment1, Comment2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Comment, in1->in_Icon, (APTR) &Comment1);
 	GetAttr(TIDTA_Comment, in2->in_Icon, (APTR) &Comment2);
@@ -1657,22 +1607,16 @@ static LONG TextIconCompareCommentAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareCommentDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
-	STRPTR Comment1, Comment2;
+	LONG Result;
+	CONST_STRPTR Comment1, Comment2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Comment, in1->in_Icon, (APTR) &Comment1);
 	GetAttr(TIDTA_Comment, in2->in_Icon, (APTR) &Comment2);
@@ -1686,22 +1630,16 @@ static LONG TextIconCompareCommentDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareProtAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Prot1, Prot2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Protection, in1->in_Icon, &Prot1);
 	GetAttr(TIDTA_Protection, in2->in_Icon, &Prot2);
@@ -1713,22 +1651,16 @@ static LONG TextIconCompareProtAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareProtDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Prot1, Prot2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Protection, in1->in_Icon, &Prot1);
 	GetAttr(TIDTA_Protection, in2->in_Icon, &Prot2);
@@ -1740,22 +1672,16 @@ static LONG TextIconCompareProtDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareOwnerAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Owner1, Owner2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Owner_UID, in1->in_Icon, &Owner1);
 	GetAttr(TIDTA_Owner_UID, in2->in_Icon, &Owner2);
@@ -1772,22 +1698,16 @@ static LONG TextIconCompareOwnerAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareOwnerDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Owner1, Owner2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Owner_UID, in1->in_Icon, &Owner1);
 	GetAttr(TIDTA_Owner_UID, in2->in_Icon, &Owner2);
@@ -1804,22 +1724,16 @@ static LONG TextIconCompareOwnerDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareGroupAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Group1, Group2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Owner_GID, in1->in_Icon, &Group1);
 	GetAttr(TIDTA_Owner_GID, in2->in_Icon, &Group2);
@@ -1836,22 +1750,16 @@ static LONG TextIconCompareGroupAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareGroupDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	ULONG Group1, Group2;
 
 	d1(kprintf("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_Owner_GID, in1->in_Icon, &Group1);
 	GetAttr(TIDTA_Owner_GID, in2->in_Icon, &Group2);
@@ -1868,22 +1776,16 @@ static LONG TextIconCompareGroupDescFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareFileTypeAscFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	const struct TypeNode *IconType1, *IconType2;
 
 	d1(KPrintF("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_TypeNode, in1->in_Icon, (APTR) &IconType1);
 	GetAttr(TIDTA_TypeNode, in2->in_Icon, (APTR) &IconType2);
@@ -1914,22 +1816,16 @@ static LONG TextIconCompareFileTypeAscFunc(struct Hook *hook,
 // compare function for text icon list sorting
 // drawers are sorted first
 static LONG TextIconCompareFileTypeDescFunc(struct Hook *hook,
-	struct ScaIconNode *in2, struct ScaIconNode *in1)
+	const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
+	LONG Result;
 	const struct TypeNode *IconType1, *IconType2;
 
 	d1(KPrintF("%s/%s/%ld: in1=%08lx  in2=%08lx\n", __FILE__, __FUNC__, __LINE__, in1, in2));
 
-	if (!(in2->in_Flags & INF_File))
-		{
-		if (in1->in_Flags & INF_File)
-			return -1;
-		}
-	else
-		{
-		if (!(in1->in_Flags & INF_File))
-			return 1;
-		}
+	Result = TextIconCompareIsDrawer(in2, in1);
+	if (0 != Result)
+		return Result;
 
 	GetAttr(TIDTA_TypeNode, in1->in_Icon, (APTR) &IconType1);
 	GetAttr(TIDTA_TypeNode, in2->in_Icon, (APTR) &IconType2);
@@ -1954,6 +1850,32 @@ static LONG TextIconCompareFileTypeDescFunc(struct Hook *hook,
 		}
 
 	return Stricmp(in1->in_Name, in2->in_Name);
+}
+
+
+static LONG TextIconCompareIsDrawer(const struct ScaIconNode *in2, const struct ScaIconNode *in1)
+{
+	if ((in2->in_Flags & INF_File) != (in1->in_Flags & INF_File))
+		{
+		if (DRAWER_SORT_First == CurrentPrefs.pref_DrawerSortMode)
+			{
+			// Drawers first
+			if (in1->in_Flags & INF_File)
+				return -1;
+			else
+				return 1;
+			}
+		else if (DRAWER_SORT_Last == CurrentPrefs.pref_DrawerSortMode)
+			{
+			//Drawers last
+			if (in1->in_Flags & INF_File)
+				return 1;
+			else
+				return -1;
+			}
+		}
+
+	return 0;
 }
 
 

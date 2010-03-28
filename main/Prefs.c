@@ -388,6 +388,7 @@ static const struct ScalosPrefs DefaultPrefs =
 	{ (UBYTE) ~0, 133, 195, 221 },		// pref_SelectMarkerBaseColor
 	128,					// pref_SelectMarkerTransparency
 	10,					// pref_MaxUndoSteps
+	DRAWER_SORT_First,			// pref_DrawerSortMode
 	};
 
 static const struct ScalosPatternPrefs DefaultPatternPrefs =
@@ -1107,6 +1108,7 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectMarkerBaseColor, &NewPrefs->pref_SelectMarkerBaseColor, sizeof(NewPrefs->pref_SelectMarkerBaseColor));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectMarkerTransparency, &NewPrefs->pref_SelectMarkerTransparency, sizeof(NewPrefs->pref_SelectMarkerTransparency));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_MaxUndoSteps, &NewPrefs->pref_MaxUndoSteps, sizeof(NewPrefs->pref_MaxUndoSteps));
+		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DrawerSortMode, &NewPrefs->pref_DrawerSortMode, sizeof(NewPrefs->pref_DrawerSortMode));
 
 		// Plausibility check for icon size constraints
 		// make sure that max never smaller than min
