@@ -71,7 +71,7 @@ extern struct Library *WorkbenchBase;
 extern struct List PluginList;
 extern struct List ControlBarGadgetListNormal;
 extern struct List ControlBarGadgetListBrowser;
-extern CONST_STRPTR cFileDisplayColumns[];
+extern CONST_STRPTR cTextWindowsColumns[];
 
 //-----------------------------------------------------------------
 
@@ -261,6 +261,7 @@ struct TextWindowGroup
 	UBYTE			fd_SelectTextIconName;
 	struct ARGB		fd_SelectMarkerBaseColor;
 	UBYTE			fd_SelectMarkerTransparency;
+	enum ScalosDrawerSortType	fd_DrawerSortMode;
 };
 
 struct TrueTypeFontsGroup
@@ -308,7 +309,7 @@ struct ScalosPrefsContainer
 	struct IconGroup		Icons;
 	struct DragNDropGroup		DragNDrop;
 	struct WindowsGroup		Windows;
-	struct TextWindowGroup		FileDisplay;
+	struct TextWindowGroup		TextWindows;
 	struct TrueTypeFontsGroup	TrueTypeFonts;
 	struct MiscGroup		Miscellaneous;
 };
@@ -481,7 +482,7 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		}
 	},
 	{
-	// FileDisplay
+	// TextWindows
 		0,			// fd_wLabelStyle;	0=normal, 1=outline, 2=shadow
 		1,			// fd_wTextSkip; //spacing between image & text
 		TRUE,			// fd_bShowSoftLinks;
@@ -493,6 +494,7 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		FALSE,			// fd_SelectTextIconName
 		{ (UBYTE) ~0, 133, 195, 221 },	// fd_SelectMarkerBaseColor
 		128,			// fd_SelectMarkerTransparency
+		DRAWER_SORT_First,	// fd_DrawerSortMode
 	},
 	{
 	// TrueTypeFonts
@@ -849,17 +851,17 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 
 	// --- File Display Page
 
-	setcycle(app->Obj[CYCLE_LABELSTYLE], currentPrefs.FileDisplay.fd_wLabelStyle);
-	setslider(app->Obj[SLIDER_LABELSPACE], currentPrefs.FileDisplay.fd_wTextSkip);
-	setcheckmark(app->Obj[SOFTICONSLINK], currentPrefs.FileDisplay.fd_bShowSoftLinks);
-	setcheckmark(app->Obj[SOFTTEXTSLINK], currentPrefs.FileDisplay.fd_bShowSoftLinks);
-	setstring(app->Obj[POP_TEXTMODEFONT], (ULONG) currentPrefs.FileDisplay.fd_TextWindowFontDescr);
-	set(app->Obj[STRING_TEXTMODEFONT_SAMPLE], MUIA_FontSample_StdFontDesc, (ULONG) currentPrefs.FileDisplay.fd_TextWindowFontDescr);
+	setcycle(app->Obj[CYCLE_LABELSTYLE], currentPrefs.TextWindows.fd_wLabelStyle);
+	setslider(app->Obj[SLIDER_LABELSPACE], currentPrefs.TextWindows.fd_wTextSkip);
+	setcheckmark(app->Obj[SOFTICONSLINK], currentPrefs.TextWindows.fd_bShowSoftLinks);
+	setcheckmark(app->Obj[SOFTTEXTSLINK], currentPrefs.TextWindows.fd_bShowSoftLinks);
+	setstring(app->Obj[POP_TEXTMODEFONT], (ULONG) currentPrefs.TextWindows.fd_TextWindowFontDescr);
+	set(app->Obj[STRING_TEXTMODEFONT_SAMPLE], MUIA_FontSample_StdFontDesc, (ULONG) currentPrefs.TextWindows.fd_TextWindowFontDescr);
 
 	// first, put all entries into NLIST_STORAGE_FILEDISPLAY
 	DoMethod(app->Obj[NLIST_STORAGE_FILEDISPLAY], MUIM_NList_Clear);
 
-	for (n=0; cFileDisplayColumns[n]; n++)
+	for (n=0; cTextWindowsColumns[n]; n++)
 		{
 		struct FileDisplayListEntry fdle;
 
@@ -872,11 +874,11 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	DoMethod(app->Obj[NLIST_USE_FILEDISPLAY], MUIM_NList_Clear);
 
 	// then, remove all used entries from NLIST_STORAGE_FILEDISPLAY and insert them in NLIST_USE_FILEDISPLAY
-	for (n=0; ~0 != currentPrefs.FileDisplay.fd_lDisplayFields[n] && n < Sizeof(currentPrefs.FileDisplay.fd_lDisplayFields); n++)
+	for (n=0; ~0 != currentPrefs.TextWindows.fd_lDisplayFields[n] && n < Sizeof(currentPrefs.TextWindows.fd_lDisplayFields); n++)
 		{
 		struct FileDisplayListEntry fdle;
 
-		fdle.fdle_Index = currentPrefs.FileDisplay.fd_lDisplayFields[n];
+		fdle.fdle_Index = currentPrefs.TextWindows.fd_lDisplayFields[n];
 
 		RemoveFileDisplayEntry(app->Obj[NLIST_STORAGE_FILEDISPLAY], fdle.fdle_Index);
 		DoMethod(app->Obj[NLIST_USE_FILEDISPLAY], MUIM_NList_InsertSingle, &fdle, MUIV_NList_Insert_Bottom);
@@ -888,19 +890,21 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 	setcycle(app->Obj[CYCLE_SHOWALLDEFAULT], currentPrefs.Windows.wg_ShowAllByDefault);
 	setcycle(app->Obj[CYCLE_VIEWBYICONSDEFAULT], currentPrefs.Windows.wg_ViewByDefault - 1);
 
-	set(app->Obj[CHECK_STRIPED_WINDOW], MUIA_Selected, currentPrefs.FileDisplay.fd_bShowStripes);
-	set(app->Obj[CHECK_SELECTTEXTICONNAME], MUIA_Selected, currentPrefs.FileDisplay.fd_SelectTextIconName);
+	set(app->Obj[CHECK_STRIPED_WINDOW], MUIA_Selected, currentPrefs.TextWindows.fd_bShowStripes);
+	set(app->Obj[CHECK_SELECTTEXTICONNAME], MUIA_Selected, currentPrefs.TextWindows.fd_SelectTextIconName);
 
-	setslider(app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY], currentPrefs.FileDisplay.fd_SelectMarkerTransparency);
-	setslider(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Alpha);
+	setcycle(app->Obj[CYCLE_DRAWERSORTMODE], currentPrefs.TextWindows.fd_DrawerSortMode);
 
-	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_BaseColor, (ULONG) &currentPrefs.FileDisplay.fd_SelectMarkerBaseColor);
-	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_Transparency, currentPrefs.FileDisplay.fd_SelectMarkerTransparency);
+	setslider(app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY], currentPrefs.TextWindows.fd_SelectMarkerTransparency);
+	setslider(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Alpha);
+
+	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_BaseColor, (ULONG) &currentPrefs.TextWindows.fd_SelectMarkerBaseColor);
+	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_Transparency, currentPrefs.TextWindows.fd_SelectMarkerTransparency);
 
 	SetAttrs(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK],
-		MUIA_Coloradjust_Red, currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Red << 24,
-		MUIA_Coloradjust_Green, currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Green << 24,
-		MUIA_Coloradjust_Blue, currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Blue << 24,
+		MUIA_Coloradjust_Red, currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Red << 24,
+		MUIA_Coloradjust_Green, currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Green << 24,
+		MUIA_Coloradjust_Blue, currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Blue << 24,
 		TAG_END);
 
 	// --- TrueType Font Page
@@ -1271,20 +1275,21 @@ static void FillPrefsStructures(struct SCAModule *app)
 
 
 	// --- File Display Page
-	currentPrefs.FileDisplay.fd_wLabelStyle         = getv(app->Obj[CYCLE_LABELSTYLE], MUIA_Cycle_Active);
-	currentPrefs.FileDisplay.fd_wTextSkip           = getv(app->Obj[SLIDER_LABELSPACE], MUIA_Numeric_Value);
-	currentPrefs.FileDisplay.fd_bShowSoftLinks      = getv(app->Obj[SOFTICONSLINK], MUIA_Selected);
+	currentPrefs.TextWindows.fd_wLabelStyle         = getv(app->Obj[CYCLE_LABELSTYLE], MUIA_Cycle_Active);
+	currentPrefs.TextWindows.fd_wTextSkip           = getv(app->Obj[SLIDER_LABELSPACE], MUIA_Numeric_Value);
+	currentPrefs.TextWindows.fd_bShowSoftLinks      = getv(app->Obj[SOFTICONSLINK], MUIA_Selected);
 	lp = (CONST_STRPTR) getv(app->Obj[POP_TEXTMODEFONT], MUIA_String_Contents);
-	stccpy(currentPrefs.FileDisplay.fd_TextWindowFontDescr, lp, sizeof(currentPrefs.FileDisplay.fd_TextWindowFontDescr));
-	//currentPrefs.FileDisplay.fd_lDisplayFields = getv(app->Obj[], MUIA_);
-	currentPrefs.FileDisplay.fd_bShowStripes	= getv(app->Obj[CHECK_STRIPED_WINDOW], MUIA_Selected);
-	currentPrefs.FileDisplay.fd_SelectTextIconName	= getv(app->Obj[CHECK_SELECTTEXTICONNAME], MUIA_Selected);
+	stccpy(currentPrefs.TextWindows.fd_TextWindowFontDescr, lp, sizeof(currentPrefs.TextWindows.fd_TextWindowFontDescr));
+	//currentPrefs.TextWindows.fd_lDisplayFields = getv(app->Obj[], MUIA_);
+	currentPrefs.TextWindows.fd_bShowStripes	= getv(app->Obj[CHECK_STRIPED_WINDOW], MUIA_Selected);
+	currentPrefs.TextWindows.fd_SelectTextIconName	= getv(app->Obj[CHECK_SELECTTEXTICONNAME], MUIA_Selected);
+	currentPrefs.TextWindows.fd_DrawerSortMode    	= getv(app->Obj[CYCLE_DRAWERSORTMODE], MUIA_Cycle_Active);
 
-	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Red   = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Red) >> 24;
-	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Green = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Green) >> 24;
-	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Blue  = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Blue) >> 24;
-	currentPrefs.FileDisplay.fd_SelectMarkerTransparency    =  getv(app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY], MUIA_Numeric_Value);
-	currentPrefs.FileDisplay.fd_SelectMarkerBaseColor.Alpha =  getv(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], MUIA_Numeric_Value);
+	currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Red   = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Red) >> 24;
+	currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Green = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Green) >> 24;
+	currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Blue  = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Blue) >> 24;
+	currentPrefs.TextWindows.fd_SelectMarkerTransparency    =  getv(app->Obj[SLIDER_TEXTWINDOWS_SELECTFILLTRANSPARENCY], MUIA_Numeric_Value);
+	currentPrefs.TextWindows.fd_SelectMarkerBaseColor.Alpha =  getv(app->Obj[SLIDER_TEXTWINDOWS_SELECTBORDERTRANSPARENCY], MUIA_Numeric_Value);
 
 	UpdateFileDisplayPrefsFromGUI(app);
 
@@ -1339,12 +1344,12 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSelFrame, &currentPrefs.Icons.ig_wSelFrame, sizeof(currentPrefs.Icons.ig_wSelFrame) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconNormThumbnailFrame, &currentPrefs.Icons.ig_wNormThumbnailFrame, sizeof(currentPrefs.Icons.ig_wNormThumbnailFrame) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSelThumbnailFrame, &currentPrefs.Icons.ig_wSelThumbnailFrame, sizeof(currentPrefs.Icons.ig_wSelThumbnailFrame) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.FileDisplay.fd_wLabelStyle, sizeof(currentPrefs.FileDisplay.fd_wLabelStyle) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.TextWindows.fd_wLabelStyle, sizeof(currentPrefs.TextWindows.fd_wLabelStyle) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSecLine, &currentPrefs.Icons.ig_wMultipleLines, sizeof(currentPrefs.Icons.ig_wMultipleLines) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &currentPrefs.Icons.ig_SizeConstraints, sizeof(currentPrefs.Icons.ig_SizeConstraints) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconHiliteUnderMouse, &currentPrefs.Icons.ig_HighlightUnderMouse, sizeof(currentPrefs.Icons.ig_HighlightUnderMouse) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.FileDisplay.fd_wTextSkip, sizeof(currentPrefs.FileDisplay.fd_wTextSkip) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnails, &currentPrefs.Icons.ig_ShowThumbnails, sizeof(currentPrefs.Icons.ig_ShowThumbnails) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnailsAsDefault, &currentPrefs.Icons.ig_ShowThumbnailsAsDefault, sizeof(currentPrefs.Icons.ig_ShowThumbnailsAsDefault) );
@@ -1458,8 +1463,8 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ActiveWindowTransparency, &currentPrefs.Windows.wg_TransparencyActiveWindow, sizeof(currentPrefs.Windows.wg_TransparencyActiveWindow) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_InactiveWindowTransparency, &currentPrefs.Windows.wg_wTransparencyInactiveWindow, sizeof(currentPrefs.Windows.wg_wTransparencyInactiveWindow) );
 
-		SetPreferences(p_MyPrefsHandle, lID, SCP_TextModeFont, &currentPrefs.FileDisplay.fd_TextWindowFontDescr, 1 + strlen(currentPrefs.FileDisplay.fd_TextWindowFontDescr) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_UnderSoftLinkNames, &currentPrefs.FileDisplay.fd_bShowSoftLinks, sizeof(currentPrefs.FileDisplay.fd_bShowSoftLinks) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_TextModeFont, &currentPrefs.TextWindows.fd_TextWindowFontDescr, 1 + strlen(currentPrefs.TextWindows.fd_TextWindowFontDescr) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_UnderSoftLinkNames, &currentPrefs.TextWindows.fd_bShowSoftLinks, sizeof(currentPrefs.TextWindows.fd_bShowSoftLinks) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PopScreenTitle, &currentPrefs.Desktop.dg_bPopTitleBar, sizeof(currentPrefs.Desktop.dg_bPopTitleBar) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowEnable, &currentPrefs.Startup.sg_bShowSplash, sizeof(currentPrefs.Startup.sg_bShowSplash) );
@@ -1480,10 +1485,11 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		SetPreferences(p_MyPrefsHandle, lID, SCP_EnableDropMenu, &currentPrefs.DragNDrop.ddg_bEnableDropMenu, sizeof(currentPrefs.DragNDrop.ddg_bEnableDropMenu) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) );
 
-		SetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.FileDisplay.fd_bShowStripes, sizeof(currentPrefs.FileDisplay.fd_bShowStripes) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.FileDisplay.fd_SelectTextIconName, sizeof(currentPrefs.FileDisplay.fd_SelectTextIconName) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.FileDisplay.fd_SelectMarkerBaseColor, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerBaseColor) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.FileDisplay.fd_SelectMarkerTransparency, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerTransparency) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.TextWindows.fd_bShowStripes, sizeof(currentPrefs.TextWindows.fd_bShowStripes) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.TextWindows.fd_SelectTextIconName, sizeof(currentPrefs.TextWindows.fd_SelectTextIconName) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.TextWindows.fd_SelectMarkerBaseColor, sizeof(currentPrefs.TextWindows.fd_SelectMarkerBaseColor) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.TextWindows.fd_SelectMarkerTransparency, sizeof(currentPrefs.TextWindows.fd_SelectMarkerTransparency) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) );
 
 		WritePrefsHandle(p_MyPrefsHandle, PrefsFileName);
 
@@ -1517,7 +1523,7 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSelFrame, &currentPrefs.Icons.ig_wSelFrame, sizeof(currentPrefs.Icons.ig_wSelFrame) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconNormThumbnailFrame, &currentPrefs.Icons.ig_wNormThumbnailFrame, sizeof(currentPrefs.Icons.ig_wNormThumbnailFrame) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSelThumbnailFrame, &currentPrefs.Icons.ig_wSelThumbnailFrame, sizeof(currentPrefs.Icons.ig_wSelThumbnailFrame) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.FileDisplay.fd_wLabelStyle, sizeof(currentPrefs.FileDisplay.fd_wLabelStyle) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.TextWindows.fd_wLabelStyle, sizeof(currentPrefs.TextWindows.fd_wLabelStyle) );
 
 		d1(KPrintF(__FUNC__ "/%ld:  Icon offset  left=%ld  top=%ld  right=%ld  bottom=%ld\n", \
 			__FUNC__, __LINE__, currentPrefs.Icons.ig_IconOffsets.Left, currentPrefs.Icons.ig_IconOffsets.Top, \
@@ -1526,7 +1532,7 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSecLine, &currentPrefs.Icons.ig_wMultipleLines, sizeof(currentPrefs.Icons.ig_wMultipleLines) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &currentPrefs.Icons.ig_SizeConstraints, sizeof(currentPrefs.Icons.ig_SizeConstraints) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconHiliteUnderMouse, &currentPrefs.Icons.ig_HighlightUnderMouse, sizeof(currentPrefs.Icons.ig_HighlightUnderMouse) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.FileDisplay.fd_wTextSkip, sizeof(currentPrefs.FileDisplay.fd_wTextSkip) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnails, &currentPrefs.Icons.ig_ShowThumbnails, sizeof(currentPrefs.Icons.ig_ShowThumbnails) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailOffsets, &currentPrefs.Icons.ig_ThumbnailOffsets, sizeof(currentPrefs.Icons.ig_ThumbnailOffsets) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailsFillBackground, &currentPrefs.Icons.ig_ThumbnailsBackfill, sizeof(currentPrefs.Icons.ig_ThumbnailsBackfill) );
@@ -1647,8 +1653,8 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ActiveWindowTransparency, &currentPrefs.Windows.wg_TransparencyActiveWindow, sizeof(currentPrefs.Windows.wg_TransparencyActiveWindow) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_InactiveWindowTransparency, &currentPrefs.Windows.wg_wTransparencyInactiveWindow, sizeof(currentPrefs.Windows.wg_wTransparencyInactiveWindow) );
 
-		GetPreferences(p_MyPrefsHandle, lID, SCP_TextModeFont, &currentPrefs.FileDisplay.fd_TextWindowFontDescr, sizeof(currentPrefs.FileDisplay.fd_TextWindowFontDescr) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_UnderSoftLinkNames, &currentPrefs.FileDisplay.fd_bShowSoftLinks, sizeof(currentPrefs.FileDisplay.fd_bShowSoftLinks) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_TextModeFont, &currentPrefs.TextWindows.fd_TextWindowFontDescr, sizeof(currentPrefs.TextWindows.fd_TextWindowFontDescr) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_UnderSoftLinkNames, &currentPrefs.TextWindows.fd_bShowSoftLinks, sizeof(currentPrefs.TextWindows.fd_bShowSoftLinks) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PopScreenTitle, &currentPrefs.Desktop.dg_bPopTitleBar, sizeof(currentPrefs.Desktop.dg_bPopTitleBar) );
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowEnable, &currentPrefs.Startup.sg_bShowSplash, sizeof(currentPrefs.Startup.sg_bShowSplash) );
@@ -1669,10 +1675,11 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		GetPreferences(p_MyPrefsHandle, lID, SCP_EnableDropMenu, &currentPrefs.DragNDrop.ddg_bEnableDropMenu, sizeof(currentPrefs.DragNDrop.ddg_bEnableDropMenu) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) );
 
-		GetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.FileDisplay.fd_bShowStripes, sizeof(currentPrefs.FileDisplay.fd_bShowStripes) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.FileDisplay.fd_SelectTextIconName, sizeof(currentPrefs.FileDisplay.fd_SelectTextIconName) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.FileDisplay.fd_SelectMarkerBaseColor, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerBaseColor) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.FileDisplay.fd_SelectMarkerTransparency, sizeof(currentPrefs.FileDisplay.fd_SelectMarkerTransparency) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.TextWindows.fd_bShowStripes, sizeof(currentPrefs.TextWindows.fd_bShowStripes) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.TextWindows.fd_SelectTextIconName, sizeof(currentPrefs.TextWindows.fd_SelectTextIconName) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.TextWindows.fd_SelectMarkerBaseColor, sizeof(currentPrefs.TextWindows.fd_SelectMarkerBaseColor) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.TextWindows.fd_SelectMarkerTransparency, sizeof(currentPrefs.TextWindows.fd_SelectMarkerTransparency) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) );
 
 		FreePrefsHandle(p_MyPrefsHandle);
 		}
@@ -2044,7 +2051,7 @@ static void ReadTextModeColumns(APTR p_MyPrefsHandle, LONG lID)
 		BYTE *pu = (BYTE *) PS_DATA(ps);
 		short n = 0;
 
-		while (~0 != *pu && n < Sizeof(currentPrefs.FileDisplay.fd_lDisplayFields))
+		while (~0 != *pu && n < Sizeof(currentPrefs.TextWindows.fd_lDisplayFields))
 			{
 			BYTE col = *pu++;
 
@@ -2052,12 +2059,12 @@ static void ReadTextModeColumns(APTR p_MyPrefsHandle, LONG lID)
 
 			if (!(col & 0x80))
 				{
-				currentPrefs.FileDisplay.fd_lDisplayFields[n++] = col;
+				currentPrefs.TextWindows.fd_lDisplayFields[n++] = col;
 				d1(kprintf(__FILE__ "/%s/%ld: ColumnsArray[%ld]=%ld\n", __FUNC__, __LINE__, n-1, ColumnsArray[n-1]));
 				}
 			}
 
-		currentPrefs.FileDisplay.fd_lDisplayFields[n] = ~0;
+		currentPrefs.TextWindows.fd_lDisplayFields[n] = ~0;
 		}
 }
 
@@ -2065,7 +2072,7 @@ static void ReadTextModeColumns(APTR p_MyPrefsHandle, LONG lID)
 static void WriteTextModeColumns(APTR p_MyPrefsHandle, LONG lID)
 {
 	SetPreferences(p_MyPrefsHandle, lID, SCP_TextMode_ListColumns, 
-		currentPrefs.FileDisplay.fd_lDisplayFields, sizeof(currentPrefs.FileDisplay.fd_lDisplayFields));
+		currentPrefs.TextWindows.fd_lDisplayFields, sizeof(currentPrefs.TextWindows.fd_lDisplayFields));
 }
 
 
@@ -2168,11 +2175,11 @@ static void UpdateFileDisplayPrefsFromGUI(struct SCAModule *app)
 
 		if (entry)
 			{
-			currentPrefs.FileDisplay.fd_lDisplayFields[n] = entry->fdle_Index;
+			currentPrefs.TextWindows.fd_lDisplayFields[n] = entry->fdle_Index;
 			}
 		}
 
-	currentPrefs.FileDisplay.fd_lDisplayFields[n] = ~0;
+	currentPrefs.TextWindows.fd_lDisplayFields[n] = ~0;
 }
 
 

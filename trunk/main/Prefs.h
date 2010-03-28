@@ -32,6 +32,13 @@ enum vScalosPenIndex
 	// >>> !!! when doing changes here, don't forget to update PenNames.h """
 	};
 
+enum ScalosDrawerSortType
+	{
+	DRAWER_SORT_First,
+	DRAWER_SORT_Last,
+	DRAWER_SORT_Inbetween,
+	};
+
 struct ScalosFontPrefs
 	{
 	UBYTE fprf_FontFrontPen;				// Icon font foreground pen
@@ -258,6 +265,8 @@ struct ScalosPrefs
 	UBYTE pref_SelectMarkerTransparency;			// transparency for text window selection marker (0..255)
 
 	ULONG pref_MaxUndoSteps;				// maximum number of Undo/Redo steps
+
+	enum ScalosDrawerSortType pref_DrawerSortMode;		// where are drawers sorted in text windows (first/last/mixed)
 	};
 
 #endif /* SCALOSPREFS_H */

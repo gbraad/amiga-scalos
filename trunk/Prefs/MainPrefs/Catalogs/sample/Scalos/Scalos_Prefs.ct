@@ -2,7 +2,7 @@
 ; $Date$
 ; $Revision$
 
-## version $VER: Scalos_Prefs.catalog 40.23 (03 Oct 2008 18:16:49)
+## version $VER: Scalos_Prefs.catalog 40.28 (28 Mar 2010 19:20:49)
 ## codeset 0s
 ## language xxxxxx
 ;
@@ -2715,6 +2715,35 @@ Adjust degree of transparency for the interior\n\
 fill of the text window icon selection marker.
 ;Adjust degree of transparency for the interior\n\
 ;fill of the text window icon selection marker.
+;
+;+++translateme+++
+MSGID_TEXTWINDOWPAGE_DRAWERSORT_TOP
+Before files
+;Before files
+;
+;+++translateme+++
+MSGID_TEXTWINDOWPAGE_DRAWERSORT_BOTTOM
+After files
+;After files
+;
+;+++translateme+++
+MSGID_TEXTWINDOWPAGE_DRAWERSORT_MIXED
+With files
+;With files
+;
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_DRAWERSORT
+Drawer sorting
+;Drawer sorting
+;
+;+++translateme+++
+MSGID_TEXTWINDOWSPAGE_DRAWERSORT_SHORTHELP
+Select how drawers are sorted in text windows.\n\
+Drawers can be displayed always on top, always\n\
+on bottom, or mixed between files.
+;Select how drawers are sorted in text windows.\n\
+;Drawers can be displayed always on top, always\n\
+;on bottom, or mixed between files.
 ;
 ;-----------------------------------------------------------
 ;
