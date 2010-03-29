@@ -4535,9 +4535,13 @@ Object *CreatePrefsPage(struct SCAModule *app, Object *Page, struct NewPageListE
 		{
 		Object *nlistview;
 
+#if defined(MUIA_Scrollgroup_AutoBars)
 		result = ScrollgroupObject,
 			MUIA_Scrollgroup_AutoBars, TRUE,
 			MUIA_Scrollgroup_Contents, VGroupV,
+#else //MUIA_Scrollgroup_AutoBars
+		result = VGroupV,
+#endif //MUIA_Scrollgroup_AutoBars
 				MUIA_Group_VertSpacing, 0,
 				Child, nlistview = NListviewObject,
 						MUIA_VertWeight, 0,
@@ -4564,8 +4568,13 @@ Object *CreatePrefsPage(struct SCAModule *app, Object *Page, struct NewPageListE
 //						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_PREFGROUPS_SHORTHELP),
 					End, //NListviewObject
 				Child, Page,
+#if defined(MUIA_Scrollgroup_AutoBars)
 				End, //VGroupV
 			End; //ScrollgroupObject
+#else //defined(MUIA_Scrollgroup_AutoBars)
+			End; //VGroupV
+#endif //defined(MUIA_Scrollgroup_AutoBars)
+
 
 		if (result)
 			{
