@@ -2091,6 +2091,8 @@ Additions/changes:
 
 --------------------Scalos FileTypes Preferences----------------------------
 
+ 40.24	20100404	jl	- Improvement: added preview of menu icon images to listview.
+ 40.23				  (internal version only)
  40.22	20090511	jl	- Bugfix: icon is updated correctly when filetypes recognition
 				  list is sorted via drag-drop.
 				- Improvement: Search panel can now be unhidden via popup menu.
@@ -2150,6 +2152,7 @@ Additions/changes:
 
 --------------------Scalos Menu Preferences---------------------------------
 
+ 40.20	20100404	jl	- Improvement: added preview of menu icon images to listview.
  40.19	20100131	jl	- Improvement: redesigned layout for better overview.
 				- Improvement: added Workbench popup menu to
 				  default menu preferences.
