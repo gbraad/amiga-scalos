@@ -10,7 +10,11 @@ AS 		= phxAss
 LD		= slink
 CC 		= sc
 ECHO		= echo
-LIBS 		= LIB:sc.lib LIB:debug.lib LIB:mempools.lib LIB:amiga.lib
+LIBS 		= LIB:sc.lib \
+		LIB:debug.lib \
+		LIB:mempools.lib \
+		///SAS-lib/snprintf.lib \
+		LIB:amiga.lib
 LDFLAGS		= quiet batch noicons 
 PRECOMP 	= Include:all.gst
 OBJ_DIR		= .sasobj

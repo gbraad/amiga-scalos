@@ -3492,8 +3492,7 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 	while (mTree)
 		{
 		struct MenuInsertEntry mie;
-		struct MenuListEntry *mle = NULL;
-		struct MUI_NListtree_TreeNode *TreeNode = NULL;
+		struct MUI_NListtree_TreeNode *TreeNode;
 		ULONG MenuType = mTree->mtre_type;
 		ULONG Flags = 0;
 		ULONG pos;
@@ -3509,7 +3508,7 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 			d1(kprintf("%s/%s/%ld: Command name <%s>  ListNode=<%s>\n", \
 				__FILE__, __FUNC__, __LINE__, mTree->MenuCombo.MenuCommand.mcom_name, MenuNode->tn_Name));
 
-			TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
+			DoMethod(ListTree,
 				MUIM_NListtree_Insert, "", 
 				&mie,
 				MenuNode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
@@ -3534,13 +3533,15 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 					MUIM_NListtree_Insert, mTree->MenuCombo.MenuTree.mtre_name ? mTree->MenuCombo.MenuTree.mtre_name : (STRPTR) "", 
 					&mie,
 					MenuNode, MUIV_NListtree_Insert_PrevNode_Tail, Flags);
-
-				mle = (struct MenuListEntry *) TreeNode->tn_User;
 				}
 			else
 				{
+				TreeNode = NULL;
+
 				for (pos=0; ; pos++)
 					{
+					struct MenuListEntry *mle;
+
 					TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
 						MUIM_NListtree_GetEntry, NULL, pos, 0);
 
@@ -3559,8 +3560,6 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 						MUIM_NListtree_Insert, mTree->MenuCombo.MenuTree.mtre_name ? mTree->MenuCombo.MenuTree.mtre_name : (STRPTR) "", 
 						&mie,
 						MenuNode, MUIV_NListtree_Insert_PrevNode_Tail, Flags);
-
-					mle = (struct MenuListEntry *) TreeNode->tn_User;
 					}
 				}
 
