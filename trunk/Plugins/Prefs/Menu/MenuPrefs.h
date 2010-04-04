@@ -7,6 +7,8 @@
 #define	SCALOS_MENUPREFS_H
 
 #include <Scalos/menu.h>
+#include <stddef.h>
+#include <stdarg.h>
 
 
 #define	DEFAULT_STACKSIZE	16384	// default stack size for new menu command entries
@@ -187,6 +189,11 @@ struct MenuPrefsInst
 #ifndef	Sizeof
 #define	Sizeof(array)	(sizeof(array)/sizeof(array[0]))
 #endif
+
+#if defined(__SASC)
+int snprintf(char *, size_t, const char *, /*args*/ ...);
+int vsnprintf(char *, size_t, const char *, va_list ap);
+#endif /* __SASC */
 
 //----------------------------------------------------------------------------
 
