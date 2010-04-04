@@ -11,9 +11,6 @@
 #include <dos/dos.h>
 #include <exec/types.h>
 #include <exec/memory.h>
-#include <exec/ports.h>
-#include <exec/io.h>
-#include <exec/resident.h>
 #include <libraries/dos.h>
 #include <libraries/dosextens.h>
 #include <libraries/gadtools.h>
@@ -133,9 +130,18 @@ struct MenuListEntry
 	UBYTE llist_CommandFlags;
 	BYTE  llist_Priority;
 	ULONG llist_Stack;
+	Object *llist_UnSelImageObj;	// Popup menu image
+	ULONG llist_UnSelImageIndex;
 	char llist_name[MAX_LINESIZE];
 	char llist_UnselectedIconName[MAX_COMMANDNAME];
 	char llist_SelectedIconName[MAX_COMMANDNAME];
+	char llist_MenuItemName[MAX_NAMESIZE + 10];
+	};
+
+struct MenuInsertEntry
+	{
+	struct ScalosMenuTree *mie_TreeEntry;
+	ULONG mie_MenuFlags;
 	};
 
 // values in llist_Flags
@@ -281,8 +287,6 @@ static STRPTR AddMenuString(CONST_STRPTR MenuString, STRPTR *StringSpace);
 static void AddAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr);
 static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *mTree,
 	Object *ListTree, struct MUI_NListtree_TreeNode *MenuNode);
-static ULONG CombineEntryTypeAndFlags(UBYTE EntryType, UBYTE Flags);
-static void SplitCombinedUserData(ULONG UserData, UBYTE *EntryType, UBYTE *Flags);
 static BOOL RequestTdFile(struct MenuPrefsInst *inst, char *FileName, size_t MaxLen);
 static BOOL RequestParmFile(struct MenuPrefsInst *inst, char *FileName, size_t MaxLen);
 static BOOL CmpWord(CONST_STRPTR Cmd, CONST_STRPTR Line);
@@ -563,7 +567,7 @@ static const BOOL MayPasteIntoMatrix[ENTRYTYPE_MAX][ENTRYTYPE_MAX] =
 
 void closePlugin(struct PluginBase *PluginBase)
 {
-	d1(kprintf(__FUNC__ "/%ld: start\n", __LINE__));
+	d1(kprintf("%s/%s/%ld: start\n", __FILE__, __FUNC__, __LINE__));
 
 	if (DataTypesImageClass)
 		{
@@ -594,13 +598,13 @@ void closePlugin(struct PluginBase *PluginBase)
 
 	CloseLibraries();
 
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 #ifndef __amigaos4__
 	_STD_240_TerminateMemFunctions();
 #endif
 
-	d1(kprintf(__FUNC__ "/%ld: endt\n", __LINE__));
+	d1(kprintf("%s/%s//%ld: endt\n", __FILE__, __FUNC__, __LINE__));
 }
 
 
@@ -610,7 +614,7 @@ LIBFUNC_P2(ULONG, LIBSCAGetPrefsInfo,
 {
 	ULONG result;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: which=%ld\n", __LINE__, which));
+	d1(kprintf("%s/%s/%ld: which=%ld\n", __FILE__, __FUNC__, __LINE__, which));
 
 	(void) PluginBase;
 
@@ -633,7 +637,7 @@ LIBFUNC_P2(ULONG, LIBSCAGetPrefsInfo,
 		break;
 		}
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: result=%lu\n", __LINE__, result));
+	d1(kprintf("%s/%s/%ld: result=%lu\n", __FILE__, __FUNC__, __LINE__, result));
 
 	return result;
 }
@@ -650,7 +654,7 @@ DISPATCHER(MenuPrefs)
 		{
 	case OM_NEW:
 		obj = (Object *) DoSuperMethodA(cl, obj, msg);
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: OM_NEW obj=%08lx\n", __LINE__, obj));
+		d1(kprintf("%s/%s/%ld: OM_NEW obj=%08lx\n", __FILE__, __FUNC__, __LINE__, obj));
 		if (obj)
 			{
 			Object *prefsobject;
@@ -660,6 +664,7 @@ DISPATCHER(MenuPrefs)
 
 			memset(inst, 0, sizeof(struct MenuPrefsInst));
 
+			inst->mpb_TreeImageIndex = 0;
 			inst->mpb_Changed = FALSE;
 			inst->mpb_WBScreen = LockPubScreen("Workbench");
 
@@ -672,7 +677,7 @@ DISPATCHER(MenuPrefs)
 			inst->mpb_Objects[OBJNDX_APP_Main] = (APTR) GetTagData(MUIA_ScalosPrefs_Application, (ULONG) NULL, ops->ops_AttrList);
 
 			prefsobject = CreatePrefsGroup(inst);
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: prefsobject=%08lx\n", __LINE__, prefsobject));
+			d1(kprintf("%s/%s/%ld: prefsobject=%08lx\n", __FILE__, __FUNC__, __LINE__, prefsobject));
 			if (prefsobject)
 				{
 				DoMethod(obj, OM_ADDMEMBER, prefsobject);
@@ -688,7 +693,7 @@ DISPATCHER(MenuPrefs)
 
 	case OM_DISPOSE:
 		inst = (struct MenuPrefsInst *) INST_DATA(cl, obj);
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: OM_DISPOSE obj=%08lx\n", __LINE__, obj));
+		d1(kprintf("%s/%s/%ld: OM_DISPOSE obj=%08lx\n", __FILE__, __FUNC__, __LINE__, obj));
 		if (inst->mpb_WBScreen)
 			{
 			UnlockPubScreen(NULL, inst->mpb_WBScreen);
@@ -821,7 +826,7 @@ DISPATCHER(MenuPrefs)
 		{
 		struct MUIP_ScalosPrefs_PageActive *spa = (struct MUIP_ScalosPrefs_PageActive *) msg;
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: MUIM_ScalosPrefs_PageActive  isActive=%08lx\n", __LINE__, spa->isActive));
+		d1(kprintf("%s/%s/%ld: MUIM_ScalosPrefs_PageActive  isActive=%08lx\n", __FILE__, __FUNC__, __LINE__, spa->isActive));
 		inst = (struct MenuPrefsInst *) INST_DATA(cl, obj);
 		inst->mpb_PageIsActive = spa->isActive;
 		}
@@ -886,7 +891,7 @@ DISPATCHER(MenuPrefs)
 		break;
 
 	default:
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: MethodID=%08lx\n", __LINE__, msg->MethodID));
+		d1(kprintf("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
 		result = DoSuperMethodA(cl, obj, msg);
 		break;
 		}
@@ -899,7 +904,7 @@ DISPATCHER_END
 
 static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 {
-	d1(kprintf(__FUNC__ "/%ld:  inst=%08lx\n", __LINE__, inst));
+	d1(kprintf("%s/%s//%ld:  inst=%08lx\n", __FILE__, __FUNC__, __LINE__, inst));
 
 	inst->mpb_Objects[OBJNDX_ContextMenu] = MUI_MakeObject(MUIO_MenustripNM, ContextMenus, 0);
 
@@ -1157,7 +1162,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 	if (NULL == inst->mpb_Objects[OBJNDX_Group_Main])
 		return NULL;
 
-	d1(kprintf(__FUNC__ "/%ld:  ContextMenu=%08lx\n", __LINE__, inst->mpb_Objects[OBJNDX_ContextMenu]));
+	d1(kprintf("%s/%s//%ld:  ContextMenu=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->mpb_Objects[OBJNDX_ContextMenu]));
 
 	set(inst->mpb_Objects[OBJNDX_Menu_HideObsolete], MUIA_Menuitem_Checked, inst->mpb_HideObsoletePopupMenus);
 
@@ -1217,12 +1222,12 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 	DoMethod(inst->mpb_Objects[OBJNDX_Group_Main], MUIM_Notify, MUIA_AppMessage, MUIV_EveryTime,
 		inst->mpb_Objects[OBJNDX_Group_Main], 3, MUIM_CallHook, &inst->mpb_Hooks[HOOKNDX_AppMessage], MUIV_TriggerValue);
 
-	d1(KPrintF(__FUNC__ "/%ld: mpb_HideObsoletePopupMenus=%ld\n", __LINE__, inst->mpb_HideObsoletePopupMenus));
+	d1(KPrintF("%s/%s//%ld: mpb_HideObsoletePopupMenus=%ld\n", __FILE__, __FUNC__, __LINE__, inst->mpb_HideObsoletePopupMenus));
 
 	InsertMenuRootEntries(inst);
 
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
-	d1(kprintf(__FUNC__ "/%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __LINE__, LocaleBase, IFFParseBase));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s//%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __FILE__, __FUNC__, __LINE__, LocaleBase, IFFParseBase));
 
 	return inst->mpb_Objects[OBJNDX_Group_Main];
 }
@@ -1230,7 +1235,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 
 static BOOL OpenLibraries(void)
 {
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	DOSBase = (APTR) OpenLibrary( "dos.library", 39 );
 	if (NULL == DOSBase)
@@ -1321,7 +1326,7 @@ static BOOL OpenLibraries(void)
 		ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
 #endif
 
-	d1(kprintf(__FUNC__ "/%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __LINE__, LocaleBase, IFFParseBase));
+	d1(kprintf("%s/%s//%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __FILE__, __FUNC__, __LINE__, LocaleBase, IFFParseBase));
 
 	return TRUE;
 }
@@ -1329,7 +1334,7 @@ static BOOL OpenLibraries(void)
 
 static void CloseLibraries(void)
 {
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 #ifdef __amigaos4__
 	if (ILocale)
@@ -1595,39 +1600,78 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 {
 	struct MenuListEntry *mle = AllocPooled(ltcm->MemPool, sizeof(struct MenuListEntry));
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: obj=%08lx  ltcm=%08lx  memPool=%08lx  UserData=%08lx\n", \
-		__LINE__, obj, ltcm, ltcm->MemPool, ltcm->UserData));
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: mle=%08lx\n", __LINE__, mle));
+	d1(kprintf("%s/%s/%ld: obj=%08lx  ltcm=%08lx  memPool=%08lx  UserData=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, obj, ltcm, ltcm->MemPool, ltcm->UserData));
+	d1(kprintf("%s/%s/%ld: mle=%08lx\n", __FILE__, __FUNC__, __LINE__, mle));
 
 	if (mle)
 		{
-		UBYTE EntryType;
-		UBYTE Flags;
-
-		SplitCombinedUserData((ULONG) ltcm->UserData, &EntryType, &Flags);
+		const struct MenuInsertEntry *mie = (const struct MenuInsertEntry *) ltcm->UserData;
+		struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 
 		if (ltcm->Name)
 			stccpy(mle->llist_name, ltcm->Name, sizeof(mle->llist_name));
 		else
 			strcpy(mle->llist_name, "");
 
-		strcpy(mle->llist_SelectedIconName, "");
-		strcpy(mle->llist_UnselectedIconName, "");
+		d1(KPrintF("%s/%s/%ld: llist_name=<%s>  mtre_type=%ld\n", __FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->mtre_type));
+
+		d1(KPrintF("%s/%s/%ld: mtre_iconnames=%08lx\n", __FILE__, __FUNC__, __LINE__, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames));
+		if ((mie->mie_TreeEntry->mtre_flags & MTREFLGF_IconNames) &&
+			mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames)
+			{
+			stccpy(mle->llist_UnselectedIconName, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames,
+				sizeof(mle->llist_UnselectedIconName));
+			stccpy(mle->llist_SelectedIconName,
+				mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames + 1 + strlen(mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_iconnames),
+				sizeof(mle->llist_SelectedIconName));
+
+			d1(KPrintF("%s/%s/%ld: llist_UnselectedIconName=<%s>  llist_SelectedIconName=<%s>\n", __FILE__, __FUNC__, __LINE__, mle->llist_UnselectedIconName, mle->llist_SelectedIconName));
+
+			mle->llist_UnSelImageIndex = ++inst->mpb_TreeImageIndex;
+
+			mle->llist_UnSelImageObj = NewObject(DataTypesImageClass->mcc_Class, 0,
+				MUIA_ScaDtpic_Name,  (ULONG) mle->llist_UnselectedIconName,
+				End;
+
+			d1(KPrintF("%s/%s/%ld: llist_UnSelImageObj=%08lx\n", __FILE__, __FUNC__, __LINE__, mle->llist_UnSelImageObj));
+
+			DoMethod(obj, MUIM_NList_UseImage, mle->llist_UnSelImageObj, mle->llist_UnSelImageIndex, 0);
+			}
+		else
+			{
+			mle->llist_UnSelImageIndex = 0;
+			strcpy(mle->llist_UnselectedIconName, "");
+			strcpy(mle->llist_SelectedIconName, "");
+			}
 
 		ltcm->UserData = mle;
 		ltcm->Name = mle->llist_name;
+		mle->llist_EntryType = mie->mie_TreeEntry->mtre_type;
+		mle->llist_Flags = mie->mie_MenuFlags;
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: EntryName=<%s> Flags=%02lx  EntryType=%ld\n", \
-			__LINE__, ltcm->Name, Flags, EntryType));
+		d1(kprintf("%s/%s/%ld: EntryName=<%s> mie_MenuFlags=%02lx  EntryType=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, ltcm->Name, mie->mie_MenuFlags, mie->mie_TreeEntry->mtre_type));
 
-		if (SCAMENUTYPE_Command == EntryType)
+		d1(kprintf("%s/%s/%ld: llist_HotKey=%08lx  mtre_hotkey=%08lx\n", \
+			__FILE__, __FUNC__, __LINE__, mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey));
+
+		stccpy(mle->llist_HotKey, mie->mie_TreeEntry->MenuCombo.MenuTree.mtre_hotkey, sizeof(mle->llist_HotKey));
+
+		if (SCAMENUTYPE_Command == mle->llist_EntryType)
 			{
-			mle->llist_Stack = DEFAULT_STACKSIZE;
-			}
+			d1(kprintf("%s/%s/%ld: llist_name=%08lx  mcom_name=%08lx\n", \
+				__FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name));
 
-		mle->llist_Priority = 0;
-		mle->llist_Flags = Flags;
-		mle->llist_EntryType = EntryType;
+			stccpy(mle->llist_name,
+				mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name,
+				sizeof(mle->llist_name));
+
+			mle->llist_Priority = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_pri;
+			mle->llist_CommandType = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_type;
+			mle->llist_CommandFlags = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_flags;
+			mle->llist_Stack = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_stack;
+			}
 		}
 
 	return mle;
@@ -1635,9 +1679,22 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 
 static SAVEDS(void) INTERRUPT TreeDestructFunc(struct Hook *hook, APTR obj, struct MUIP_NListtree_DestructMessage *ltdm)
 {
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: mle=%08lx\n", __LINE__, ltdm->UserData));
+	struct MenuListEntry *mle = (struct MenuListEntry *) ltdm->UserData;
 
-	FreePooled(ltdm->MemPool, ltdm->UserData, sizeof(struct MenuListEntry));
+	d1(kprintf("%s/%s/%ld: mle=%08lx\n", __FILE__, __FUNC__, __LINE__, mle));
+
+	if (mle)
+		{
+		if (mle->llist_UnSelImageObj)
+			{
+			DoMethod(obj, MUIM_NList_UseImage, NULL, mle->llist_UnSelImageIndex, 0);
+
+			MUI_DisposeObject(mle->llist_UnSelImageObj);
+			mle->llist_UnSelImageObj = NULL;
+			}
+		FreePooled(ltdm->MemPool, mle, sizeof(struct MenuListEntry));
+		}
+
 	ltdm->UserData = NULL;
 }
 
@@ -1653,14 +1710,14 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 		};
 	struct MenuListEntry *mle = (struct MenuListEntry *) ltdm->TreeNode->tn_User;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: mle=%08lx\n", __LINE__, mle));
+	d1(kprintf("%s/%s/%ld: mle=%08lx\n", __FILE__, __FUNC__, __LINE__, mle));
 
 	if (mle)
 		{
 		ltdm->Preparse[0] = (STRPTR) EntryTypeNames[mle->llist_EntryType];
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: EntryName=<%s>  commandType=%ld\n", \
-			__LINE__, mle->llist_name, mle->llist_CommandType));
+		d1(kprintf("%s/%s/%ld: EntryName=<%s>  commandType=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, mle->llist_name, mle->llist_CommandType));
 
 		switch (mle->llist_EntryType)
 			{
@@ -1672,7 +1729,19 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 			if (0 == strlen(ltdm->TreeNode->tn_Name))
 				ltdm->Array[0] = GetLocString(MSGID_BARNAME);
 			else
-				ltdm->Array[0] = ltdm->TreeNode->tn_Name;
+				{
+				if (mle->llist_UnSelImageObj)
+					{
+					snprintf(mle->llist_MenuItemName, sizeof(mle->llist_MenuItemName),
+						"\33o[%ld]%s",
+						mle->llist_UnSelImageIndex, ltdm->TreeNode->tn_Name);
+					ltdm->Array[0] = mle->llist_MenuItemName;
+					}
+				else
+					{
+					ltdm->Array[0] = ltdm->TreeNode->tn_Name;
+					}
+				}
 			ltdm->Array[1] = mle->llist_HotKey;
 			break;
 		default:
@@ -1759,24 +1828,24 @@ static SAVEDS(APTR) INTERRUPT ResetToDefaultsHookFunc(struct Hook *hook, Object 
 {
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 
-	d1(KPrintF(__FUNC__ "/%ld: START\n", __LINE__));
+	d1(KPrintF("%s/%s//%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Quiet, TRUE);
 	set(inst->mpb_Objects[OBJNDX_HiddenListTree], MUIA_NListtree_Quiet, TRUE);
-	d1(KPrintF(__FUNC__ "/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s//%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	// Remove main menu contents
 	ClearMenuList(inst);
-	d1(KPrintF(__FUNC__ "/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s//%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	set(inst->mpb_MainMenuNode.mpn_Listtree,
 		MUIA_NListtree_Active, (ULONG) inst->mpb_MainMenuNode.mpn_ListNode);
 
-	d1(KPrintF(__FUNC__ "/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s//%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	AddDefaultMenuContents(inst);
 
-	d1(KPrintF(__FUNC__ "/%ld: \n", __LINE__));
+	d1(KPrintF("%s/%s//%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], MUIM_NListtree_Close,
 		MUIV_NListtree_Close_ListNode_Root, MUIV_NListtree_Close_TreeNode_All, 0);
@@ -1784,7 +1853,7 @@ static SAVEDS(APTR) INTERRUPT ResetToDefaultsHookFunc(struct Hook *hook, Object 
 	set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Quiet, FALSE);
 	set(inst->mpb_Objects[OBJNDX_HiddenListTree], MUIA_NListtree_Quiet, FALSE);
 
-	d1(KPrintF(__FUNC__ "/%ld: END\n", __LINE__));
+	d1(KPrintF("%s/%s//%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }
@@ -2152,7 +2221,7 @@ static SAVEDS(APTR) INTERRUPT ChangeUnselectedImageHookFunc(struct Hook *hook, O
 	if (inst->mpb_QuietFlag)
 		return 0;
 
-	TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+	TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(o,
 		MUIM_NListtree_GetEntry,
 		MUIV_NListtree_GetEntry_ListNode_Active,
 		MUIV_NListtree_GetEntry_Position_Active, 0);
@@ -2166,7 +2235,25 @@ static SAVEDS(APTR) INTERRUPT ChangeUnselectedImageHookFunc(struct Hook *hook, O
 		stccpy(mle->llist_UnselectedIconName, NewImage, sizeof(mle->llist_UnselectedIconName));
 		set(inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage], MUIA_ScaDtpic_Name, (ULONG) mle->llist_UnselectedIconName);
 
-		DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		if (mle->llist_UnSelImageObj)
+			{
+			MUI_DisposeObject(mle->llist_UnSelImageObj);
+			mle->llist_UnSelImageObj = NULL;
+
+			DoMethod(o, MUIM_NList_UseImage, mle->llist_UnSelImageObj, mle->llist_UnSelImageIndex, 0);
+			}
+		if (0 == mle->llist_UnSelImageIndex)
+			mle->llist_UnSelImageIndex = ++inst->mpb_TreeImageIndex;
+
+		if (strlen(mle->llist_UnselectedIconName) > 0)
+			{
+			mle->llist_UnSelImageObj = NewObject(DataTypesImageClass->mcc_Class, 0,
+				MUIA_ScaDtpic_Name,  (ULONG) mle->llist_UnselectedIconName,
+				End;
+			DoMethod(o, MUIM_NList_UseImage, mle->llist_UnSelImageObj, mle->llist_UnSelImageIndex, 0);
+			}
+
+		DoMethod(o,
 			MUIM_NListtree_Redraw,
 			TreeNode,
 			0);
@@ -2185,7 +2272,7 @@ static SAVEDS(APTR) INTERRUPT ChangeSelectedImageHookFunc(struct Hook *hook, Obj
 	if (inst->mpb_QuietFlag)
 		return 0;
 
-	TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+	TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(o,
 		MUIM_NListtree_GetEntry,
 		MUIV_NListtree_GetEntry_ListNode_Active,
 		MUIV_NListtree_GetEntry_Position_Active, 0);
@@ -2199,7 +2286,7 @@ static SAVEDS(APTR) INTERRUPT ChangeSelectedImageHookFunc(struct Hook *hook, Obj
 		stccpy(mle->llist_SelectedIconName, NewImage, sizeof(mle->llist_SelectedIconName));
 		set(inst->mpb_Objects[OBJNDX_DtImage_SelectedImage], MUIA_ScaDtpic_Name, (ULONG) mle->llist_SelectedIconName);
 
-		DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
+		DoMethod(o,
 			MUIM_NListtree_Redraw,
 			TreeNode,
 			0);
@@ -2242,8 +2329,8 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 				Count < MaxCount &&
 				menuType < MENUENTRY_SubItem;
 
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: menuType=%lu  EntryCount=%lu  MaxCount=%lu\n", \
-				__LINE__, menuType, Count, MaxCount));
+			d1(kprintf("%s/%s/%ld: menuType=%lu  EntryCount=%lu  MaxCount=%lu\n", \
+				__FILE__, __FUNC__, __LINE__, menuType, Count, MaxCount));
 
 			MayAddNewItem = ((SCAMENUTYPE_MainMenu != mle->llist_EntryType) || (mle->llist_Flags & LLISTFLGF_PopupMenu)) &&
 				Count < MaxCount &&
@@ -2286,7 +2373,7 @@ static SAVEDS(APTR) INTERRUPT SelectEntryHookFunc(struct Hook *hook, Object *o, 
 				set(inst->mpb_Objects[OBJNDX_Menu_Cut], MUIA_Menuitem_Enabled, TRUE);
 				}
 
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: tn_Name=%08lx\n", __LINE__, TreeNode->tn_Name));
+			d1(kprintf("%s/%s/%ld: tn_Name=%08lx\n", __FILE__, __FUNC__, __LINE__, TreeNode->tn_Name));
 
 			set(inst->mpb_Objects[OBJNDX_NameString], MUIA_String_Contents, (ULONG) TreeNode->tn_Name);
 			set(inst->mpb_Objects[OBJNDX_StringHotkey], MUIA_String_Contents, (ULONG) mle->llist_HotKey);
@@ -2442,8 +2529,8 @@ static SAVEDS(APTR) INTERRUPT PopButtonHookFunc(struct Hook *hook, Object *o, Ms
 		p = PathPart(path);
 		*p = '\0';
 
-		d1(kprintf(__FUNC__ "/%ld:  InitialFile=<%s>  InitialDrawer=<%s>\n", __LINE__, FileName, path));
-		d1(kprintf(__FUNC__ "/%ld:  DrawersOnly=%ld\n", __LINE__, drawersOnly));
+		d1(kprintf("%s/%s//%ld:  InitialFile=<%s>  InitialDrawer=<%s>\n", __FILE__, __FUNC__, __LINE__, FileName, path));
+		d1(kprintf("%s/%s//%ld:  DrawersOnly=%ld\n", __FILE__, __FUNC__, __LINE__, drawersOnly));
 
 		Result = MUI_AslRequestTags(Req,
 			ASLFR_TitleText, GetLocString(MSGID_MENU_PROJECT_SAVEAS),
@@ -2462,14 +2549,14 @@ static SAVEDS(APTR) INTERRUPT PopButtonHookFunc(struct Hook *hook, Object *o, Ms
 
 			SetChangedFlag(inst, TRUE);
 
-			d1(kprintf(__FUNC__ "/%ld:  fr_Drawer=<%s>  fr_File=<%s>\n", __LINE__, Req->fr_Drawer, Req->fr_File));
+			d1(kprintf("%s/%s//%ld:  fr_Drawer=<%s>  fr_File=<%s>\n", __FILE__, __FUNC__, __LINE__, Req->fr_Drawer, Req->fr_File));
 
 			stccpy(FileName, Req->fr_Drawer, sizeof(FileName));
 
 			if (!drawersOnly)
 				AddPart(FileName, Req->fr_File, sizeof(FileName));
 
-			d1(kprintf(__FUNC__ "/%ld:  FileName=<%s>\n", __LINE__, FileName));
+			d1(kprintf("%s/%s//%ld:  FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, FileName));
 
 			set(inst->mpb_Objects[OBJNDX_StringCmd], MUIA_String_Contents, (ULONG) FileName);
 			stccpy(mle->llist_name, FileName, sizeof(mle->llist_name));
@@ -2505,6 +2592,13 @@ static SAVEDS(APTR) INTERRUPT AddMenuHookFunc(struct Hook *hook, Object *o, Msg 
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *ParentNode;
 	struct MUI_NListtree_TreeNode *PrevNode;
+	struct MenuInsertEntry mie;
+	struct ScalosMenuTree mTree;
+
+	memset(&mTree, 0, sizeof(mTree));
+	mTree.mtre_type = SCAMENUTYPE_Menu;
+	mie.mie_TreeEntry = &mTree;
+	mie.mie_MenuFlags = 0;
 
 	SetChangedFlag(inst, TRUE);
 
@@ -2512,7 +2606,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuHookFunc(struct Hook *hook, Object *o, Msg 
 
 	DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 		MUIM_NListtree_Insert, GetLocString(MSGID_NEW_MENU),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_Menu, 0), 
+		&mie,
 		ParentNode, PrevNode, MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST);
 
 	// try to activate menu name string gadget
@@ -2537,6 +2631,13 @@ static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, M
 	if (TreeNode)
 		{
 		struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
+		struct MenuInsertEntry mie;
+		struct ScalosMenuTree mTree;
+
+		memset(&mTree, 0, sizeof(mTree));
+		mTree.mtre_type = SCAMENUTYPE_Command;
+		mie.mie_TreeEntry = &mTree;
+		mie.mie_MenuFlags = 0;
 
 		switch (mle->llist_EntryType)
 			{
@@ -2548,7 +2649,7 @@ static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, M
 		case SCAMENUTYPE_MenuItem:
 			DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 				MUIM_NListtree_Insert, "", 
-				CombineEntryTypeAndFlags(SCAMENUTYPE_Command, 0),
+				&mie,
 				TreeNode, MUIV_NListtree_Insert_PrevNode_Tail, 
 				MUIV_NListtree_Insert_Flag_Active);
 
@@ -2566,7 +2667,7 @@ static SAVEDS(APTR) INTERRUPT AddCommandHookFunc(struct Hook *hook, Object *o, M
 
 			DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 				MUIM_NListtree_Insert, "", 
-				CombineEntryTypeAndFlags(SCAMENUTYPE_Command, 0),
+				&mie,
 				TreeNode, ParentNode, 
 				MUIV_NListtree_Insert_Flag_Active);
 
@@ -2594,10 +2695,17 @@ static SAVEDS(APTR) INTERRUPT AddMenuItemHookFunc(struct Hook *hook, Object *o, 
 	if (ParentNode)
 		{
 		struct MUI_NListtree_TreeNode *newNode;
+		struct MenuInsertEntry mie;
+		struct ScalosMenuTree mTree;
+
+		memset(&mTree, 0, sizeof(mTree));
+		mTree.mtre_type = SCAMENUTYPE_MenuItem;
+		mie.mie_TreeEntry = &mTree;
+		mie.mie_MenuFlags = 0;
 
 		newNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 			MUIM_NListtree_Insert, GetLocString(MSGID_NEW_ITEM),
-			CombineEntryTypeAndFlags(SCAMENUTYPE_MenuItem, 0),
+			&mie,
 			ParentNode, PrevNode, 
 			MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST);
 
@@ -2608,7 +2716,7 @@ static SAVEDS(APTR) INTERRUPT AddMenuItemHookFunc(struct Hook *hook, Object *o, 
 		set(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject,
 			(ULONG) inst->mpb_Objects[OBJNDX_NameString]);
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Node Count=%ld\n", __LINE__, Count));
+		d1(kprintf("%s/%s/%ld: Node Count=%ld\n", __FILE__, __FUNC__, __LINE__, Count));
 		}
 
 	return 0;
@@ -2638,7 +2746,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 
 	set(inst->mpb_Objects[OBJNDX_MainListView], MUIA_NListtree_Quiet, TRUE);
 
-	d1(kprintf(__FUNC__ "/%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __LINE__, LocaleBase, IFFParseBase));
+	d1(kprintf("%s/%s//%ld:  LocaleBase=%08lx  IFFParseBase=%08lx\n", __FILE__, __FUNC__, __LINE__, LocaleBase, IFFParseBase));
 
 	do	{
 		iff = AllocIFF();
@@ -2672,13 +2780,13 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 			struct ContextNode *cn;
 
 			Result = ParseIFF(iff, IFFPARSE_SCAN);
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Result=%ld\n", __LINE__, Result));
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			if (RETURN_OK != Result)
 				break;
 
 			cn = CurrentChunk(iff);
 
-			d1(kprintf(__FUNC__ "/%ld:  cn=%08lx\n", __LINE__, cn));
+			d1(kprintf("%s/%s//%ld:  cn=%08lx\n", __FILE__, __FUNC__, __LINE__, cn));
 			if (NULL == cn)
 				break;
 
@@ -2688,7 +2796,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 
 				menuChunk = malloc(cn->cn_Size);
 
-				d1(kprintf(__FUNC__ "/%ld:  menuChunk=%08lx\n", __LINE__, menuChunk));
+				d1(kprintf("%s/%s//%ld:  menuChunk=%08lx\n", __FILE__, __FUNC__, __LINE__, menuChunk));
 				if (NULL == menuChunk)
 					break;
 
@@ -2696,8 +2804,8 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 				if (Actual != cn->cn_Size)
 					break;
 
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: MenuID=%ld  Entries=%ld\n", \
-					__LINE__, menuChunk->smch_MenuID, menuChunk->smch_Entries));
+				d1(kprintf("%s/%s/%ld: MenuID=%ld  Entries=%ld\n", \
+					__FILE__, __FUNC__, __LINE__, menuChunk->smch_MenuID, menuChunk->smch_Entries));
 
 				AddAddresses(menuChunk->smch_Menu, (UBYTE *) menuChunk);
 
@@ -2750,7 +2858,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 				}
 			}
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Result=%ld\n", __LINE__, Result));
+		d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 		if (IFFERR_EOF == Result)
 			Result = RETURN_OK;
 		} while (0);
@@ -2787,7 +2895,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 
 //	DoMethod(ScalosPenList, MUIM_NList_Redraw, MUIV_NList_Redraw_All);
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Result=%ld\n", __LINE__, Result));
+	d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }
@@ -2818,7 +2926,7 @@ static LONG WritePrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename)
 			STRPTR FilenameCopy;
 
 			Result = IoErr();
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Result=%ld\n", __LINE__, Result));
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 			FilenameCopy = AllocVec(1 + strlen(Filename), MEMF_PUBLIC);
 
@@ -2849,7 +2957,7 @@ static LONG WritePrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename)
 				FreeVec(FilenameCopy);
 				}
 
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Result=%ld\n", __LINE__, Result));
+			d1(kprintf("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			if (RETURN_OK != Result)
 				break;
 			}
@@ -2996,15 +3104,15 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 			break;
 			}
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: mChunk=%08lx  Length=%lu\n", __LINE__, mChunk, Length));
+		d1(kprintf("%s/%s/%ld: mChunk=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, mChunk, Length));
 
 		StringSpace = (STRPTR) &mChunk->smch_Menu[nodeCount];
 
 		mChunk->smch_MenuID = ChunkID;
 		mChunk->smch_Entries = nodeCount;
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: ChunkID=%ld  Count=%ld  StringSpaceSize=%lu\n", \
-			__LINE__, mChunk->smch_MenuID, mChunk->smch_Entries, StringSpaceSize));
+		d1(kprintf("%s/%s/%ld: ChunkID=%ld  Count=%ld  StringSpaceSize=%lu\n", \
+			__FILE__, __FUNC__, __LINE__, mChunk->smch_MenuID, mChunk->smch_Entries, StringSpaceSize));
 
 		MenuTreeSpace = mChunk->smch_Menu;
 
@@ -3046,8 +3154,8 @@ static UWORD CountMenuEntries(struct MenuPrefsInst *inst, Object *ListTree,
 		const struct MUI_NListtree_TreeNode *SubNode;
 		const struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: TreeNode=%08lx  <%s>\n", \
-			__LINE__, TreeNode, TreeNode->tn_Name));
+		d1(kprintf("%s/%s/%ld: TreeNode=%08lx  <%s>\n", \
+			__FILE__, __FUNC__, __LINE__, TreeNode, TreeNode->tn_Name));
 
 		Count++;
 
@@ -3090,8 +3198,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 		const struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
 		STRPTR MenuName;
 
-		d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: TreeNode=%08lx  <%s>  mTree=%08lx\n", \
-			__LINE__, TreeNode, TreeNode->tn_Name ? TreeNode->tn_Name : (STRPTR) "===BAR===", mTree));
+		d1(KPrintF("%s/%s/%ld: TreeNode=%08lx  <%s>  mTree=%08lx\n", \
+			__FILE__, __FUNC__, __LINE__, TreeNode, TreeNode->tn_Name ? TreeNode->tn_Name : (STRPTR) "===BAR===", mTree));
 
 		if (Parent)
 			*Parent = mTree;
@@ -3140,8 +3248,8 @@ static LONG BuildMenuTree(struct MenuPrefsInst *inst, Object *ListTree,
 				mTree->mtre_flags &= ~MTREFLGF_IconNames;
 				}
 
-			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
-				__LINE__, mTree->MenuCombo.MenuTree.mtre_name, \
+			d1(KPrintF("%s/%s/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
+				__FILE__, __FUNC__, __LINE__, mTree->MenuCombo.MenuTree.mtre_name, \
 				mTree->mtre_flags, mTree->MenuCombo.MenuTree.mtre_iconnames));
 
 			stccpy(mTree->MenuCombo.MenuTree.mtre_hotkey, mle->llist_HotKey, 
@@ -3202,8 +3310,8 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 			if ((MenuTree->mtre_flags & MTREFLGF_IconNames) && MenuTree->MenuCombo.MenuTree.mtre_iconnames)
 				MenuTree->MenuCombo.MenuTree.mtre_iconnames -= (ULONG) BaseAddr;
 
-			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
-				__LINE__, MenuTree->MenuCombo.MenuTree.mtre_name, \
+			d1(KPrintF("%s/%s/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
+				__FILE__, __FUNC__, __LINE__, MenuTree->MenuCombo.MenuTree.mtre_name, \
                                 MenuTree->mtre_flags, MenuTree->MenuCombo.MenuTree.mtre_iconnames));
 			}
 		if (MenuTree->mtre_tree)
@@ -3357,11 +3465,11 @@ static void AddAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
 			else
 				MenuTree->MenuCombo.MenuTree.mtre_iconnames = NULL;
 
-			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
-				__LINE__, MenuTree->MenuCombo.MenuTree.mtre_name, \
+			d1(KPrintF("%s/%s/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
+				__FILE__, __FUNC__, __LINE__, MenuTree->MenuCombo.MenuTree.mtre_name, \
 				MenuTree->mtre_flags, MenuTree->MenuCombo.MenuTree.mtre_iconnames));
-			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: mtre_iconnames=<%s>\n", \
-				__LINE__, MenuTree->MenuCombo.MenuTree.mtre_iconnames \
+			d1(KPrintF("%s/%s/%ld: mtre_iconnames=<%s>\n", \
+				__FILE__, __FUNC__, __LINE__, MenuTree->MenuCombo.MenuTree.mtre_iconnames \
 				? MenuTree->MenuCombo.MenuTree.mtre_iconnames : (STRPTR) ""));
 			}
 		if (MenuTree->mtre_tree)
@@ -3383,50 +3491,36 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 {
 	while (mTree)
 		{
+		struct MenuInsertEntry mie;
 		struct MenuListEntry *mle = NULL;
 		struct MUI_NListtree_TreeNode *TreeNode = NULL;
 		ULONG MenuType = mTree->mtre_type;
-		ULONG MenuFlags = 0;
 		ULONG Flags = 0;
 		ULONG pos;
 
-		d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: mTree=%08lx  Type=%ld\n", __LINE__, mTree, MenuType));
+		mie.mie_TreeEntry = mTree;
+		mie.mie_MenuFlags = 0;
+
+		d1(KPrintF("%s/%s/%ld: mTree=%08lx  Type=%ld\n", __FILE__, __FUNC__, __LINE__, mTree, MenuType));
 
 		switch (MenuType)
 			{
 		case SCAMENUTYPE_Command:
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Command name <%s>  ListNode=<%s>\n", \
-				__LINE__, mTree->MenuCombo.MenuCommand.mcom_name, MenuNode->tn_Name));
+			d1(kprintf("%s/%s/%ld: Command name <%s>  ListNode=<%s>\n", \
+				__FILE__, __FUNC__, __LINE__, mTree->MenuCombo.MenuCommand.mcom_name, MenuNode->tn_Name));
 
 			TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
 				MUIM_NListtree_Insert, "", 
-				CombineEntryTypeAndFlags(SCAMENUTYPE_Command, MenuFlags), 
+				&mie,
 				MenuNode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-
-			if (TreeNode)
-				{
-				struct MenuListEntry *mle = (struct MenuListEntry *) TreeNode->tn_User;
-
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: llist_name=%08lx  mcom_name=%08lx\n", \
-					__LINE__, mle->llist_name, mTree->MenuCombo.MenuCommand.mcom_name));
-
-				stccpy(mle->llist_name,
-					mTree->MenuCombo.MenuCommand.mcom_name, 
-					sizeof(mle->llist_name));
-
-				mle->llist_CommandType = mTree->MenuCombo.MenuCommand.mcom_type;
-				mle->llist_CommandFlags = mTree->MenuCombo.MenuCommand.mcom_flags;
-				mle->llist_Stack = mTree->MenuCombo.MenuCommand.mcom_stack;
-				mle->llist_Priority = mTree->MenuCombo.MenuCommand.mcom_pri;
-				}
 			break;
 
 		default:
-			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: Menu name <%s>  ListNode=<%s>\n", \
-				__LINE__, mTree->MenuCombo.MenuTree.mtre_name, MenuNode->tn_Name));
+			d1(KPrintF("%s/%s/%ld: Menu name <%s>  ListNode=<%s>\n", \
+				__FILE__, __FUNC__, __LINE__, mTree->MenuCombo.MenuTree.mtre_name, MenuNode->tn_Name));
 
 			if (SCAMENUTYPE_ToolsMenu == mTree->mtre_type)
-				MenuFlags |= LLISTFLGF_NotRemovable;
+				mie.mie_MenuFlags |= LLISTFLGF_NotRemovable;
 
 			Flags |= TNF_LIST;
 
@@ -3438,7 +3532,7 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 				{
 				TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
 					MUIM_NListtree_Insert, mTree->MenuCombo.MenuTree.mtre_name ? mTree->MenuCombo.MenuTree.mtre_name : (STRPTR) "", 
-					CombineEntryTypeAndFlags(MenuType, MenuFlags),
+					&mie,
 					MenuNode, MUIV_NListtree_Insert_PrevNode_Tail, Flags);
 
 				mle = (struct MenuListEntry *) TreeNode->tn_User;
@@ -3463,26 +3557,11 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 					{
 					TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(ListTree,
 						MUIM_NListtree_Insert, mTree->MenuCombo.MenuTree.mtre_name ? mTree->MenuCombo.MenuTree.mtre_name : (STRPTR) "", 
-						CombineEntryTypeAndFlags(MenuType, MenuFlags), 
+						&mie,
 						MenuNode, MUIV_NListtree_Insert_PrevNode_Tail, Flags);
 
 					mle = (struct MenuListEntry *) TreeNode->tn_User;
 					}
-				}
-
-			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: llist_HotKey=%08lx  mtre_hotkey=%08lx\n", \
-				__LINE__, mle->llist_HotKey, mTree->MenuCombo.MenuTree.mtre_hotkey));
-
-			stccpy(mle->llist_HotKey, mTree->MenuCombo.MenuTree.mtre_hotkey, sizeof(mle->llist_HotKey));
-
-			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: mtre_iconnames=%08lx\n", __LINE__, mTree->MenuCombo.MenuTree.mtre_iconnames));
-			if (mTree->MenuCombo.MenuTree.mtre_iconnames)
-				{
-				strcpy(mle->llist_UnselectedIconName, mTree->MenuCombo.MenuTree.mtre_iconnames);
-				strcpy(mle->llist_SelectedIconName,
-					mTree->MenuCombo.MenuTree.mtre_iconnames + 1 + strlen(mTree->MenuCombo.MenuTree.mtre_iconnames));
-
-				d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: llist_UnselectedIconName=<%s>  llist_SelectedIconName=<%s>\n", __LINE__, mle->llist_UnselectedIconName, mle->llist_SelectedIconName));
 				}
 
 			if (mTree->mtre_tree)
@@ -3492,19 +3571,6 @@ static void GenerateMenuList(struct MenuPrefsInst *inst, struct ScalosMenuTree *
 
 		mTree = mTree->mtre_Next;
 		}
-}
-
-
-static ULONG CombineEntryTypeAndFlags(UBYTE EntryType, UBYTE Flags)
-{
-	return (ULONG) ((Flags << 8) | (EntryType));
-}
-
-
-static void SplitCombinedUserData(ULONG UserData, UBYTE *EntryType, UBYTE *Flags)
-{
-	*EntryType = (UBYTE) UserData;
-	*Flags = (UBYTE) (UserData >> 8);
 }
 
 
@@ -3525,6 +3591,12 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 		struct MUI_NListtree_TreeNode *ItemNode = NULL;
 		struct MUI_NListtree_TreeNode *SubNode = NULL;
 		struct MUI_NListtree_TreeNode *CmdNode = NULL;
+		struct MenuInsertEntry mie;
+		struct ScalosMenuTree mTree;
+
+		memset(&mTree, 0, sizeof(mTree));
+		mie.mie_TreeEntry = &mTree;
+		mie.mie_MenuFlags = 0;
 
 		ClearMenuList(inst);
 
@@ -3548,10 +3620,11 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 				lp = NextWord(lp);
 
 				CmdNode = SubNode = ItemNode = NULL;
+				mTree.mtre_type = SCAMENUTYPE_Menu;
 
 				MenuNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, lp,
-					CombineEntryTypeAndFlags(SCAMENUTYPE_Menu, 0), 
+					&mie,
 					inst->mpb_MainMenuNode, 
 					MenuNode ? MenuNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST);
@@ -3566,10 +3639,11 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 					break;
 
 				CmdNode = SubNode = NULL;
+				mTree.mtre_type = SCAMENUTYPE_MenuItem;
 
 				ItemNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, lp,
-					CombineEntryTypeAndFlags(SCAMENUTYPE_MenuItem, 0),
+					&mie,
 					MenuNode, 
 					ItemNode ? ItemNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST);
@@ -3582,10 +3656,11 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 					break;
 
 				CmdNode = SubNode = NULL;
+				mTree.mtre_type = SCAMENUTYPE_MenuItem;
 
 				ItemNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, "",
-					CombineEntryTypeAndFlags(SCAMENUTYPE_MenuItem, 0),
+					&mie,
 					MenuNode, 
 					ItemNode ? ItemNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST | TNF_NOSIGN);
@@ -3612,9 +3687,11 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 
 				lp = NextWord(lp);
 
+				mTree.mtre_type = SCAMENUTYPE_Command;
+
 				CmdNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, lp, 
-					CombineEntryTypeAndFlags(SCAMENUTYPE_Command, 0),
+					&mie,
 					ParentNode, 
 					CmdNode ? CmdNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					MUIV_NListtree_Insert_Flag_Active);
@@ -3641,9 +3718,11 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 
 				lp = NextWord(lp);
 
+				mTree.mtre_type = SCAMENUTYPE_Command;
+
 				CmdNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, lp, 
-					CombineEntryTypeAndFlags(SCAMENUTYPE_Command, 0),
+					&mie,
 					ParentNode, 
 					CmdNode ? CmdNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					MUIV_NListtree_Insert_Flag_Active);
@@ -3684,10 +3763,11 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 					break;
 
 				CmdNode = NULL;
+				mTree.mtre_type = SCAMENUTYPE_Menu;
 
 				SubNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, lp,
-					CombineEntryTypeAndFlags(SCAMENUTYPE_Menu, 0), 
+					&mie,
 					ItemNode, 
 					SubNode ? SubNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST);
@@ -3862,6 +3942,12 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 		struct MUI_NListtree_TreeNode *SubNode = NULL;
 		struct MUI_NListtree_TreeNode *CmdNode;
 		char Line[512];
+		struct MenuInsertEntry mie;
+		struct ScalosMenuTree mTree;
+
+		memset(&mTree, 0, sizeof(mTree));
+		mie.mie_TreeEntry = &mTree;
+		mie.mie_MenuFlags = 0;
 
 		ClearMenuList(inst);
 
@@ -3890,14 +3976,15 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 
 				CopyWord(ItemName, lp, sizeof(ItemName));
 
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: ITEM <%s> Menu=%08lx Item=%08lx Sub=%08lx\n", \
-					__LINE__, ItemName, MenuNode, ItemNode, SubNode));
+				d1(kprintf("%s/%s/%ld: ITEM <%s> Menu=%08lx Item=%08lx Sub=%08lx\n", \
+					__FILE__, __FUNC__, __LINE__, ItemName, MenuNode, ItemNode, SubNode));
 
 				SubNode = ItemNode = NULL;
+				mTree.mtre_type = SCAMENUTYPE_Menu;
 
 				MenuNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, ItemName,
-					CombineEntryTypeAndFlags(SCAMENUTYPE_Menu, 0), 
+					&mie,
 					inst->mpb_MainMenuNode, 
 					MenuNode ? MenuNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Head, 
 					TNF_OPEN | TNF_LIST);
@@ -3925,12 +4012,14 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 
 				CopyWord(ItemName, lp, sizeof(ItemName));
 
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: ITEM <%s> Menu=%08lx Item=%08lx Sub=%08lx\n", \
-					__LINE__, ItemName, MenuNode, ItemNode, SubNode));
+				d1(kprintf("%s/%s/%ld: ITEM <%s> Menu=%08lx Item=%08lx Sub=%08lx\n", \
+					__FILE__, __FUNC__, __LINE__, ItemName, MenuNode, ItemNode, SubNode));
+
+				mTree.mtre_type = SCAMENUTYPE_MenuItem;
 
 				ItemNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, ItemName,
-					CombineEntryTypeAndFlags(SCAMENUTYPE_MenuItem, 0),
+					&mie,
 					SubNode ? SubNode : MenuNode, 
 					ItemNode ? ItemNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					TNF_OPEN | TNF_LIST);
@@ -3944,10 +4033,11 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 				if (CmpWord("WB", lp))
 					{
 					lp = NextWord(lp);
+					mTree.mtre_type = SCAMENUTYPE_Command;
 
 					CmdNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 						MUIM_NListtree_Insert, lp, 
-						CombineEntryTypeAndFlags(SCAMENUTYPE_Command, 0),
+						&mie,
 						ItemNode, 
 						CmdNode ? CmdNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 						0);
@@ -3960,10 +4050,11 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 				else if (CmpWord("RUN", lp) || CmpWord("SHELL", lp))
 					{
 					lp = NextWord(lp);
+					mTree.mtre_type = SCAMENUTYPE_Command;
 
 					CmdNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 						MUIM_NListtree_Insert, lp, 
-						CombineEntryTypeAndFlags(SCAMENUTYPE_Command, 0),
+						&mie,
 						ItemNode, 
 						CmdNode ? CmdNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 						0);
@@ -3982,10 +4073,11 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 					break;
 
 				SubNode = NULL;
+				mTree.mtre_type = SCAMENUTYPE_MenuItem;
 
 				ItemNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, "",
-					CombineEntryTypeAndFlags(SCAMENUTYPE_MenuItem, 0),
+					&mie,
 					MenuNode, 
 					ItemNode ? ItemNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					TNF_LIST | TNF_NOSIGN);
@@ -4001,12 +4093,14 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 
 				CopyWord(ItemName, lp, sizeof(ItemName));
 
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: SUBMENU <%s> Menu=%08lx Item=%08lx Sub=%08lx\n", \
-					__LINE__, ItemName, MenuNode, ItemNode, SubNode));
+				d1(kprintf("%s/%s/%ld: SUBMENU <%s> Menu=%08lx Item=%08lx Sub=%08lx\n", \
+					__FILE__, __FUNC__, __LINE__, ItemName, MenuNode, ItemNode, SubNode));
+
+				mTree.mtre_type = SCAMENUTYPE_Menu;
 
 				SubNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, ItemName,
-					CombineEntryTypeAndFlags(SCAMENUTYPE_Menu, 0), 
+					&mie,
 					MenuNode, 
 					ItemNode ? ItemNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					TNF_OPEN | TNF_LIST);
@@ -4015,8 +4109,8 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 				}
 			if (CmpWord("ENDSUBMENU", lp))
 				{
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: ENDSUBMENU Menu=%08lx Item=%08lx Sub=%08lx\n", \
-					__LINE__, MenuNode, ItemNode, SubNode));
+				d1(kprintf("%s/%s/%ld: ENDSUBMENU Menu=%08lx Item=%08lx Sub=%08lx\n", \
+					__FILE__, __FUNC__, __LINE__, MenuNode, ItemNode, SubNode));
 
 				if (NULL == SubNode)
 					break;
@@ -4203,15 +4297,15 @@ static SAVEDS(APTR) INTERRUPT ContextMenuTriggerHookFunc(struct Hook *hook, Obje
 	ULONG MenuHookIndex = 0;
 	struct Hook *MenuHook = NULL;
 
-	d1(kprintf(__FUNC__ "/%ld: MenuObj=%08lx\n", __LINE__, MenuObj));
-	d1(kprintf(__FUNC__ "/%ld: msg=%08lx *msg=%08lx\n", __LINE__, msg, *((ULONG *) msg)));
+	d1(kprintf("%s/%s//%ld: MenuObj=%08lx\n", __FILE__, __FUNC__, __LINE__, MenuObj));
+	d1(kprintf("%s/%s//%ld: msg=%08lx *msg=%08lx\n", __FILE__, __FUNC__, __LINE__, msg, *((ULONG *) msg)));
 
 	get(MenuObj, MUIA_UserData, &MenuHookIndex);
 
 	if (MenuHookIndex > 0 && MenuHookIndex < HOOKNDX_MAX)
 		MenuHook = &inst->mpb_Hooks[MenuHookIndex];
 
-	d1(kprintf(__FUNC__ "/%ld: MenuHook=%08lx\n", __LINE__, MenuHook));
+	d1(kprintf("%s/%s//%ld: MenuHook=%08lx\n", __FILE__, __FUNC__, __LINE__, MenuHook));
 	if (MenuHook)
 		DoMethod(inst->mpb_Objects[OBJNDX_Group_Main], MUIM_CallHook, MenuHook, 0);
 
@@ -4252,7 +4346,7 @@ static SAVEDS(APTR) INTERRUPT AppMessageHookFunc(struct Hook *hook, Object *o, M
 			switch (mle->llist_EntryType)
 				{
 			case SCAMENUTYPE_MainMenu:
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: insert at SCAMENUTYPE_MainMenu\n", __LINE__));
+				d1(kprintf("%s/%s/%ld: insert at SCAMENUTYPE_MainMenu\n", __FILE__, __FUNC__, __LINE__));
 				if (mle->llist_Flags & LLISTFLGF_MayNotHaveChildren)
 					{
 					AppMessage_Menu(inst, &TreeNode, &ParentNode, &AppMsg->am_ArgList[n], Buffer, FileName);
@@ -4260,22 +4354,30 @@ static SAVEDS(APTR) INTERRUPT AppMessageHookFunc(struct Hook *hook, Object *o, M
 					}
 				else
 					{
+					struct MenuInsertEntry mie;
+					struct ScalosMenuTree mTree;
+
+					memset(&mTree, 0, sizeof(mTree));
+					mie.mie_TreeEntry = &mTree;
+					mie.mie_MenuFlags = 0;
+					mTree.mtre_type = SCAMENUTYPE_Menu;
+
 					TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 						MUIM_NListtree_Insert, "DragIn Menu", 
-						CombineEntryTypeAndFlags(SCAMENUTYPE_Menu, 0),
+						&mie,
 						TreeNode, ParentNode, TNF_OPEN | TNF_LIST);
 					}
 				break;
 
 			case SCAMENUTYPE_Menu:
 			case SCAMENUTYPE_ToolsMenu:
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: insert at SCAMENUTYPE_Menu\n", __LINE__));
+				d1(kprintf("%s/%s/%ld: insert at SCAMENUTYPE_Menu\n", __FILE__, __FUNC__, __LINE__));
 				AppMessage_Menu(inst, &TreeNode, &ParentNode, &AppMsg->am_ArgList[n], Buffer, FileName);
 				n++;
 				break;
 
 			case SCAMENUTYPE_MenuItem:
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: insert at SCAMENUTYPE_MenuItem\n", __LINE__));
+				d1(kprintf("%s/%s/%ld: insert at SCAMENUTYPE_MenuItem\n", __FILE__, __FUNC__, __LINE__));
 				ParentNode = TreeNode;
 				TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 					MUIM_NListtree_GetEntry, TreeNode, MUIV_NListtree_GetEntry_Position_Parent, 0);
@@ -4285,7 +4387,7 @@ static SAVEDS(APTR) INTERRUPT AppMessageHookFunc(struct Hook *hook, Object *o, M
 				break;
 
 			case SCAMENUTYPE_Command:
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: insert at SCAMENUTYPE_Command\n", __LINE__));
+				d1(kprintf("%s/%s/%ld: insert at SCAMENUTYPE_Command\n", __FILE__, __FUNC__, __LINE__));
 				TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 					MUIM_NListtree_GetEntry, TreeNode, MUIV_NListtree_GetEntry_Position_Parent, 0);
 				break;
@@ -4309,24 +4411,34 @@ static struct MUI_NListtree_TreeNode *AppMessage_Menu(struct MenuPrefsInst *inst
 {
 	struct MUI_NListtree_TreeNode *NewTreeNode;
 	struct MenuListEntry *mle;
+	struct MenuInsertEntry mie;
+	struct ScalosMenuTree mTree;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: listnode=%08lx <%s>  prevtreenode=%08lx\n", \
-		__LINE__, *TreeNode, (*TreeNode)->tn_Name, *ParentNode));
+	memset(&mTree, 0, sizeof(mTree));
+	mie.mie_TreeEntry = &mTree;
+	mie.mie_MenuFlags = 0;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: \n", __LINE__));
+	d1(kprintf("%s/%s/%ld: listnode=%08lx <%s>  prevtreenode=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, *TreeNode, (*TreeNode)->tn_Name, *ParentNode));
+
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 	SetChangedFlag(inst, TRUE);
+
+	mTree.mtre_type = SCAMENUTYPE_MenuItem;
 
 	*TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 		MUIM_NListtree_Insert, FileName, 
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MenuItem, 0),
+		&mie,
 		*TreeNode, *ParentNode, TNF_OPEN | TNF_LIST);
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: listnode=%08lx <%s>  prevtreenode=%08lx\n", \
-		__LINE__, *TreeNode, (*TreeNode)->tn_Name, *ParentNode));
+	d1(kprintf("%s/%s/%ld: listnode=%08lx <%s>  prevtreenode=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, *TreeNode, (*TreeNode)->tn_Name, *ParentNode));
+
+	mTree.mtre_type = SCAMENUTYPE_Command;
 
 	NewTreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 		MUIM_NListtree_Insert, "", 
-		CombineEntryTypeAndFlags(SCAMENUTYPE_Command, 0),
+		&mie,
 		*TreeNode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 	if (NULL == NewTreeNode)
 		return NULL;
@@ -4352,7 +4464,7 @@ static SAVEDS(APTR) INTERRUPT SettingsChangedHookFunc(struct Hook *hook, Object 
 {
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: \n", __LINE__));
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 	SetChangedFlag(inst, TRUE);
 
 	return NULL;
@@ -4382,7 +4494,7 @@ static SAVEDS(void) INTERRUPT HideObsoleteHookFunc(struct Hook *hook, Object *o,
 	get(inst->mpb_Objects[OBJNDX_Menu_HideObsolete], MUIA_Menuitem_Checked, &HideObsolete);
 	inst->mpb_HideObsoletePopupMenus = HideObsolete;
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: mpb_HideObsoletePopupMenus=%ld\n", __LINE__, inst->mpb_HideObsoletePopupMenus));
+	d1(KPrintF("%s/%s/%ld: mpb_HideObsoletePopupMenus=%ld\n", __FILE__, __FUNC__, __LINE__, inst->mpb_HideObsoletePopupMenus));
 
 	set(inst->mpb_Objects[OBJNDX_MainListView], MUIA_NListtree_Quiet, TRUE);
 	set(inst->mpb_Objects[OBJNDX_HiddenListTree], MUIA_NListtree_Quiet, TRUE);
@@ -4409,7 +4521,7 @@ static SAVEDS(void) INTERRUPT HideObsoleteHookFunc(struct Hook *hook, Object *o,
 	set(inst->mpb_Objects[OBJNDX_MainListView], MUIA_NListtree_Quiet, FALSE);
 	set(inst->mpb_Objects[OBJNDX_HiddenListTree], MUIA_NListtree_Quiet, FALSE);
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: END\n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------
@@ -4419,7 +4531,7 @@ static SAVEDS(void) INTERRUPT MenuCopyHookFunc(struct Hook *hook, Object *o, Msg
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *TreeNode;
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: START\n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	if (inst->mpb_QuietFlag)
 		return;
@@ -4441,7 +4553,7 @@ static SAVEDS(void) INTERRUPT MenuCopyHookFunc(struct Hook *hook, Object *o, Msg
 			OBJNDX_MainListTree);
 		}
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: END\n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------
@@ -4451,7 +4563,7 @@ static SAVEDS(void) INTERRUPT MenuCutHookFunc(struct Hook *hook, Object *o, Msg 
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *TreeNode;
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: START\n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	if (inst->mpb_QuietFlag)
 		return;
@@ -4477,7 +4589,7 @@ static SAVEDS(void) INTERRUPT MenuCutHookFunc(struct Hook *hook, Object *o, Msg 
 			MUIV_NListtree_Remove_TreeNode_Active, 0);
 		}
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: END\n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 //----------------------------------------------------------------------------
@@ -4585,10 +4697,16 @@ static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct MenuPrefsInst *i
 	struct MUI_NListtree_TreeNode *tnToListNode, struct MUI_NListtree_TreeNode *tnToPrevNode,
 	struct MUI_NListtree_TreeNode *tnFrom, 	ULONG destList, ULONG srcList)
 {
-	struct MenuListEntry *fteFrom = (struct MenuListEntry *) tnFrom->tn_User;
-	struct MenuListEntry *fteTo;
+	struct MenuListEntry *mleFrom = (struct MenuListEntry *) tnFrom->tn_User;
+	struct MenuListEntry *mleTo;
 	struct MUI_NListtree_TreeNode *tnNew;
 	struct MUI_NListtree_TreeNode *tnChild;
+	struct MenuInsertEntry mie;
+	struct ScalosMenuTree mTree;
+	STRPTR IconNames = NULL;
+
+	memset(&mTree, 0, sizeof(mTree));
+	mie.mie_TreeEntry = &mTree;
 
 	if (NULL == tnFrom)
 		return NULL;
@@ -4599,17 +4717,56 @@ static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct MenuPrefsInst *i
 		MUIV_NListtree_GetEntry_Position_Head,
 		0);
 
+	mTree.mtre_type = mleFrom->llist_EntryType;
+	mie.mie_MenuFlags = mleFrom->llist_Flags;
+
+	switch (mleFrom->llist_EntryType)
+		{
+	case SCAMENUTYPE_Menu:
+	case SCAMENUTYPE_ToolsMenu:
+	case SCAMENUTYPE_MenuItem:
+		stccpy(mTree.MenuCombo.MenuTree.mtre_hotkey, mleFrom->llist_HotKey,
+			sizeof(mTree.MenuCombo.MenuTree.mtre_hotkey));
+
+		if (strlen(mleFrom->llist_UnselectedIconName) > 0
+			|| strlen(mleFrom->llist_SelectedIconName) > 0)
+			{
+			size_t len = 2 + strlen(mleFrom->llist_UnselectedIconName) + strlen(mleFrom->llist_SelectedIconName);
+
+			IconNames = malloc(len);
+			if (IconNames)
+				{
+				strcpy(IconNames, mleFrom->llist_UnselectedIconName);
+				strcpy(IconNames + 1 + strlen(IconNames), mleFrom->llist_SelectedIconName);
+
+				mTree.mtre_flags |= MTREFLGF_IconNames;
+				}
+			}
+		break;
+	case SCAMENUTYPE_Command:
+		mTree.MenuCombo.MenuCommand.mcom_type = mleFrom->llist_CommandType;
+		mTree.MenuCombo.MenuCommand.mcom_flags = mleFrom->llist_CommandFlags;
+		mTree.MenuCombo.MenuCommand.mcom_pri = mleFrom->llist_Priority;
+		mTree.MenuCombo.MenuCommand.mcom_stack = mleFrom->llist_Stack;
+		break;
+	default:
+		break;
+		}
+
 	tnNew = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[destList],
 		MUIM_NListtree_Insert,
 		tnFrom->tn_Name,
-		CombineEntryTypeAndFlags(fteFrom->llist_EntryType, fteFrom->llist_Flags),
+		&mie,
 		tnToListNode,
 		tnToPrevNode,
 		tnFrom->tn_Flags);
 
-	fteTo = (struct MenuListEntry *) tnNew->tn_User;
+	if (IconNames)
+		free(IconNames);
 
-	*fteTo = *fteFrom;
+	mleTo = (struct MenuListEntry *) tnNew->tn_User;
+
+	*mleTo = *mleFrom;
 
 	// Copy Children
 	while (tnChild)
@@ -4638,7 +4795,7 @@ static LONG CopyMenuTree(struct MenuPrefsInst *inst,
 {
 	LONG Result = RETURN_OK;
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: START\n", __LINE__));
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	while (Src)
 		{
@@ -4649,10 +4806,10 @@ static LONG CopyMenuTree(struct MenuPrefsInst *inst,
 			Src,
 			MUIV_NListtree_GetEntry_Position_Next,
 			MUIV_NListtree_GetEntry_Flag_SameLevel);
-		d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: Src=%08lx\n", __LINE__, Src));
+		d1(KPrintF("%s/%s/%ld: Src=%08lx\n", __FILE__, __FUNC__, __LINE__, Src));
 		}
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: END  Result=%ld\n", __LINE__, Result));
+	d1(KPrintF("%s/%s/%ld: END  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 
 	return Result;
 }
@@ -4666,8 +4823,8 @@ static struct MUI_NListtree_TreeNode *CopyMenuEntry(struct MenuPrefsInst *inst,
 	const struct MenuListEntry *mleSrc = (struct MenuListEntry *) Src->tn_User;
 	struct MUI_NListtree_TreeNode *NewNode;
 
-	d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: TreeNode=%08lx  <%s>  DestParent=%08lx\n", \
-		__LINE__, Src, Src->tn_Name ? Src->tn_Name : (STRPTR) "===BAR===", DestParent));
+	d1(KPrintF("%s/%s/%ld: TreeNode=%08lx  <%s>  DestParent=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, Src, Src->tn_Name ? Src->tn_Name : (STRPTR) "===BAR===", DestParent));
 
 	NewNode	= (struct MUI_NListtree_TreeNode *) DoMethod(ListTreeDest,
 		MUIM_NListtree_Insert, Src->tn_Name,
@@ -4689,7 +4846,7 @@ static struct MUI_NListtree_TreeNode *CopyMenuEntry(struct MenuPrefsInst *inst,
                                 MUIV_NListtree_GetEntry_Position_Head,
 				0);
 
-		d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: SubNode=%08lx\n", __LINE__, SubNode));
+		d1(KPrintF("%s/%s/%ld: SubNode=%08lx\n", __FILE__, __FUNC__, __LINE__, SubNode));
 		if (SubNode)
 			{
 			CopyMenuTree(inst,
@@ -4757,7 +4914,7 @@ static BOOL IsPopupMenu(struct MenuPrefsInst *inst, struct MUI_NListtree_TreeNod
 		ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree],
 			MUIM_NListtree_GetEntry, ParentNode, MUIV_NListtree_GetEntry_Position_Parent, 0);
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Parent=%08lx\n", __LINE__, ParentNode));
+		d1(kprintf("%s/%s/%ld: Parent=%08lx\n", __FILE__, __FUNC__, __LINE__, ParentNode));
 		}
 
 	return IsPopupMenu;
@@ -4811,7 +4968,7 @@ static enum MenuEntryType GetMenuEntryType(struct MenuPrefsInst *inst,
 		ParentNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 			MUIM_NListtree_GetEntry, ParentNode, MUIV_NListtree_GetEntry_Position_Parent, 0);
 
-		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: Parent=%08lx\n", __LINE__, ParentNode));
+		d1(kprintf("%s/%s/%ld: Parent=%08lx\n", __FILE__, __FUNC__, __LINE__, ParentNode));
 		}
 
 	if (IsMainMenu)
@@ -4832,8 +4989,8 @@ static enum MenuEntryType GetMenuEntryType(struct MenuPrefsInst *inst,
 	else
 		return MENUENTRY_Invalid;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: IsMainMenu=%ld IsPopupMenu=%ld Level=%ld\n", \
-		__LINE__, IsMainMenu, IsPopupMenu, Level));
+	d1(kprintf("%s/%s/%ld: IsMainMenu=%ld IsPopupMenu=%ld Level=%ld\n", \
+		__FILE__, __FUNC__, __LINE__, IsMainMenu, IsPopupMenu, Level));
 
 	switch (mle->llist_EntryType)
 		{
@@ -4914,7 +5071,7 @@ DISPATCHER(myNListTree)
 	struct MenuPrefsInst *inst;
 	ULONG Result;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: MethodID=%08lx\n", __LINE__, msg->MethodID));
+	d1(kprintf("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
 
 	switch(msg->MethodID)
 		{
@@ -4927,19 +5084,19 @@ DISPATCHER(myNListTree)
 
 		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
 
-		d1(kprintf(__FUNC__ "/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __LINE__, cmc->item));
+		d1(kprintf("%s/%s//%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __FILE__, __FUNC__, __LINE__, cmc->item));
 
 		MenuObj = cmc->item;
 
-		d1(kprintf(__FUNC__ "/%ld: MenuObj=%08lx\n", __LINE__, MenuObj));
-		d1(kprintf(__FUNC__ "/%ld: msg=%08lx *msg=%08lx\n", __LINE__, msg, *((ULONG *) msg)));
+		d1(kprintf("%s/%s//%ld: MenuObj=%08lx\n", __FILE__, __FUNC__, __LINE__, MenuObj));
+		d1(kprintf("%s/%s//%ld: msg=%08lx *msg=%08lx\n", __FILE__, __FUNC__, __LINE__, msg, *((ULONG *) msg)));
 
 		get(MenuObj, MUIA_UserData, &MenuHookIndex);
 
 		if (MenuHookIndex > 0 && MenuHookIndex < HOOKNDX_MAX)
 			MenuHook = &inst->mpb_Hooks[MenuHookIndex];
 
-		d1(kprintf(__FUNC__ "/%ld: MenuHook=%08lx\n", __LINE__, MenuHook));
+		d1(kprintf("%s/%s//%ld: MenuHook=%08lx\n", __FILE__, __FUNC__, __LINE__, MenuHook));
 		if (MenuHook)
 			DoMethod(inst->mpb_Objects[OBJNDX_Group_Main], MUIM_CallHook, MenuHook, 0);
 
@@ -4967,8 +5124,8 @@ DISPATCHER(myNListTree)
 			tpa->res->entry = tpa->res->column = -1;
 			}
 
-		d1(kprintf(__FUNC__ "/%ld: MUIM_NList_TestPos  Result=%08lx  x=%ld  y=%ld  tpr=%08lx  entry=%ld  column=%ld\n", \
-			__LINE__, Result, tpa->x, tpa->y, tpa->res, tpa->res->entry, tpa->res->column));
+		d1(kprintf("%s/%s//%ld: MUIM_NList_TestPos  Result=%08lx  x=%ld  y=%ld  tpr=%08lx  entry=%ld  column=%ld\n", \
+			__FILE__, __FUNC__, __LINE__, Result, tpa->x, tpa->y, tpa->res, tpa->res->entry, tpa->res->column));
 		}
 		break;
 
@@ -5092,6 +5249,10 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 	ULONG n;
 	struct MUI_NListtree_TreeNode *LastNode[4];
 	Object *Listtree = NULL;
+	struct MenuInsertEntry mie;
+	struct ScalosMenuTree mTree;
+
+	mie.mie_TreeEntry = &mTree;
 
 	inst->mpb_QuietFlag = TRUE;
 
@@ -5103,47 +5264,49 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 		struct MenuListEntry *mle;
 		ULONG InsertFlags;
 
+		memset(&mTree, 0, sizeof(mTree));
+
 		switch (DefaultMenu[n].dme_ParentNode)
 			{
 		case DEFAULTPARENTNODE_MainMenu:
 			Listtree = inst->mpb_MainMenuNode.mpn_Listtree;
 			ParentNode = inst->mpb_MainMenuNode.mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_MainMenu Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld: DEFAULTPARENTNODE_MainMenu Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_Popup_Disk:
 			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_Disk].mpn_Listtree;
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_Disk].mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld:DEFAULTPARENTNODE_Popup_Disk Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld:DEFAULTPARENTNODE_Popup_Disk Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_Popup_Drawer:
 			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_Drawer].mpn_Listtree;
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_Drawer].mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_Drawer Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld: DEFAULTPARENTNODE_Popup_Drawer Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_Popup_ToolProject:
 			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_Listtree;
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_ToolProject Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld: DEFAULTPARENTNODE_Popup_ToolProject Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_Popup_Trashcan:
 			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_Listtree;
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_Trashcan].mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_Trashcan Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld: DEFAULTPARENTNODE_Popup_Trashcan Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_Popup_Window:
 			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_Window].mpn_Listtree;
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_Window].mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_Window Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld: DEFAULTPARENTNODE_Popup_Window Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_Popup_AppIcon:
 			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_Listtree;
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_AppIcon Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld: DEFAULTPARENTNODE_Popup_AppIcon Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_Popup_Desktop:
 			Listtree = inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree;
 			ParentNode = inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_ListNode;
-			d1(KPrintF(__FUNC__ "/%ld: DEFAULTPARENTNODE_Popup_Desktop Listtree=%08lx\n", __LINE__, Listtree));
+			d1(KPrintF("%s/%s//%ld: DEFAULTPARENTNODE_Popup_Desktop Listtree=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree));
 			break;
 		case DEFAULTPARENTNODE_LastInsertedMenu:
 		case DEFAULTPARENTNODE_LastInsertedMenuItem:
@@ -5160,6 +5323,7 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 		if (SCAMENUTYPE_Command == DefaultMenu[n].dme_EntryType)
 			{
 			MenuName = (CONST_STRPTR) DefaultMenu[n].dme_NameId;
+			mTree.MenuCombo.MenuCommand.mcom_name = (STRPTR) MenuName;
 			}
 		else
 			{
@@ -5170,21 +5334,41 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 			InsertFlags |= TNF_OPEN | TNF_LIST;
 			}
 
-		d1(KPrintF(__FUNC__ "/%ld: Listtree=%08lx  ParentNode=%08lx\n", __LINE__, Listtree, ParentNode));
+		d1(KPrintF("%s/%s//%ld: Listtree=%08lx  ParentNode=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree, ParentNode));
+
+		mTree.mtre_type = DefaultMenu[n].dme_EntryType;
+		mie.mie_MenuFlags = 0;
+
+		switch (DefaultMenu[n].dme_EntryType)
+			{
+		case SCAMENUTYPE_Menu:
+		case SCAMENUTYPE_ToolsMenu:
+		case SCAMENUTYPE_MenuItem:
+			stccpy(mTree.MenuCombo.MenuTree.mtre_hotkey, GetLocString(DefaultMenu[n].dme_MenuShortId), sizeof(mle->llist_HotKey));
+			break;
+		case SCAMENUTYPE_Command:
+			mTree.MenuCombo.MenuCommand.mcom_type = DefaultMenu[n].dme_CmdType;
+			mTree.MenuCombo.MenuCommand.mcom_flags = DefaultMenu[n].dme_CmdFlags;
+			mTree.MenuCombo.MenuCommand.mcom_pri = DefaultMenu[n].dme_CmdPri;
+			mTree.MenuCombo.MenuCommand.mcom_stack = DefaultMenu[n].dme_CmdStackSize;
+			break;
+		default:
+			break;
+			}
 
 		DoMethod(Listtree,
 			MUIM_NListtree_Insert, MenuName,
-			CombineEntryTypeAndFlags(DefaultMenu[n].dme_EntryType, 0),
+			&mie,
 			ParentNode,
 			MUIV_NListtree_Insert_PrevNode_Tail,
 			InsertFlags);
 
-		d1(KPrintF(__FUNC__ "/%ld: Listtree=%08lx  NewNode=%08lx\n", __LINE__, Listtree, NewNode));
+		d1(KPrintF("%s/%s//%ld: Listtree=%08lx  NewNode=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree, NewNode));
 		NewNode = (struct MUI_NListtree_TreeNode *) DoMethod(Listtree,
 				MUIM_NListtree_GetEntry,
 				ParentNode,
 				MUIV_NListtree_GetEntry_Position_Tail, 0);
-		d1(KPrintF(__FUNC__ "/%ld: Listtree=%08lx  NewNode=%08lx\n", __LINE__, Listtree, NewNode));
+		d1(KPrintF("%s/%s//%ld: Listtree=%08lx  NewNode=%08lx\n", __FILE__, __FUNC__, __LINE__, Listtree, NewNode));
 		if (NewNode)
 			mle = (struct MenuListEntry *) NewNode->tn_User;
 		else
@@ -5198,13 +5382,6 @@ static void AddDefaultMenuContents(struct MenuPrefsInst *inst)
 			case SCAMENUTYPE_ToolsMenu:
 			case SCAMENUTYPE_MenuItem:
 				LastNode[DefaultMenu[n].dme_Level] = NewNode;
-				stccpy(mle->llist_HotKey, GetLocString(DefaultMenu[n].dme_MenuShortId), sizeof(mle->llist_HotKey));
-				break;
-			case SCAMENUTYPE_Command:
-				mle->llist_CommandType = DefaultMenu[n].dme_CmdType;
-				mle->llist_CommandFlags = DefaultMenu[n].dme_CmdFlags;
-				mle->llist_Priority = DefaultMenu[n].dme_CmdPri;
-				mle->llist_Stack = DefaultMenu[n].dme_CmdStackSize;
 				break;
 			default:
 				break;
@@ -5256,29 +5433,29 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 	MajorVersion = PluginBase->pl_LibNode.lib_Version;
 	MinorVersion = PluginBase->pl_LibNode.lib_Revision;
 
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-	d1(kprintf(__FUNC__ "/%ld:   MenuPrefsLibBase=%08lx  procName=<%s>\n", __LINE__, \
+	d1(kprintf("%s/%s//%ld:   MenuPrefsLibBase=%08lx  procName=<%s>\n", __FILE__, __FUNC__, __LINE__, \
 		PluginBase, FindTask(NULL)->tc_Node.ln_Name));
 
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	if (!OpenLibraries())
 		return FALSE;
 
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 #ifndef __amigaos4__
 	if (_STI_240_InitMemFunctions())
 		return FALSE;
 #endif
 
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	MenuPrefsClass = MUI_CreateCustomClass(&PluginBase->pl_LibNode, MUIC_Group,
 			NULL, sizeof(struct MenuPrefsInst), DISPATCHER_REF(MenuPrefs));
 
-	d1(kprintf(__FUNC__ "/%ld:  MenuPrefsClass=%08lx\n", __LINE__, MenuPrefsClass));
+	d1(kprintf("%s/%s//%ld:  MenuPrefsClass=%08lx\n", __FILE__, __FUNC__, __LINE__, MenuPrefsClass));
 	if (NULL == MenuPrefsClass)
 		return FALSE;
 
@@ -5286,7 +5463,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 		CommandsArray[n] = &CommandsTable[n];
 	CommandsArray[Sizeof(CommandsTable)] = NULL;
 
-	d1(KPrintF(__FUNC__ "/%ld:\n", __LINE__));
+	d1(KPrintF("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
 	if (LocaleBase)
 		{
@@ -5317,7 +5494,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 			NULL, 0, DISPATCHER_REF(myNListTree));
 		}
 
-	d1(KPrintF(__FUNC__ "/%ld: myNListTreeClass=%08lx\n", __LINE__, myNListTreeClass));
+	d1(KPrintF("%s/%s//%ld: myNListTreeClass=%08lx\n", __FILE__, __FUNC__, __LINE__, myNListTreeClass));
 
 	if (NULL == myNListTreeClass)
 		return FALSE;	// Failure
@@ -5325,13 +5502,13 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 	if (NULL == DataTypesImageClass)
 		DataTypesImageClass = InitDtpicClass();
 
-	d1(KPrintF(__FUNC__ "/%ld: DataTypesImageClass=%08lx\n", __LINE__, DataTypesImageClass));
+	d1(KPrintF("%s/%s//%ld: DataTypesImageClass=%08lx\n", __FILE__, __FUNC__, __LINE__, DataTypesImageClass));
 
 	if (NULL == DataTypesImageClass)
 		return FALSE;	// Failure
 
 
-	d1(KPrintF(__FUNC__ "/%ld: success\n", __LINE__));
+	d1(KPrintF("%s/%s//%ld: success\n", __FILE__, __FUNC__, __LINE__));
 
 	return TRUE;	// Success
 }
@@ -5340,67 +5517,74 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 
 static void InsertMenuRootEntries(struct MenuPrefsInst *inst)
 {
+	struct MenuInsertEntry mie;
+	struct ScalosMenuTree mTree;
+
+	memset(&mTree, 0, sizeof(mTree));
+	mie.mie_TreeEntry = &mTree;
+	mTree.mtre_type = SCAMENUTYPE_MainMenu;
+
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable;
 	inst->mpb_MainMenuNode.mpn_Listtree = inst->mpb_Objects[OBJNDX_MainListTree];
 	inst->mpb_MainMenuNode.mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_MainMenuNode.mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_MAINMENUNAME),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST);
 
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu;
 	inst->mpb_PopMenuNode[POPMENUINDEX_Disk].mpn_Listtree = GetMenuEntryListtree(inst);
 	inst->mpb_PopMenuNode[POPMENUINDEX_Disk].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Disk].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME1),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu;
 	inst->mpb_PopMenuNode[POPMENUINDEX_Drawer].mpn_Listtree = GetMenuEntryListtree(inst);
 	inst->mpb_PopMenuNode[POPMENUINDEX_Drawer].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Drawer].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME2),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu;
 	inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_Listtree = GetMenuEntryListtree(inst);
 	inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_ToolProject].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME3),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu;
 	inst->mpb_PopMenuNode[POPMENUINDEX_Trashcan].mpn_Listtree = GetMenuEntryListtree(inst);
 	inst->mpb_PopMenuNode[POPMENUINDEX_Trashcan].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Trashcan].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME4),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu;
 	inst->mpb_PopMenuNode[POPMENUINDEX_Window].mpn_Listtree = inst->mpb_Objects[OBJNDX_MainListTree];
 	inst->mpb_PopMenuNode[POPMENUINDEX_Window].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Window].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME5),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu;
 	inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_Listtree = GetMenuEntryListtree(inst);
 	inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_AppIcon].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME6),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 
+	mie.mie_MenuFlags = LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu;
 	inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree = inst->mpb_Objects[OBJNDX_MainListTree];
 	inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_ListNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_PopMenuNode[POPMENUINDEX_Desktop].mpn_Listtree,
 		MUIM_NListtree_Insert, GetLocString(MSGID_POPMENUNAME7),
-		CombineEntryTypeAndFlags(SCAMENUTYPE_MainMenu,
-			LLISTFLGF_NotRemovable | LLISTFLGF_NameNotSetable | LLISTFLGF_MayNotHaveChildren | LLISTFLGF_PopupMenu),
+		&mie,
 		MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail,
 		TNF_OPEN | TNF_LIST);
 }

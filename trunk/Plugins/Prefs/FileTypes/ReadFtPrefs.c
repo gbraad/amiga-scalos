@@ -992,6 +992,13 @@ static LONG NewFtMenuEntry(struct FileTypesPrefsInst *inst, struct MUI_NListtree
 	if (SelectedIconName)
 		AddAttribute(fte, ATTRTYPE_SelIconName, 1 + strlen(SelectedIconName), SelectedIconName);
 
+	UpdateMenuImage(inst, OBJNDX_MainListTree, fte);
+
+	DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
+		MUIM_NListtree_Redraw,
+		ftmi,
+		0);
+
 	d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
 
 	return RETURN_OK;
@@ -1054,6 +1061,8 @@ static LONG AddSubMenuEntry(struct FileTypesPrefsInst *inst, struct MUI_NListtre
 		AddAttribute(fte, ATTRTYPE_UnselIconName, 1 + strlen(UnselectedIconName), UnselectedIconName);
 	if (SelectedIconName)
 		AddAttribute(fte, ATTRTYPE_SelIconName, 1 + strlen(SelectedIconName), SelectedIconName);
+
+	UpdateMenuImage(inst, OBJNDX_MainListTree, fte);
 
 	return RETURN_OK;
 }

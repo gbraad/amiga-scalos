@@ -165,6 +165,7 @@ struct MenuPrefsInst
 	struct	Hook mpb_Hooks[HOOKNDX_MAX];
 	APTR	mpb_Objects[OBJNDX_MAX];
 
+	ULONG	mpb_TreeImageIndex;
 	ULONG	mpb_PageIsActive;
 	BOOL	mpb_Changed;
 	BOOL	mpb_QuietFlag;

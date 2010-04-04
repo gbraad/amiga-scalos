@@ -1688,6 +1688,7 @@ DISPATCHER(FileTypesPrefs)
 			inst->fpb_FileTypesDirLock = (BPTR) NULL;
 			inst->fpb_IncludeNesting = 0;
 			inst->fpb_WBScreen = LockPubScreen("Workbench");
+			inst->fpb_MenuImageIndex = 0;
 
 			inst->fpb_TTfAntialias = TT_Antialias_Auto;
 			inst->fpb_TTfGamma = 2500;
@@ -2883,8 +2884,13 @@ static Object **CreateSubWindows(Class *cl, Object *o)
 				End, //PopaslObject
 			End, //VGroup
 
-			Child, inst->fpb_Objects[OBJNDX_Group_AttributeAslFile] = VGroup,
+			Child, inst->fpb_Objects[OBJNDX_Group_AttributeAslFile] = HGroup,
 				MUIA_ShowMe, FALSE,
+
+				Child, inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile] = NewObject(DataTypesImageClass->mcc_Class, 0,
+					MUIA_ScaDtpic_Name, (ULONG) "",
+					MUIA_ScaDtpic_FailIfUnavailable, FALSE,
+					End, //DataTypesMCCObject
 
 				Child, inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslFile] = PopaslObject,
 					MUIA_CycleChain, TRUE,
@@ -2991,6 +2997,10 @@ static Object **CreateSubWindows(Class *cl, Object *o)
 	// Doubleclick in "edit attribute" selection listview calls hook
 	DoMethod(inst->fpb_Objects[OBJNDX_Listview_AttributeSelectValue], MUIM_Notify, MUIA_Listview_DoubleClick, TRUE,
 		inst->fpb_Objects[OBJNDX_Pop_AttributeSelectValue], 2, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_SelectAttributeValue]);
+
+	// Update sample image everytime the image file string changes
+	DoMethod(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslFile], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+		inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile], 3, MUIM_Set, MUIA_ScaDtpic_Name, MUIV_TriggerValue);
 
 	return inst->fpb_SubWindows;
 }
@@ -3358,9 +3368,31 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 
 	if (fte)
 		{
+		struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
+		char UnSelIconName[MAX_ATTRVALUE];
+
 		NewList(&fte->ftle_AttributesList);
 		fte->ftle_FileFound = FALSE;
 		fte->ftle_Changed = FALSE;
+
+		GetAttributeValueString(FindAttribute(fte, ATTRTYPE_UnselIconName), UnSelIconName, sizeof(UnSelIconName));
+		if (strlen(UnSelIconName) > 0)
+			{
+			fte->fte_ImageObject = NewObject(DataTypesImageClass->mcc_Class, 0,
+				MUIA_ScaDtpic_Name, (ULONG) UnSelIconName,
+				MUIA_ScaDtpic_FailIfUnavailable, TRUE,
+				End; //DataTypesMCCObject
+
+			if (fte->fte_ImageObject)
+				{
+				fte->fte_ImageIndex = ++inst->fpb_MenuImageIndex;
+				DoMethod(obj, MUIM_NList_UseImage, fte->fte_ImageObject, fte->fte_ImageIndex, 0);
+				}
+			else
+				{
+				fte->fte_ImageIndex = 0;
+				}
+			}
 		}
 
 	return fte;
@@ -3375,6 +3407,14 @@ static SAVEDS(void) INTERRUPT TreeDestructFunc(struct Hook *hook, APTR obj, stru
 	if (fte)
 		{
 		CleanupAttributes(&fte->ftle_AttributesList);
+
+		if (fte->fte_ImageObject)
+			{
+			DoMethod(obj, MUIM_NList_UseImage, NULL, fte->fte_ImageIndex, 0);
+
+			MUI_DisposeObject(fte->fte_ImageObject);
+			fte->fte_ImageObject = NULL;
+			}
 		}
 
 	FreePooled(ltdm->MemPool, ltdm->UserData, sizeof(struct FileTypesListEntry));
@@ -3390,7 +3430,7 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 	if (fte)
 		{
 		const struct FtAttribute *fta;
-		char Line[100];
+		char Line[MAX_ATTRVALUE];
 
 		// indicate changed entries
 		if (fte->ftle_Changed)
@@ -3405,11 +3445,15 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 			if (fta)
 				{
 				GetAttributeValueString(fta, Line, sizeof(Line));
-				sprintf(fte->ftle_NameBuffer, "%s" MUIX_I " %s %s" MUIX_N,
+				snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+					"%s" MUIX_I " %s %s" MUIX_N,
 					ltdm->TreeNode->tn_Name, GetAttributeName(fta->fta_Type), Line);
 				}
 			else
-				sprintf(fte->ftle_NameBuffer, "%s", ltdm->TreeNode->tn_Name);
+				{
+				snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+					"%s", ltdm->TreeNode->tn_Name);
+				}
 
 			ltdm->Array[0] = fte->ftle_NameBuffer;
 			break;
@@ -3422,14 +3466,16 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 				fta = FindAttribute(fte, ATTRTYPE_StringSrc);
 
 			GetAttributeValueString(fta, Line, sizeof(Line));
-			sprintf(fte->ftle_NameBuffer, "%s" MUIX_I " %s %.*s" MUIX_N,
+			snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+				"%s" MUIX_I " %s %.*s" MUIX_N,
 				ltdm->TreeNode->tn_Name, GetAttributeName(fta->fta_Type), MAX_FTE_NAME, Line);
 			ltdm->Array[0] = fte->ftle_NameBuffer;
 			break;
 
 		case ENTRYTYPE_ToolTip_DtImage:
 			GetAttributeValueString(FindAttribute(fte, ATTRTYPE_DtImageName), Line, sizeof(Line));
-			sprintf(fte->ftle_NameBuffer, "%s" MUIX_I " FILENAME %.*s" MUIX_N,
+			snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+				"%s" MUIX_I " FILENAME %.*s" MUIX_N,
 				ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
 			ltdm->Array[0] = fte->ftle_NameBuffer;
 			break;
@@ -3441,36 +3487,69 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 		case ENTRYTYPE_PopupMenu_PluginCmd:
 		case ENTRYTYPE_PopupMenu_IconWindowCmd:
 			GetAttributeValueString(FindAttribute(fte, ATTRTYPE_CommandName), Line, sizeof(Line));
-			sprintf(fte->ftle_NameBuffer, "%s" MUIX_I " NAME %.*s" MUIX_N,
+			snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+				"%s" MUIX_I " NAME %.*s" MUIX_N,
 				ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
 			ltdm->Array[0] = fte->ftle_NameBuffer;
 			break;
 
 		case ENTRYTYPE_PopupMenu_SubMenu:
 			GetAttributeValueString(FindAttribute(fte, ATTRTYPE_MenuItemName), Line, sizeof(Line));
-			sprintf(fte->ftle_NameBuffer, "%s" MUIX_I " NAME %.*s" MUIX_N,
-				ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+			if (fte->fte_ImageObject)
+				{
+				snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+					 "\33o[%ld]" "%s" MUIX_I " NAME %.*s" MUIX_N,
+					fte->fte_ImageIndex, ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+				}
+			else
+				{
+				snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+					"%s" MUIX_I " NAME %.*s" MUIX_N,
+					ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+				}
 			ltdm->Array[0] = fte->ftle_NameBuffer;
 			break;
 
 		case ENTRYTYPE_ToolTip_Group:
 			GetAttributeValueString(FindAttribute(fte, ATTRTYPE_GroupOrientation), Line, sizeof(Line));
-			sprintf(fte->ftle_NameBuffer, "%s" MUIX_I " ORIENTATION %.*s" MUIX_N,
+			snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+				"%s" MUIX_I " ORIENTATION %.*s" MUIX_N,
 				ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
 			ltdm->Array[0] = fte->ftle_NameBuffer;
 			break;
 
 		case ENTRYTYPE_PopupMenu_MenuItem:
 			GetAttributeValueString(FindAttribute(fte, ATTRTYPE_MenuItemName), Line, sizeof(Line));
+
 			if (FindAttribute(fte, ATTRTYPE_MenuDefaultAction))
 				{
-				sprintf(fte->ftle_NameBuffer, MUIX_B "%s" MUIX_I " NAME %.*s" MUIX_N,
-					ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+				if (fte->fte_ImageObject)
+					{
+					snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+						"\33o[%ld]" MUIX_B "%s" MUIX_I " NAME %.*s" MUIX_N,
+						fte->fte_ImageIndex, ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+					}
+				else
+					{
+					snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+						MUIX_B "%s" MUIX_I " NAME %.*s" MUIX_N,
+						ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+					}
 				}
 			else
 				{
-				sprintf(fte->ftle_NameBuffer, "%s" MUIX_I " NAME %.*s" MUIX_N,
-					ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+				if (fte->fte_ImageObject)
+					{
+					snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+						"\33o[%ld]%s" MUIX_I " NAME %.*s" MUIX_N,
+						fte->fte_ImageIndex, ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+					}
+				else
+					{
+					snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
+						"%s" MUIX_I " NAME %.*s" MUIX_N,
+						ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+					}
 				}
 			ltdm->Array[0] = fte->ftle_NameBuffer;
 			break;
@@ -4491,6 +4570,8 @@ static SAVEDS(APTR) INTERRUPT AddAttributeHookFunc(struct Hook *hook, Object *o,
 			AddNewAttribute(inst, fte, aal->aal_EntryType);
 			SetAddableAttributes(inst, fte);
 
+			UpdateMenuImage(inst, OBJNDX_MainListTree, fte);
+
 			DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
 				MUIM_NListtree_Redraw, 
 				tn,
@@ -4572,6 +4653,8 @@ static SAVEDS(APTR) INTERRUPT RemoveAttributeHookFunc(struct Hook *hook, Object 
 		DoMethod(inst->fpb_Objects[OBJNDX_AttrList], 
 			MUIM_NList_Remove, 
 			MUIV_NList_Remove_Active);
+
+		UpdateMenuImage(inst, OBJNDX_MainListTree, fte);
 
 		DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
 			MUIM_NListtree_Redraw, 
@@ -4713,6 +4796,7 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 			d1(kprintf("%s/%ld:\n", __FUNC__, __LINE__));
 
 			UpdateAttributes(inst, fte);
+			UpdateMenuImage(inst, OBJNDX_MainListTree, fte);
 
 			DoMethod(inst->fpb_Objects[OBJNDX_MainListTree],
 				MUIM_NListtree_Redraw, 
@@ -5131,6 +5215,20 @@ static SAVEDS(APTR) INTERRUPT EditAttributeHookFunc(struct Hook *hook, Object *o
 				set(inst->fpb_Objects[OBJNDX_Group_AttributeAslPath],		MUIA_ShowMe, FALSE);
 				set(inst->fpb_Objects[OBJNDX_Group_AttributeAslFont],		MUIA_ShowMe, FALSE);
 				set(inst->fpb_Objects[OBJNDX_Group_AttributeTTFont],  		MUIA_ShowMe, FALSE);
+
+				switch (atd->atd_Type)
+					{
+				case ATTRTYPE_DtImageName:
+				case ATTRTYPE_UnselIconName:
+				case ATTRTYPE_SelIconName:
+					d2(KPrintF("%s/%ld: OBJNDX_DtPic_AttributeSelectAslFile=%08lx  ValueString=<%s>\n", \
+						__FUNC__, __LINE__, inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile], ValueString));
+					set(inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile], MUIA_ScaDtpic_Name, ValueString);
+					break;
+				default:
+					set(inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile], MUIA_ScaDtpic_Name, "");
+					break;
+					}
 
 				set(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslFile],
 					MUIA_String_Contents, (ULONG) ValueString);
@@ -6429,7 +6527,7 @@ static ULONG ConvertGroupOrientationFromString(CONST_STRPTR DisplayString)
 
 static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct FileTypesPrefsInst *inst, 
 	struct MUI_NListtree_TreeNode *tnToListNode, struct MUI_NListtree_TreeNode *tnToPrevNode, 
-	struct MUI_NListtree_TreeNode *tnFrom, 	ULONG destList, ULONG srcList)
+	struct MUI_NListtree_TreeNode *tnFrom, ULONG destList, ULONG srcList)
 {
 	struct FileTypesListEntry *fteFrom = (struct FileTypesListEntry *) tnFrom->tn_User;
 	struct FileTypesListEntry *fteTo;
@@ -6456,6 +6554,9 @@ static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct FileTypesPrefsIn
 	fteTo = (struct FileTypesListEntry *) tnNew->tn_User;
 	fteTo->ftle_EntryType = fteFrom->ftle_EntryType;
 
+	fteTo->fte_ImageObject = NULL;	// do not try to copy fte_ImageObject !!
+	fteTo->fte_ImageIndex = 0;
+
 	// Copy Attributes
 	for (fta = (const struct FtAttribute *) fteFrom->ftle_AttributesList.lh_Head;
 		fta != (const struct FtAttribute *) &fteFrom->ftle_AttributesList.lh_Tail;
@@ -6463,6 +6564,8 @@ static struct MUI_NListtree_TreeNode *CopyFileTypesEntry(struct FileTypesPrefsIn
 		{
 		AddAttribute(fteTo, fta->fta_Type, fta->fta_Length, fta->fta_Data);
 		}
+
+	UpdateMenuImage(inst, destList, fteTo);
 
 	// Copy Children
 	while (tnChild)
@@ -7658,6 +7761,40 @@ static void CleanupFoundNodes(struct FileTypesPrefsInst *inst)
 		}
 
 	inst->fpb_FoundCount = 0;
+}
+
+//----------------------------------------------------------------------------
+
+void UpdateMenuImage(struct FileTypesPrefsInst *inst, ULONG ListTree, struct FileTypesListEntry *fte)
+{
+	char UnSelIconName[MAX_ATTRVALUE];
+
+	if (fte->fte_ImageObject)
+		{
+		DoMethod(inst->fpb_Objects[ListTree],
+			MUIM_NList_UseImage, NULL, fte->fte_ImageIndex, 0);
+
+		MUI_DisposeObject(fte->fte_ImageObject);
+		fte->fte_ImageObject = NULL;
+		}
+
+	GetAttributeValueString(FindAttribute(fte, ATTRTYPE_UnselIconName), UnSelIconName, sizeof(UnSelIconName));
+	if (strlen(UnSelIconName) > 0)
+		{
+		fte->fte_ImageObject = NewObject(DataTypesImageClass->mcc_Class, 0,
+			MUIA_ScaDtpic_Name, (ULONG) UnSelIconName,
+			MUIA_ScaDtpic_FailIfUnavailable, TRUE,
+			End; //DataTypesMCCObject
+
+		if (fte->fte_ImageObject)
+			{
+			if (0 == fte->fte_ImageIndex)
+				fte->fte_ImageIndex = ++inst->fpb_MenuImageIndex;
+
+			DoMethod(inst->fpb_Objects[ListTree],
+				MUIM_NList_UseImage, fte->fte_ImageObject, fte->fte_ImageIndex, 0);
+			}
+		}
 }
 
 //----------------------------------------------------------------------------

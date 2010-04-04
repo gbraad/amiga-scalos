@@ -223,6 +223,7 @@ enum ObjectIndex
 	OBJNDX_String_AttributeValue,
 	OBJNDX_Group_AttributeValue,
 	OBJNDX_Pop_AttributeSelectAslFile,
+	OBJNDX_DtPic_AttributeSelectAslFile,
 	OBJNDX_Group_AttributeAslFile,
 	OBJNDX_Pop_AttributeSelectAslPath,
 	OBJNDX_Group_AttributeAslPath,
@@ -456,6 +457,9 @@ struct FileTypesListEntry
 	BOOL ftle_FileFound;
 	BOOL ftle_Changed;
 
+	ULONG fte_ImageIndex;
+	Object *fte_ImageObject;
+
 	struct List ftle_AttributesList;
 
 	union 
@@ -504,6 +508,8 @@ struct FileTypesPrefsInst
 	BPTR fpb_FileTypesDirLock;
 
 	Object *fpb_IconObject;
+
+	ULONG fpb_MenuImageIndex;
 
 	struct List fpb_FoundList;
 	struct FoundNode *fpb_CurrentFound;

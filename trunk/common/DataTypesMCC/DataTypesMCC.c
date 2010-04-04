@@ -225,6 +225,13 @@ static BOOL SetupDto(Class *cl, Object *obj)
 		if (NULL == inst->dto)
 			break;
 
+		d1(KPrintF("%s/%ld: muiRenderInfo=%08lx\n", __FUNC__, __LINE__, muiRenderInfo(obj)));
+		if (NULL == muiRenderInfo(obj))
+			break;
+
+		d1(KPrintF("%s/%ld: screen=%08lx\n", __FUNC__, __LINE__, _screen(obj)));
+		d1(KPrintF("%s/%ld: win=%08lx\n", __FUNC__, __LINE__, _win(obj)));
+
 		SetAttrs(inst->dto,
 			PDTA_Screen, (ULONG) _screen(obj),
 			TAG_END);
@@ -317,11 +324,17 @@ static ULONG mSet(struct IClass *cl, Object *obj, Msg msg)
 		WORD OldWidth, OldHeight;
 		WORD NewWidth, NewHeight;
 
+		d1(KPrintF("%s/%ld: name=<%s>\n", __FUNC__, __LINE__, inst->name));
+
 		OldWidth  = inst->bmhd ? inst->bmhd->bmh_Width : 0;
 		OldHeight = inst->bmhd ? inst->bmhd->bmh_Height : 0;
 
+		d1(KPrintF("%s/%ld: name=<%s>\n", __FUNC__, __LINE__, inst->name));
+
 		(void) CreateDto(inst);
+		d1(KPrintF("%s/%ld: name=<%s>\n", __FUNC__, __LINE__, inst->name));
 		(void) SetupDto(cl, obj);
+		d1(KPrintF("%s/%ld: name=<%s>\n", __FUNC__, __LINE__, inst->name));
 
 		NewWidth  = inst->bmhd ? inst->bmhd->bmh_Width : 0;
 		NewHeight = inst->bmhd ? inst->bmhd->bmh_Height : 0;
@@ -332,13 +345,16 @@ static ULONG mSet(struct IClass *cl, Object *obj, Msg msg)
 		if (OldWidth != NewWidth || OldHeight != NewHeight)
 			{
 			// Setting an image with different size requires relayout
+			d1(KPrintF("%s/%ld: name=<%s>\n", __FUNC__, __LINE__, inst->name));
 			ForceRelayout(cl, obj);
 			}
 		else
 			{
 			// Image has changed - redraw ourself
+			d1(KPrintF("%s/%ld: name=<%s>\n", __FUNC__, __LINE__, inst->name));
 			MUI_Redraw(obj, MADF_DRAWOBJECT);
 			}
+		d1(KPrintF("%s/%ld: name=<%s>\n", __FUNC__, __LINE__, inst->name));
 		}
 	ti = FindTagItem(MUIA_ScaDtpic_Tiled, ops->ops_AttrList);
 	if (ti)
