@@ -923,7 +923,7 @@ Speicher für Bilder:
 ;
 MSGID_PATHSPAGE_IMAGECACHE_SHORTHELP
 Scalos benutzt dieses Verzeichnis als Zwischenspeicher für Datatypes Bilder.\n\
-Da Datatypes benutzte Bilder gegen Überschreiben spert,\n\
+Da Datatypes benutzte Bilder gegen Überschreiben sperrt,\n\
 erzeugt Scalos für alle Bilder, die es benutzt, eine\n\
 temporäre Kopie in diesem Verzeichnis.
 ;This drawer is used to cache the datatypes images used by Scalos.\n\
