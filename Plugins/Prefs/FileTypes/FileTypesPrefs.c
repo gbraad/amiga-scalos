@@ -2065,31 +2065,6 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 							MUIA_FrameTitle, (ULONG) GetLocString(MSGID_GROUP_FILETYPES_FILETYPES),
 							GroupFrame,
 
-							Child, inst->fpb_Objects[OBJNDX_NListview_FileTypes] = NListviewObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SHORTHELP_LISTVIEW_FILETYPES),
-								MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_NListtree_FileTypes] = NewObject(myFileTypesNListTreeClass->mcc_Class, 0,
-									MUIA_Background, MUII_ListBack,
-									MUIA_NList_PrivateData, inst,
-									MUIA_ContextMenu, inst->fpb_Objects[OBJNDX_ContextMenuFileTypes],
-									MUIA_NListtree_DisplayHook, &inst->fpb_Hooks[HOOKNDX_FileTypesDisplay],
-									MUIA_NListtree_ConstructHook, &inst->fpb_Hooks[HOOKNDX_FileTypesConstruct],
-									MUIA_NListtree_DestructHook, &inst->fpb_Hooks[HOOKNDX_FileTypesDestruct],
-									MUIA_NListtree_DragDropSort, TRUE,
-									MUIA_NList_ShowDropMarks, TRUE,
-									MUIA_NListtree_EmptyNodes, TRUE,
-									MUIA_NListtree_AutoVisible, MUIV_NListtree_AutoVisible_Expand,
-								End, //myFileTypesNListTreeClass
-							End, //NListtreeObject
-
-							Child, inst->fpb_Objects[OBJNDX_String_FileTypes_Name] = StringObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Disabled, TRUE,
-								MUIA_String_AdvanceOnCR, TRUE,
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SHORTHELP_STRING_FILETYPES),
-								StringFrame,
-								End, //StringObject
-
 							Child, inst->fpb_Objects[OBJNDX_Group_FindFiletype] = HGroup,
 								GroupFrame,
 								Child, inst->fpb_Objects[OBJNDX_Button_HideFind] = TextObject,
@@ -2131,6 +2106,31 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 									End,
 
 								End, //HGroup
+
+							Child, inst->fpb_Objects[OBJNDX_NListview_FileTypes] = NListviewObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SHORTHELP_LISTVIEW_FILETYPES),
+								MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_NListtree_FileTypes] = NewObject(myFileTypesNListTreeClass->mcc_Class, 0,
+									MUIA_Background, MUII_ListBack,
+									MUIA_NList_PrivateData, inst,
+									MUIA_ContextMenu, inst->fpb_Objects[OBJNDX_ContextMenuFileTypes],
+									MUIA_NListtree_DisplayHook, &inst->fpb_Hooks[HOOKNDX_FileTypesDisplay],
+									MUIA_NListtree_ConstructHook, &inst->fpb_Hooks[HOOKNDX_FileTypesConstruct],
+									MUIA_NListtree_DestructHook, &inst->fpb_Hooks[HOOKNDX_FileTypesDestruct],
+									MUIA_NListtree_DragDropSort, TRUE,
+									MUIA_NList_ShowDropMarks, TRUE,
+									MUIA_NListtree_EmptyNodes, TRUE,
+									MUIA_NListtree_AutoVisible, MUIV_NListtree_AutoVisible_Expand,
+								End, //myFileTypesNListTreeClass
+							End, //NListtreeObject
+
+							Child, inst->fpb_Objects[OBJNDX_String_FileTypes_Name] = StringObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Disabled, TRUE,
+								MUIA_String_AdvanceOnCR, TRUE,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SHORTHELP_STRING_FILETYPES),
+								StringFrame,
+								End, //StringObject
 
 							Child, ColGroup(2),
 								Child, inst->fpb_Objects[OBJNDX_Button_FileTypes_Add] = KeyButtonHelp(MSGID_BUTTON_ADD_FILETYPE,
