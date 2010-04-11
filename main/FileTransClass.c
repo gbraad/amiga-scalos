@@ -120,6 +120,7 @@ static void FileTransClass_ResizeWindow(struct FileTransClassInstance *inst);
 static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst);
 static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
 	struct FileTransOp *fto, ULONG BodyTextId, ULONG GadgetTextId);
+static BOOL FileTransClass_IsRamDisk(BPTR dirLock, const struct InfoData *info);
 
 //----------------------------------------------------------------------------
 
@@ -2072,7 +2073,8 @@ static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
 			AvailableSpace = Mul64(MakeU64(info->id_NumBlocks - info->id_NumBlocksUsed), MakeU64(info->id_BytesPerBlock), NULL);
 			ScalosFreeInfoData(&info);
 
-			if (Cmp64(AvailableSpace, ftci->ftci_TotalBytes) < 0)
+			if (!FileTransClass_IsRamDisk(fto->fto_DestDirLock, info)
+				&& Cmp64(AvailableSpace, ftci->ftci_TotalBytes) < 0)
 				{
 				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -2099,4 +2101,42 @@ static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
 }
 
 //----------------------------------------------------------------------------
+
+// AmigaOS3.x RAM disk always return 0 free blocks
+// we need to skip check for sufficient space here!
+static BOOL FileTransClass_IsRamDisk(BPTR dirLock, const struct InfoData *info)
+{
+	BPTR ramDiskLock = BNULL;
+	static BOOL isRamDisk = FALSE;
+
+	do	{
+		LONG sameLock;
+
+		ramDiskLock = Lock("RAM:", ACCESS_READ);
+		d1(KPrintF("%s/%s/%ld: ramDiskLock=%08lx\n", __FILE__, __FUNC__, __LINE__, ramDiskLock));
+		if (BNULL == ramDiskLock)
+			break;
+
+		sameLock = SameLock(dirLock, ramDiskLock);
+		d1(KPrintF("%s/%s/%ld: sameLock=%ld\n", __FILE__, __FUNC__, __LINE__, sameLock));
+
+		if (LOCK_DIFFERENT == sameLock)
+			break;
+
+		if (info->id_NumBlocksUsed != info->id_NumBlocks)
+			break;
+
+		d1(KPrintF("%s/%s/%ld: isRamDisk = TRUE\n", __FILE__, __FUNC__, __LINE__));
+
+		isRamDisk = TRUE;
+		} while (0);
+
+	if (ramDiskLock)
+		UnLock(ramDiskLock);
+
+	return isRamDisk;
+}
+
+//----------------------------------------------------------------------------
+
 
