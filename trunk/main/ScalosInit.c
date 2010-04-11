@@ -1486,7 +1486,7 @@ static void ScalosMain(LONG *ArgArray)
 			LONG attr;
 
 			GetAttr(SA_OpacitySupport, iInfos.xii_iinfos.ii_Screen, &attr);
-			d2(KPrintF("%s/%s/%ld: SA_OpacitySupport=%ld\n", __FILE__, __FUNC__, __LINE__, attr));
+			d1(KPrintF("%s/%s/%ld: SA_OpacitySupport=%ld\n", __FILE__, __FUNC__, __LINE__, attr));
 			iInfos.xii_Layers3D = attr > SAOS_OpacitySupport_OnOff;
 			}
 		else
