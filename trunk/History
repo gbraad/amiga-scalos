@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8	20100328	jl	- Improvement: added option to select whether drawers in text windows are
+41.8	20100411	jl	- Bugfix: corrected recognition of active 3D-Layers ("Enhanced Display") with MorphOS 2.x
+	20100328	jl	- Improvement: added option to select whether drawers in text windows are
 				  displayed before files, after files, or with files.
 	20100324	jl	- Improvement: Updater.module: added signature check for downloaded versions.txt file.
 	20100322	jl	- Bugfix: corrected line height calculation for text windows.
