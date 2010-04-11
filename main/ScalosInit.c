@@ -1480,7 +1480,20 @@ static void ScalosMain(LONG *ArgArray)
 			}
 
 #if defined(__MORPHOS__)
-		iInfos.xii_Layers3D = NULL != FindTask("« LayerInfoTask »");
+#if defined(SA_OpacitySupport)
+		if (IntuitionBase->LibNode.lib_Version >= 51)
+			{
+			LONG attr;
+
+			GetAttr(SA_OpacitySupport, iInfos.xii_iinfos.ii_Screen, &attr);
+			d2(KPrintF("%s/%s/%ld: SA_OpacitySupport=%ld\n", __FILE__, __FUNC__, __LINE__, attr));
+			iInfos.xii_Layers3D = attr > SAOS_OpacitySupport_OnOff;
+			}
+		else
+#endif //defined(SA_OpacitySupport)
+			{
+			iInfos.xii_Layers3D = NULL != FindTask("« LayerInfoTask »");
+			}
 #endif //defined(__MORPHOS__)
 
 		d1(KPrintF("%s/%s/%ld: ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
