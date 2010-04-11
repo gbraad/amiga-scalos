@@ -1,5 +1,5 @@
 ; ScalosFileTypes.ct
-## version $VER: ScalosFileTypes.catalog 40.23 (17 Oct 2009 15:25:00)
+## version $VER: ScalosFileTypes.catalog 40.23 (11 Apr 2010 17:25:00)
 ## codeset 0s
 ## language deutsch
 ;
@@ -1420,6 +1420,11 @@ Rückgängig
 MSGID_COM_REDO
 Wiederholen
 ;Redo
+;
+;
+MSGID_FIND_HITCOUNT_FMT
+%ld Treffer
+;%ld Hits
 ;
 ;-----------------------------------------------------------
 ;

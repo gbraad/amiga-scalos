@@ -2091,7 +2091,10 @@ Additions/changes:
 
 --------------------Scalos FileTypes Preferences----------------------------
 
- 40.24	20100404	jl	- Improvement: added preview of menu icon images to listview.
+ 40.24	20100411	jl	- Improvement: number of find hits is now displayed.
+				  In filetypes listtree, string matches are now marked with fill pen.
+				  Drawback: DOS-style patterns are no longer supported to find filetypes.
+	20100404	jl	- Improvement: added preview of menu icon images to listview.
  40.23				  (internal version only)
  40.22	20090511	jl	- Bugfix: icon is updated correctly when filetypes recognition
 				  list is sorted via drag-drop.

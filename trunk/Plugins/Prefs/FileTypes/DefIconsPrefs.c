@@ -1198,6 +1198,8 @@ SAVEDS(void) INTERRUPT RenameFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *
 		struct FileTypesEntry *fte = (struct FileTypesEntry *) ln->tn_User;
 		CONST_STRPTR NewName;
 
+		CleanupFoundNodes(inst);
+
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Name], MUIA_String_Contents, (APTR) &NewName);
 
 		if (fte->fte_AllocatedName)
@@ -1223,6 +1225,8 @@ SAVEDS(void) INTERRUPT AddFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *msg
 	struct MUI_NListtree_TreeNode *ln;
 
 	memset(&NewTn, 0, sizeof(NewTn));
+
+	CleanupFoundNodes(inst);
 
 	NewTn.tn_Name = GetLocString(MSGID_NEW_FILETYPE);
 	NewTn.tn_Description[0].action = ACT_END;
@@ -1251,6 +1255,7 @@ SAVEDS(void) INTERRUPT RemoveFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *ln;
 
+	CleanupFoundNodes(inst);
 	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
 
 	if (ln)
@@ -1385,21 +1390,24 @@ SAVEDS(APTR) INTERRUPT FileTypesConstructFunc(struct Hook *hook, APTR obj, struc
 		NewList(&fte->fte_MagicList);
 		fte->fte_TypeNode = *TnOrig;
 
+		fte->fte_FindStart = 0;
+		fte->fte_FindLength = 0;
+
+		fte->fte_AllocatedName2 = NULL;
+
 		fte->fte_AllocatedName = fte->fte_TypeNode.tn_Name = strdup(TnOrig->tn_Name);
 		if (NULL == fte->fte_AllocatedName)
 			break;
 
-		else
+		// add all ACT_*** entries to fte_MagicList
+		for (curr = TnOrig->tn_Description; ACT_END != curr->action; curr++)
 			{
-			// add all ACT_*** entries to fte_MagicList
-			for (curr = TnOrig->tn_Description; ACT_END != curr->action; curr++)
-				{
-				d1(KPrintF(__FILE__ "/%s/%ld: curr=%08lx  action=%ld\n", __FUNC__, __LINE__, curr, curr->action));
+			d1(KPrintF(__FILE__ "/%s/%ld: curr=%08lx  action=%ld\n", __FUNC__, __LINE__, curr, curr->action));
 
-				if (!AddFileTypesAction(fte, curr, NULL))
-					break;
-				}
+			if (!AddFileTypesAction(fte, curr, NULL))
+				break;
 			}
+
 		Success = TRUE;
 		} while (0);
 
@@ -1428,6 +1436,8 @@ SAVEDS(void) INTERRUPT FileTypesDestructFunc(struct Hook *hook, APTR obj, struct
 
 	if (fte->fte_AllocatedName)
 		free(fte->fte_AllocatedName);
+	if (fte->fte_AllocatedName2)
+		free(fte->fte_AllocatedName2);
 
 	FreePooled(ltdm->MemPool, fte, sizeof(struct FileTypesEntry));
 	ltdm->UserData = NULL;
@@ -1441,7 +1451,35 @@ SAVEDS(ULONG) INTERRUPT FileTypesDisplayFunc(struct Hook *hook, APTR obj, struct
 
 	if (fte)
 		{
-		ltdm->Array[0] = fte->fte_TypeNode.tn_Name;
+		if (fte->fte_FindLength > 0)
+			{
+			if (fte->fte_AllocatedName2)
+				free(fte->fte_AllocatedName2);
+
+			fte->fte_AllocatedName2 = malloc(1 + strlen(fte->fte_TypeNode.tn_Name) + 2 * 6);
+			if (fte->fte_AllocatedName2)
+				{
+				if (fte->fte_FindStart)
+					stccpy(fte->fte_AllocatedName2, fte->fte_TypeNode.tn_Name, fte->fte_FindStart);
+				else
+					strcpy(fte->fte_AllocatedName2, "");
+
+				strcat(fte->fte_AllocatedName2, "\0335" );	// FILLPEN
+				strncat(fte->fte_AllocatedName2, fte->fte_TypeNode.tn_Name + fte->fte_FindStart, fte->fte_FindLength);
+				strcat(fte->fte_AllocatedName2, MUIX_PT);
+				strcat(fte->fte_AllocatedName2, fte->fte_TypeNode.tn_Name + fte->fte_FindStart + fte->fte_FindLength);
+
+				ltdm->Array[0] = fte->fte_AllocatedName2;
+				}
+			else
+				{
+				ltdm->Array[0] = fte->fte_TypeNode.tn_Name;
+				}
+			}
+		else
+			{
+			ltdm->Array[0] = fte->fte_TypeNode.tn_Name;
+			}
 		}
 
 	return 0;

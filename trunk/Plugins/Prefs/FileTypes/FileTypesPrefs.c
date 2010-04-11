@@ -222,6 +222,7 @@ enum FindDir
 struct FoundNode
 	{
 	struct Node fdn_Node;
+	Object *fdn_ListTree;
 	struct MUI_NListtree_TreeNode *fdn_TreeNode;
 	ULONG fdn_Index;
 	};
@@ -370,8 +371,8 @@ static void ParseToolTypes(struct FileTypesPrefsInst *inst, struct MUIP_ScalosPr
 static LONG ReadScalosPrefs(struct FileTypesPrefsInst *inst, CONST_STRPTR PrefsFileName);
 static CONST_STRPTR GetPrefsConfigString(APTR prefsHandle, ULONG Id, CONST_STRPTR DefaultString);
 static ULONG DoDragDrop(Class *cl, Object *obj, Msg msg);
-static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *tn);
-static void CleanupFoundNodes(struct FileTypesPrefsInst *inst);
+static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, Object *ListTree, struct MUI_NListtree_TreeNode *tn);
+static CONST_STRPTR FindString(CONST_STRPTR string, CONST_STRPTR pattern, BOOL CaseSensitive);
 
 #if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
@@ -1724,6 +1725,8 @@ DISPATCHER(FileTypesPrefs)
 		d1(kprintf(__FILE__ "/%s/%ld: OM_DISPOSE obj=%08lx\n", __FUNC__, __LINE__, obj));
 		inst = (struct FileTypesPrefsInst *) INST_DATA(cl, obj);
 
+		CleanupFoundNodes(inst);
+
 		if (inst->fpb_WBScreen)
 			{
 			UnlockPubScreen(NULL, inst->fpb_WBScreen);
@@ -2104,6 +2107,10 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 									MUIA_Background, MUII_ButtonBack,
 									MUIA_ShortHelp, GetLocString(MSGID_BUTTON_FIND_NEXT_SHORTHELP),
 									End,
+								Child, inst->fpb_Objects[OBJNDX_Button_FindHitCount] = TextObject,
+									MUIA_Weight, 10,
+									MUIA_Text_Contents, "",
+									End, //TextObject
 
 								End, //HGroup
 
@@ -7452,6 +7459,8 @@ static SAVEDS(void) INTERRUPT HideFindGroupHookFunc(struct Hook *hook, Object *o
 	(void) o;
 	(void) msg;
 
+	CleanupFoundNodes(inst);
+
 	set(inst->fpb_Objects[OBJNDX_Menu_Find], MUIA_Menuitem_Enabled, TRUE);
 	set(inst->fpb_Objects[OBJNDX_Group_FindFiletype], MUIA_ShowMe, FALSE);
 }
@@ -7478,8 +7487,10 @@ static SAVEDS(void) INTERRUPT IncrementalFindFileTypeHookFunc(struct Hook *hook,
 		}
 	else
 		{
+		CleanupFoundNodes(inst);
 		set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled, TRUE);
 		set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled, TRUE);
+		set(inst->fpb_Objects[OBJNDX_Button_FindHitCount], MUIA_Text_Contents, "");
 		}
 }
 
@@ -7530,47 +7541,18 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 {
 	BOOL Found = FALSE;
 	BOOL CaseSensitive = FALSE;
-	STRPTR SearchPattern = NULL;
-	STRPTR PatternBuffer = NULL;
 
 	do	{
 		struct MUI_NListtree_TreeNode *tn = NULL;
-		size_t SearchPatternLength;
-		size_t PatternBufLength;
 		Object *ActiveObject;
 
 		if (SearchString == NULL || strlen(SearchString) < 1)
+			{
+			CleanupFoundNodes(inst);
 			break;
+			}
 
 		get(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_ActiveObject, &ActiveObject);
-
-		/*
-		 * Search for pattern in mimetype name and description.
-		 */
-		SearchPatternLength = strlen(SearchString) + 2 + 2 + 1;
-
-		SearchPattern = malloc(SearchPatternLength);
-		if (NULL == SearchPattern)
-			break;
-
-		snprintf(SearchPattern, SearchPatternLength, "#?%s#?", SearchString);
-
-		PatternBufLength = 2 * strlen(SearchPattern) + 2;
-
-		PatternBuffer = malloc(PatternBufLength);
-		if (NULL == PatternBuffer)
-			break;
-
-		if (CaseSensitive)
-			{
-			if (ParsePattern(SearchPattern, PatternBuffer, PatternBufLength) < 0)
-				break;
-			}
-		else
-			{
-			if (ParsePatternNoCase(SearchPattern, PatternBuffer, PatternBufLength) < 0)
-				break;
-			}
 
 		/*
 		 * When searching for next one, fetch selected one first.
@@ -7615,7 +7597,7 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 			BuildFindTree(inst,
 				inst->fpb_Objects[OBJNDX_NListtree_FileTypes],
 				MUIV_NListtree_GetEntry_ListNode_Root,
-				PatternBuffer,
+				SearchString,
 				MUIV_NListtree_GetEntry_Position_Head,
 				&dosearch, CaseSensitive);
 
@@ -7632,6 +7614,10 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 				tn = inst->fpb_CurrentFound->fdn_TreeNode;
 				}
 			d1(kprintf(__FILE__ "/%s/%ld:  fpb_CurrentFound=%08lx  tn=%08lx\n", __FUNC__, __LINE__, inst->fpb_CurrentFound, tn));
+
+			snprintf(inst->fpb_FindHitCount, sizeof(inst->fpb_FindHitCount),
+				GetLocString(MSGID_FIND_HITCOUNT_FMT), inst->fpb_FoundCount);
+			set(inst->fpb_Objects[OBJNDX_Button_FindHitCount], MUIA_Text_Contents, inst->fpb_FindHitCount);
 			}
 
 		if (NULL == tn)
@@ -7639,6 +7625,7 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 			// nothing found
 			set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled, TRUE);
 			set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled, TRUE);
+			set(inst->fpb_Objects[OBJNDX_Button_FindHitCount], MUIA_Text_Contents, "");
 			break;
 			}
 
@@ -7661,11 +7648,6 @@ static BOOL IncrementalSearchFileType(struct FileTypesPrefsInst *inst,
 		set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled,
 			inst->fpb_CurrentFound->fdn_Node.ln_Pred == (struct Node *) &inst->fpb_FoundList.lh_Head);
 		} while (0);
-
-	if (SearchPattern)
-		free(SearchPattern);
-	if (PatternBuffer)
-		free(PatternBuffer);
 
 	return Found;
 }
@@ -7699,16 +7681,19 @@ static void BuildFindTree(struct FileTypesPrefsInst *inst,
 			if (*dosearch)
 				{
 				// Check if list node matches
-				BOOL Found;
+				CONST_STRPTR Found;
 
-				if (CaseSensitive)
-					Found = MatchPattern(pattern, tn->tn_Name);
-				else
-					Found = MatchPatternNoCase(pattern, tn->tn_Name);
+				Found = FindString(tn->tn_Name, pattern, CaseSensitive);
 
 				if (Found)
 					{
-					AddFoundNode(inst, tn);
+					struct FileTypesEntry *fte = (struct FileTypesEntry *) tn->tn_User;
+
+					fte->fte_FindLength = strlen(pattern);
+					fte->fte_FindStart = Found - tn->tn_Name;
+
+					DoMethod(ListTree, MUIM_NListtree_Redraw, tn, 0);
+					AddFoundNode(inst, ListTree, tn);
 					}
 				}
 
@@ -7729,7 +7714,43 @@ static void BuildFindTree(struct FileTypesPrefsInst *inst,
 
 //----------------------------------------------------------------------------
 
-static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *tn)
+static CONST_STRPTR FindString(CONST_STRPTR string, CONST_STRPTR pattern, BOOL CaseSensitive)
+{
+	while (*string)
+		{
+		size_t i;
+
+		for(i = 0 ; ; i++)
+			{
+			char c = pattern[i];
+
+			/* End of substring? We got a match... */
+			if ('\0' == c)
+				{
+				return string;
+				}
+
+			if (CaseSensitive)
+				{
+				if (c != string[i])
+					break;
+				}
+			else
+				{
+				if (ToLower(c) != ToLower(string[i]))
+					break;
+				}
+			}
+
+		string++;
+		}
+
+	return NULL;
+}
+
+//----------------------------------------------------------------------------
+
+static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, Object *ListTree, struct MUI_NListtree_TreeNode *tn)
 {
 	struct FoundNode *fdn;
 
@@ -7738,6 +7759,7 @@ static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, struct MU
 	fdn = malloc(sizeof(struct FoundNode));
 	if (fdn)
 		{
+		fdn->fdn_ListTree = ListTree;
 		fdn->fdn_TreeNode = tn;
 		fdn->fdn_Index = ++inst->fpb_FoundCount;
 
@@ -7749,7 +7771,7 @@ static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, struct MU
 
 //----------------------------------------------------------------------------
 
-static void CleanupFoundNodes(struct FileTypesPrefsInst *inst)
+void CleanupFoundNodes(struct FileTypesPrefsInst *inst)
 {
 	struct FoundNode *fdn;
 
@@ -7757,10 +7779,20 @@ static void CleanupFoundNodes(struct FileTypesPrefsInst *inst)
 
 	while ( (fdn = (struct FoundNode *) RemHead(&inst->fpb_FoundList)) )
 		{
+		struct FileTypesEntry *fte = (struct FileTypesEntry *) fdn->fdn_TreeNode->tn_User;
+
+		fte->fte_FindLength = 0;
+		fte->fte_FindStart = 0;
+		DoMethod(fdn->fdn_ListTree, MUIM_NListtree_Redraw, fdn->fdn_TreeNode, 0);
+
 		free(fdn);
 		}
 
 	inst->fpb_FoundCount = 0;
+
+	set(inst->fpb_Objects[OBJNDX_Button_FindNextFileType], MUIA_Disabled, TRUE);
+	set(inst->fpb_Objects[OBJNDX_Button_FindPrevFileType], MUIA_Disabled, TRUE);
+	set(inst->fpb_Objects[OBJNDX_Button_FindHitCount], MUIA_Text_Contents, "");
 }
 
 //----------------------------------------------------------------------------
