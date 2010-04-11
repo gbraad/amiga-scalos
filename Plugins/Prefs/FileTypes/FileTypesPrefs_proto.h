@@ -69,6 +69,7 @@ STRPTR GetAttributeValueString(const struct FtAttribute *fta, char *Buffer, size
 void HideEmptyNodes(struct FileTypesPrefsInst *inst);
 STRPTR GetLocString(ULONG MsgId);
 void UpdateMenuImage(struct FileTypesPrefsInst *inst, ULONG ListTree, struct FileTypesListEntry *fte);
+void CleanupFoundNodes(struct FileTypesPrefsInst *inst);
 
 //----------------------------------------------------------------------------
 

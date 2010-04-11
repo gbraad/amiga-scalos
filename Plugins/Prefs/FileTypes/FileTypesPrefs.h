@@ -310,6 +310,7 @@ enum ObjectIndex
 	OBJNDX_String_FindFileType,
 	OBJNDX_Button_FindNextFileType,
 	OBJNDX_Button_FindPrevFileType,
+	OBJNDX_Button_FindHitCount,
 
 	OBJNDX_WIN_EditAttribute,
 
@@ -435,6 +436,10 @@ struct FileTypesActionListEntry
 
 struct FileTypesEntry
 	{
+	ULONG fte_FindStart;		// start position of find marker (0=name start)
+	ULONG fte_FindLength;		// length of find marker (0=no marker)
+
+	STRPTR fte_AllocatedName2;	// allocated space for find marker in tn_Name
 	STRPTR fte_AllocatedName;	// allocated space for tn_Name
 	struct TypeNode fte_TypeNode;
 
@@ -489,6 +494,8 @@ struct FileTypesPrefsInst
 	char fpb_Path[MAX_FILENAME];
 
 	char fpb_DefIconPath[MAX_FILENAME];
+
+	char fpb_FindHitCount[80];
 
 	struct FileTypeFileDesc fpb_FileHandles[MAX_INCLUDE_NESTING];
 	ULONG fpb_IncludeNesting;	// index into fpb_FileHandles[]
