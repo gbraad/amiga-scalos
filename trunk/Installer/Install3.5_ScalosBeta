@@ -1,8 +1,7 @@
 ; // $Date: 2008-01-19 19:30:12 +0200 (Sa, 19 Jan 2008) $
 ; // $Revision: 2765 $
-; // $Id: Install3.5_ScalosBeta 2765 2008-01-19 18:30:12Z coat $
 ;
-; $VER: Scalos Beta Installation Script 4.2 (25/05/2006) (c)2005-2006 THE SALOS TEAM
+; $VER: Scalos Beta Installation Script 4.3 (06.04.2010) (c)2005-2010 THE SALOS TEAM
 ; Scalos Beta Installation Script written by:
 ; Name  : Jean-Marie COAT <agalliance@free.fr>
 ; Name  : Jürgen Lachmann <juergen_lachmann@t-online.de>
@@ -39,7 +38,7 @@
 (set @language (getenv "Language" ))
 
 
-(set @applicationdate (cat "(01.11.2007)" ))
+(set @applicationdate (cat "(06.04.2010)" ))
 
 (set #scalosresident 0)
 (set #scalosresident (getversion "scalos.library" (resident)))
@@ -89,25 +88,25 @@
 
 ;===================== VERSION ICONOBJECT DATATYPES =================================
 ;= PNG =
-(set #dtversionpng (getversion "Classes/datatypes/pngiconobject.datatype" ))
+(set #dtversionpng (getversion "Scalos:Icondatatypes/datatypes/pngiconobject.datatype" ))
 (set #dtverpng (/ #dtversionpng 65536) )
 (set #dtrevpng (- #dtversionpng (* #dtverpng 65536) ))
 
 ;============================== AMIGAICONOBJ35 ======================================
 
-(set #dtversion_aiconobj35 (getversion "Classes/datatypes/amigaiconobj35.datatype" ))
+(set #dtversion_aiconobj35 (getversion "Scalos:Icondatatypes/datatypes/amigaiconobj35.datatype" ))
 (set #dtver_aiconobj35 (/ #dtversion_aiconobj35 65536) )
 (set #dtrev_aiconobj35 (- #dtversion_aiconobj35 (* #dtver_aiconobj35 65536) ))
 
 ;============================= AMIGAICONOBJECT ======================================
 
-(set #dtversion_aiconobject (getversion "Classes/datatypes/amigaiconobject.datatype" ))
+(set #dtversion_aiconobject (getversion "Scalos:Icondatatypes/datatypes/amigaiconobject.datatype" ))
 (set #dtver_aiconobject (/ #dtversion_aiconobject 65536) )
 (set #dtrev_aiconobject (- #dtversion_aiconobject (* #dtver_aiconobject 65536) ))
 
 ;=============================== ICONOBJECT =========================================
 
-(set #dtversion_iconobject (getversion "Classes/datatypes/iconobject.datatype" ))
+(set #dtversion_iconobject (getversion "Scalos:Icondatatypes/datatypes/iconobject.datatype" ))
 (set #dtver_iconobject (/ #dtversion_iconobject 65536) )
 (set #dtrev_iconobject (- #dtversion_iconobject (* #dtver_iconobject 65536) ))
 
@@ -115,7 +114,7 @@
 
 (if (= #OS4 0)
 	(
-	(set #dtversion_niconobject (getversion "Classes/datatypes/newiconobject.datatype" ))
+	(set #dtversion_niconobject (getversion "Scalos:Icondatatypes/datatypes/newiconobject.datatype" ))
 	(set #dtver_niconobject (/ #dtversion_niconobject 65536) )
 	(set #dtrev_niconobject (- #dtversion_niconobject (* #dtver_niconobject 65536) ))
 	)
@@ -123,14 +122,14 @@
 
 ;============================== GLOWICONOBJECT =======================================
 
-(set #dtversion_glowiconobject (getversion "Classes/datatypes/glowiconobject.datatype" ))
+(set #dtversion_glowiconobject (getversion "Scalos:Icondatatypes/datatypes/glowiconobject.datatype" ))
 (set #dtver_glowiconobject (/ #dtversion_glowiconobject 65536) )
 (set #dtrev_glowiconobject (- #dtversion_glowiconobject (* #dtver_glowiconobject 65536) ))
 
 
 ;=========================== DIRECTORY Classes ======================================
 
-(set #defclasses "SYS:Classes/Datatypes")
+(set #defclasses "Scalos:Icondatatypes/Datatypes")
 
 ;====================================================================================
 
@@ -679,6 +678,45 @@
 
 			)
 			(set @ioerr 0)
+			(set #b (+ #b 1))
+		)
+	)
+)
+
+;----------------------------------------------------------------------------
+;==  PROCEDURE P_RemoveObsolete  ========================================
+;----------------------------------------------------------------------------
+
+(procedure P_RemoveObsolete
+ 	(set #b 0)
+    	(while
+		(set fname
+			(select #b
+				"SYS:Classes/datatypes/amigaiconobj35.datatype"
+				"SYS:Classes/datatypes/amigaiconobject.datatype"
+				"SYS:Classes/datatypes/glowiconobject.datatype"
+				"SYS:Classes/datatypes/iconobject.datatype"
+				"SYS:Classes/datatypes/newiconobject.datatype"
+				"SYS:Classes/datatypes/pngiconobject.datatype"
+				"Devs:Datatypes/AmigaIconObj35"
+				"Devs:Datatypes/AmigaIconObj35.info"
+				"Devs:Datatypes/AmigaIconObject"
+				"Devs:Datatypes/AmigaIconObject.info"
+				"Devs:Datatypes/GlowIconObject"
+				"Devs:Datatypes/GlowIconObject.info"
+				"Devs:Datatypes/NewIconObject"
+				"Devs:Datatypes/NewIconObject.info"
+				"Devs:Datatypes/PNGIconObject"
+				"Devs:Datatypes/PNGIconObject.info"
+				""
+			)
+		)
+		(
+			(if	(exists fname (NOREQ))
+				(
+				(delete fname force)
+				)
+			)
 			(set #b (+ #b 1))
 		)
 	)
@@ -1420,7 +1458,7 @@
 		"\n\n" @app-name "\n"
 		#machine "\n"
      		@applicationdate"\n"
-     		"Copyright © 2000-2009 THE SCALOS TEAM\n\n\n"
+		"Copyright © 2000-2010 THE SCALOS TEAM\n\n\n"
 		"E-mail: info@scalos.noname.fr\n"
 		"Web: http://scalos.noname.fr\n\n"
      		"\nThis script will install "@app-name" \n"
@@ -2612,14 +2650,14 @@
 ;==================[ COPY LIBRARIES ]========================================
 
 (P_Copylib #copy-libs1 "Libs/iconobject.library" "Libs:")
-(P_Copylib #copy-libs4 "Classes/Datatypes/amigaiconobject.datatype" #defclasses)
-(P_Copylib #copy-libs4.1 "Classes/Datatypes/amigaiconobj35.datatype" #defclasses)
-(P_Copylib #copy-libs5 "Classes/Datatypes/iconobject.datatype" #defclasses)
+(P_Copylib #copy-libs4 "Icondatatypes/amigaiconobject.datatype" #defclasses)
+(P_Copylib #copy-libs4.1 "Icondatatypes/Datatypes/amigaiconobj35.datatype" #defclasses)
+(P_Copylib #copy-libs5 "Icondatatypes/Datatypes/iconobject.datatype" #defclasses)
 (if (= #OS4 0)
-	(P_Copylib #copy-libs6 "Classes/Datatypes/newiconobject.datatype" #defclasses)
+	(P_Copylib #copy-libs6 "Icondatatypes/Datatypes/newiconobject.datatype" #defclasses)
 )
-(P_Copylib #copy-libs7 "Classes/Datatypes/pngiconobject.datatype" #defclasses)
-(P_Copylib #copy-libs8 "Classes/Datatypes/glowiconobject.datatype" #defclasses)
+(P_Copylib #copy-libs7 "Icondatatypes/Datatypes/pngiconobject.datatype" #defclasses)
+(P_Copylib #copy-libs8 "Icondatatypes/Datatypes/glowiconobject.datatype" #defclasses)
 (P_Copylib #copy-libs9 "Libs/sqlite3.library" "Libs:")
 
 (if (= #OS4 0)
@@ -2655,32 +2693,6 @@
 	(set #mui-classes "MUI:libs/mui")
 	)
 )
-
-;==========[ COPY DATATYPES ]================================================
-
-(if (= #OS4 0)
-	(copyfiles
-		(prompt	#copy-datatypes)
-		(source	"Devs/Datatypes")
-		(dest	"Devs:Datatypes")
-		(help	@askfile-help)
-		(confirm)
-		(infos)
-		(all)
-	)
-	;else
-	(copyfiles
-		(prompt	#copy-datatypes)
-		(source	"Devs/Datatypes")
-		(dest	"Devs:Datatypes")
-		(help	@askfile-help)
-		(confirm)
-		(infos)
-		(pattern "~(NewIconObject#?)")
-	)
-)
-
-(complete 65)
 
 ;===========[ COPY CATALOG FILES ]===========================================
 
@@ -2946,6 +2958,12 @@
 )
 
 (complete 94)
+
+;=========[ Remove icon datatypes from old locations ]=======================
+
+(P_RemoveObsolete)
+
+(complete 95)
 
 ;=========[ COPY SCALOS TOOLS ]==============================================
 

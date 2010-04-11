@@ -3,6 +3,8 @@
 // $Revision$
 //----------------------------------------------------------------------------
 
+#ifndef ICONOBJ_H
+#define	ICONOBJ_H
 
 #include <exec/types.h>
 #include <datatypes/iconobject.h>
@@ -23,7 +25,7 @@ extern struct DosLibrary * DOSBase;
 //----------------------------------------------------------------------------
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	6
+#define	LIB_REVISION	7
 
 extern char ALIGNED libName[];
 extern char ALIGNED libIdString[];
@@ -80,4 +82,7 @@ extern int kprintf(const char *fmt, ...);
 extern int KPrintF(const char *fmt, ...);
 
 //----------------------------------------------------------------------------
+
+#endif /* ICONOBJ_H */
+
 

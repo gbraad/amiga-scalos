@@ -2,7 +2,6 @@
 /* Scalos release package creation script */
 /* $Date: 2008-05-19 20:20:58 +0200 (Mo, 19 Mai 2008) $ */
 /* $Revision: 2819 $ */
-/* $Id: Release 2819 2008-05-19 19:20:58Z juergen $ */
 
 LHAName = 'RAM:ScalosBeta'
 tmpfname = "t:xyzzy"
@@ -37,8 +36,7 @@ address workbench "newdrawer RAM:ScalosBeta"
 /* "copy ScalosBeta.info RAM: clone quiet" */
 
 "makedir RAM:ScalosBeta/c"
-"mkdir -p RAM:ScalosBeta/Classes/Datatypes"
-"mkdir -p RAM:ScalosBeta/Devs/Datatypes"
+"mkdir -p RAM:ScalosBeta/Icondatatypes/Datatypes"
 "makedir RAM:ScalosBeta/libs"
 "makedir RAM:ScalosBeta/libs/OS4"
 "makedir RAM:ScalosBeta/Prefs"
@@ -127,16 +125,14 @@ end
 
 say "Copying Datatypes..."
 
-'copy datatypes/AmigaIconObj3.5/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
-'copy datatypes/AmigaIconObject/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
-'copy datatypes/GlowIconObject/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
-'copy datatypes/IconObject/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
-'copy datatypes/PNGIcons/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
+'copy datatypes/AmigaIconObj3.5/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/AmigaIconObject/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/GlowIconObject/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/IconObject/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/PNGIcons/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
 if os ~= "AmigaOS4" then do
-	'copy datatypes/NewIcons/#?.datatype "RAM:ScalosBeta/Classes/Datatypes/" clone quiet'
+	'copy datatypes/NewIcons/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
 end
-
-'copy datatypes/devs/#? "RAM:ScalosBeta/Devs/Datatypes/" clone quiet'
 
 'copy main/envarc/#? "RAM:ScalosBeta/env-archive/" all clone quiet'
 

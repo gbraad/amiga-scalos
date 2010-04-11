@@ -2,7 +2,9 @@
  * Scalos/iconnode.h
  * iconnode.h
  *
- * $VER: iconnode.h 1.0 (31/01/2000)
+ * $Date$
+ * $Revision$
+ *
  * Richard Drummond
  *
  * Module to handle nodes in library's internal
@@ -36,18 +38,15 @@
 
 struct IconNode
 {
-    struct MinNode Node;
-    UBYTE          in_pad;
-    BYTE           in_Priority;     /* Priority, for sorting */
-    STRPTR      in_Name;         /* Full path name of this datatype */
+    struct Node	Node;
+
     Class 	*in_Class;        /* Pointer to the datatype's BOOPSI class */
     struct Library *in_LibBase;      /* Pointer to the datatype's library */
 #ifdef __amigaos4__
-	struct DTClassIFace *in_IFace;     /* Pointer to the datatype's interface */
+    struct DTClassIFace *in_IFace;     /* Pointer to the datatype's interface */
 #endif
-    ULONG          in_ID;           /* This datatype's ID */
-    STRPTR         in_Suffix;       /* Filename suffix for icon file's of this type */
-    WORD           in_SuffixLen;    /* Length of the above */
+    CONST_STRPTR in_Suffix;       /* Filename suffix for icon file's of this type */
+    WORD         in_SuffixLen;    /* Length of the above */
 };
 
 #endif

@@ -159,11 +159,11 @@ ULONG InitDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 // return 0 if error occurred
 ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 {
-	d1(kprintf("%s/%ld:  OpenCnt=%ld\n", __FUNC__, __LINE__, dtLib->nib_ClassLibrary.cl_Lib.lib_OpenCnt));
+	d2(kprintf("%s/%ld:  OpenCnt=%ld\n", __FUNC__, __LINE__, dtLib->nib_ClassLibrary.cl_Lib.lib_OpenCnt));
 
 	if (!dtLib->nib_Initialized)
 		{
-		d1(kprintf("%s/%ld: \n", __FUNC__, __LINE__));
+		d2(kprintf("%s/%ld: \n", __FUNC__, __LINE__));
 
 		dtLib->nib_Initialized = TRUE;
 
@@ -181,7 +181,7 @@ ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 				}
 			}
 #endif
-		d1(kprintf("%s/%ld: IntuitionBase=%08lx\n", __FUNC__, __LINE__, IntuitionBase));
+		d2(kprintf("%s/%ld: IntuitionBase=%08lx\n", __FUNC__, __LINE__, IntuitionBase));
 		if (NULL == IntuitionBase)
 			return 0;
 
@@ -197,7 +197,7 @@ ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 				}
 			}
 #endif
-		d1(kprintf("%s/%ld: DOSBase=%08lx\n", __FUNC__, __LINE__, DOSBase));
+		d2(kprintf("%s/%ld: DOSBase=%08lx\n", __FUNC__, __LINE__, DOSBase));
 		if (NULL == DOSBase)
 			return 0;
 
@@ -213,7 +213,7 @@ ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 				}
 			}
 #endif
-		d1(kprintf("%s/%ld: UtilityBase=%08lx\n", __FUNC__, __LINE__, UtilityBase));
+		d2(kprintf("%s/%ld: UtilityBase=%08lx\n", __FUNC__, __LINE__, UtilityBase));
 		if (NULL == UtilityBase)
 			return 0;
 
@@ -229,7 +229,7 @@ ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 				}
 			}
 #endif
-		d1(kprintf("%s/%ld: IconBase=%08lx\n", __FUNC__, __LINE__, IconBase));
+		d2(kprintf("%s/%ld: IconBase=%08lx\n", __FUNC__, __LINE__, IconBase));
 		if (NULL == IconBase)
 			return 0;
 
@@ -245,7 +245,7 @@ ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 				}
 			}
 #endif
-		d1(kprintf("%s/%ld: GfxBase=%08lx\n", __FUNC__, __LINE__, GfxBase));
+		d2(kprintf("%s/%ld: GfxBase=%08lx\n", __FUNC__, __LINE__, GfxBase));
 		if (NULL == GfxBase)
 			return 0;
 
@@ -261,22 +261,23 @@ ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 				}
 			}
 #endif
-		d1(kprintf("%s/%ld: LayersBase=%08lx\n", __FUNC__, __LINE__, LayersBase));
+		d2(kprintf("%s/%ld: LayersBase=%08lx\n", __FUNC__, __LINE__, LayersBase));
 		if (NULL == LayersBase)
 			return 0;
 
 		IconObjectDTBase = OpenLibrary("datatypes/iconobject.datatype", 39);
+		d2(kprintf("%s/%ld: IconObjectDTBase=%08lx\n", __FUNC__, __LINE__, IconObjectDTBase));
 		if (NULL == IconObjectDTBase)
 			return 0;
 
 		MemPool = CreatePool(MEMPOOL_MEMFLAGS, MEMPOOL_PUDDLESIZE, MEMPOOL_THRESHSIZE);
-		d1(kprintf("%s/%ld: MemPool=%08lx\n", __FUNC__, __LINE__, MemPool));
+		d2(kprintf("%s/%ld: MemPool=%08lx\n", __FUNC__, __LINE__, MemPool));
 		if (NULL == MemPool)
 			return 0;
 		
 		AmigaIconObj35Class = dtLib->nib_ClassLibrary.cl_Class = MakeClass(libName, 
 			"iconobject.datatype", NULL, sizeof(struct InstanceData), 0);
-		d1(kprintf("%s/%ld:  AmigaIconObj35Class=%08lx\n", __FUNC__, __LINE__, AmigaIconObj35Class));
+		d2(kprintf("%s/%ld:  AmigaIconObj35Class=%08lx\n", __FUNC__, __LINE__, AmigaIconObj35Class));
 		if (NULL == AmigaIconObj35Class)
 			return 0;
 
@@ -307,7 +308,7 @@ ULONG OpenDatatype(struct AmigaIconObj35DtLibBase *dtLib)
 		// CyberGfxBase may be NULL
 		}		
 
-	d1(kprintf("%s/%ld:  Open Success!\n", __FUNC__, __LINE__));
+	d2(kprintf("%s/%ld:  Open Success!\n", __FUNC__, __LINE__));
 
 	return 1;
 }
