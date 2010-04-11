@@ -86,6 +86,7 @@ static LIB_SAVEDS(struct Library *) LIB_ASM LIB_INTERRUPT Initlib(LIB_REG(d0, st
 
 	SysBase = sysbase;
 	dtLib->nib_ClassLibrary.cl_Lib.lib_Revision = LIB_REVISION;
+	dtLib->nib_ClassLibrary.cl_Lib.lib_Node.ln_Pri = 10;
 	dtLib->nib_SegList = seglist;
 
 	if (!InitDatatype(dtLib))

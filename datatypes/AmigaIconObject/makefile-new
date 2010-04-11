@@ -51,7 +51,7 @@ $(NAME): $(OBJS)
 
 install: 
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) sys:classes/datatypes
+	@copy $(NAME) scalos:IconDatatypes/datatypes
 	@avail flush
 
 clean:

@@ -22,6 +22,8 @@ struct IconObjectBase
 
 	struct List iob_ClassList;
 
+	BPTR iob_dtPathLock;
+
 	UWORD iob_pad;
 };
 

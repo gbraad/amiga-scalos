@@ -14,12 +14,10 @@
 #include <dos/dos.h>
 #include <dos/dostags.h>
 #include <dos/stdio.h>
-#include <libraries/iffparse.h>
 #include <datatypes/datatypes.h>
 #include <datatypes/iconobject.h>
 
 #include <clib/alib_protos.h>
-#include <proto/iffparse.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/icon.h>
@@ -36,23 +34,14 @@
 #include <Year.h>
 
 
-#define ICON_ID             MAKE_ID('i', 'c', 'o', 'n')
-#define AMIGAICON_ID        MAKE_ID('a', 'i', 'c', 'o')
+#define DATATYPES_PATH		"Scalos:IconDatatypes/"
 
-
-
-/*
- * macro to convert offsets in datatype header into
- * string pointers.
- */
-#define MAKE_STRPTR( base, offset )  ( (STRPTR) ((ULONG)(base)) + ((ULONG)(offset)) )
 
 //----------------------------------------------------------------------------
 
-static struct IconNode *IconNode_New( STRPTR base_name, ULONG id, BYTE priority, struct IconObjectBase *IconObjectBase );
+static struct IconNode *IconNode_New( CONST_STRPTR base_name, struct IconObjectBase *IconObjectBase );
 static VOID IconNode_Free( struct IconNode *node, struct IconObjectBase *IconObjectBase );
-static ULONG HandleIconDTHD( struct DataTypeHeader *dthd, struct IconObjectBase *IconObjectBase );
-static BOOL ParseDTDescriptor( STRPTR filename, struct IconObjectBase *IconObjectBase );
+static void AddDtLib( CONST_STRPTR LibFileName, struct IconObjectBase *IconObjectBase );
 static BOOL ReadClassList( struct IconObjectBase *IconObjectBase );
 static VOID FreeClassList( struct IconObjectBase *IconObjectBase );
 static APTR MyAllocVecPooled(size_t Size);
@@ -68,7 +57,6 @@ struct ExecBase *SysBase;
 struct IntuitionBase *IntuitionBase;
 T_UTILITYBASE UtilityBase;
 struct DosLibrary * DOSBase;
-struct Library *IFFParseBase;
 #ifdef __amigaos4__
 struct Library *NewlibBase;
 struct Interface *INewlib;
@@ -76,7 +64,6 @@ struct ExecIFace *IExec;
 struct IntuitionIFace *IIntuition;
 struct UtilityIFace *IUtility;
 struct DOSIFace *IDOS;
-struct IFFParseIFace *IIFFParse;
 #endif
 
 static void *MemPool;
@@ -86,7 +73,7 @@ static struct SignalSemaphore PubMemPoolSemaphore;
 
 char ALIGNED libName[] = "iconobject.library";
 char ALIGNED libIdString[] = "$VER: iconobject.library "
-	STR(LIB_VERSION) "." STR(LIB_REVISION) " (27 Dec 2007 13:57:02) "
+	STR(LIB_VERSION) "." STR(LIB_REVISION) " " __DATE__ " "
 	COMPILER_STRING
 	" ©1999" CURRENTYEAR " The Scalos Team";
 
@@ -103,20 +90,10 @@ BOOL IconObjectInit(struct IconObjectBase *IconObjectBase)
 	InitSemaphore(&IconObjectBase->iob_Semaphore);
 	NewList(&IconObjectBase->iob_ClassList);
 
-	IFFParseBase = (APTR) OpenLibrary( "iffparse.library", 39 );
 	DOSBase = (APTR) OpenLibrary( "dos.library", 39 );
 	IntuitionBase = (APTR) OpenLibrary( "intuition.library", 39 );
 	UtilityBase = (APTR) OpenLibrary( "utility.library", 39 );
 #ifdef __amigaos4__
-	if (IFFParseBase)
-		{
-		IIFFParse = (struct IFFParseIFace *)GetInterface(IFFParseBase, "main", 1, NULL);
-		if (!IIFFParse)
-			{
-			CloseLibrary((struct Library *)IFFParseBase);
-			IFFParseBase = NULL;
-			}
-		}
 	if (DOSBase)
 		{
 		IDOS = (struct DOSIFace *)GetInterface((struct Library *)DOSBase, "main", 1, NULL);
@@ -157,8 +134,7 @@ BOOL IconObjectInit(struct IconObjectBase *IconObjectBase)
 	if (NULL == MemPool)
 		return 0;
 
-	if (IFFParseBase &&
-		DOSBase &&
+	if (DOSBase &&
 		IntuitionBase &&
 		UtilityBase)
 		{
@@ -179,6 +155,23 @@ BOOL IconObjectOpen(struct IconObjectBase *IconObjectBase)
 {
 	d1(kprintf(__FILE__ "/%s/%ld:   IconObjectBase=%08lx  procName=<%s>\n", __FUNC__ , __LINE__, \
 		IconObjectBase, FindTask(NULL)->tc_Node.ln_Name));
+
+	if (0 == IconObjectBase->iob_dtPathLock)
+		{
+		IconObjectBase->iob_dtPathLock = Lock(DATATYPES_PATH, ACCESS_READ);
+		if (0 == IconObjectBase->iob_dtPathLock)
+			{
+			d1(kprintf(__FILE__ "/%s/%ld:  Lock(%s) Failed\n", __FUNC__, __LINE__, DATATYPES_PATH));
+			return FALSE;	// Fail
+			}
+
+		if (!AssignAdd("LIBS", IconObjectBase->iob_dtPathLock))
+			{
+			d1(kprintf(__FILE__ "/%s/%ld:  AssignAdd Failed, IoErr=%ld\n", __FUNC__, __LINE__, IoErr()));
+			return FALSE;	// Fail
+			}
+		}
+
 	if (IsListEmpty(&IconObjectBase->iob_ClassList))
 		{
 		if (ReadClassList(IconObjectBase))
@@ -206,6 +199,12 @@ void IconObjectCleanup(struct IconObjectBase *IconObjectBase)
 
 	FreeClassList(IconObjectBase);
 
+	if (IconObjectBase->iob_dtPathLock)
+		{
+		RemAssignList("LIBS", IconObjectBase->iob_dtPathLock);
+		UnLock(IconObjectBase->iob_dtPathLock);
+		IconObjectBase->iob_dtPathLock = 0;
+		}
 #ifdef __amigaos4__
 	if (INewlib)
 		{
@@ -218,14 +217,6 @@ void IconObjectCleanup(struct IconObjectBase *IconObjectBase)
 		NewlibBase = NULL;
 		}
 #endif /* __amigaos4__ */
-	if (IFFParseBase)
-		{
-#ifdef __amigaos4__
-		DropInterface((struct Interface *)IIFFParse);
-#endif /* __amigaos4__ */
-		CloseLibrary(IFFParseBase);
-		IFFParseBase = NULL;
-		}
 	if (UtilityBase)
 		{
 #ifdef __amigaos4__
@@ -265,14 +256,12 @@ void IconObjectCleanup(struct IconObjectBase *IconObjectBase)
  *
  * PURPOSE: Constructor
  * INPUTS:  base_name - base name of this iconobject datatype
- *		  id - IFF ID for this datatype
- *		  priority - used placement in datatypes list
  * RESULT:
  */
-static struct IconNode *IconNode_New( STRPTR base_name, ULONG id, BYTE priority, struct IconObjectBase *IconObjectBase)
+static struct IconNode *IconNode_New( CONST_STRPTR base_name, struct IconObjectBase *IconObjectBase)
 {
 #define	dt_path		"datatypes/"
-#define	dt_suffix	".datatype"
+#define	dt_suffix	""
 #define DT_NAME_LEN	( sizeof(dt_path) + sizeof(dt_suffix) )
 #define	icon_suffix	".info"
 #define ICON_SUFFIX_LEN	( sizeof(icon_suffix) )
@@ -289,7 +278,7 @@ static struct IconNode *IconNode_New( STRPTR base_name, ULONG id, BYTE priority,
 		memset(node, 0, sizeof(struct IconNode));
 
 		/* make some space for the datatype library's pathname */
-		if( node->in_Name = name = MyAllocVecPooled(DT_NAME_LEN + strlen( base_name )) )
+		if( node->Node.ln_Name = name = MyAllocVecPooled(DT_NAME_LEN + strlen( base_name )) )
 			{
 			/* make datatype's pathname from descriptor's basename */
 			/* name = 'datatypes/' + base_name + '.datatype */
@@ -303,10 +292,6 @@ static struct IconNode *IconNode_New( STRPTR base_name, ULONG id, BYTE priority,
 			/* It seems unnecessary, so I've hard-wired this for now - with a view to removing it */
 			node->in_Suffix	= (STRPTR) icon_suffix;
 			node->in_SuffixLen = strlen(node->in_Suffix);
-
-			/* fill in some other stuff */
-			node->in_ID	   = id;
-			node->in_Priority = priority;
 
 			d1(kprintf("%s/%ld:  node=%08lx\n", __FUNC__, __LINE__, node));
 			}
@@ -334,126 +319,70 @@ static VOID IconNode_Free( struct IconNode *node, struct IconObjectBase *IconObj
 	d1(kprintf(__FILE__ "/%s/%ld:  node=%08lx\n", __FUNC__, __LINE__, node));
 	if(node)
 		{
-		if( node->in_Name )
-			MyFreeVecPooled(node->in_Name);
+		if( node->Node.ln_Name )
+			MyFreeVecPooled(node->Node.ln_Name);
 		MyFreeVecPooled(node);
 		}
 }
 
 //-----------------------------------------------------------------------------
 
-/*
- * HandleIconDTHD()
- *
- */
-
-static ULONG HandleIconDTHD( struct DataTypeHeader *dthd, struct IconObjectBase *IconObjectBase )
+static void AddDtLib( CONST_STRPTR LibFileName, struct IconObjectBase *IconObjectBase )
 {
-	d1(kprintf(__FILE__ "/%s/%ld:  IconObjectBase=%08lx\n", __FUNC__, __LINE__, IconObjectBase));
+	struct IconNode *node;
+	BOOL Success = FALSE;
 
-	if( dthd->dth_GroupID == ICON_ID )
-		{
-		struct IconNode *node;
-
-		if( node = IconNode_New( MAKE_STRPTR( dthd, dthd->dth_BaseName ), 
-				dthd->dth_ID, dthd->dth_Priority, IconObjectBase) )
-			{
-			struct Library *DTClassBase;
+	do	{
+		struct Library *DTClassBase;
 #ifdef __amigaos4__
-			struct DTClassIFace *IDTClass;
-#endif /* __amigaos4__ */
-			d1(kprintf("%s/%ld:  node=%08lx  basename=<%s>\n", __FUNC__, __LINE__, \
-				node, MAKE_STRPTR(dthd, dthd->dth_BaseName)));
-
-			if( dthd->dth_ID == AMIGAICON_ID )
-				IconObjectBase->iob_AmigaIcon = node;
-
-			d1(kprintf("%s/%ld:  name=<%s>\n", __FUNC__, __LINE__, node->in_Name));
-
-			node->in_LibBase = DTClassBase = OpenLibrary( node->in_Name, 0L );
-			if (node->in_LibBase != NULL)
-				{
-#ifdef __amigaos4__
-				node->in_IFace = IDTClass = (struct DTClassIFace *)GetInterface(DTClassBase, "main", 1, NULL);
+		struct DTClassIFace *IDTClass;
 #endif /* __amigaos4__ */
 
-				d1(kprintf("%s/%ld:  OpenLib OK\n", __FUNC__, __LINE__));
+		node = IconNode_New( LibFileName, IconObjectBase);
+		if (NULL == node)
+			break;
 
-				node->in_Class = ObtainEngine();
+		d1(kprintf("%s/%ld:  node=%08lx  LibFileName=<%s>\n", __FUNC__, __LINE__, \
+			node, LibFileName));
 
-				d1(kprintf("%s/%ld:  Class=%08lx  SysBase=%08lx\n", __FUNC__, __LINE__, node->in_Class, SysBase));
-				
-				Enqueue(&IconObjectBase->iob_ClassList, (struct Node *) node );
+		d1(kprintf("%s/%ld:  name=<%s>\n", __FUNC__, __LINE__, node->Node.ln_Name));
 
-				d1(kprintf("%s/%ld:  after Enqueue\n", __FUNC__, __LINE__));
-				}
-			else
-				{
-				d1(kprintf("%s/%ld:  OpenLib FAIL\n", __FUNC__, __LINE__));
-				IconNode_Free(node, IconObjectBase);
-				}
-			}
-		}
+		node->in_LibBase = DTClassBase = OpenLibrary( node->Node.ln_Name, 0L );
+		d1(kprintf("%s/%ld:  in_LibBase=%08lx\n", __FUNC__, __LINE__, node->in_LibBase));
+		if (NULL == node->in_LibBase)
+			break;
 
-	d1(kprintf("%s/%ld:  finish\n", __FUNC__, __LINE__));
+#ifdef __amigaos4__
+		node->in_IFace = IDTClass = (struct DTClassIFace *)GetInterface(DTClassBase, "main", 1, NULL);
+		d1(kprintf("%s/%ld:  in_IFace=%08lx\n", __FUNC__, __LINE__, node->in_IFace));
+		if (NULL == node->in_IFace)
+			break;
+#endif /* __amigaos4__ */
 
-	return 0L;
-}
+		d1(kprintf("%s/%ld:  OpenLib(%s) OK\n", __FUNC__, __LINE__, LibFileName));
+		d1(kprintf("%s/%ld:  lib_IdString=<%s>  ln_Pri=%ld\n", __FUNC__, __LINE__, node->in_LibBase->lib_IdString, node->in_LibBase->lib_Node.ln_Pri));
 
-//-----------------------------------------------------------------------------
+		node->in_Class = ObtainEngine();
+		d1(kprintf("%s/%ld:  in_Class=%08lx\n", __FUNC__, __LINE__, node->in_Class));
+		if (NULL == node->in_Class)
+			break;
 
-/*
- * ParseDTDescriptor()
- *
- */
+		node->Node.ln_Pri = node->in_LibBase->lib_Node.ln_Pri;
 
-static BOOL ParseDTDescriptor( STRPTR filename, struct IconObjectBase *IconObjectBase )
-{
-	struct IFFHandle *iff;
-	LONG			  error;
+		d1(kprintf("%s/%ld:  Class=%08lx  SysBase=%08lx\n", __FUNC__, __LINE__, node->in_Class, SysBase));
 
-	d1(kprintf(__FILE__ "/%s/%ld:  IconObjectBase=%08lx\n", __FUNC__, __LINE__, IconObjectBase));
-	d1(kprintf(__FILE__ "/%s/%ld:  filename=<%s>\n", __FUNC__, __LINE__, filename));
+		Enqueue(&IconObjectBase->iob_ClassList, (struct Node *) node );
 
-	if( iff = AllocIFF() )
-	{
-		if( iff->iff_Stream = (ULONG) Open( filename, MODE_OLDFILE ) )
+		d1(kprintf("%s/%ld:  Success, after Enqueue\n", __FUNC__, __LINE__));
+		Success = TRUE;
+		} while (0);
+
+
+	if (!Success)
 		{
-			InitIFFasDOS( iff );
-
-			if( !(error = OpenIFF( iff, IFFF_READ ) ) )
-			{
-				if( !(error = CollectionChunk( iff, ID_DTYP, ID_DTHD ) ) )
-				{
-					StopOnExit( iff, ID_DTYP, ID_DTHD );
-
-					while(TRUE)
-					{
-						if( ( error = ParseIFF( iff, IFFPARSE_SCAN ) ) == IFFERR_EOC )
-						{
-							struct CollectionItem *ci;
-
-							ci = FindCollection( iff, ID_DTYP, ID_DTHD );
-
-							while( ci )
-							{
-								HandleIconDTHD( ci->ci_Data, IconObjectBase );
-								ci = ci->ci_Next;
-							}
-						}
-						else
-							break;
-					}
-				}
-
-				CloseIFF( iff );
-			}
-			Close( iff->iff_Stream );
+		d1(kprintf("%s/%ld:  OpenLib(%s) FAIL\n", __FUNC__, __LINE__, LibFileName));
+		IconNode_Free(node, IconObjectBase);
 		}
-		FreeIFF( iff );
-	}
-
-	return TRUE;
 }
 
 //-----------------------------------------------------------------------------
@@ -463,49 +392,45 @@ static BOOL ParseDTDescriptor( STRPTR filename, struct IconObjectBase *IconObjec
  *
  */
 
-#define ICON_NAME_PAT		"#?.info"
-#define ICON_NAME_PAT_LEN	7
-#define BUF_SIZE		( ICON_NAME_PAT_LEN * 2 + 2 )
-#define DATATYPES_PATH		"DEVS:Datatypes/"
-
-
 static BOOL ReadClassList( struct IconObjectBase *IconObjectBase )
 {
-	char pattern_buf[ BUF_SIZE ];
 	BOOL success = FALSE;
 	struct List *list = &IconObjectBase->iob_ClassList;
+	BPTR lock;
 
 	NewList(list);
 
-	d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
+	d1(kprintf(__FILE__ "/%s/%ld:  START\n", __FUNC__, __LINE__));
 
-	if( ParsePatternNoCase( ICON_NAME_PAT, pattern_buf, BUF_SIZE ) >= 0L )
+	if( lock = Lock( DATATYPES_PATH "datatypes", SHARED_LOCK ) )
 		{
-		BPTR lock;
+		BPTR olddir = CurrentDir( lock );
+		struct FileInfoBlock *fib;
 
-		if( lock = Lock( DATATYPES_PATH, SHARED_LOCK ) )
+		d1(kprintf(__FILE__ "/%s/%ld:  Lock(%s) OK\n", __FUNC__, __LINE__, DATATYPES_PATH));
+
+		if( fib = (struct FileInfoBlock *) AllocDosObject( DOS_FIB, TAG_DONE ) )
 			{
-			BPTR olddir = CurrentDir( lock );
-			struct FileInfoBlock *fib;
-
-			if( fib = (struct FileInfoBlock *) AllocDosObject( DOS_FIB, TAG_DONE ) )
+			if( Examine( lock, fib ) )
 				{
-				if( Examine( lock, fib ) )
+				while( ExNext( lock, fib ) )
 					{
-					while( ExNext( lock, fib ) )
-						{
-						if( !MatchPatternNoCase( pattern_buf, fib->fib_FileName ) )
-							ParseDTDescriptor( fib->fib_FileName, IconObjectBase );
-						}
-					if( IoErr() == ERROR_NO_MORE_ENTRIES )
-						success = TRUE;
-					}
-				FreeDosObject( DOS_FIB, fib );
-				}
-			CurrentDir( olddir );
+					d1(kprintf(__FILE__ "/%s/%ld:  found <%s>\n", __FUNC__, __LINE__, fib->fib_FileName));
 
-			UnLock( lock );
+					AddDtLib( fib->fib_FileName, IconObjectBase );
+					}
+				if( IoErr() == ERROR_NO_MORE_ENTRIES )
+					success = TRUE;
+				}
+			FreeDosObject( DOS_FIB, fib );
 			}
+		CurrentDir( olddir );
+
+		UnLock( lock );
+		}
+	else
+		{
+		d1(kprintf("%s/%ld:  Failed to Lock(%s), IoErr=%ld\n", __FUNC__, __LINE__, DATATYPES_PATH "datatypes", IoErr()));
 		}
 
 	d1(kprintf("%s/%ld:  success=%ld\n", __FUNC__, __LINE__, success));
@@ -578,10 +503,10 @@ LIBFUNC_P3(struct Iconobject *, LIBNewIconObject,
 
 		for (in = (struct IconNode *) IconObjectBase->iob_ClassList.lh_Head;
 			NULL == obj && in != (struct IconNode *) &IconObjectBase->iob_ClassList.lh_Tail;
-			in = (struct IconNode *) in->Node.mln_Succ)
+			in = (struct IconNode *) in->Node.ln_Succ)
 			{
-			d1(KPrintF("%s/%ld:  datatype=<%s>  class=%08lx  in_name=<%s>\n", \
-				__FUNC__, __LINE__, in->in_Name, in->in_Class, in->in_Name));
+			d1(KPrintF("%s/%ld:  datatype=<%s>  class=%08lx  ln_name=<%s>\n", \
+				__FUNC__, __LINE__, in->Node.ln_Name, in->in_Class, in->Node.ln_Name));
 
 			// Make sure each datatype starts with 0 file offset
 			Seek(IconFh, 0, OFFSET_BEGINNING);
@@ -592,8 +517,8 @@ LIBFUNC_P3(struct Iconobject *, LIBNewIconObject,
 				TAG_MORE, (ULONG) Taglist,
 				TAG_END);
 
-			d1(kprintf("%s/%ld:  datatype=<%s>  obj=%08lx  in_name=<%s>\n", \
-				__FUNC__, __LINE__, in->in_Name, obj, in->in_Name));
+			d1(kprintf("%s/%ld:  datatype=<%s>  obj=%08lx  ln_name=<%s>\n", \
+				__FUNC__, __LINE__, in->Node.ln_Name, obj, in->Node.ln_Name));
 			}
 
 		Close(IconFh);
@@ -636,7 +561,7 @@ LIBFUNC_P3(struct Iconobject *, LIBGetDefIconObject,
 
 	for (in = (struct IconNode *) IconObjectBase->iob_ClassList.lh_Head;
 		NULL == obj && in != (struct IconNode *) &IconObjectBase->iob_ClassList.lh_Tail;
-		in = (struct IconNode *) in->Node.mln_Succ)
+		in = (struct IconNode *) in->Node.ln_Succ)
 		{
 		obj = (struct Iconobject *) NewObject(in->in_Class, NULL,
 			IDTA_DefType, IconType,
@@ -644,7 +569,7 @@ LIBFUNC_P3(struct Iconobject *, LIBGetDefIconObject,
 			TAG_MORE, (ULONG) TagList,
 			TAG_END);
 
-		d1(kprintf("%s/%ld:   obj=%08lx  in_name=<%s>\n", __FUNC__, __LINE__, obj, in->in_Name));
+		d1(kprintf("%s/%ld:   obj=%08lx  ln_name=<%s>\n", __FUNC__, __LINE__, obj, in->Node.ln_Name));
 		}
 
 	d1(kprintf("%s/%ld:   obj=%08lx\n", __FUNC__, __LINE__, obj));
@@ -687,7 +612,7 @@ LIBFUNC_P2(ULONG, LIBIsIconName,
 
 	for (in = (struct IconNode *) IconObjectBase->iob_ClassList.lh_Head;
 		in != (struct IconNode *) &IconObjectBase->iob_ClassList.lh_Tail;
-		in = (struct IconNode *) in->Node.mln_Succ)
+		in = (struct IconNode *) in->Node.ln_Succ)
 		{
 		d1(kprintf("%s/%ld:  Suffix=<%s>  Len=%ld\n", __FUNC__, __LINE__, in->in_Suffix, in->in_SuffixLen));
 
@@ -745,7 +670,7 @@ static struct Iconobject *InternalConvert2IconObjectA(
 
 	for (in = (struct IconNode *) IconObjectBase->iob_ClassList.lh_Head;
 		NULL == obj && in != (struct IconNode *) &IconObjectBase->iob_ClassList.lh_Tail;
-		in = (struct IconNode *) in->Node.mln_Succ)
+		in = (struct IconNode *) in->Node.ln_Succ)
 		{
 		obj = (struct Iconobject *) NewObject(in->in_Class, (ULONG) NULL,
 			AIDTA_Icon, (ULONG) diskobject,
@@ -753,7 +678,7 @@ static struct Iconobject *InternalConvert2IconObjectA(
 			TAG_MORE, (ULONG) TagList,
 			TAG_END);
 
-		d1(kprintf("%s/%ld:   obj=%08lx  in_name=<%s>\n", __FUNC__, __LINE__, obj, in->in_Name));
+		d1(kprintf("%s/%ld:   obj=%08lx  ln_name=<%s>\n", __FUNC__, __LINE__, obj, in->Node.ln_Name));
 		}
 
 	return obj;

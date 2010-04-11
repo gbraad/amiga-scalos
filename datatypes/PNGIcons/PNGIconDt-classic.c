@@ -76,7 +76,7 @@ struct Resident ALIGNED romtag =
 #endif
 	LIB_VERSION,
 	NT_LIBRARY,
-	0,
+	12,
 	libName,
 	libIdString,
 	inittab
@@ -97,6 +97,7 @@ static LIB_SAVEDS(struct Library *) LIB_ASM LIB_INTERRUPT Initlib(LIB_REG(d0, st
 
 	SysBase = sysbase;
 	PngDtLibBase->nib_ClassLibrary.cl_Lib.lib_Revision = LIB_REVISION;
+	PngDtLibBase->nib_ClassLibrary.cl_Lib.lib_Node.ln_Pri = 12;
 	PngDtLibBase->nib_SegList = seglist;
 
 	if (!InitDatatype(PngDtLibBase))
