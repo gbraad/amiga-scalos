@@ -2066,15 +2066,18 @@ static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
 		if (info)
 			{
 			// Check available space on destination device
+			BOOL isRamDisk;
+
 			Info(fto->fto_DestDirLock, info);
 
 			d1(KPrintF("%s/%s/%ld: id_NumBlocks=%lu  id_NumBlocksUsed=%lu\n", __FILE__, __FUNC__, __LINE__, info->id_NumBlocks, info->id_NumBlocksUsed));
 
+			isRamDisk = FileTransClass_IsRamDisk(fto->fto_DestDirLock, info);
+
 			AvailableSpace = Mul64(MakeU64(info->id_NumBlocks - info->id_NumBlocksUsed), MakeU64(info->id_BytesPerBlock), NULL);
 			ScalosFreeInfoData(&info);
 
-			if (!FileTransClass_IsRamDisk(fto->fto_DestDirLock, info)
-				&& Cmp64(AvailableSpace, ftci->ftci_TotalBytes) < 0)
+			if (!isRamDisk && Cmp64(AvailableSpace, ftci->ftci_TotalBytes) < 0)
 				{
 				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -2106,7 +2109,7 @@ static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
 // we need to skip check for sufficient space here!
 static BOOL FileTransClass_IsRamDisk(BPTR dirLock, const struct InfoData *info)
 {
-	BPTR ramDiskLock = BNULL;
+	BPTR ramDiskLock;
 	static BOOL isRamDisk = FALSE;
 
 	do	{
