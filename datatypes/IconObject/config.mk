@@ -7,6 +7,8 @@ include $(TOPLEVEL)/rules.mk
 
 ##############################################################################
 
+MKDIR   	= mkdir -p #makedir force
+DT_DIR		= scalos:IconDatatypes/datatypes
 MCPGFX_DIR	= $(TOPLEVEL)/common/McpGfx
 
 ##############################################################################

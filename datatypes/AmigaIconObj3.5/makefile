@@ -1,7 +1,6 @@
 # makefile für Scalos IconObject datatypes stuff
 # $Date$
 # $Revision$
-# $Id$
 #####################################################################
 
 ASRCS 		=	
@@ -13,8 +12,10 @@ AS		= phxAss
 LD 		= slink
 CC 		= sc
 SPLAT		= sc:c/splat
+MKDIR   	= mkdir -p #makedir force
 LIBS 		= LIB:debug.lib LIB:sc.lib LIB:amiga.lib
 PRECOMP		= Include:all.gst
+DT_DIR		= scalos:IconDatatypes/datatypes
 OBJ_DIR		= .sasobj
 
 .SUFFIXES: .asm
@@ -86,7 +87,8 @@ install:
 	@printf '\033[32mFlushing memory...\033[0m\n'
 	avail flush
 	@printf '\033[32mInstall: \033[31m\033[1m$(DTNAME)\033[0m\n'
-	@copy $(DTNAME) scalos:IconDatatypes/datatypes
+	-@$(MKDIR) $(DT_DIR)
+	copy $(DTNAME) $(DT_DIR)
 
 #####################################################################
 

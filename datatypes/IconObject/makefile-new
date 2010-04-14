@@ -68,7 +68,8 @@ $(NAME): $(OBJS)
 
 install:
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) scalos:IconDatatypes/datatypes
+	-@$(MKDIR) $(DT_DIR)
+	copy $(NAME) $(DT_DIR)
 	@avail flush
 
 clean:
