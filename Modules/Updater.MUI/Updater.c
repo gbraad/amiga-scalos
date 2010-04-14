@@ -105,6 +105,7 @@ struct ComponentListEntry
 
 	ULONG cle_RemoteVersion;
 	ULONG cle_RemoteRevision;
+	ULONG cle_RemotePatchLevel;
 
 	Object *cle_LampObject;
 	ULONG cle_LampImageNr;
@@ -116,6 +117,7 @@ struct ComponentListEntry
 
 	ULONG cle_LocalVersion;
 	ULONG cle_LocalRevision;
+	ULONG cle_LocalPatchLevel;
 
 	char cle_LocalVersionString[10];
 	char cle_RemoteVersionString[10];
@@ -162,7 +164,7 @@ static void ComponentToggleUpdateHookFunc(struct Hook *hook, Object *obj, Msg *m
 static void ToggleShowAllHookFunc(struct Hook *hook, Object *obj, Msg *msg);
 static STRPTR GetAssignListVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRPTR VersionString, size_t MaxLen);
 static STRPTR GetFileVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRPTR VersionString, size_t MaxLen);
-static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, ULONG *Version, ULONG *Revision);
+static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, ULONG *Version, ULONG *Revision, ULONG *PatchLevel);
 static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg);
 static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg);
 static void SelectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *msg);
@@ -1526,7 +1528,9 @@ static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len)
 
 					if (0 == strcmp(OsName, (STRPTR) Args[ARG_OS]))
 						{
-						if (2 == sscanf((STRPTR) Args[ARG_VERSION], "%lu.%lu", &cle.cle_RemoteVersion, &cle.cle_RemoteRevision))
+						cle.cle_RemoteVersion = cle.cle_RemoteRevision = cle.cle_RemotePatchLevel = 0;
+
+						if (sscanf((STRPTR) Args[ARG_VERSION], "%lu.%lu.%lu", &cle.cle_RemoteVersion, &cle.cle_RemoteRevision, &cle.cle_RemotePatchLevel) >= 2)
 							{
 							char VersionString[80];
 
@@ -1538,12 +1542,16 @@ static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len)
 							d1(KPrintF("%s/%s/%ld: VersionString=<%s>\n", __FILE__, __FUNC__, __LINE__, VersionString));
 							
 							ExtractVersionNumberFromVersionString(VersionString,
-								&cle.cle_LocalVersion, &cle.cle_LocalRevision);
+								&cle.cle_LocalVersion, &cle.cle_LocalRevision, &cle.cle_LocalPatchLevel);
 
-							d1(KPrintF("%s/%s/%ld: cle_LocalVersion=%lu  cle_LocalRevision=%lu\n", __FILE__, __FUNC__, __LINE__, cle.cle_LocalVersion, cle.cle_LocalRevision));
+							d1(KPrintF("%s/%s/%ld: cle_LocalVersion=%lu  cle_LocalRevision=%lu  cle_LocalPatchLevel=%lu\n", __FILE__, __FUNC__, __LINE__, cle.cle_LocalVersion, cle.cle_LocalRevision, cle.cle_LocalPatchLevel));
 
 							cle.cle_Selected = (cle.cle_LocalVersion < cle.cle_RemoteVersion)
-								|| ((cle.cle_LocalVersion == cle.cle_RemoteVersion) && (cle.cle_LocalRevision < cle.cle_RemoteRevision));
+								|| ((cle.cle_LocalVersion == cle.cle_RemoteVersion)
+									&& (cle.cle_LocalRevision < cle.cle_RemoteRevision))
+								|| ((cle.cle_LocalVersion == cle.cle_RemoteVersion)
+									&& (cle.cle_LocalRevision == cle.cle_RemoteRevision)
+									&& (cle.cle_LocalPatchLevel < cle.cle_RemotePatchLevel) );
 
 							if (cle.cle_Selected)
 								SelectedCount++;
@@ -1634,8 +1642,10 @@ static APTR ComponentsConstructHookFunc(struct Hook *hook, Object *obj, struct N
 
 		cle->cle_RemoteVersion = cleIn->cle_RemoteVersion;
 		cle->cle_RemoteRevision = cleIn->cle_RemoteRevision;
+		cle->cle_RemotePatchLevel = cleIn->cle_RemotePatchLevel;
 		cle->cle_LocalVersion = cleIn->cle_LocalVersion;
 		cle->cle_LocalRevision = cleIn->cle_LocalRevision;
+		cle->cle_LocalPatchLevel = cleIn->cle_LocalPatchLevel;
 		cle->cle_Selected = cleIn->cle_Selected;
 		cle->cle_CheckboxImageNr = ++globalImageNr;
 		cle->cle_LampImageNr = ++globalImageNr;
@@ -1658,8 +1668,14 @@ static APTR ComponentsConstructHookFunc(struct Hook *hook, Object *obj, struct N
 		DoMethod(obj, MUIM_NList_UseImage, cle->cle_LampObject, cle->cle_LampImageNr, 0);
 		DoMethod(obj, MUIM_NList_UseImage, cle->cle_CheckboxObject, cle->cle_CheckboxImageNr, 0);
 
-		snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu", cle->cle_LocalVersion, cle->cle_LocalRevision);
-		snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu", cle->cle_RemoteVersion, cle->cle_RemoteRevision);
+		if (cle->cle_LocalPatchLevel)
+			snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu.%lu", cle->cle_LocalVersion, cle->cle_LocalRevision, cle->cle_LocalPatchLevel);
+		else
+			snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu", cle->cle_LocalVersion, cle->cle_LocalRevision);
+		if (cle->cle_RemotePatchLevel)
+			snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu.%lu", cle->cle_RemoteVersion, cle->cle_RemoteRevision, cle->cle_RemotePatchLevel);
+		else
+			snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu", cle->cle_RemoteVersion, cle->cle_RemoteRevision);
 
 		snprintf(cle->cle_CheckboxImageNrString, sizeof(cle->cle_CheckboxImageNrString), "\33o[%ld@%ld|0]", cle->cle_CheckboxImageNr, cle->cle_CheckboxImageNr);
 		snprintf(cle->cle_LampImageNrString, sizeof(cle->cle_LampImageNrString), "\33o[%ld]", cle->cle_LampImageNr);
@@ -2108,14 +2124,18 @@ static STRPTR GetFileVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRP
 	if (DirLock)
 		UnLock(DirLock);
 
+	d1(KPrintF("%s/%s/%ld: OrigVersionString=<%s>\n", __FILE__, __FUNC__, __LINE__, OrigVersionString ));
+
 	return OrigVersionString;
 }
 
 //----------------------------------------------------------------------------
 
-static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, ULONG *Version, ULONG *Revision)
+static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, ULONG *Version, ULONG *Revision, ULONG *PatchLevel)
 {
-	*Version = *Revision = 0;
+	*Version = *Revision = *PatchLevel = 0;
+
+	d1(KPrintF("%s/%s/%ld: VersionString=<%s>\n", __FILE__, __FUNC__, __LINE__, VersionString ));
 
 	do	{
 		while (*VersionString && !isspace(*VersionString))
@@ -2128,9 +2148,9 @@ static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, UL
 	if ('v' == ToLower(*VersionString))
 		VersionString++;
 
-	sscanf(VersionString, "%ld.%ld", Version, Revision);
+	sscanf(VersionString, "%lu.%lu.%lu", Version, Revision, PatchLevel);
 
-	d1(KPrintF("%s/%s/%ld: Version=%lu  Revision=%lu\n", __FILE__, __FUNC__, __LINE__, *Version, *Revision));
+	d1(KPrintF("%s/%s/%ld: Version=%lu  Revision=%lu  PatchLevel=%lu\n", __FILE__, __FUNC__, __LINE__, *Version, *Revision, *PatchLevel));
 }
 
 //----------------------------------------------------------------------------
