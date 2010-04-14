@@ -114,7 +114,7 @@ static struct Library * Initlib(struct Library *libbase, BPTR seglist, struct Ex
 	SysBase = (struct ExecBase *)pIExec->Data.LibBase;
 	IExec = pIExec;
 	IconObjLibBase->nib_ClassLibrary.cl_Lib.lib_Revision = LIB_REVISION;
-	IcobObjLibBase->nib_ClassLibrary.cl_Lib.lib_Node.ln_Pri = 7;
+	IconObjLibBase->nib_ClassLibrary.cl_Lib.lib_Node.ln_Pri = 7;
 	IconObjLibBase->nib_SegList = (struct SegList *)seglist;
 
 	if (!InitDatatype(IconObjLibBase))
