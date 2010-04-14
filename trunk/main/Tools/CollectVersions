@@ -150,7 +150,7 @@ connectstr = ""
 if right(dirname,1) ~= ":" then connectstr = "/"
 
 filePath = dirname || connectstr
-'version "' || filePath || filename || '" >' tmpfname
+'version full "' || filePath || filename || '" >' tmpfname
 /* say "version returned" rc */
 
 if rc = 0 then
@@ -171,6 +171,8 @@ if rc = 0 then
 	end
 	if index("Vv", left(vstring, 1)) > 0 then vstring = substr(vstring,2)
 	vstring = subword(vstring, 1, 1)
+
+	/* say filename || " Version: " || vstring */
 
 	LHAName = LocalPkgPath || filename || ".lha"
 	PkgName = PkgPath || filename || ".lha"
