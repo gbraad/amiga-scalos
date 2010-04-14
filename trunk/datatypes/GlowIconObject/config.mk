@@ -1,7 +1,14 @@
+# $Date$
+# $Revision$
 ##############################################################################
 
 include $(TOPLEVEL)/config.mk
 include $(TOPLEVEL)/rules.mk
+
+##############################################################################
+
+MKDIR   	= mkdir -p #makedir force
+DT_DIR		= scalos:IconDatatypes/datatypes
 
 ##############################################################################
 # Check gcc
