@@ -14,7 +14,10 @@ SUBDIRS	=	Menu \
 		Palette \
 		FileTypes \
 		Pattern \
-		Popupmenu \
+
+ifneq ($(MACHINE), ppc-amigaos)
+SUBDIRS	+=      Popupmenu
+endif
 
 ##############################################################################
 

@@ -16,8 +16,10 @@ SUBDIRS	=	preferences	\
 		sqlite		\
                 scalosgfx	\
                 iconobject	\
-                popupmenu	\
 			
+ifneq ($(MACHINE), ppc-amigaos)
+SUBDIRS	+=      popupmenu
+endif
 
 ##############################################################################
 
