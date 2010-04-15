@@ -1,3 +1,9 @@
+15-04-2010
+bugfixes
+The hotfix 40.3 of Updater.module has been released.<br>It adds support for patch versions like 41.7.1. This update is required for online update of Scalos from 41.7 to 41.7.1
+15-04-2010
+bugfixes
+The hotfix 41.7.1 of Scalos has been released. It fixes the following problems:<br>Bugfix: corrected recognition of active 3D-Layers (&quot;Enhanced Display&quot;) with MorphOS 2.x. <br>Bugfix: do not check RAM disk for sucfficient space (when copying files) when it returns 0 blocks free (AmigaOS3.x RAM disk always returns 0 free blocks)
 26-03-2010
 modules
 A few days ago we have released the hotfix V40.2 of Scalos Updater.module. It offers improved security agains tampering by checking the signature of the version and file list. The Hotfix can be installed with the online Updater module, To scan for available updates, select menu item &quot;Check for Updates...&quot; in tools menu.
