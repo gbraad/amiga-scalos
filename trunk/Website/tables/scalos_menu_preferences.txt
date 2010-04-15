@@ -1,3 +1,6 @@
+V40.20
+Improvement: added preview of menu icon images to listview
+
 V40.19
 Improvement: redesigned layout for better overview
 Improvement: added Workbench popup menu to default menu preferences

@@ -1,7 +1,15 @@
+V41.8
+Bugfix: corrected recognition of active 3D-Layers (&quot;Enhanced Display&quot;) with MorphOS 2.x
+Bugfix: do not check RAM disk for sucfficient space (when copying files) when it returns 0 blocks free (AmigaOS3.x RAM disk always returns 0 free blocks)
+Improvement: added option to select whether drawers in text windows are displayed before files, after files, or with files
+Improvement: Updater.module: added signature check for downloaded versions.txt file
+Bugfix: corrected line height calculation for text windows
+Bugfix: minimum window size is now adjusted, taking control bar and status bar into account
+
 V41.7
 Improvement: Updated libjpeg to libjpeg V8 for Morphos
 Improvement: Updated sqlite3.library to SQLite3 V3.6.23
-Bugfix: added Workaround against "menu-open-lockup" with MorphOS
+Bugfix: added Workaround against &quot;menu-open-lockup&quot; with MorphOS
 Improvement: added check for sufficient space on copy/move operations
 Bugfix: corrected handling of copy/move progress without valid totals count
 Improvement: touching pattern.prefs trigger selection of new random background patterns, even when prefs have not changed
