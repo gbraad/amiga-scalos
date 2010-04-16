@@ -1,0 +1,67 @@
+# $Date$
+# §Revision:                 $
+##############################################################################
+
+ifndef TOPLEVEL
+	TOPLEVEL=$(shell pwd)/../../..
+endif
+
+##############################################################################
+
+include		config.mk
+
+##############################################################################
+#
+# Project Object files
+#
+
+OBJS	=       $(BEGIN_OBJS) \
+		$(OBJDIR)/PNGPicture.o \
+		$(END_OBJS)
+
+##############################################################################
+#
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
+
+##############################################################################
+#
+# Targets
+#
+
+PNGPICTURE  =       pngpicture.pvplugin
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(PNGPICTURE) \
+		all_subdirs
+
+##############################################################################
+
+$(PNGPICTURE): $(OBJS)
+	@$(ECHO) "Link $@"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
+	@$(STRIP) $@.debug -o $@
+	@protect $(PNGPICTURE) +e
+
+##############################################################################
+
+install:
+	-@$(ECHO) "Installing $(PNGPICTURE)"
+	@copy $(PNGPICTURE) Scalos:Plugins/Preview/ clone
+	@avail flush
+
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(PNGPICTURE) $(PNGPICTURE).debug *.dump *_str.*
+
+clean:  clean_subdirs
+
