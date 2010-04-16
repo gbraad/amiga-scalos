@@ -78,12 +78,13 @@ ScalosComponents.45.Path = "Scalos:Plugins/Menu"; ScalosComponents.45.File = "so
 ScalosComponents.46.Path = "Scalos:Plugins/Preview"; ScalosComponents.46.File = "defpicture.pvplugin"; ScalosComponents.46.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 ScalosComponents.47.Path = "Scalos:Plugins/Preview"; ScalosComponents.47.File = "jpegpicture.pvplugin"; ScalosComponents.47.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 ScalosComponents.48.Path = "Scalos:Plugins/Preview"; ScalosComponents.48.File = "video.pvplugin"; ScalosComponents.48.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.49.Path = "Scalos:Plugins/Preview"; ScalosComponents.49.File = "pngpicture.pvplugin"; ScalosComponents.49.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 
 /* --- 3rd party stuff */
-ScalosComponents.49.Path = "libs:"; ScalosComponents.49.File = "guigfx.library"; ScalosComponents.49.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
-ScalosComponents.50.Path = "libs:"; ScalosComponents.50.File = "render.library"; ScalosComponents.50.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.50.Path = "libs:"; ScalosComponents.50.File = "guigfx.library"; ScalosComponents.50.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.51.Path = "libs:"; ScalosComponents.51.File = "render.library"; ScalosComponents.51.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 
-ScalosComponents.Count = 50;
+ScalosComponents.Count = 51;
 
 /* -------------------------------------------------------------------------------- */
 

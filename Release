@@ -176,6 +176,7 @@ say "Copying Plugins..."
 
 'copy Plugins/Preview/DefPicture/#?.pvplugin "RAM:ScalosBeta/Plugins/Preview/" clone quiet'
 'copy Plugins/Preview/JpegPicture/#?.pvplugin "RAM:ScalosBeta/Plugins/Preview/" clone quiet'
+'copy Plugins/Preview/PNGPicture/#?.pvplugin "RAM:ScalosBeta/Plugins/Preview/" clone quiet'
 'copy Plugins/Preview/Video/#?.pvplugin "RAM:ScalosBeta/Plugins/Preview/" clone quiet'
 
 say "Copying Language catalogs..."

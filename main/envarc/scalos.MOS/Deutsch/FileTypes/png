@@ -1,50 +1,50 @@
 # Scalos filetype description
-# written 16. April 2010 23:10:38
+# written 16. April 2010 23:04:57
 
-DESCRIPTION "[ Image ]"
-PREVIEWPLUGIN "scalos:plugins/preview/defpicture.pvplugin"
+DESCRIPTION "[PNG-Bild]"
+PREVIEWPLUGIN "Scalos:Plugins/Preview/pngpicture.pvplugin"
 
 POPUPMENU
-	MENUENTRY DEFAULTACTION NAME "Ouvrir" UNSELECTEDICON "THEME:Filetypes/Open"
+	MENUENTRY DEFAULTACTION NAME "Öffnen" UNSELECTEDICON "THEME:Filetypes/Open"
 		INTERNALCMD NAME "open"
 	ENDMENUENTRY
-	MENUENTRY NAME "Informations..." UNSELECTEDICON "THEME:Filetypes/Information"
+	MENUENTRY NAME "Informationen anzeigen..." UNSELECTEDICON "THEME:Filetypes/Information"
 		INTERNALCMD NAME "iconinfo"
 	ENDMENUENTRY
 	MENUSEPARATOR
-	MENUENTRY NAME "Sous PictIcon" UNSELECTEDICON "THEME:Filetypes/CreateThumbnail"
+	MENUENTRY NAME "Miniaturvorschau erzeugen" UNSELECTEDICON "THEME:Filetypes/CreateThumbnail"
 		INTERNALCMD NAME "createthumbnail"
 	ENDMENUENTRY
 	MENUSEPARATOR
-	MENUENTRY NAME "Figer"
+	MENUENTRY NAME "Fixieren"
 		INTERNALCMD NAME "snapshot"
 	ENDMENUENTRY
-	MENUENTRY NAME "Libérer"
+	MENUENTRY NAME "Position freigeben"
 		INTERNALCMD NAME "unsnapshot"
 	ENDMENUENTRY
 	MENUSEPARATOR
-	SUBMENU NAME "Edition" UNSELECTEDICON "THEME:Filetypes/Edit"
-		MENUENTRY NAME "Couper" UNSELECTEDICON "THEME:Filetypes/EditCut"
+	SUBMENU NAME "Bearbeiten" UNSELECTEDICON "THEME:Filetypes/Edit"
+		MENUENTRY NAME "Ausschneiden" UNSELECTEDICON "THEME:Filetypes/EditCut"
 			INTERNALCMD NAME "cut"
 		ENDMENUENTRY
-		MENUENTRY NAME "Copier" UNSELECTEDICON "THEME:Filetypes/EditCopy"
+		MENUENTRY NAME "Kopieren in Zwischenablage" UNSELECTEDICON "THEME:Filetypes/EditCopy"
 			INTERNALCMD NAME "copy"
 		ENDMENUENTRY
 	ENDSUBMENU
-	MENUENTRY NAME "Renommer" UNSELECTEDICON "THEME:Filetypes/Rename"
+	MENUENTRY NAME "Umbenennen..." UNSELECTEDICON "THEME:Filetypes/Rename"
 		INTERNALCMD NAME "rename"
 	ENDMENUENTRY
-	MENUENTRY NAME "Sortir"
+	MENUENTRY NAME "Auslagern"
 		INTERNALCMD NAME "leaveout"
 	ENDMENUENTRY
-	MENUENTRY NAME "Ranger"
+	MENUENTRY NAME "Zurücklegen"
 		INTERNALCMD NAME "putaway"
 	ENDMENUENTRY
-	MENUENTRY NAME "Effacer" UNSELECTEDICON "THEME:Filetypes/Delete"
+	MENUENTRY NAME "Löschen..." UNSELECTEDICON "THEME:Filetypes/Delete"
 		INTERNALCMD NAME "delete"
 	ENDMENUENTRY
 	MENUSEPARATOR
-	MENUENTRY NAME "Propriètés..." UNSELECTEDICON "THEME:Filetypes/Properties"
+	MENUENTRY NAME "Eigenschaften..." UNSELECTEDICON "THEME:Filetypes/Properties"
 		INTERNALCMD NAME "iconproperties"
 	ENDMENUENTRY
 ENDPOPUPMENU
