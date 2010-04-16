@@ -6,6 +6,7 @@
 
 SUBDIRS =	DefPicture \
 		JpegPicture \
+		PNGPicture \
                 Video \
 
 #############################################################
