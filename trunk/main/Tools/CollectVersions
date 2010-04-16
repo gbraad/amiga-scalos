@@ -16,16 +16,16 @@ versionfilename = "ram:versions.txt"
 ScalosComponents.0.Path = "scalos:"; ScalosComponents.0.File = "Scalos"; ScalosComponents.0.Catalog = "Scalos.catalog"; ScalosComponents.0.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 
 /* --- datatypes */
-ScalosComponents.1.Path = "sys:classes/datatypes"; ScalosComponents.1.File = "amigaiconobject.datatype"; ScalosComponents.1.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
-ScalosComponents.2.Path = "sys:classes/datatypes"; ScalosComponents.2.File = "amigaiconobj35.datatype"; ScalosComponents.2.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
-ScalosComponents.3.Path = "sys:classes/datatypes"; ScalosComponents.3.File = "newiconobject.datatype"; ScalosComponents.3.OsMask = "AmigaOS3 MorphOS";
-ScalosComponents.4.Path = "sys:classes/datatypes"; ScalosComponents.4.File = "glowiconobject.datatype"; ScalosComponents.4.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
-ScalosComponents.5.Path = "sys:classes/datatypes"; ScalosComponents.5.File = "pngiconobject.datatype"; ScalosComponents.5.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
-ScalosComponents.6.Path = "sys:classes/datatypes"; ScalosComponents.6.File = "iconobject.datatype"; ScalosComponents.6.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.1.Path = "Scalos:IconDatatypes/datatypes"; ScalosComponents.1.File = "amigaiconobject.datatype"; ScalosComponents.1.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.2.Path = "Scalos:IconDatatypes/datatypes"; ScalosComponents.2.File = "amigaiconobj35.datatype"; ScalosComponents.2.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.3.Path = "Scalos:IconDatatypes/datatypes"; ScalosComponents.3.File = "newiconobject.datatype"; ScalosComponents.3.OsMask = "AmigaOS3 MorphOS";
+ScalosComponents.4.Path = "Scalos:IconDatatypes/datatypes"; ScalosComponents.4.File = "glowiconobject.datatype"; ScalosComponents.4.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.5.Path = "Scalos:IconDatatypes/datatypes"; ScalosComponents.5.File = "pngiconobject.datatype"; ScalosComponents.5.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.6.Path = "Scalos:IconDatatypes/datatypes"; ScalosComponents.6.File = "iconobject.datatype"; ScalosComponents.6.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 
 /* --- libraries */
 ScalosComponents.7.Path = "Libs:"; ScalosComponents.7.File = "iconobject.library"; ScalosComponents.7.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
-ScalosComponents.8.Path = "Libs:"; ScalosComponents.8.File = "popupmenu.library"; ScalosComponents.8.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
+ScalosComponents.8.Path = "Libs:"; ScalosComponents.8.File = "popupmenu.library"; ScalosComponents.8.OsMask = "AmigaOS3 MorphOS";
 ScalosComponents.9.Path = "Libs:"; ScalosComponents.9.File = "preferences.library"; ScalosComponents.9.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 ScalosComponents.10.Path = "Libs:"; ScalosComponents.10.File = "scalosgfx.library"; ScalosComponents.10.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 ScalosComponents.11.Path = "Libs:"; ScalosComponents.11.File = "sqlite3.library"; ScalosComponents.11.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
@@ -82,9 +82,8 @@ ScalosComponents.48.Path = "Scalos:Plugins/Preview"; ScalosComponents.48.File = 
 /* --- 3rd party stuff */
 ScalosComponents.49.Path = "libs:"; ScalosComponents.49.File = "guigfx.library"; ScalosComponents.49.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
 ScalosComponents.50.Path = "libs:"; ScalosComponents.50.File = "render.library"; ScalosComponents.50.OsMask = "AmigaOS3 AmigaOS4 MorphOS";
-ScalosComponents.51.Path = "libs:"; ScalosComponents.51.File = "popupmenu.library"; ScalosComponents.51.OsMask = "AmigaOS3 MorphOS";
 
-ScalosComponents.Count = 51;
+ScalosComponents.Count = 50;
 
 /* -------------------------------------------------------------------------------- */
 
