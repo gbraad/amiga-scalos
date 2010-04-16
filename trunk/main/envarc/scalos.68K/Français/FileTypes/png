@@ -1,8 +1,8 @@
 # Scalos filetype description
-# written 16. April 2010 23:10:38
+# written 16. April 2010 22:57:40
 
-DESCRIPTION "[ Image ]"
-PREVIEWPLUGIN "scalos:plugins/preview/defpicture.pvplugin"
+DESCRIPTION "[ PNG Image ]"
+PREVIEWPLUGIN "Scalos:Plugins/Preview/pngpicture.pvplugin"
 
 POPUPMENU
 	MENUENTRY DEFAULTACTION NAME "Ouvrir" UNSELECTEDICON "THEME:Filetypes/Open"

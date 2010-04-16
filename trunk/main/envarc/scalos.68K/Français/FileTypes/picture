@@ -2,6 +2,7 @@
 # written 03 Apr 2005 17:38:38
 
 DESCRIPTION "[ Image ]"
+PREVIEWPLUGIN "scalos:plugins/preview/defpicture.pvplugin"
 
 POPUPMENU
 	MENUENTRY DEFAULTACTION NAME "Ouvrir" UNSELECTEDICON "THEME:Filetypes/Open"
