@@ -74,6 +74,11 @@ extern T_UTILITYBASE __UtilityBase;
 
 //---------------------------------------------------------------------------------------
 
+static void *PngMemPool;
+static struct SignalSemaphore PngMemPoolSemaphore;
+
+//---------------------------------------------------------------------------------------
+
 static BOOL GenerateThumbnailFromARGB(struct ScaWindowTask *wt,
 	struct ARGBHeader *argbDest,
 	ULONG SupportedColors, ULONG ReservedColors,
@@ -87,6 +92,8 @@ static void PngFreeMem(png_structp png_ptr, png_voidp ptr);
 static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t length);
 static void PngError(png_structp png_ptr, png_const_charp error_message);
 static void PngWarning(png_structp png_ptr, png_const_charp warning_message);
+static APTR MyAllocVecPooled(size_t Size);
+static void MyFreeVecPooled(APTR mem);
 
 //-----------------------------------------------------------
 
@@ -98,6 +105,8 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 		PluginBase, FindTask(NULL)->tc_Node.ln_Name));
 
 	do	{
+		InitSemaphore(&PngMemPoolSemaphore);
+
 #ifndef __amigaos4__
 		if (_STI_240_InitMemFunctions())
 			break;;
@@ -164,6 +173,9 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 		__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
+		PngMemPool = CreatePool(MEMPOOL_MEMFLAGS, MEMPOOL_PUDDLESIZE, MEMPOOL_THRESHSIZE);
+		if (NULL == PngMemPool)
+			break;;
 
 		result = TRUE;
 		d1(KPrintF("%s/%ld: Success\n", __FUNC__, __LINE__));
@@ -180,6 +192,12 @@ void closePlugin(struct PluginBase *PluginBase)
 #ifndef __amigaos4__
 	_STD_240_TerminateMemFunctions();
 #endif
+
+	if (NULL != PngMemPool)
+		{
+		DeletePool(PngMemPool);
+		PngMemPool = NULL;
+		}
 
 #ifdef __amigaos4__
 	if (INewlib)
@@ -434,7 +452,7 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 		argbh.argb_Width = width;
 		argbh.argb_Height = height;
-		argbh.argb_ImageData = malloc(width * height * sizeof(struct ARGB));
+		argbh.argb_ImageData = MyAllocVecPooled(width * height * sizeof(struct ARGB));
 
 		d1(KPrintF("%s/%s/%ld:  argb_ImageData=%08lx\n", __FILE__, __FUNC__, __LINE__, argbh.argb_ImageData));
 		if (NULL == argbh.argb_ImageData)
@@ -614,7 +632,7 @@ static png_voidp PngAllocMem(png_structp png_ptr, png_size_t size)
 {
 	(void) png_ptr;
 
-	return malloc(size);
+	return MyAllocVecPooled(size);
 }
 
 //-----------------------------------------------------------------------------
@@ -622,7 +640,7 @@ static png_voidp PngAllocMem(png_structp png_ptr, png_size_t size)
 static void PngFreeMem(png_structp png_ptr, png_voidp ptr)
 {
 	(void) png_ptr;
-	free(ptr);
+	MyFreeVecPooled(ptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -654,6 +672,51 @@ static void PngWarning(png_structp png_ptr, png_const_charp warning_message)
 	d2(KPrintF("%s/%s/%ld:  png_ptr=%08lx  message=<%s>\n", \
 		__FILE__, __FUNC__, __LINE__, png_ptr, warning_message));
 //	png_default_warning(png_ptr, warning_message);
+}
+
+//-----------------------------------------------------------------------------
+
+static APTR MyAllocVecPooled(size_t Size)
+{
+	APTR ptr;
+
+	if (PngMemPool)
+		{
+		ObtainSemaphore(&PngMemPoolSemaphore);
+		ptr = AllocPooled(PngMemPool, Size + sizeof(size_t));
+		ReleaseSemaphore(&PngMemPoolSemaphore);
+		if (ptr)
+			{
+			size_t *sptr = (size_t *) ptr;
+
+			sptr[0] = Size;
+
+			d1(kprintf("%s/%s/%ld:  MemPool=%08lx  Size=%lu  mem=%08lx\n", __FILE__, __FUNC__, __LINE__, PngMemPool, Size, &sptr[1]));
+			return (APTR)(&sptr[1]);
+			}
+		}
+
+	d1(kprintf("%s/%s/%ld:  MemPool=%08lx  Size=%lu\n", __FILE__, __FUNC__, __LINE__, PngMemPool, Size));
+
+	return NULL;
+}
+
+
+static void MyFreeVecPooled(APTR mem)
+{
+	d1(kprintf("%s/%s/%ld:  MemPool=%08lx  mem=%08lx\n", __FILE__, __FUNC__, __LINE__, PngMemPool, mem));
+	if (PngMemPool && mem)
+		{
+		size_t size;
+		size_t *sptr = (size_t *) mem;
+
+		mem = &sptr[-1];
+		size = sptr[-1];
+
+		ObtainSemaphore(&PngMemPoolSemaphore);
+		FreePooled(PngMemPool, mem, size + sizeof(size_t));
+		ReleaseSemaphore(&PngMemPoolSemaphore);
+		}
 }
 
 //----------------------------------------------------------------------------
