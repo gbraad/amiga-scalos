@@ -36,6 +36,7 @@ AFLAGS  	= quiet noexe m=68020 opt=NRQB i=sc:Assembler_Headers/
 LD      	= slink
 LDFLAGS 	= quiet batch noicons sd
 LDLIBS  	= 	///SAS-lib/png.lib \
+			///SAS-lib/z.lib \
 			LIB:mempools.lib \
 			LIB:scm.lib \
 			LIB:sc.lib \
