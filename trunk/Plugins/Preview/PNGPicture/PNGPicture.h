@@ -22,6 +22,11 @@ extern int KPrintF(const char *fmt, ...);
 
 //---------------------------------------------------------------
 
+#define	MEMPOOL_MEMFLAGS	MEMF_ANY
+#define	MEMPOOL_PUDDLESIZE	32768
+#define	MEMPOOL_THRESHSIZE	8192
+
+//-----------------------------------------------------------------------------
 // defined in  mempools.lib
 
 #ifndef __amigaos4__
