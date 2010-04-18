@@ -553,6 +553,8 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				SetAttrs(o,
 					GA_Width, inst->nio_normchunky.eci_Chunky->Width,
 					GA_Height, inst->nio_normchunky.eci_Chunky->Height,
+					IDTA_UnscaledWidth, inst->nio_normchunky.eci_Chunky->Width,
+					IDTA_UnscaledHeight, inst->nio_normchunky.eci_Chunky->Height,
 					TAG_END);
 
 				d1(kprintf("%s/%s/%ld:  nio_normchunky.eci_Chunky->Flags=%08lx\n", \
@@ -964,7 +966,7 @@ static void DoFreeLayout(Class *cl, Object *o, struct iopFreeLayout *opf)
 
 static ULONG DtClone(Class *cl, Object *o, struct iopCloneIconObject *iocio)
 {
-	struct InstanceData *inst = INST_DATA(cl, o);
+	//struct InstanceData *inst = INST_DATA(cl, o);
 
 	d1(KPrintF("%s/%ld:  START o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
 
@@ -1142,6 +1144,7 @@ static UBYTE *DrawCyberImage(struct InstanceData *inst, LONG LeftEdge, LONG TopE
 
 	d1(KPrintF("%s/%s/%ld:  inst=%08lx  Left=%ld  Top=%ld  Size=%lu  Depth=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, inst, LeftEdge, TopEdge, ImgSize, BmDepth));
+	d1(kprintf("%s/%s/%ld:  Width=%lu  Height=%lu\n", __FILE__, __FUNC__, __LINE__, cki->Width, cki->Height));
 
 	if (BmDepth > 8)
 		{
@@ -1179,6 +1182,8 @@ static UBYTE *DrawCyberImage(struct InstanceData *inst, LONG LeftEdge, LONG TopE
 				*ARGBImgDestPtr++ = ARGBArray[*ImgSrcPtr++];
 				}
 
+			d1(kprintf("%s/%s/%ld:  ARGBImgArray=%08lx\n", __FILE__, __FUNC__, __LINE__, ARGBImgArray));
+
 			WriteARGBArray(ARGBImgArray, 0, 0,
 				cki->Width * sizeof(struct ARGB),
 				rp, LeftEdge, TopEdge, 
@@ -1198,6 +1203,7 @@ static UBYTE *DrawCyberImage(struct InstanceData *inst, LONG LeftEdge, LONG TopE
 
 		do	{
 			ImgArray = MyAllocVecPooled(ImgSize);
+			d1(kprintf("%s/%s/%ld:  ImgArray=%08lx\n", __FILE__, __FUNC__, __LINE__, ImgArray));
 			if (NULL == ImgArray)
 				break;
 
