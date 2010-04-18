@@ -102,6 +102,9 @@ IDTA_SelTextRectBorderX EQU     DTA_Dummy+966	; (ISG) UWORD - Additional horizon
 IDTA_SelTextRectBorderY EQU     DTA_Dummy+967	; (ISG) UWORD - Additional vertical border around selected icon text rectangle
 IDTA_SelTextRectRadius  EQU     DTA_Dummy+968	; (ISG) UWORD - Radius for selected icon text rectangle corners
 
+IDTA_UnscaledWidth      EQU	DTA_Dummy+969	; (ISG) ULONG - unscaled width of icon
+IDTA_UnscaledHeight     EQU     DTA_Dummy+970	; (ISG) ULONG - unscaled width of icon
+
 ;amigaicon.datatype
 AIDTA_Icon		EQU	DTA_Dummy+1101	;(I.G) original Icon
 

@@ -109,6 +109,9 @@
 #define IDTA_SelTextRectBorderY         DTA_Dummy+967	/* (ISG) UWORD - Additional vertical border around selected icon text rectangle */
 #define	IDTA_SelTextRectRadius          DTA_Dummy+968	/* (ISG) UWORD - Radius for selected icon text rectangle corners */
 
+#define	IDTA_UnscaledWidth              DTA_Dummy+969	/* (ISG) ULONG - unscaled width of icon */
+#define	IDTA_UnscaledHeight             DTA_Dummy+970	/* (ISG) ULONG - unscaled width of icon */
+
 //amigaicon.datatype
 #define AIDTA_Icon			DTA_Dummy+1101	/* (I.G) orginal diskobject */
 

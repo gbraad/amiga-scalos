@@ -1553,6 +1553,14 @@ static ULONG DtGet(Class *cl, Object *o, struct opGet *opg)
 		*opg->opg_Storage = (ULONG) inst->iobj_name;
 		break;
 
+	case IDTA_UnscaledWidth:
+		*opg->opg_Storage = (ULONG) inst->iobj_UnscaledWidth;
+		break;
+
+	case IDTA_UnscaledHeight:
+		*opg->opg_Storage = (ULONG) inst->iobj_UnscaledHeight;
+		break;
+
 	case IDTA_WindowRect:
 		switch (inst->iobj_type)
 			{
@@ -2369,7 +2377,22 @@ static void SetTags(Class *cl, Object *o, struct opSet *ops)
 			{
 			inst->iobj_UnscaledHeight = inst->iobj_UnscaledNakedHeight = dTag->ti_Data;
 			}
-		d1(KPrintF("%s/%s/%ld: o=%08lx  Width=%lu\n", __FILE__, __FUNC__, __LINE__, o, gg->Width));
+
+		d1(KPrintF("%s/%s/%ld: o=%08lx  Height=%lu\n", __FILE__, __FUNC__, __LINE__, o, gg->Height));
+		}
+
+	dTag = FindTagItem(IDTA_UnscaledWidth, ops->ops_AttrList);
+	if (dTag)
+		{
+		inst->iobj_UnscaledWidth = inst->iobj_UnscaledNakedWidth = dTag->ti_Data;
+		NeedFreeLayout = TRUE;
+		}
+
+	dTag = FindTagItem(IDTA_UnscaledHeight, ops->ops_AttrList);
+	if (dTag)
+		{
+		inst->iobj_UnscaledHeight = inst->iobj_UnscaledNakedHeight = dTag->ti_Data;
+		NeedFreeLayout = TRUE;
 		}
 
 	dTag = FindTagItem(IDTA_ToolTypes, ops->ops_AttrList);
