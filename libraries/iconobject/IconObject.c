@@ -260,7 +260,7 @@ void IconObjectCleanup(struct IconObjectBase *IconObjectBase)
  */
 static struct IconNode *IconNode_New( CONST_STRPTR base_name, struct IconObjectBase *IconObjectBase)
 {
-#define	dt_path		"datatypes/"
+#define	dt_path		DATATYPES_PATH "datatypes/"
 #define	dt_suffix	""
 #define DT_NAME_LEN	( sizeof(dt_path) + sizeof(dt_suffix) )
 #define	icon_suffix	".info"
