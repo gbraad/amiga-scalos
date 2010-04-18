@@ -564,6 +564,8 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				SetAttrs(o,
 					GA_Width, img->Width,
 					GA_Height, img->Height,
+					IDTA_UnscaledWidth, img->Width,
+					IDTA_UnscaledHeight, img->Height,
 					TAG_END);
 
 				d1(kprintf("%s/%ld:  o=%08lx  Width=%ld  Height=%ld\n", __FUNC__, __LINE__, o, gg->Width, gg->Height));
@@ -602,6 +604,8 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				SetAttrs(o,
 					GA_Width, inst->aio_MappedWidth,
 					GA_Height, inst->aio_MappedHeight,
+					IDTA_UnscaledWidth, inst->aio_MappedWidth,
+					IDTA_UnscaledHeight, inst->aio_MappedHeight,
 					TAG_END);
 
 				d1(kprintf("%s/%ld:  o=%08lx  Width=%ld  Height=%ld\n", __FUNC__, __LINE__, o, gg->Width, gg->Height));
@@ -1190,6 +1194,8 @@ static ULONG DtNewImage(Class *cl, Object *o, struct iopNewImage *ioni)
 	SetAttrs(o,
 		GA_Width, inst->aio_MappedWidth,
 		GA_Height, inst->aio_MappedHeight,
+		IDTA_UnscaledWidth, inst->aio_MappedWidth,
+		IDTA_UnscaledHeight, inst->aio_MappedHeight,
 		TAG_END);
 
 	GenerateMask(inst, &inst->aio_Image1);

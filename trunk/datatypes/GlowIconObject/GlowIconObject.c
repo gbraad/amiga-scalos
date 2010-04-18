@@ -1140,6 +1140,8 @@ static ULONG DtNewImage(Class *cl, Object *o, struct iopNewImage *ioni)
 	SetAttrs(o,
 		GA_Width, inst->aio_Image1->nim_Width,
 		GA_Height, inst->aio_Image1->nim_Height,
+		IDTA_UnscaledWidth, inst->aio_Image1->nim_Width,
+		IDTA_UnscaledHeight, inst->aio_Image1->nim_Height,
 		TAG_END);
 
 	GenerateNormalImageMask(cl, o);
