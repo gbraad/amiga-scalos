@@ -410,6 +410,14 @@ Failed to unpack language catalogs for %s.\n
 MSGID_LOG_ERROR_OPEN_LHAFILE (//)
 Error: failed to open temporary archive \"%s\" for updating \"%s\".\n
 ;
+;
+MSGID_LOG_ERROR_OPEN_INPUTFD (//)
+Error: failed to open input file handle for lha: %s\n
+;
+;
+MSGID_LOG_ERROR_OPEN_OUTPUTFD (//)
+Error: failed to open output file handle for lha: %s\n
+;
 ;-----------------------------------------------------------
 ;
 MSGID_STARTUP_FAILURE (6000//)
