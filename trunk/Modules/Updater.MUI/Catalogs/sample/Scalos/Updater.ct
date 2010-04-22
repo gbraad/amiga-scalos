@@ -527,11 +527,6 @@ MSGID_LOG_ERROR_OPEN_INPUTFD
 Error: failed to open input file handle for lha: %s\n
 ;Error: failed to open input file handle for lha: %s\n
 ;
-;+++translateme+++
-MSGID_LOG_ERROR_OPEN_OUTPUTFD
-Error: failed to open output file handle for lha: %s\n
-;Error: failed to open output file handle for lha: %s\n
-;
 ;-----------------------------------------------------------
 ;+++translateme+++
 MSGID_STARTUP_FAILURE
