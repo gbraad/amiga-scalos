@@ -1006,7 +1006,7 @@ static BOOL MyInitAmiSSL(void)
 		MUI_Request(APP_Main, WIN_Main, 0, NULL,
 			GetLocString(MSGID_ABOUTREQOK),
 			GetLocString(MSGID_AMISSL_FAIL_REQ_FORMAT),
-			GetLocString(ErrMsgID));
+			(ULONG) GetLocString(ErrMsgID));
 		}
 
 	return Success;
@@ -2229,7 +2229,6 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 	if (curl)
 		{
 		BPTR inputFd = 0;
-		BPTR outputFd = 0;
 		ULONG TotalUpdateCount = SelectedCount;
 		BOOL AbortUpdate = FALSE;
 		ULONG Count = 0;
@@ -2398,17 +2397,6 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 						AbortUpdate = ErrorMsg(MSGID_LOG_ERROR_OPEN_INPUTFD, buffer);
 						break;
 						}
-					if (0 == outputFd)
-						outputFd = Open("NIL:", MODE_NEWFILE);
-					if (0 == outputFd)
-						{
-						char buffer[120];
-
-						(void) Fault(IoErr(), "", buffer, sizeof(buffer));
-						AddLogMsg(MSGID_LOG_ERROR_OPEN_OUTPUTFD, buffer);
-						AbortUpdate = ErrorMsg(MSGID_LOG_ERROR_OPEN_OUTPUTFD, buffer);
-						break;
-						}
 
 					LhaCmdLineLen = 1 + strlen(LhaName) + 2 * strlen(cle->cle_File) + strlen(cle->cle_Dir) + 80;
 					LhaCmdLine = malloc(LhaCmdLineLen);
@@ -2432,10 +2420,8 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 					// SystemTagList()
 					rc = SystemTags(LhaCmdLine,
-						NP_Input, inputFd,
-						NP_Output, outputFd,
-						NP_CloseInput, FALSE,
-						NP_CloseOutput, FALSE,
+						SYS_Input, inputFd,
+						NP_Output, 0,
 						TAG_END);
 					d1(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 					if (RETURN_OK != rc)
@@ -2459,10 +2445,8 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 					// SystemTagList()
 					rc = SystemTags(LhaCmdLine,
-						NP_Input, inputFd,
-						NP_Output, outputFd,
-						NP_CloseInput, FALSE,
-						NP_CloseOutput, FALSE,
+						SYS_Input, inputFd,
+						SYS_Output, 0,
 						TAG_END);
 					d1(KPrintF("%s/%s/%ld: Lha returned rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 					if (RETURN_OK != rc)
@@ -2471,6 +2455,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 						AddLogMsg(MSGID_LOG_UNPACK_CATALOGS_FAIL_PACKAGE, cle->cle_Package);
 						break;
 						}
+
 					Success = TRUE;
 					}
 
@@ -2509,8 +2494,6 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 			DoMethod(NListComponents, MUIM_NList_RedrawEntry, cle);
 			}
 
-		if (outputFd)
-			Close(outputFd);
 		if (inputFd)
 			Close(inputFd);
 
