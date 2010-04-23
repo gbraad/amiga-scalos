@@ -26,6 +26,7 @@
 #include <proto/dtclass.h>
 
 #include <string.h>
+#include <limits.h>
 
 #include "iconobject_base.h"
 #include "iconnode.h"
@@ -319,8 +320,16 @@ static VOID IconNode_Free( struct IconNode *node, struct IconObjectBase *IconObj
 	d1(kprintf(__FILE__ "/%s/%ld:  node=%08lx\n", __FUNC__, __LINE__, node));
 	if(node)
 		{
-		if( node->Node.ln_Name )
+		if (node->in_LibBase)
+			{
+			CloseLibrary(node->in_LibBase);
+			node->in_LibBase = NULL;
+			}
+		if ( node->Node.ln_Name )
+			{
 			MyFreeVecPooled(node->Node.ln_Name);
+			node->Node.ln_Name = NULL;
+			}
 		MyFreeVecPooled(node);
 		}
 }
@@ -352,6 +361,8 @@ static void AddDtLib( CONST_STRPTR LibFileName, struct IconObjectBase *IconObjec
 		if (NULL == node->in_LibBase)
 			break;
 
+		if (SCHAR_MIN == node->in_LibBase->lib_Node.ln_Pri)
+			break;
 #ifdef __amigaos4__
 		node->in_IFace = IDTClass = (struct DTClassIFace *)GetInterface(DTClassBase, "main", 1, NULL);
 		d1(kprintf("%s/%ld:  in_IFace=%08lx\n", __FUNC__, __LINE__, node->in_IFace));

@@ -25,7 +25,7 @@ extern struct DosLibrary * DOSBase;
 //----------------------------------------------------------------------------
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	7
+#define	LIB_REVISION	8
 
 extern char ALIGNED libName[];
 extern char ALIGNED libIdString[];
