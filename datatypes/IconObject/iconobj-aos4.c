@@ -11,6 +11,7 @@
 #include <interfaces/iconobject.h>
 
 #include <stdarg.h>
+#include <limits.h>
 
 #include "iconobj.h"
 
@@ -114,6 +115,7 @@ static struct Library * Initlib(struct Library *libbase, BPTR seglist, struct Ex
 	SysBase = (struct ExecBase *)pIExec->Data.LibBase;
 	IExec = pIExec;
 	IconObjLibBase->nib_ClassLibrary.cl_Lib.lib_Revision = LIB_REVISION;
+	IconObjLibBase->nib_ClassLibrary.cl_Lib.lib_Node.ln_Pri = SCHAR_MIN;
 	IconObjLibBase->nib_SegList = (struct SegList *)seglist;
 
 	if (!InitDatatype(IconObjLibBase))
