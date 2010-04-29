@@ -293,7 +293,7 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 	(void) PluginBase;
 
-	d2(KPrintF(__FILE__ "/%s/%ld:  START iconName=<%s>\n", __FUNC__, __LINE__, iconName));
+	d1(KPrintF(__FILE__ "/%s/%ld:  START iconName=<%s>\n", __FUNC__, __LINE__, iconName));
 
 	memset(&cinfo, 0, sizeof(cinfo));
 	memset(&argbh, 0, sizeof(argbh));
@@ -503,7 +503,7 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 	if (!Success)
 		ScalosGfxFreeARGB(&argbh.argb_ImageData);
 
-	d2(KPrintF(__FILE__ "/%s/%ld:  END Success=%ld\n", __FUNC__, __LINE__, Success));
+	d1(KPrintF(__FILE__ "/%s/%ld:  END Success=%ld\n", __FUNC__, __LINE__, Success));
 
 	return Success;
 }
@@ -659,7 +659,7 @@ static void user_read_data(png_structp png_ptr, png_bytep data, png_size_t lengt
 
 static void PngError(png_structp png_ptr, png_const_charp error_message)
 {
-	d2(KPrintF("%s/%s/%ld:  png_ptr=%08lx  message=<%s>\n", \
+	d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx  message=<%s>\n", \
 		__FILE__, __FUNC__, __LINE__, png_ptr, error_message));
 
 	longjmp(png_jmpbuf(png_ptr), 1);
@@ -669,7 +669,7 @@ static void PngError(png_structp png_ptr, png_const_charp error_message)
 
 static void PngWarning(png_structp png_ptr, png_const_charp warning_message)
 {
-	d2(KPrintF("%s/%s/%ld:  png_ptr=%08lx  message=<%s>\n", \
+	d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx  message=<%s>\n", \
 		__FILE__, __FUNC__, __LINE__, png_ptr, warning_message));
 //	png_default_warning(png_ptr, warning_message);
 }
