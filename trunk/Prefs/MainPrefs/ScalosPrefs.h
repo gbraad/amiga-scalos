@@ -505,17 +505,32 @@ enum ScreenTitleModes
 
 //--------------------------------------------------------------------
 
-// Values for Icon min/max size limits
-enum IconSizes
+// Values for Icon min size limits
+enum IconSizesMin
 {
-	ICONSIZE_16 = 0,
-	ICONSIZE_24,
-	ICONSIZE_32,
-	ICONSIZE_48,
-	ICONSIZE_64,
-	ICONSIZE_96,
-	ICONSIZE_128,
-	ICONSIZE_Unlimited,
+	ICONSIZEMIN_Unlimited = 0,
+	ICONSIZEMIN_16,
+	ICONSIZEMIN_24,
+	ICONSIZEMIN_32,
+	ICONSIZEMIN_48,
+	ICONSIZEMIN_64,
+	ICONSIZEMIN_96,
+	ICONSIZEMIN_128,
+};
+
+//--------------------------------------------------------------------
+
+// Values for Icon max size limits
+enum IconSizesMax
+{
+	ICONSIZEMAX_16 = 0,
+	ICONSIZEMAX_24,
+	ICONSIZEMAX_32,
+	ICONSIZEMAX_48,
+	ICONSIZEMAX_64,
+	ICONSIZEMAX_96,
+	ICONSIZEMAX_128,
+	ICONSIZEMAX_Unlimited,
 };
 
 //--------------------------------------------------------------------

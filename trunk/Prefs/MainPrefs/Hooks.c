@@ -899,16 +899,15 @@ static BOOL ParseTTFontFromDesc(CONST_STRPTR FontDesc,
 SAVEDS(void) INTERRUPT IconsMinSizeHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
-	ULONG MinSize, MaxSize;
+	struct Rectangle SizeConstraints;
 
-	MinSize	= getv(app->Obj[CYCLE_ICONMINSIZE], MUIA_Cycle_Active);
-	MaxSize	= getv(app->Obj[CYCLE_ICONMAXSIZE], MUIA_Cycle_Active);
+	GetIconSizeConstraints(app, &SizeConstraints);
 
-	if (ICONSIZE_Unlimited != MinSize && MaxSize < MinSize)
+	if (SizeConstraints.MaxX < SizeConstraints.MinX)
 		{
 		// Adjust MaxSize if MaxSize is smaller than MinSize
-		MaxSize = MinSize;
-		set(app->Obj[CYCLE_ICONMAXSIZE], MUIA_Cycle_Active, MaxSize);
+		SizeConstraints.MaxX = SizeConstraints.MaxY = SizeConstraints.MinX;
+		SetIconSizeConstraints(app, &SizeConstraints);
 		}
 }
 
@@ -916,16 +915,14 @@ SAVEDS(void) INTERRUPT IconsMinSizeHookFunc(struct Hook *hook, Object *o, Msg ms
 SAVEDS(void) INTERRUPT IconsMaxSizeHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
-	ULONG MinSize, MaxSize;
+	struct Rectangle SizeConstraints;
 
-	MinSize	= getv(app->Obj[CYCLE_ICONMINSIZE], MUIA_Cycle_Active);
-	MaxSize	= getv(app->Obj[CYCLE_ICONMAXSIZE], MUIA_Cycle_Active);
-
-	if (ICONSIZE_Unlimited != MinSize && MaxSize < MinSize)
+	GetIconSizeConstraints(app, &SizeConstraints);
+	if (SizeConstraints.MaxX < SizeConstraints.MinX)
 		{
 		// Adjust MinSize if MaxSize is smaller than MinSize
-		MinSize = MaxSize;
-		set(app->Obj[CYCLE_ICONMINSIZE], MUIA_Cycle_Active, MinSize);
+		SizeConstraints.MinX = SizeConstraints.MinY = SizeConstraints.MaxX;
+		SetIconSizeConstraints(app, &SizeConstraints);
 		}
 }
 
