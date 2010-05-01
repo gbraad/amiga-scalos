@@ -1487,6 +1487,18 @@ MSGID_ICONSPAGE_SEL_ICONTEXT_RADIUS_SHORTHELP (//)
 Corner radius of the rectangle drawn\n\
 around the text of selected icons.
 ;
+;
+MSGID_ICONSPAGE_SCALING_NOMINALSIZE (//)
+Nominal Size:
+;
+;
+MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP (//)
+Standard size adjustment applied to all icons.
+;
+;
+MSGID_ICONSPAGE_SCALING_PERCENT (//)
+%
+;
 ;-----------------------------------------------------------
 ;
 MSGID_DRAGNDROPPAGE_STYLE (25500//)

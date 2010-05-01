@@ -40,7 +40,7 @@ void CloseDatatype(struct IconObjectDtLibBase *dtLib);
 //----------------------------------------------------------------------------
 
 #define	LIB_VERSION	40
-#define	LIB_REVISION	26
+#define	LIB_REVISION	27
 
 extern char ALIGNED libName[];
 extern char ALIGNED libIdString[];
@@ -129,6 +129,7 @@ struct InstanceData
 	UWORD	iobj_frametypesel;
 
 	struct Rectangle iobj_SizeConstraints;
+	UWORD	iobj_ScalingPercentage;
 
 	struct TextExtent iobj_TextExtent;
 	WORD	iobj_GlobalTextLeftOffset;

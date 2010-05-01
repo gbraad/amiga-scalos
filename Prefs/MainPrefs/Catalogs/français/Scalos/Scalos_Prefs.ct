@@ -1612,6 +1612,21 @@ autour du test des cônes sélectionnées.
 ;Corner radius of the rectangle drawn\n\
 ;around the text of selected icons.
 ;
+;+++translateme+++
+MSGID_ICONSPAGE_SCALING_NOMINALSIZE
+Nominal Size:
+;Nominal Size:
+;
+;+++translateme+++
+MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP
+Standard size adjustment applied to all icons.
+;Standard size adjustment applied to all icons.
+;
+;+++translateme+++
+MSGID_ICONSPAGE_SCALING_PERCENT
+%
+;%
+;
 ;-----------------------------------------------------------
 ;
 MSGID_DRAGNDROPPAGE_STYLE

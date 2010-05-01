@@ -175,6 +175,7 @@ struct IconGroup
 	BYTE			ig_HighlightUnderMouse;
 	char			ig_IconFontDesc[MAX_FONTNAME];
 	struct Rectangle 	ig_SizeConstraints;
+	UWORD			ig_NominalSize;
 	UBYTE			ig_ShowThumbnails;
 	BYTE			ig_ShowThumbnailsAsDefault;
 	UWORD			ig_ThumbnailSize;
@@ -376,6 +377,7 @@ static const struct ScalosPrefsContainer defaultPrefs =
 		{ 			// ig_SizeConstraints
                 0, 0, SHRT_MAX, SHRT_MAX
 		},
+		100,			// ig_NominalSize
 		THUMBNAILS_Never,	// ig_ShowThumbnails;
 		TRUE,			// ig_ShowThumbnailsAsDefault;
 		48,			// ig_ThumbnailSize;
@@ -765,6 +767,7 @@ void UpdateGuiFromPrefs(struct SCAModule *app)
 
 	SetThumbNailSize(app, currentPrefs.Icons.ig_ThumbnailSize);
 	SetIconSizeConstraints(app, &currentPrefs.Icons.ig_SizeConstraints);
+	setslider(app->Obj[SLIDER_ICONSPAGE_NOMINALSIZE], currentPrefs.Icons.ig_NominalSize);
 
 	d1(KPrintF(__FUNC__ "/%ld:  Icon offset  left=%ld  top=%ld  right=%ld  bottom=%ld\n", \
 		__FUNC__, __LINE__, currentPrefs.Icons.ig_IconOffsets.Left, currentPrefs.Icons.ig_IconOffsets.Top, \
@@ -1171,6 +1174,8 @@ static void FillPrefsStructures(struct SCAModule *app)
 	currentPrefs.Icons.ig_ThumbnailSize = GetThumbNailSize(app);
 	GetIconSizeConstraints(app, &currentPrefs.Icons.ig_SizeConstraints);
 
+	currentPrefs.Icons.ig_NominalSize        	= getv(app->Obj[SLIDER_ICONSPAGE_NOMINALSIZE], MUIA_Numeric_Value);
+
 	// layout
 	currentPrefs.Icons.ig_IconWindowLayoutModes[WBDRAWER]    = getv(app->Obj[CYCLE_ICONS_LAYOUT_WBDRAWER], MUIA_Cycle_Active);
 	currentPrefs.Icons.ig_IconWindowLayoutModes[WBTOOL]      = getv(app->Obj[CYCLE_ICONS_LAYOUT_WBTOOL], MUIA_Cycle_Active);
@@ -1348,6 +1353,7 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSecLine, &currentPrefs.Icons.ig_wMultipleLines, sizeof(currentPrefs.Icons.ig_wMultipleLines) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &currentPrefs.Icons.ig_SizeConstraints, sizeof(currentPrefs.Icons.ig_SizeConstraints) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_IconNominalSize, &currentPrefs.Icons.ig_NominalSize, sizeof(currentPrefs.Icons.ig_NominalSize) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconHiliteUnderMouse, &currentPrefs.Icons.ig_HighlightUnderMouse, sizeof(currentPrefs.Icons.ig_HighlightUnderMouse) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnails, &currentPrefs.Icons.ig_ShowThumbnails, sizeof(currentPrefs.Icons.ig_ShowThumbnails) );
@@ -1531,6 +1537,7 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSecLine, &currentPrefs.Icons.ig_wMultipleLines, sizeof(currentPrefs.Icons.ig_wMultipleLines) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &currentPrefs.Icons.ig_SizeConstraints, sizeof(currentPrefs.Icons.ig_SizeConstraints) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_IconNominalSize, &currentPrefs.Icons.ig_NominalSize, sizeof(currentPrefs.Icons.ig_NominalSize) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconHiliteUnderMouse, &currentPrefs.Icons.ig_HighlightUnderMouse, sizeof(currentPrefs.Icons.ig_HighlightUnderMouse) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) );
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnails, &currentPrefs.Icons.ig_ShowThumbnails, sizeof(currentPrefs.Icons.ig_ShowThumbnails) );

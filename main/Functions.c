@@ -633,6 +633,7 @@ static Object *ReadDeviceIconObject(CONST_STRPTR Path)
 
 			IconObj = NewIconObjectTags(internalName,
 				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 				TAG_END);
 			d1(kprintf("%s/%s/%ld:  IconObj=%08lx  internalName=<%s>\n", __FILE__, __FUNC__, __LINE__, IconObj, internalName));
 
@@ -647,6 +648,7 @@ static Object *ReadDeviceIconObject(CONST_STRPTR Path)
 				case DLT_NONBINDING:
 					IconObj = NewIconObjectTags(Path,
 						IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+						IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 						TAG_END);
 					break;
 
@@ -686,6 +688,7 @@ static Object *ReadDeviceIconObject(CONST_STRPTR Path)
 
 					IconObj = NewIconObjectTags(internalName,
 						IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+						IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 						TAG_END);
 					}
 				}
@@ -927,6 +930,7 @@ Object *FunctionsFindIconObjectForPath(CONST_STRPTR Path, BOOL *WindowListLocked
 
 				IconObj = *allocIconObj = NewIconObjectTags(FullPath,
 					IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+					IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 					TAG_END);
 
 				d1(KPrintF("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));

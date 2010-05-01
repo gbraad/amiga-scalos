@@ -349,6 +349,8 @@ static const struct ScalosPrefs DefaultPrefs =
 
 	{ 0, 0, SHRT_MAX, SHRT_MAX },		// pref_IconSizeConstraints
 
+	100,					// pref_IconScaleFactor
+
 	{
 		ICONLAYOUT_Columns,
 		ICONLAYOUT_Columns,	//WBDISK
@@ -1100,6 +1102,7 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ViewByDefault, &NewPrefs->pref_DefaultViewBy, sizeof(NewPrefs->pref_DefaultViewBy));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectTextIconName, &NewPrefs->pref_SelectTextIconName, sizeof(NewPrefs->pref_SelectTextIconName));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSizeConstraints, &NewPrefs->pref_IconSizeConstraints, sizeof(NewPrefs->pref_IconSizeConstraints));
+		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNominalSize, &NewPrefs->pref_IconScaleFactor, sizeof(NewPrefs->pref_IconScaleFactor));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DeviceWinIconLayout, &NewPrefs->pref_DeviceWindowLayoutModes, sizeof(NewPrefs->pref_DeviceWindowLayoutModes));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconWinIconLayout, &NewPrefs->pref_IconWindowLayoutModes, sizeof(NewPrefs->pref_IconWindowLayoutModes));
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupApplySelectedAlways, &NewPrefs->pref_PopupApplySelectedAlways, sizeof(NewPrefs->pref_PopupApplySelectedAlways));

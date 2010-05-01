@@ -1919,6 +1919,9 @@ void RedrawResizedWindow(struct internalScaWindowTask *iwt,
 {
 	struct Region *RedrawRegion;
 
+	d1(kprintf("%s/%s/%ld: START iwt=%08lx  <%s>  wt_Window=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, iwt->iwt_WindowTask.wt_Window));
+
 	do	{
 		struct Rectangle Rect;
 
@@ -1965,6 +1968,7 @@ void RedrawResizedWindow(struct internalScaWindowTask *iwt,
 	if (RedrawRegion)
 		DisposeRegion(RedrawRegion);
 
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
 

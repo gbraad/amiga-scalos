@@ -1107,6 +1107,7 @@ static struct ScaIconNode *CreateIcon(struct internalScaWindowTask *iwt,
 		IDTA_InnerLeft, CurrentPrefs.pref_ImageBorders.Left,
 		IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 		IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+		IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 		IDTA_Text, (ULONG) rild->rild_Name,
 		DTA_Name, (ULONG) rild->rild_Name,
 		IDTA_HalfShinePen, PalettePrefs.pal_PensList[PENIDX_HSHINEPEN],
@@ -1215,6 +1216,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct internalScaWindowTask *iwt,
 			IDTA_InnerLeft, CurrentPrefs.pref_ImageBorders.Left,
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			TAG_END);
 			} while (0);
 
@@ -1856,6 +1858,7 @@ static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *ril
 					IDTA_TextStyle, (ise->ise_Flags & ISEFLG_IsLink) ? CurrentPrefs.pref_LinkTextStyle : FS_NORMAL,
 					IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 					IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+					IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 					TAG_END);
 
 				d1(KPrintF("%s/%s/%ld: Name=<%s>  IconObj=%08lx\n", \

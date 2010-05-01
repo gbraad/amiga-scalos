@@ -1032,6 +1032,8 @@ static ULONG IDCMPNewSize(struct internalScaWindowTask *iwt, struct IntuiMessage
 		DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_DynamicResize);
 		}
 
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
+
 	return 0;
 }
 

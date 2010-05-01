@@ -1094,6 +1094,7 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		usid->usid_IconObj = (Object *) NewIconObjectTags(usid->usid_IconName,
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			IDTA_Text, (ULONG) usid->usid_IconName,
 			DTA_Name, (ULONG) usid->usid_IconName,
 			TAG_END);

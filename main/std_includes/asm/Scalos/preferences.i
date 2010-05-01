@@ -149,6 +149,7 @@ SCP_ControlBarGadgetStringsStd	EQU	$8000008f	; SCP_GadgetStringEntry -- strings 
 SCP_MaxUndoSteps		EQU	$80000090	; ULONG - maximum number of Undo/Redo steps
 SCP_PathsSQLiteTempDir          EQU	$80000091	; string -- path for SQLite3 temporary file
 SCP_DrawerSortMode		EQU	$80000092	; enum ScalosDrawerSortType - where are drawers sorted in text windows (first/last/mixed)
+SCP_IconNominalSize		EQU	$80000093	; UWORD -- standard icon scaling factor in percent
 
 
 	ENDC	; PREFERENCES_I

@@ -511,6 +511,7 @@ LIBFUNC_P8(struct AppIcon *, sca_AddAppIconA,
 						IconObj = NewIconObjectTags(PathCopy,
 							IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 							IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+							IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 							TAG_END);
 
 						FreeCopyString(PathCopy);
@@ -804,6 +805,7 @@ static SAVEDS(ULONG) AppChangeFunc(struct WBArg *ArgArray, struct SM_RunProcess 
 
 		IconObj = NewIconObjectTags(Path,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			TAG_END);
 		d1(kprintf("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 		if (IconObj)
@@ -817,6 +819,7 @@ static SAVEDS(ULONG) AppChangeFunc(struct WBArg *ArgArray, struct SM_RunProcess 
 
 		IconObj = NewIconObjectTags(Path,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			TAG_END);
 		} while (0);
 

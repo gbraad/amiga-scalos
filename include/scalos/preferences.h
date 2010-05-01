@@ -164,6 +164,7 @@ struct PrefsStruct
 #define SCP_MaxUndoSteps		0x80000090	// ULONG - maximum number of Undo/Redo steps
 #define SCP_PathsSQLiteTempDir          0x80000091	// string -- path for SQLite3 temporary file
 #define	SCP_DrawerSortMode		0x80000092	// enum ScalosDrawerSortType - where are drawers sorted in text windows (first/last/mixed)
+#define SCP_IconNominalSize		0x80000093	// UWORD -- standard icon scaling factor in percent
 
 //---------------------------------------------------------------
 

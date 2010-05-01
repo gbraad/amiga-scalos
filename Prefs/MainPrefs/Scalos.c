@@ -5288,23 +5288,42 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, HVSpace,
 
 					Child, HGroup,
+						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP),
+
+						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_NOMINALSIZE)),
+
+						Child, app->Obj[SLIDER_ICONSPAGE_NOMINALSIZE] = SliderObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_Numeric_Min, 25,
+							MUIA_Numeric_Max, 400,
+							MUIA_Slider_Horiz, TRUE,
+							MUIA_Numeric_Value, 100,
+						End, //Slider
+
+						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_PERCENT)),
+					End, //HGroup
+
+					Child, HVSpace,
+
+					Child, HGroup,
 						Child, HVSpace,
 
-						Child, HGroup,
-							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE)),
-							Child, app->Obj[CYCLE_ICONMINSIZE] = CycleObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Cycle_Entries, cIconSizesMin,
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE_SHORTHELP),
-							End, //Cycle
+						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE)),
+						Child, app->Obj[CYCLE_ICONMINSIZE] = CycleObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_Cycle_Entries, cIconSizesMin,
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE_SHORTHELP),
+						End, //Cycle
 
-							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE)),
-							Child, app->Obj[CYCLE_ICONMAXSIZE] = CycleObject,
-								MUIA_CycleChain, TRUE,
-								MUIA_Cycle_Entries, cIconSizesMax,
-								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE_SHORTHELP),
-							End, //Cycle
-						End, //HGroup
+						Child, HVSpace,
+
+						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE)),
+						Child, app->Obj[CYCLE_ICONMAXSIZE] = CycleObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_Cycle_Entries, cIconSizesMax,
+							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE_SHORTHELP),
+						End, //Cycle
+
 						Child, HVSpace,
 					End, //HGroup
 

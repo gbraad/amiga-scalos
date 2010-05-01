@@ -640,6 +640,7 @@ static struct ScaIconNode *ReadDevIcon_Device(struct internalScaWindowTask *iwt,
 				IDTA_Fonthandle, (ULONG) &iwt->iwt_IconTTFont,
 				IDTA_FontHook, (ULONG) (TTEngineBase ? &ScalosFontHook : NULL),
 				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 				TAG_END);
 		if (NULL == iconObj)
 			break;
@@ -740,6 +741,7 @@ static struct ScaIconNode *ReadDevIcon_Volume(struct internalScaWindowTask *iwt,
 				IDTA_Fonthandle, (ULONG) &iwt->iwt_IconTTFont,
 				IDTA_FontHook, (ULONG) (TTEngineBase ? &ScalosFontHook : NULL),
 				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 				TAG_END);
 			}
 
@@ -879,6 +881,7 @@ static Object *ReadDiskIcon(struct internalScaWindowTask *iwt, struct ScaDeviceI
 			IDTA_FontHook, (ULONG) (TTEngineBase ? &ScalosFontHook : NULL),
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			TAG_END);
 
 	d1(kprintf("%s/%s/%ld: iconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, iconObj));
@@ -1256,6 +1259,7 @@ static struct ScaIconNode *CreateBackdropIcon(struct internalScaWindowTask *iwt,
 			IDTA_FontHook, (ULONG) (TTEngineBase ? &ScalosFontHook : NULL),
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			IDTA_OverlayType, ICONOVERLAYF_LeftOut,
 			TAG_END);
 
@@ -1703,6 +1707,7 @@ static Object *ReadDefaultIconByName(struct internalScaWindowTask *iwt, CONST_ST
 		IDTA_FontHook, (ULONG) (TTEngineBase ? &ScalosFontHook : NULL),
 		IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 		IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+		IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 		TAG_END);
 
 	if (iconObj)

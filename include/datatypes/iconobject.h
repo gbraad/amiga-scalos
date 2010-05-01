@@ -112,6 +112,8 @@
 #define	IDTA_UnscaledWidth              DTA_Dummy+969	/* (ISG) ULONG - unscaled width of icon */
 #define	IDTA_UnscaledHeight             DTA_Dummy+970	/* (ISG) ULONG - unscaled width of icon */
 
+#define IDTA_ScalePercentage		DTA_Dummy+971	/* (I..) UWORD - Scale factor in percent */
+
 //amigaicon.datatype
 #define AIDTA_Icon			DTA_Dummy+1101	/* (I.G) orginal diskobject */
 
