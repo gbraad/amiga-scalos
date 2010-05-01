@@ -1225,17 +1225,17 @@ static Object *CloneDefIconObject(Object *IconObj, BPTR dirLock,
 	CloneTags[0].ti_Tag = IDTA_IconLocation;
 	CloneTags[0].ti_Data = (ULONG) &OriginalLocation;
 
-	CloneTags[1].ti_Tag = TagList ? TAG_MORE : TAG_IGNORE;
-	CloneTags[1].ti_Data = (ULONG) TagList;
+	CloneTags[1].ti_Tag = IDTA_SupportedIconTypes;
+	CloneTags[1].ti_Data = CurrentPrefs.pref_SupportedIconTypes;
 
-	CloneTags[2].ti_Tag = IDTA_SupportedIconTypes;
-	CloneTags[2].ti_Data = CurrentPrefs.pref_SupportedIconTypes;
+	CloneTags[2].ti_Tag = IDTA_SizeConstraints;
+	CloneTags[2].ti_Data = (ULONG) &CurrentPrefs.pref_IconSizeConstraints;
 
-	CloneTags[3].ti_Tag = IDTA_SizeConstraints;
-	CloneTags[3].ti_Data = (ULONG) &CurrentPrefs.pref_IconSizeConstraints;
+	CloneTags[3].ti_Tag = IDTA_ScalePercentage;
+	CloneTags[3].ti_Data = CurrentPrefs.pref_IconScaleFactor;
 
-	CloneTags[4].ti_Tag = IDTA_ScalePercentage;
-	CloneTags[4].ti_Data = CurrentPrefs.pref_IconScaleFactor;
+	CloneTags[4].ti_Tag = TagList ? TAG_MORE : TAG_IGNORE;
+	CloneTags[4].ti_Data = (ULONG) TagList;
 
 	CloneTags[5].ti_Tag = TAG_END;
 	CloneTags[5].ti_Data = 0;
