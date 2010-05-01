@@ -532,7 +532,20 @@ static CONST_STRPTR cFileDisplayPages[] =
 	NULL
 };
 
-static CONST_STRPTR cIconSizes[] =
+static CONST_STRPTR cIconSizesMin[] =
+{
+	(CONST_STRPTR) MSGID_ICONSIZES_UNLIMITED,
+	(CONST_STRPTR) MSGID_ICONSIZES_16x16,
+	(CONST_STRPTR) MSGID_ICONSIZES_24x24,
+	(CONST_STRPTR) MSGID_ICONSIZES_32x32,
+	(CONST_STRPTR) MSGID_ICONSIZES_48x48,
+	(CONST_STRPTR) MSGID_ICONSIZES_64x64,
+	(CONST_STRPTR) MSGID_ICONSIZES_96x96,
+	(CONST_STRPTR) MSGID_ICONSIZES_128x128,
+	NULL
+};
+
+static CONST_STRPTR cIconSizesMax[] =
 {
 	(CONST_STRPTR) MSGID_ICONSIZES_16x16,
 	(CONST_STRPTR) MSGID_ICONSIZES_24x24,
@@ -909,7 +922,8 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	TranslateStringArray(cDrawerSortMode);
 	TranslateStringArray(cViewByDefault);
 	TranslateStringArray(cFileDisplayPages);
-	TranslateStringArray(cIconSizes);
+	TranslateStringArray(cIconSizesMin);
+	TranslateStringArray(cIconSizesMax);
 	TranslateStringArray(cShowThumbnails);
 	TranslateStringArray(cThumbnailSizes);
 	TranslateStringArray(cIconLabelStyles);
@@ -4133,38 +4147,38 @@ void SetIconSizeConstraints(struct SCAModule *app, const struct Rectangle *SizeC
 	ULONG MinSize, MaxSize;
 
 	if (SizeConstraints->MinX < 16)
-		MinSize = ICONSIZE_Unlimited;
+		MinSize = ICONSIZEMIN_Unlimited;
 	else if (SizeConstraints->MinX < 24)
-		MinSize = ICONSIZE_16;
+		MinSize = ICONSIZEMIN_16;
 	else if (SizeConstraints->MinX < 32)
-		MinSize = ICONSIZE_24;
+		MinSize = ICONSIZEMIN_24;
 	else if (SizeConstraints->MinX < 48)
-		MinSize = ICONSIZE_32;
+		MinSize = ICONSIZEMIN_32;
 	else if (SizeConstraints->MinX < 64)
-		MinSize = ICONSIZE_48;
+		MinSize = ICONSIZEMIN_48;
 	else if (SizeConstraints->MinX < 96)
-		MinSize = ICONSIZE_64;
+		MinSize = ICONSIZEMIN_64;
 	else if (SizeConstraints->MinX < 128)
-		MinSize = ICONSIZE_96;
+		MinSize = ICONSIZEMIN_96;
 	else
-		MinSize = ICONSIZE_128;
+		MinSize = ICONSIZEMIN_128;
 
 	if (SizeConstraints->MaxX <= 16)
-		MaxSize = ICONSIZE_16;
+		MaxSize = ICONSIZEMAX_16;
 	else if (SizeConstraints->MaxX <= 24)
-		MaxSize = ICONSIZE_24;
+		MaxSize = ICONSIZEMAX_24;
 	else if (SizeConstraints->MaxX <= 32)
-		MaxSize = ICONSIZE_32;
+		MaxSize = ICONSIZEMAX_32;
 	else if (SizeConstraints->MaxX <= 48)
-		MaxSize = ICONSIZE_48;
+		MaxSize = ICONSIZEMAX_48;
 	else if (SizeConstraints->MaxX <= 64)
-		MaxSize = ICONSIZE_64;
+		MaxSize = ICONSIZEMAX_64;
 	else if (SizeConstraints->MaxX <= 96)
-		MaxSize = ICONSIZE_96;
+		MaxSize = ICONSIZEMAX_96;
 	else if (SizeConstraints->MaxX <= 128)
-		MaxSize = ICONSIZE_128;
+		MaxSize = ICONSIZEMAX_128;
 	else
-		MaxSize = ICONSIZE_Unlimited;
+		MaxSize = ICONSIZEMAX_Unlimited;
 
 	set(app->Obj[CYCLE_ICONMINSIZE], MUIA_Cycle_Active, MinSize);
 	set(app->Obj[CYCLE_ICONMAXSIZE], MUIA_Cycle_Active, MaxSize);
@@ -4181,28 +4195,28 @@ void GetIconSizeConstraints(struct SCAModule *app, struct Rectangle *SizeConstra
 
 	switch (MinSize)
 		{
-	case ICONSIZE_16:
+	case ICONSIZEMIN_16:
 		SizeConstraints->MinX = SizeConstraints->MinY = 16;
 		break;
-	case ICONSIZE_24:
+	case ICONSIZEMIN_24:
 		SizeConstraints->MinX = SizeConstraints->MinY = 24;
 		break;
-	case ICONSIZE_32:
+	case ICONSIZEMIN_32:
 		SizeConstraints->MinX = SizeConstraints->MinY = 32;
 		break;
-	case ICONSIZE_48:
+	case ICONSIZEMIN_48:
 		SizeConstraints->MinX = SizeConstraints->MinY = 48;
 		break;
-	case ICONSIZE_64:
+	case ICONSIZEMIN_64:
 		SizeConstraints->MinX = SizeConstraints->MinY = 64;
 		break;
-	case ICONSIZE_96:
+	case ICONSIZEMIN_96:
 		SizeConstraints->MinX = SizeConstraints->MinY = 96;
 		break;
-	case ICONSIZE_128:
+	case ICONSIZEMIN_128:
 		SizeConstraints->MinX = SizeConstraints->MinY = 128;
 		break;
-	case ICONSIZE_Unlimited:
+	case ICONSIZEMIN_Unlimited:
 	default:
 		SizeConstraints->MinX = SizeConstraints->MinY = 0;
 		break;
@@ -4210,28 +4224,28 @@ void GetIconSizeConstraints(struct SCAModule *app, struct Rectangle *SizeConstra
 
 	switch (MaxSize)
 		{
-	case ICONSIZE_16:
+	case ICONSIZEMAX_16:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = 16;
 		break;
-	case ICONSIZE_24:
+	case ICONSIZEMAX_24:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = 24;
 		break;
-	case ICONSIZE_32:
+	case ICONSIZEMAX_32:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = 32;
 		break;
-	case ICONSIZE_48:
+	case ICONSIZEMAX_48:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = 48;
 		break;
-	case ICONSIZE_64:
+	case ICONSIZEMAX_64:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = 64;
 		break;
-	case ICONSIZE_96:
+	case ICONSIZEMAX_96:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = 96;
 		break;
-	case ICONSIZE_128:
+	case ICONSIZEMAX_128:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = 128;
 		break;
-	case ICONSIZE_Unlimited:
+	case ICONSIZEMAX_Unlimited:
 	default:
 		SizeConstraints->MaxX = SizeConstraints->MaxY = SHRT_MAX;
 		break;
@@ -5280,14 +5294,14 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE)),
 							Child, app->Obj[CYCLE_ICONMINSIZE] = CycleObject,
 								MUIA_CycleChain, TRUE,
-								MUIA_Cycle_Entries, cIconSizes,
+								MUIA_Cycle_Entries, cIconSizesMin,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE_SHORTHELP),
 							End, //Cycle
 
 							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE)),
 							Child, app->Obj[CYCLE_ICONMAXSIZE] = CycleObject,
 								MUIA_CycleChain, TRUE,
-								MUIA_Cycle_Entries, cIconSizes,
+								MUIA_Cycle_Entries, cIconSizesMax,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE_SHORTHELP),
 							End, //Cycle
 						End, //HGroup
