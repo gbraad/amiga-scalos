@@ -1949,6 +1949,21 @@ der ausgewählten Piktogramme verwendet.
 ;Corner radius of the rectangle drawn\n\
 ;around the text of selected icons.
 ;
+;
+MSGID_ICONSPAGE_SCALING_NOMINALSIZE
+Standardgröße:
+;Nominal Size:
+;
+;
+MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP
+Diese Skalierung wird auf alle Piktogramme angewandt.
+;Standard size adjustment applied to all icons.
+;
+;
+MSGID_ICONSPAGE_SCALING_PERCENT
+%
+;%
+;
 ;-----------------------------------------------------------
 ;
 MSGID_DRAGNDROPPAGE_STYLE

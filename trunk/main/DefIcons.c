@@ -1126,6 +1126,7 @@ static Object *ReadDefIconObjectForName(ULONG IconType, CONST_STRPTR TypeName,
 			TagList ? TAG_MORE : TAG_IGNORE, (ULONG) TagList,
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			TAG_END);
 
 		d1(kprintf("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
@@ -1143,6 +1144,7 @@ static Object *ReadDefIconObjectForName(ULONG IconType, CONST_STRPTR TypeName,
 				TagList ? TAG_MORE : TAG_IGNORE, (ULONG) TagList,
 				IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 				TAG_END);
 
 			d1(kprintf("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
@@ -1209,7 +1211,7 @@ static Object *CloneDefIconObject(Object *IconObj, BPTR dirLock,
 	CONST_STRPTR OriginalName, struct TagItem *TagList)
 {
 	struct WBArg OriginalLocation;
-	struct TagItem CloneTags[5];
+	struct TagItem CloneTags[6];
 
 	if (NULL == IconObj)
 		return NULL;
@@ -1232,8 +1234,11 @@ static Object *CloneDefIconObject(Object *IconObj, BPTR dirLock,
 	CloneTags[3].ti_Tag = IDTA_SizeConstraints;
 	CloneTags[3].ti_Data = (ULONG) &CurrentPrefs.pref_IconSizeConstraints;
 
-	CloneTags[4].ti_Tag = TAG_END;
-	CloneTags[4].ti_Data = 0;
+	CloneTags[4].ti_Tag = IDTA_ScalePercentage;
+	CloneTags[4].ti_Data = CurrentPrefs.pref_IconScaleFactor;
+
+	CloneTags[5].ti_Tag = TAG_END;
+	CloneTags[5].ti_Data = 0;
 
 	IconObj = (Object *) DoMethod(IconObj,
 		IDTM_CloneIconObject, CloneTags);

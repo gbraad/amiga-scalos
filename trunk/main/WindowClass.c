@@ -247,6 +247,7 @@ static ULONG WindowClass_Iconify(Class *cl, Object *o, Msg msg)
 
 		iconifiedIconObj = NewIconObjectTags(IconPath,
 			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			TAG_END);
 
 		if (NULL == iconifiedIconObj)
@@ -256,12 +257,14 @@ static ULONG WindowClass_Iconify(Class *cl, Object *o, Msg msg)
 
 			iconifiedIconObj = NewIconObjectTags(IconPath,
 				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 				TAG_END);
 			}
 
 		if (NULL == iconifiedIconObj)
 			iconifiedIconObj = GetDefIconObjectTags(WBPROJECT,
 				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
+				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 				TAG_END);
 
 		if (NULL == iconifiedIconObj)
@@ -487,6 +490,9 @@ static ULONG WindowClass_SetInnerSize(Class *cl, Object *o, Msg msg)
 {
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 
+	d1(kprintf("%s/%s/%ld: START iwt=%08lx  <%s>  wt_Window=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, iwt->iwt_WindowTask.wt_Window));
+
 	if (ScalosAttemptSemaphoreShared(iwt->iwt_WindowTask.wt_WindowSemaphore))
 		{
 		if (iwt->iwt_WindowTask.wt_Window)
@@ -517,6 +523,8 @@ static ULONG WindowClass_SetInnerSize(Class *cl, Object *o, Msg msg)
 
 		d1(kprintf("%s/%s/%ld: iwt_RemRegion=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_RemRegion));
 		}
+
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }
@@ -1348,7 +1356,7 @@ static ULONG WindowClass_DynamicResizeWindow(Class *cl, Object *o, Msg msg)
 	struct ScaWindowStruct *ws = iwt->iwt_WindowTask.mt_WindowStruct;
 	WORD newWidth, newHeight;
 
-	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 	newWidth = iwt->iwt_WindowTask.wt_Window->Width - iwt->iwt_ExtraWidth;
 	newHeight = iwt->iwt_WindowTask.wt_Window->Height - iwt->iwt_ExtraHeight;
@@ -1402,7 +1410,7 @@ static ULONG WindowClass_DynamicResizeWindow(Class *cl, Object *o, Msg msg)
 			}
 		}
 
-	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return 0;
 }

@@ -251,6 +251,7 @@ struct ScalosPrefs
 	ULONG pref_CopyBuffLen;					// size of file copy buffer
 
 	struct Rectangle pref_IconSizeConstraints;		// size limits for icons, larger or smaller icons are scaled
+	UWORD pref_IconScaleFactor;				// standard icon scaling factor in percent
 
 	UBYTE pref_DeviceWindowLayoutModes[ICONTYPE_MAX];	// Icon layout modes for desktop window
 	UBYTE pref_IconWindowLayoutModes[ICONTYPE_MAX];		// Icon layout modes for icon window

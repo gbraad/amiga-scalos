@@ -312,7 +312,7 @@ void RefreshIconList(struct internalScaWindowTask *iwt, struct ScaIconNode *in, 
 {
 	struct RastPort *rp;
 
-	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	if (NULL == iwt->iwt_WindowTask.wt_Window)
 		return;
@@ -346,13 +346,6 @@ void RefreshIconList(struct internalScaWindowTask *iwt, struct ScaIconNode *in, 
 		IconRect.MinY = gg->BoundsTopEdge + iwt->iwt_InnerTop - iwt->iwt_WindowTask.wt_YOffset;
 		IconRect.MaxX = IconRect.MinX + gg->BoundsWidth - 1;
 		IconRect.MaxY = IconRect.MinY + gg->BoundsHeight - 1;
-
-		if (!IsIwtViewByIcon(iwt) && CurrentPrefs.pref_TextWindowStriped)
-			{
-			// make sure striped text icons are refreshed
-			// even beyond right icon border
-			IconRect.MaxX = SHRT_MAX;
-			}
 
 		if (NULL == DrawingRegion || ScaRectInRegion(DrawingRegion, &IconRect))
 			{
@@ -388,7 +381,7 @@ void RefreshIconList(struct internalScaWindowTask *iwt, struct ScaIconNode *in, 
 		in = (struct ScaIconNode *) in->in_Node.mln_Succ;
 		}
 
-	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+	d1(kprintf("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 }
 
 

@@ -105,6 +105,8 @@ IDTA_SelTextRectRadius  EQU     DTA_Dummy+968	; (ISG) UWORD - Radius for selecte
 IDTA_UnscaledWidth      EQU	DTA_Dummy+969	; (ISG) ULONG - unscaled width of icon
 IDTA_UnscaledHeight     EQU     DTA_Dummy+970	; (ISG) ULONG - unscaled width of icon
 
+IDTA_ScalePercentage	EQU	DTA_Dummy+971	; (I..) UWORD - Scale factor in percent
+
 ;amigaicon.datatype
 AIDTA_Icon		EQU	DTA_Dummy+1101	;(I.G) original Icon
 

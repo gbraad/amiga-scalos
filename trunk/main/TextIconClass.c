@@ -1046,6 +1046,7 @@ static Object *CreateIconObject(struct TextIClassInst *inst, struct TagItem *tag
 		IDTA_FrameType, MF_FRAME_NONE,
 		IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 		IDTA_SizeConstraints, (ULONG) &inst->txicl_IconRect,
+//		IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 		TAG_MORE, (ULONG) tagList,
 		TAG_END);
 	d1(KPrintF("%s/%s/%ld: txicl_rild.rild_Name=<%s>  txicl_IconObject=%08lx\n", \
@@ -1067,6 +1068,7 @@ static Object *CreateIconObject(struct TextIClassInst *inst, struct TagItem *tag
 				IDTA_FrameType, MF_FRAME_NONE,
 				IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 				IDTA_SizeConstraints, (ULONG) &inst->txicl_IconRect,
+//				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 				TAG_MORE, (ULONG) tagList,
 				TAG_END);
 

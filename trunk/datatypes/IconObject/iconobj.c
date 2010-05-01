@@ -652,6 +652,8 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 	inst->iobj_TextStyle = FS_NORMAL;
 	inst->iobj_BackfillPenNorm = inst->iobj_BackfillPenSel = IDTA_BACKFILL_NONE;
 
+	inst->iobj_ScalingPercentage = 100;
+
 	inst->iobj_SizeConstraints.MinX = inst->iobj_SizeConstraints.MinY = 0;
 	inst->iobj_SizeConstraints.MaxX = inst->iobj_SizeConstraints.MaxY = SHRT_MAX;
 
@@ -2401,6 +2403,14 @@ static void SetTags(Class *cl, Object *o, struct opSet *ops)
 
 	SetAllocTag(DTA_Name, &inst->iobj_name, ops->ops_AttrList);
 
+	dTag = FindTagItem(IDTA_ScalePercentage, ops->ops_AttrList);
+	if (dTag)
+		{
+		inst->iobj_ScalingPercentage = dTag->ti_Data;
+
+		d1(KPrintF("%s/%s/%ld: IDTA_ScalePercentage: %ld\n", \
+			__FILE__, __FUNC__, __LINE__, inst->iobj_ScalingPercentage));
+		}
 
 	dTag = FindTagItem(IDTA_SizeConstraints, ops->ops_AttrList);
 	if (dTag)
@@ -3274,13 +3284,17 @@ static void CheckIfScalingRequired(Class *cl, Object *o)
 	d1(KPrintF("%s/%s/%ld:  START o=%08lx  <%s>  iobj_NakedWidth=%ld  iobj_NakedHeight=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, o, inst->iobj_name, inst->iobj_NakedWidth, inst->iobj_NakedHeight));
 
-	if (inst->iobj_NakedWidth < inst->iobj_SizeConstraints.MinX
+	if (inst->iobj_ScalingPercentage != 100
+		|| inst->iobj_NakedWidth < inst->iobj_SizeConstraints.MinX
 		|| inst->iobj_NakedWidth > inst->iobj_SizeConstraints.MaxX
 		|| inst->iobj_NakedHeight < inst->iobj_SizeConstraints.MinY
 		|| inst->iobj_NakedHeight> inst->iobj_SizeConstraints.MaxY)
 		{
 		// We need to scale the icon!
 		d1(KPrintF("%s/%s/%ld:  Need to scale icon <%s>\n", __FILE__, __FUNC__, __LINE__, inst->iobj_name));
+
+		inst->iobj_NakedWidth = (gg->Width * inst->iobj_ScalingPercentage) / 100;
+		inst->iobj_NakedHeight = (gg->Height * inst->iobj_ScalingPercentage) / 100;
 
 		if (gg->Width < inst->iobj_SizeConstraints.MinX)
 			inst->iobj_NakedWidth = inst->iobj_SizeConstraints.MinX;
@@ -3303,6 +3317,7 @@ static void CheckIfScalingRequired(Class *cl, Object *o)
 
 			inst->iobj_layoutflags &= ~IOBLAYOUTF_Size;
 			}
+
 		inst->iobj_layoutflags |= IOBLAYOUTF_ScaleNormal | IOBLAYOUTF_ScaleSelected;
 		}
 
