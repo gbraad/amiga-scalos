@@ -37,13 +37,15 @@ SUBDIRS	=	Catalogs/deutsch/Scalos		\
 # Targets
 #
 
-NAME  =	      WindowProperties.module
+NAME  	=       WindowProperties.module
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(NAME) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
 	all_subdirs
 
 ##############################################################################
@@ -56,19 +58,19 @@ WindowProperties_Locale.h : WindowProperties.cd
 
 ##############################################################################
 
-$(NAME): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
-	@protect $@ +e
+	-@protect $@ +e
 endif
 
 ##############################################################################
 
 install:
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) Scalos:modules/ clone
+	@copy $(BINDIR)/$(NAME) Scalos:modules/ clone
 
 install: install_subdirs
 
@@ -76,7 +78,9 @@ install: install_subdirs
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(NAME) $(NAME).debug WindowProperties_Locale.h
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		WindowProperties_Locale.h
 
 clean: clean_subdirs
 
