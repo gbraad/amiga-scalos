@@ -74,6 +74,7 @@ SFLAGS		=	--remove-section .comment
 DFLAGS		=	--syms --reloc --disassemble-all
 
 OBJDIR		=	.obj_mos
+BINDIR		=	.bin_mos
 
 ############################################################################
 
@@ -124,6 +125,7 @@ SFLAGS		=	--remove-section .comment
 DFLAGS		=	--syms --reloc --disassemble-all
 
 OBJDIR		=	.obj_os4
+BINDIR		=	.bin_os4
 
 ############################################################################
 
@@ -182,6 +184,7 @@ STARTUP 	= 	$(LIBPATH)/libnix/ncrt0.o
 #STARTUP 	= 	$(LIBPATH)/libnix/detach.o gg:lib/asm_debug.o 
 
 OBJDIR		=	.obj_os3
+BINDIR		=	.bin_os3
 
 ##############################################################################
 

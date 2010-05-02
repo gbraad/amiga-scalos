@@ -33,28 +33,30 @@ endif
 # Targets
 #
 
-JPEGPICTURE  =       video.pvplugin
+NAME  	=       video.pvplugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(JPEGPICTURE) \
-		all_subdirs
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
+	all_subdirs
 
 ##############################################################################
 
-$(JPEGPICTURE): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
-	@protect $(JPEGPICTURE) +e
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(JPEGPICTURE)"
-	@copy $(JPEGPICTURE) Scalos:Plugins/Preview/ clone
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(BINDIR)/$(NAME) Scalos:Plugins/Preview/ clone
 	@avail flush
 
 install: install_subdirs
@@ -62,7 +64,11 @@ install: install_subdirs
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(JPEGPICTURE) $(JPEGPICTURE).debug *.dump *_str.*
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
 
 clean:  clean_subdirs
+
+##############################################################################
+
 

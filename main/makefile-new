@@ -167,17 +167,17 @@ SUBDIRS	=	Tools				\
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(NAME) \
-	$(NAME_DB) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
 	all_subdirs \
 
 ##############################################################################
 
-$(NAME) $(NAME_DB) : $(OBJS)
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	@$(ECHO) "Link $(NAME)"
-	@$(CC) $(STARTUP) $(OBJS) $(LFLAGS) $(DEFINES) -o $(NAME_DB)
-	@$(STRIP) $(NAME_DB) -o $(NAME)
-	@protect $(NAME) +e
+	@$(CC) $(STARTUP) $(OBJS) $(LFLAGS) $(DEFINES) -o $(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 # 
@@ -199,7 +199,7 @@ install: install_subdirs
 
 install:
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) Scalos: clone
+	@copy $(BINDIR)/$(NAME) Scalos: clone
 
 clean:  clean_subdirs
 
@@ -207,7 +207,10 @@ clean:
 	@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d  $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i \
         	$(OBJDIR)/*.s $(OBJDIR)/*.d.* \
-		$(NAME) $(NAME_DB) *.dump *_str.* \
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
 		$(OBJDIR)/Scalos_Locale.h MsgIdNames.h
+
+##############################################################################
 
 

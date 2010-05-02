@@ -61,22 +61,22 @@ NAME_DB =	$(NAME).debug
 
 .PHONY: all install clean bump dump nodebug
 
-all:    $(NAME) \
-	$(NAME_DB)
+all:    $(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 
 ##############################################################################
 
-$(NAME): $(OBJS)
-	@$(ECHO) "Link $(NAME)"
-	@$(CC) $(STARTUP) $(OBJS) $(LFLAGS) $(DEFINES) -o $(NAME_DB)
-	@$(STRIP) $(NAME_DB) -o $(NAME)
-	@protect $(NAME) +e
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install: install_subdirs
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) LIBS: clone
+	@copy $(BINDIR)/$(NAME) LIBS: clone
 	@avail flush
 
 
@@ -84,6 +84,7 @@ clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d  $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i \
         	$(OBJDIR)/*.s $(OBJDIR)/*.d.* \
-		$(NAME) $(NAME_DB) *.dump *_str.*
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
 
 ##############################################################################

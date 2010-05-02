@@ -39,7 +39,7 @@ ifeq ($(MACHINE), ppc-morphos)
 ###############################################################################
 # MorphOS
 
-GENMSGIDNAMES 	= GenMsgIdNames
+GENMSGIDNAMES 	= Tools/$(BINDIR)/GenMsgIdNames
 INCLUDES	+=
 
 LFLAGS	+=	-lpng \

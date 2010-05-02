@@ -34,7 +34,8 @@ endif
 # Targets
 #
 
-MENUPREFS	=	Menu.prefsplugin
+NAME	=	Menu.prefsplugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
@@ -51,7 +52,8 @@ $(OBJDIR)/%.o: $(DATATYPESMCC_DIR)/%.c
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(MENUPREFS)
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 
 ##############################################################################
 
@@ -63,22 +65,26 @@ ScalosMenu_locale.h : $(PREFSDIR)/ScalosMenu.cd
 
 ##############################################################################
 
-$(MENUPREFS): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(MENUPREFS)"
-	@copy $(MENUPREFS) Scalos:Prefs/ clone
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(BINDIR)/$(NAME) Scalos:Prefs/ clone
 	@avail flush
 
 
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(MENUPREFS) $(MENUPREFS).debug *.dump *_str.* ScalosMenu_locale.h
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		ScalosMenu_locale.h
+
+##############################################################################
 

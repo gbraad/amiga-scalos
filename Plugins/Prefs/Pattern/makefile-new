@@ -36,7 +36,8 @@ endif
 # Targets
 #
 
-PATTERNPREFS	=	Pattern.prefsplugin
+NAME	=	Pattern.prefsplugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
@@ -46,7 +47,8 @@ PREFSDIR	=	../../../Prefs/Pattern
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(PATTERNPREFS)
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 
 ##############################################################################
 
@@ -58,22 +60,26 @@ ScalosPattern_locale.h : $(PREFSDIR)/ScalosPattern.cd
 
 ##############################################################################
 
-$(PATTERNPREFS): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(PATTERNPREFS)"
-	@copy $(PATTERNPREFS) Scalos:Prefs/ clone
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(BINDIR)/$(NAME) Scalos:Prefs/ clone
 	@avail flush
 
 
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(NAME) $(NAME).debug *.dump *_str.* ScalosPattern_locale.h
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		ScalosPattern_locale.h
+
+##############################################################################
 

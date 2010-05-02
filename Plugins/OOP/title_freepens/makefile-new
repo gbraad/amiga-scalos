@@ -33,30 +33,37 @@ endif
 # Targets
 #
 
-TITLEFREEPENS	 =	 title_freepens.plugin
+NAME    =       title_freepens.plugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump
 
-all:	$(TITLEFREEPENS)
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 
 ##############################################################################
 
-$(TITLEFREEPENS): $(OBJS)
-	$(ECHO) "Link $@"
-	$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	$(STRIP) $@.debug -o $@
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(TITLEFREEPENS)"
-	copy $(TITLEFREEPENS) Scalos:Plugins/OOP clone
+	-@$(ECHO) "Installing $(NAME)"
+	copy $(BINDIR)/$(NAME) Scalos:Plugins/OOP clone
 
 
 clean:
-	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(TITLEFREEPENS).debug $(TITLEFREEPENS)
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
+
+##############################################################################
+
 

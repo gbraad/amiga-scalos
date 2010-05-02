@@ -7,21 +7,6 @@ ifndef TOPLEVEL
 endif
 
 ##############################################################################
-#
-# Targets
-#
-
-NAME	=	pngiconobject.datatype
-NAME_DB	=	pngiconobject.datatype.debug
-
-##############################################################################
-
-.PHONY: all install clean bump dump nodebug
-
-all:	$(NAME) \
-	$(NAME_DB)
-	
-##############################################################################
 
 include		config.mk
 
@@ -50,22 +35,40 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 ##############################################################################
+#
+# Targets
+#
 
-$(NAME): $(OBJS)
-	@$(ECHO) "Link $(NAME)"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(NAME_DB)
-	@$(STRIP) $(NAME_DB) -o $(NAME)
+NAME	=	pngiconobject.datatype
+NAME_DB	=	pngiconobject.datatype.debug
+
+##############################################################################
+
+.PHONY: all install clean bump dump nodebug
+
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
+
+##############################################################################
+
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install:
 	-@$(ECHO) "Installing $(NAME)"
 	-@$(MKDIR) $(DT_DIR)
-	copy $(NAME) $(DT_DIR)
+	@copy $(BINDIR)/$(NAME) $(DT_DIR)
 	@avail flush
 
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(NAME) $(NAME_DB) *.dump *_str.*
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
 
+##############################################################################

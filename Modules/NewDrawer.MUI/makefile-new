@@ -33,13 +33,15 @@ SUBDIRS	=	Catalogs/deutsch/Scalos		\
 # Targets
 #
 
-NAME  =	      NewDrawer.module
+NAME  	=       NewDrawer.module
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(NAME) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
 	all_subdirs
 
 ##############################################################################
@@ -58,10 +60,10 @@ NewDrawer_Locale.h : NewDrawer.cd
 
 ##############################################################################
 
-$(NAME): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
 	-@protect $@ +e
 endif
@@ -70,15 +72,16 @@ endif
 
 install:
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) Scalos:modules/ clone
-	@avail flush
+	@copy $(BINDIR)/$(NAME) Scalos:modules/ clone
 
 install: install_subdirs
 
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(NAME) $(NAME).debug NewDrawer_Locale.h
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		NewDrawer_Locale.h
 
 clean:	clean_subdirs
 

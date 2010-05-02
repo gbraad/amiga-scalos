@@ -33,7 +33,8 @@ endif
 # Targets
 #
 
-EXIFPICTURE  =	     exifpicture.plugin
+NAME  	=       exifpicture.plugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 #
@@ -54,8 +55,9 @@ SUBDIRS		= $(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(EXIFPICTURE) \
-		all_subdirs
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
+	all_subdirs
 
 ##############################################################################
 
@@ -67,17 +69,17 @@ ExifPicture_locale.h : ExifPicturePlugin.cd
 
 ##############################################################################
 
-$(EXIFPICTURE): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
-	@protect $(EXIFPICTURE) +e
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(EXIFPICTURE)"
-	@copy $(EXIFPICTURE) Scalos:Plugins/FileTypes/ clone
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(BINDIR)/$(NAME) Scalos:Plugins/FileTypes/ clone
 	@avail flush
 
 install: install_subdirs
@@ -85,7 +87,12 @@ install: install_subdirs
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(EXIFPICTURE) $(EXIFPICTURE).debug *.dump *_str.* ExifPicture_locale.h
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		ExifPicture_locale.h
 
 clean:  clean_subdirs
+
+##############################################################################
+
 
