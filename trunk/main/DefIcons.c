@@ -1112,7 +1112,6 @@ static Object *ReadDefIconObjectForName(ULONG IconType, CONST_STRPTR TypeName,
 	if (DefIconPath)
 		{
 		struct WBArg OriginalLocation;
-		struct TagItem *ti1, *ti2;
 
 		strcpy(DefIconPath, DEFICON_THEME_PREFIX);
 		SafeStrCat(DefIconPath, TypeName, Max_PathLen);
@@ -1120,16 +1119,13 @@ static Object *ReadDefIconObjectForName(ULONG IconType, CONST_STRPTR TypeName,
 		OriginalLocation.wa_Lock = dirLock;
 		OriginalLocation.wa_Name = (STRPTR) OriginalName;
 
-		ti1 = FindTagItem(IDTA_ScalePercentage, TagList);
-		ti2 = FindTagItem(IDTA_SizeConstraints, TagList);
-
 		d1(KPrintF("%s/%s/%ld: DefIconPath=<%s>\n", __FILE__, __FUNC__, __LINE__, DefIconPath));
 
 		IconObj = (Object *) NewIconObjectTags(DefIconPath,
 			IDTA_IconLocation, (ULONG) &OriginalLocation,
-			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
-			ti2 ? TAG_IGNORE : IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-			ti1 ? TAG_IGNORE : IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+			IDTA_SupportedIconTypes, GetTagData(IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes, TagList),
+			IDTA_SizeConstraints, GetTagData(IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints, TagList),
+			IDTA_ScalePercentage, GetTagData(IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor, TagList),
 			TagList ? TAG_MORE : TAG_IGNORE, (ULONG) TagList,
 			TAG_END);
 
@@ -1145,9 +1141,9 @@ static Object *ReadDefIconObjectForName(ULONG IconType, CONST_STRPTR TypeName,
 
 			IconObj = (Object *) NewIconObjectTags(DefIconPath,
 				IDTA_IconLocation, (ULONG) &OriginalLocation,
-				IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
-				ti2 ? TAG_IGNORE : IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-				ti1 ? TAG_IGNORE : IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+				IDTA_SupportedIconTypes, GetTagData(IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes, TagList),
+				IDTA_SizeConstraints, GetTagData(IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints, TagList),
+				IDTA_ScalePercentage, GetTagData(IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor, TagList),
 				TagList ? TAG_MORE : TAG_IGNORE, (ULONG) TagList,
 				TAG_END);
 
@@ -1216,13 +1212,9 @@ static Object *CloneDefIconObject(Object *IconObj, BPTR dirLock,
 {
 	struct WBArg OriginalLocation;
 	struct TagItem CloneTags[6];
-	struct TagItem *ti1, *ti2;
 
 	if (NULL == IconObj)
 		return NULL;
-
-	ti1 = FindTagItem(IDTA_ScalePercentage, TagList);
-	ti2 = FindTagItem(IDTA_SizeConstraints, TagList);
 
 	OriginalLocation.wa_Lock = dirLock;
 	OriginalLocation.wa_Name = (STRPTR) OriginalName;
@@ -1234,13 +1226,13 @@ static Object *CloneDefIconObject(Object *IconObj, BPTR dirLock,
 	CloneTags[0].ti_Data = (ULONG) &OriginalLocation;
 
 	CloneTags[1].ti_Tag = IDTA_SupportedIconTypes;
-	CloneTags[1].ti_Data = CurrentPrefs.pref_SupportedIconTypes;
+	CloneTags[1].ti_Data = GetTagData(IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes, TagList);
 
-	CloneTags[2].ti_Tag = ti2 ? TAG_IGNORE : IDTA_SizeConstraints;
-	CloneTags[2].ti_Data = (ULONG) &CurrentPrefs.pref_IconSizeConstraints;
+	CloneTags[2].ti_Tag = IDTA_SizeConstraints;
+	CloneTags[2].ti_Data = GetTagData(IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints, TagList);
 
-	CloneTags[3].ti_Tag = ti1 ? TAG_IGNORE : IDTA_ScalePercentage;
-	CloneTags[3].ti_Data = CurrentPrefs.pref_IconScaleFactor;
+	CloneTags[3].ti_Tag = IDTA_ScalePercentage;
+	CloneTags[3].ti_Data = GetTagData(IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor, TagList);
 
 	CloneTags[4].ti_Tag = TagList ? TAG_MORE : TAG_IGNORE;
 	CloneTags[4].ti_Data = (ULONG) TagList;
