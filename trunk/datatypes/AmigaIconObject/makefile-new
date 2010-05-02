@@ -35,33 +35,35 @@ endif
 #
 
 NAME	=	amigaiconobject.datatype
-NAME_DB	=	amigaiconobject.datatype.debug
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump
 
-all:	$(NAME) \
-	$(NAME_DB)
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 	
 ##############################################################################
 
-$(NAME): $(OBJS)
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	$(ECHO) "Link $(NAME)"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(NAME_DB)
-	@$(STRIP) $(NAME_DB) -o $(NAME)
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install: 
 	-@$(ECHO) "Installing $(NAME)"
 	-@$(MKDIR) $(DT_DIR)
-	copy $(NAME) $(DT_DIR)
+	@copy $(BINDIR)/$(NAME) $(DT_DIR)
 	@avail flush
 
 clean:
-	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(NAME) $(NAME_DB) *.dump *_str.*
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
 
 ##############################################################################

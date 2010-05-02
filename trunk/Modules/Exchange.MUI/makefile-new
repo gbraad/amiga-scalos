@@ -38,13 +38,15 @@ SUBDIRS	=	Catalogs/deutsch/Scalos		\
 # Targets
 #
 
-NAME  =	      Exchange.module
+NAME  	=       Exchange.module
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(NAME) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
 	all_subdirs
 
 ##############################################################################
@@ -63,12 +65,12 @@ Exchange_Locale.h : Exchange.cd
 
 ##############################################################################
 
-$(NAME): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
-	@protect $(NAME) +e
+	-@protect $@ +e
 endif
 
 ##############################################################################
@@ -77,15 +79,16 @@ install: install_subdirs
 
 install:
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) Scalos:modules/ clone
-	@avail flush
+	@copy $(BINDIR)/$(NAME) Scalos:modules/ clone
 
 clean:	clean_subdirs
 
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(NAME) $(NAME).debug Exchange_Locale.h
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		Exchange_Locale.h
 
 ##############################################################################
 

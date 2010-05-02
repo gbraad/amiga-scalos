@@ -69,7 +69,6 @@ endif
 install:
 	-@$(ECHO) "Installing $(NAME)"
 	@copy $(NAME) Scalos:modules/ clone
-	@avail flush
 
 install: install_subdirs
 

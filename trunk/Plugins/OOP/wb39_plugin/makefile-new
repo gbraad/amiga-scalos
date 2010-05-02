@@ -15,7 +15,7 @@ include		config.mk
 # Project Object files
 #
 
-OBJS_WB39	=       	$(BEGIN_OBJS) \
+OBJS_NAME	=       	$(BEGIN_OBJS) \
 				$(OBJDIR)/wb39.o \
 				$(OBJDIR)/AppWindow.o \
 				$(OBJDIR)/WorkbenchControl.o \
@@ -31,7 +31,8 @@ OBJS_TEST	=		$(OBJDIR)/test.o
 # Autodependencies
 #
 ifneq ($(MAKECMDGOALS),clean)
-	-include $(OBJS_WB39:.o=.d)
+	-include $(OBJS_NAME:.o=.d)
+	-include $(OBJS_TEST:.o=.d)
 endif
 
 ##############################################################################
@@ -39,8 +40,10 @@ endif
 # Targets
 #
 
-WB39		=	wb39.plugin
-TEST		=	test
+NAME	=	wb39.plugin
+TEST	=	test
+NAME_DB	=	$(NAME).debug
+TEST_DB	=	$(TEST).debug
 
 ##############################################################################
 #
@@ -55,34 +58,41 @@ SUBDIRS	=	persist \
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(WB39) \
-	$(TEST) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
+	$(BINDIR)/$(TEST) \
 	all_subdirs \
 
 ##############################################################################
 
-$(WB39): $(OBJS_WB39)
-	-@$(ECHO) "Link $(WB39)"
-	@$(CC) $(OBJS_WB39) $(LFLAGS2) $(DEFINES) -o$(WB39).debug
-	@$(STRIP) $(WB39).debug -o $(WB39)
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS_NAME)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS_NAME) $(LFLAGS2) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
-$(TEST): $(OBJS_TEST)
+$(BINDIR)/$(TEST) $(BINDIR)/$(TEST_DB) : $(OBJS_TEST)
 	@$(ECHO) "Link $(TEST)"
-	@$(CC) $(STARTUP) $(OBJS_TEST) $(LFLAGS) $(DEFINES) -o$(TEST).debug
-	@$(STRIP) $(TEST).debug -o $(TEST)
-	@protect $(TEST) +e
+	@$(CC) $(STARTUP) $(OBJS_TEST) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(TEST_DB)
+	@$(STRIP) $(BINDIR)/$(TEST_DB) -o $(BINDIR)/$(TEST)
+	@protect $@ +e
 
 ##############################################################################
 
 install: install_subdirs
-	-@$(ECHO) "Installing $(WB39)"
-	@copy $(WB39) Scalos:Plugins/OOP clone
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(BINDIR)/$(NAME) Scalos:Plugins/OOP clone
 
 
 clean: clean_subdirs
-	-$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(WB39) $(TEST) $(WB39).debug $(TEST).debug \
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		$(BINDIR)/$(TEST) $(BINDIR)/$(TEST_DB) \
+		*.dump *_str.*
 
 nodebug: nodebug_subdirs
+
+##############################################################################
+
 

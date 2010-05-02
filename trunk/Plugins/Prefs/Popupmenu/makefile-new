@@ -34,7 +34,8 @@ endif
 # Targets
 #
 
-POPUPMENUPREFS	     =	     PopupMenu.prefsplugin
+NAME       =       PopupMenu.prefsplugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
@@ -67,7 +68,8 @@ $(OBJDIR)/%.o: $(DATATYPESMCC_DIR)/%.c
 
 .PHONY: all install clean bump dump nodebug
 
-all:	$(POPUPMENUPREFS) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
 	all_subdirs
 
 ##############################################################################
@@ -80,17 +82,17 @@ PopupMenu_locale.h : $(PREFSDIR)/ScalosPopupMenu.cd
 
 ##############################################################################
 
-$(POPUPMENUPREFS): $(OBJS)
-	@$(ECHO) "Link $@"
-	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(POPUPMENUPREFS)"
-	@copy $(POPUPMENUPREFS) Scalos:Prefs/ clone
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(BINDIR)/$(NAME) Scalos:Prefs/ clone
 	@avail flush
 
 install: install_subdirs
@@ -98,7 +100,11 @@ install: install_subdirs
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(POPUPMENUPREFS) $(POPUPMENUPREFS).debug *.dump *_str.* PopupMenu_locale.h
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		PopupMenu_locale.h
 
 clean:  clean_subdirs
+
+##############################################################################
 

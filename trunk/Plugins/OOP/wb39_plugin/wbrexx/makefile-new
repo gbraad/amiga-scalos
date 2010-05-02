@@ -15,21 +15,21 @@ include		config.mk
 # Project Object files
 #
 
-OBJS_WBREXX	=       	$(BEGIN_OBJS) \
-				$(OBJDIR)/WBRexxMain.o \
-				$(OBJDIR)/WBRexx.o \
-				$(OBJDIR)/RexxGetAttrs.o \
-				$(OBJDIR)/RexxIcon.o \
-				$(OBJDIR)/RexxCmd.o \
-				$(OBJDIR)/Scalos_Helper.o \
-				$(END_OBJS)
+OBJS	=	$(BEGIN_OBJS) \
+		$(OBJDIR)/WBRexxMain.o \
+		$(OBJDIR)/WBRexx.o \
+		$(OBJDIR)/RexxGetAttrs.o \
+		$(OBJDIR)/RexxIcon.o \
+		$(OBJDIR)/RexxCmd.o \
+		$(OBJDIR)/Scalos_Helper.o \
+		$(END_OBJS)
 
 ##############################################################################
 #
 # Autodependencies
 #
 ifneq ($(MAKECMDGOALS),clean)
-	-include $(OBJS_WBREXX:.o=.d)
+	-include $(OBJS:.o=.d)
 endif
 
 ##############################################################################
@@ -37,30 +37,37 @@ endif
 # Targets
 #
 
-WBREXX		=	wbrexx.plugin
+NAME	=	wbrexx.plugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump nodebug
 
-all:    $(WBREXX) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 
 ##############################################################################
 
-$(WBREXX): $(OBJS_WBREXX)
-	@$(ECHO) "Link $(WBREXX)"
-	@$(CC) $(OBJS_WBREXX) $(LFLAGS2) $(DEFINES) -o$(WBREXX).debug
-	@$(STRIP) $(WBREXX).debug -o $(WBREXX)
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS2) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(WBREXX)"
-	copy $(WBREXX) Scalos:Plugins/OOP clone
+	-@$(ECHO) "Installing $(NAME)"
+	copy $(BINDIR)/$(NAME) Scalos:Plugins/OOP clone
 
 
 clean:
 	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(WBREXX) $(WBREXX).debug \
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
+
+##############################################################################
+
 

@@ -15,17 +15,17 @@ include		config.mk
 # Project Object files
 #
 
-OBJS_VOLGAUGE	=       	$(BEGIN_OBJS) \
-				$(OBJDIR)/vg_plugin.o \
-				$(OBJDIR)/VolumeGauge.o \
-				$(END_OBJS)
+OBJS	=   	$(BEGIN_OBJS) \
+		$(OBJDIR)/vg_plugin.o \
+		$(OBJDIR)/VolumeGauge.o \
+		$(END_OBJS)
 
 ##############################################################################
 #
 # Autodependencies
 #
 ifneq ($(MAKECMDGOALS),clean)
-	-include $(OBJS_VOLGAUGE:.o=.d)
+	-include $(OBJS:.o=.d)
 endif
 
 ##############################################################################
@@ -33,31 +33,38 @@ endif
 # Targets
 #
 
-VOLGAUGE	=	volumegauge.plugin
+NAME	=	volumegauge.plugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump nodebug
 
-all:    $(VOLGAUGE) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 
 ##############################################################################
 
-$(VOLGAUGE): $(OBJS_VOLGAUGE)
-	@$(ECHO) "Link $(VOLGAUGE)"
-	@$(CC) $(OBJS_VOLGAUGE) $(LFLAGS2) $(DEFINES) -o$(VOLGAUGE).debug
-	@$(STRIP) $(VOLGAUGE).debug -o $(VOLGAUGE)
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS2) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(VOLGAUGE)"
-	copy $(VOLGAUGE) Scalos:Plugins/OOP clone
+	-@$(ECHO) "Installing $(NAME)"
+	copy $(BINDIR)/$(NAME) Scalos:Plugins/OOP clone
 
 
 clean:
-	$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(VOLGAUGE) $(VOLGAUGE).debug \
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
+
+##############################################################################
+
 
 

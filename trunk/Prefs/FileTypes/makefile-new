@@ -46,35 +46,41 @@ ScalosFileTypes_locale.h : ScalosFileTypes.cd
 #
 
 NAME	=	Scalos_FileTypes
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump
 
-all:	$(NAME) \
+all:    $(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
 	all_subdirs
 
 ##############################################################################
 
-$(NAME): $(OBJS)
-	@$(ECHO) "Link $(NAME)"
-	@$(CC) $(STARTUP) $(OBJS) $(CFLAGS) $(LFLAGS) $(DEFINES) -o$(NAME).debug
-	@$(STRIP) $(NAME).debug -o $(NAME)
-	@protect $(NAME) +e
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install: 
 	-@$(ECHO) "Installing $(NAME)"
-	@copy $(NAME) "Scalos:Prefs/Scalos FileTypes" clone
+	@copy $(BINDIR)/$(NAME) "Scalos:Prefs/Scalos FileTypes" clone
 
 install: install_subdirs
 
 clean:
-	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.i \
-        	$(OBJDIR)/*.d.* $(OBJDIR)/*.s \
-		$(NAME) $(NAME).debug *.dump *_str.* \
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
                 ScalosFileTypes_locale.h
 
 clean:  clean_subdirs
+
+##############################################################################
+
 

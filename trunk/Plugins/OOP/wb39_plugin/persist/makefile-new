@@ -15,16 +15,16 @@ include		config.mk
 # Project Object files
 #
 
-OBJS_PERSIST	=       	$(BEGIN_OBJS) \
-				$(OBJDIR)/persist.o \
-				$(END_OBJS)
+OBJS	=	$(BEGIN_OBJS) \
+		$(OBJDIR)/persist.o \
+		$(END_OBJS)
 
 ##############################################################################
 #
 # Autodependencies
 #
 ifneq ($(MAKECMDGOALS),clean)
-	-include $(OBJS_PERSIST:.o=.d)
+	-include $(OBJS:.o=.d)
 endif
 
 ##############################################################################
@@ -32,30 +32,37 @@ endif
 # Targets
 #
 
-PERSIST		=	persist.plugin
+NAME	=	persist.plugin
+NAME_DB	=	$(NAME).debug
 
 ##############################################################################
 
 .PHONY: all install clean bump dump nodebug
 
-all:    $(PERSIST) \
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB)
 
 ##############################################################################
 
-$(PERSIST): $(OBJS_PERSIST)
-	@$(ECHO) "Link $(PERSIST)"
-	@$(CC) $(OBJS_PERSIST) $(LFLAGS2) $(DEFINES) -o$(PERSIST).debug
-	@$(STRIP) $(PERSIST).debug -o $(PERSIST)
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS2) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@protect $@ +e
 
 ##############################################################################
 
 install:
-	-@$(ECHO) "Installing $(PERSIST)"
-	copy $(PERSIST) Scalos:Plugins/OOP clone
+	-@$(ECHO) "Installing $(NAME)"
+	copy $(BINDIR)/$(NAME) Scalos:Plugins/OOP clone
 
 
 clean:
-	$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
-		$(PERSIST) $(PERSIST).debug \
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.*
+
+##############################################################################
+
 
