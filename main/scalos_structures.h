@@ -1452,6 +1452,8 @@ struct IconWindowProperties
 	UWORD iwp_OpacityActive;
 	UWORD iwp_OpacityInactive;
 	enum ScalosSortOrder iwp_SortOrder;
+	struct Rectangle iwp_IconSizeConstraints; // size limits for icons, larger or smaller icons are scaled
+	UWORD iwp_IconScaleFactor;     // standard icon scaling factor in percent
 	};
 
 //---------------------------------------------------------------

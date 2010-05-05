@@ -2408,6 +2408,11 @@ static void SetTags(Class *cl, Object *o, struct opSet *ops)
 		{
 		inst->iobj_ScalingPercentage = dTag->ti_Data;
 
+		if (inst->iobj_ScalingPercentage < IDTA_ScalePercentage_MIN)
+			inst->iobj_ScalingPercentage = IDTA_ScalePercentage_MIN;
+		else if (inst->iobj_ScalingPercentage > IDTA_ScalePercentage_MAX)
+			inst->iobj_ScalingPercentage = IDTA_ScalePercentage_MAX;
+
 		d1(KPrintF("%s/%s/%ld: IDTA_ScalePercentage: %ld\n", \
 			__FILE__, __FUNC__, __LINE__, inst->iobj_ScalingPercentage));
 		}

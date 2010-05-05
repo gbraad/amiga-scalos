@@ -5294,8 +5294,8 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 						Child, app->Obj[SLIDER_ICONSPAGE_NOMINALSIZE] = SliderObject,
 							MUIA_CycleChain, TRUE,
-							MUIA_Numeric_Min, 25,
-							MUIA_Numeric_Max, 400,
+							MUIA_Numeric_Min, IDTA_ScalePercentage_MIN,
+							MUIA_Numeric_Max, IDTA_ScalePercentage_MAX,
 							MUIA_Slider_Horiz, TRUE,
 							MUIA_Numeric_Value, 100,
 						End, //Slider

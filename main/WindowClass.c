@@ -246,8 +246,8 @@ static ULONG WindowClass_Iconify(Class *cl, Object *o, Msg msg)
 		AddPart(IconPath, ICONIFIED_ICON_NAME, Max_PathLen - 1);
 
 		iconifiedIconObj = NewIconObjectTags(IconPath,
-			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+			IDTA_SizeConstraints, (ULONG) &iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints,
+			IDTA_ScalePercentage, iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor,
 			TAG_END);
 
 		if (NULL == iconifiedIconObj)
@@ -256,15 +256,15 @@ static ULONG WindowClass_Iconify(Class *cl, Object *o, Msg msg)
 			AddPart(IconPath, ICONIFIED_ICON_NAME, Max_PathLen - 1);
 
 			iconifiedIconObj = NewIconObjectTags(IconPath,
-				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+				IDTA_SizeConstraints, (ULONG) &iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints,
+				IDTA_ScalePercentage, iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor,
 				TAG_END);
 			}
 
 		if (NULL == iconifiedIconObj)
 			iconifiedIconObj = GetDefIconObjectTags(WBPROJECT,
-				IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-				IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+				IDTA_SizeConstraints, (ULONG) &iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints,
+				IDTA_ScalePercentage, iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor,
 				TAG_END);
 
 		if (NULL == iconifiedIconObj)

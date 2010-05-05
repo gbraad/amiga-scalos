@@ -512,6 +512,8 @@ LIBFUNC_P8(struct AppIcon *, sca_AddAppIconA,
 							IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
 							IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
 							IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+							IDTA_SizeConstraints, (ULONG) &iInfos.xii_iinfos.ii_AppWindowStruct->ws_IconSizeConstraints,
+							IDTA_ScalePercentage, iInfos.xii_iinfos.ii_AppWindowStruct->ws_IconScaleFactor,
 							TAG_END);
 
 						FreeCopyString(PathCopy);
@@ -788,6 +790,8 @@ static SAVEDS(ULONG) AppChangeFunc(struct WBArg *ArgArray, struct SM_RunProcess 
 	d1(kprintf("%s/%s/%ld: <%s>\n", __FILE__, __FUNC__, __LINE__, ArgArray->wa_Name));
 
 	do	{
+		struct ScaWindowStruct *ws = iInfos.xii_iinfos.ii_AppWindowStruct;
+
 		// check if AppIcon name contains invalid characters ":/"
 		if (strchr(ArgArray->wa_Name, ':'))
 			break;
@@ -804,8 +808,8 @@ static SAVEDS(ULONG) AppChangeFunc(struct WBArg *ArgArray, struct SM_RunProcess 
 		d1(kprintf("%s/%s/%ld: Path=<%s>\n", __FILE__, __FUNC__, __LINE__, Path));
 
 		IconObj = NewIconObjectTags(Path,
-			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+			IDTA_SizeConstraints, (ULONG) &ws->ws_IconSizeConstraints,
+			IDTA_ScalePercentage, ws->ws_IconScaleFactor,
 			TAG_END);
 		d1(kprintf("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 		if (IconObj)
@@ -818,8 +822,8 @@ static SAVEDS(ULONG) AppChangeFunc(struct WBArg *ArgArray, struct SM_RunProcess 
 		d1(kprintf("%s/%s/%ld: Path=<%s>\n", __FILE__, __FUNC__, __LINE__, Path));
 
 		IconObj = NewIconObjectTags(Path,
-			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+			IDTA_SizeConstraints, (ULONG) &ws->ws_IconSizeConstraints,
+			IDTA_ScalePercentage, ws->ws_IconScaleFactor,
 			TAG_END);
 		} while (0);
 

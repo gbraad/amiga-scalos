@@ -183,17 +183,17 @@ Transparent
 ;
 ;
 MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT
-Standard verwenden
-;Use default
+Standard verwenden:
+;Use default:
 ;
 ;
 MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT_SHORTHELP
-Standard verwenden
-;Use default
+Standard verwenden:
+;Use default:
 ;
 ;
 MSGID_CYCLE_NOCONTROLBAR
-Steuerleiste unterdrücken
+Steuerleiste unterdrücken:
 ;Hide Control Bar:
 ;
 ;
@@ -213,6 +213,81 @@ MSGID_HIDECONTROLBAR_NOTSET
 MSGID_HIDECONTROLBAR_HIDE
 unterdrücken
 ;Hidden
+;
+;
+MSGID_GROUP_ICONSCALING
+Piktogrammskalierung
+;Icon Scaling
+;
+;
+MSGID_ICONSCALING_NOMINALSIZE_SHORTHELP
+Dies ist die Standardskalierung für alle Piktogramme in diesem Fenster.
+;Standard size adjustment applied to all icons.
+;
+;
+MSGID_ICONSCALING_NOMINALSIZE
+Standardgröße:
+;Nominal Size:
+;
+;
+MSGID_ICONSCALING_PERCENT
+%
+;
+;
+MSGID_ICONSCALING_MINSIZE
+Minimalgröße:
+;Minimum Size:
+;
+;
+MSGID_ICONSCALING_MINSIZE_SHORTHELP
+Minimale Größe für alle Piktogramme in diesem Fenster.\n\
+Kleinere Piktogramme werden auf die Mindestgröße skaliert.
+;Minimum size for displayed icons.\n\
+;Smaller icons will be scaled to\n\
+;the specified minimum size.
+;
+;
+MSGID_ICONSCALING_MAXSIZE
+Maximalgröße:
+;Maximum Size:
+;
+;
+MSGID_ICONSCALING_MAXSIZE_SHORTHELP
+Maximale Größe für alle Piktogramme in diesem Fenster.\n\
+Größere Piktogramme werden auf die Maximalgröße skaliert.
+;Maximum size for displayed icons.\n\
+;Larger icons will be scaled to\n\
+;the specified maximum size.
+;
+;
+MSGID_CHECKBOX_ICONSCALING_NOMINALSIZE
+Standard verwenden:
+;Use default:
+;
+;
+MSGID_CHECKBOX_ICONSCALING_NOMINALSIZE_SHORTHELP
+Dieser Schalter legt fest, ob der globale Wert für die\n\
+Piktogrammskalierung aus dem Scalos Voreinsteller verwendet wird.\n\
+Wenn ausgeschaltet, wird in diesem Fenster ein\n\
+individueller Wert für die Piktogrammskalierung benutzt.
+;If this checkbox is checked, global icon scaling from Scalos Preferences is used.\n\
+;Turn off this checkbox to specify individual icon scaling for this window.
+;
+;
+MSGID_CHECKBOX_ICONSIZECONSTRAINTS_USEDEFAULT
+Standard verwenden:
+;Use default:
+;
+;
+MSGID_CHECKBOX_ICONSIZECONSTRAINTS_USEDEFAULT_SHORTHELP
+Dieser Schalter legt fest, ob die globale Werte für die\n\
+Piktogrammgrößenbegrenzung aus dem Scalos Voreinsteller verwendet werden.\n\
+Wenn ausgeschaltet, werden in diesem Fenster\n\
+individuelle Werte für die Piktogrammgrößenbegrenzung benutzt.
+;If this checkbox is checked, global icon size\n\
+;constraints from Scalos Preferences are used.\n\
+;Turn off this checkbox to specify individual\n\
+;icon size constraints for this window.
 ;
 ;-----------------------------------------------------------
 ;
@@ -333,5 +408,57 @@ Scalos Fenstereigenschaften Start
 MSGID_PATTERNR_DEFAULT
 (Standard)
 ;(default)
+;
+;-----------------------------------------------------------
+;
+MSGID_ICONSIZES_16x16
+16 x 16
+;16 x 16
+;
+;
+MSGID_ICONSIZES_24x24
+24 x 24
+;24 x 24
+;
+;
+MSGID_ICONSIZES_32x32
+32 x 32
+;32 x 32
+;
+;
+MSGID_ICONSIZES_48x48
+48 x 48
+;48 x 48
+;
+;
+MSGID_ICONSIZES_64x64
+64 x 64
+;64 x 64
+;
+;
+MSGID_ICONSIZES_96x96
+96 x 96
+;96 x 96
+;
+;
+MSGID_ICONSIZES_128x128
+128 x 128
+;128 x 128
+;
+;
+MSGID_ICONSIZES_UNLIMITED
+unbegrenzt
+;unlimited
+;
+;-----------------------------------------------------------
+;
+MSGID_REGISTERTITLE_WINDOW
+Fenster
+;Window
+;
+;
+MSGID_REGISTERTITLE_ICONS
+Piktogramme
+;Icons
 ;
 ;-----------------------------------------------------------

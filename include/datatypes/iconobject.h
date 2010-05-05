@@ -117,6 +117,9 @@
 //amigaicon.datatype
 #define AIDTA_Icon			DTA_Dummy+1101	/* (I.G) orginal diskobject */
 
+// allowed range for IDTA_ScalePercentage
+#define IDTA_ScalePercentage_MIN	25
+#define IDTA_ScalePercentage_MAX	400
 
 /* IDTA_SupportedIconTypes values (bit mask) */
 #define IDTV_IconType_NewIcon		0x00000001

@@ -71,7 +71,7 @@ static enum ScanDirResult ScanDir_ExAll(struct internalScaWindowTask *iwt, struc
 static enum ScanDirResult BeginScan_Examine(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc);
 static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc);
 static LONG ReExamine(struct ReadIconListData *rild);
-static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *rild);
+static struct IconScanEntry *NewIconScanEntry(struct internalScaWindowTask *iwt, const struct ReadIconListData *rild);
 static void DisposeIconScanEntry(struct IconScanEntry *ise);
 static void RilcDisposeData(void *data);
 static void RilcDisposeKey(void *key);
@@ -631,7 +631,7 @@ static enum ScanDirResult ScanDir_ExAll(struct internalScaWindowTask *iwt, struc
 		d1(KPrintF("%s/%s/%ld: rild_Size64=%08lx-%08lx\n", __FILE__, __FUNC__, __LINE__, \
 			ULONG64_HIGH(rilc->rilc_rd.rild_Size64), ULONG64_LOW(rilc->rilc_rd.rild_Size64)));
 
-		ise = NewIconScanEntry(&rilc->rilc_rd);
+		ise = NewIconScanEntry(iwt, &rilc->rilc_rd);
 		if (ise)
 			{
 			if (ise->ise_Flags & ISEFLG_IsIcon)
@@ -829,7 +829,7 @@ static enum ScanDirResult ScanDir_Examine(struct internalScaWindowTask *iwt, str
 	rilc->rilc_PacketPending = TRUE;
 	SendPkt(rilc->rilc_pkt, rilc->rilc_FileSysPort, rilc->rilc_replyPort);
 
-	ise = NewIconScanEntry(&rilc->rilc_rd);
+	ise = NewIconScanEntry(iwt, &rilc->rilc_rd);
 	if (ise)
 		{
 		if (ise->ise_Flags & ISEFLG_IsIcon)
@@ -1106,8 +1106,8 @@ static struct ScaIconNode *CreateIcon(struct internalScaWindowTask *iwt,
 		IDTA_InnerTop, CurrentPrefs.pref_ImageBorders.Top,
 		IDTA_InnerLeft, CurrentPrefs.pref_ImageBorders.Left,
 		IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
-		IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-		IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+		IDTA_SizeConstraints, (ULONG) &iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints,
+		IDTA_ScalePercentage, iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor,
 		IDTA_Text, (ULONG) rild->rild_Name,
 		DTA_Name, (ULONG) rild->rild_Name,
 		IDTA_HalfShinePen, PalettePrefs.pal_PensList[PENIDX_HSHINEPEN],
@@ -1215,8 +1215,6 @@ static struct ScaIconNode *CreateDefaultIcon(struct internalScaWindowTask *iwt,
 			IDTA_InnerTop, CurrentPrefs.pref_ImageBorders.Top,
 			IDTA_InnerLeft, CurrentPrefs.pref_ImageBorders.Left,
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
-			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 			TAG_END);
 			} while (0);
 
@@ -1769,7 +1767,7 @@ static LONG ReExamine(struct ReadIconListData *rild)
 }
 
 
-static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *rild)
+static struct IconScanEntry *NewIconScanEntry(struct internalScaWindowTask *iwt, const struct ReadIconListData *rild)
 {
 	struct IconScanEntry *ise;
 
@@ -1857,8 +1855,8 @@ static struct IconScanEntry *NewIconScanEntry(const struct ReadIconListData *ril
 					IDTA_TextBackPen, FontPrefs.fprf_FontBackPen,
 					IDTA_TextStyle, (ise->ise_Flags & ISEFLG_IsLink) ? CurrentPrefs.pref_LinkTextStyle : FS_NORMAL,
 					IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
-					IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-					IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+					IDTA_SizeConstraints, (ULONG) &iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints,
+					IDTA_ScalePercentage, iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor,
 					TAG_END);
 
 				d1(KPrintF("%s/%s/%ld: Name=<%s>  IconObj=%08lx\n", \
@@ -2130,7 +2128,8 @@ enum ScanDirResult GetFileList(struct internalScaWindowTask *iwt, struct ReadIco
 
 
 // add a single file/directory to rilc->rilc_IconScanList
-LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_STRPTR Name)
+LONG AddFileToFilesList(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc,
+	BPTR dirLock, CONST_STRPTR Name)
 {
 	BPTR oldDir;
 	BPTR fLock = (BPTR)NULL;
@@ -2181,7 +2180,7 @@ LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_ST
 
 		stccpy(rilc->rilc_rd.rild_Comment, Comment, sizeof(rilc->rilc_rd.rild_Comment));
 
-		ise = NewIconScanEntry(&rilc->rilc_rd);
+		ise = NewIconScanEntry(iwt, &rilc->rilc_rd);
 		d1(kprintf("%s/%s/%ld: ise=%08lx\n", __FILE__, __FUNC__, __LINE__, ise));
 		if (ise)
 			{
