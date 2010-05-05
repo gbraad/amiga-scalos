@@ -190,8 +190,8 @@ LIBFUNC_P6(struct AppObject *, sca_NewAddAppIcon,
 			IDTA_Fonthandle, (ULONG) &iwt->iwt_IconTTFont,
 			IDTA_FontHook, (ULONG) (TTEngineBase ? &ScalosFontHook : NULL),
 			IDTA_RenderHook, (ULONG) renderHook,
-			IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-			IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
+			IDTA_SizeConstraints, (ULONG) &iInfos.xii_iinfos.ii_AppWindowStruct->ws_IconSizeConstraints,
+			IDTA_ScalePercentage, iInfos.xii_iinfos.ii_AppWindowStruct->ws_IconScaleFactor,
 			TAG_END);
 
 		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_LayoutIcon, iconObj, IOLAYOUTF_NormalImage);
@@ -1006,8 +1006,6 @@ LIBFUNC_P4(BOOL, sca_WBStart,
 				BPTR oldDir = CurrentDir(wblArg->wbl_IO.wbl_Input.wbli_ArgList[0].wa_Lock);
 
 				IconObject = NewIconObjectTags(wblArg->wbl_IO.wbl_Input.wbli_ArgList[0].wa_Name,
-					IDTA_SizeConstraints, (ULONG) &CurrentPrefs.pref_IconSizeConstraints,
-					IDTA_ScalePercentage, CurrentPrefs.pref_IconScaleFactor,
 					TAG_END);
 
 				if (IconObject)

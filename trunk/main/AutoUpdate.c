@@ -1185,14 +1185,14 @@ static void DeviceWindowBuildFileList(struct internalScaWindowTask *iwt, struct 
 				{
 				if (in->in_Lock)
 					{
-					AddFileToFilesList(rilc, in->in_Lock, GetIconName(in));
+					AddFileToFilesList(iwt, rilc, in->in_Lock, GetIconName(in));
 
 					d1(KPrintF("%s/%s/%ld: in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
 					stccpy(IconPath, GetIconName(in), Max_PathLen - 1);
 					SafeStrCat(IconPath, ".info", Max_PathLen - 1);
 
-					AddFileToFilesList(rilc, in->in_Lock, IconPath);
+					AddFileToFilesList(iwt, rilc, in->in_Lock, IconPath);
 					}
 				}
 

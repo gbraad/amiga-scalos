@@ -927,6 +927,9 @@ static ULONG InitMainWindow(void)
 		wsMain->ws_WindowOpacityActive = CurrentPrefs.pref_ActiveWindowTransparency;
 		wsMain->ws_WindowOpacityInactive = CurrentPrefs.pref_InactiveWindowTransparency;
 
+		wsMain->ws_IconSizeConstraints = CurrentPrefs.pref_IconSizeConstraints;
+		wsMain->ws_IconScaleFactor = CurrentPrefs.pref_IconScaleFactor;
+
 		wsMain->ws_xoffset = CurrentPrefs.pref_WBWindowXOffset;
 		wsMain->ws_yoffset = CurrentPrefs.pref_WBWindowYOffset;
 

@@ -107,6 +107,10 @@ IDTA_UnscaledHeight     EQU     DTA_Dummy+970	; (ISG) ULONG - unscaled width of 
 
 IDTA_ScalePercentage	EQU	DTA_Dummy+971	; (I..) UWORD - Scale factor in percent
 
+; allowed range for IDTA_ScalePercentage
+IDTA_ScalePercentage_MIN	EQU	25
+IDTA_ScalePercentage_MAX	EQU	400
+
 ;amigaicon.datatype
 AIDTA_Icon		EQU	DTA_Dummy+1101	;(I.G) original Icon
 

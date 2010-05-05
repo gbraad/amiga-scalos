@@ -215,7 +215,7 @@ static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 {
 	ULONG Result;
 
-	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
 
 	switch (msg->MethodID)
 		{
@@ -944,6 +944,7 @@ static ULONG IconWindowClass_Set(Class *cl, Object *o, Msg msg)
 	struct opSet *ops = (struct opSet *) msg;
 	struct TagItem *TagList = ops->ops_AttrList;
 	struct TagItem *ti;
+	BOOL RequiresUpdate = FALSE;
 
 	while ((ti = NextTagItem(&TagList)))
 		{
@@ -951,6 +952,24 @@ static ULONG IconWindowClass_Set(Class *cl, Object *o, Msg msg)
 
 		switch (ti->ti_Tag)
 			{
+		case SCCA_IconWin_IconScaleFactor:
+			if (iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor != ti->ti_Data)
+				{
+				iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor = ti->ti_Data;
+				RequiresUpdate = TRUE;
+				}
+			break;
+
+		case SCCA_IconWin_IconSizeConstraints:
+			if (0 != memcmp(&iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints,
+				(struct Rectangle *) ti->ti_Data,
+				sizeof(iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints)))
+				{
+				iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints = *((struct Rectangle *) ti->ti_Data);
+				RequiresUpdate = TRUE;
+				}
+			break;
+
 		case SCCA_IconWin_ActiveTransparency:
 			if (iwt->iwt_WindowTask.mt_WindowStruct->ws_WindowOpacityActive != ti->ti_Data)
 				{
@@ -1091,6 +1110,18 @@ static ULONG IconWindowClass_Set(Class *cl, Object *o, Msg msg)
 			}
 		}
 
+	if (RequiresUpdate)
+		{
+		struct SM_Update *smu;
+
+		smu = (struct SM_Update *) SCA_AllocMessage(MTYP_Update, 0);
+		d1(kprintf("%s/%s/%ld: smu=%08lx\n", __FILE__, __FUNC__, __LINE__, smu));
+		if (smu)
+			{
+			PutMsg(iwt->iwt_WindowTask.wt_IconPort, &smu->ScalosMessage.sm_Message);
+			}
+		}
+
 	return 0;
 }
 
@@ -1102,6 +1133,14 @@ static ULONG IconWindowClass_Get(Class *cl, Object *o, Msg msg)
 
 	switch (opg->opg_AttrID)
 		{
+	case SCCA_IconWin_IconSizeConstraints:
+		*opg->opg_Storage = (ULONG) &iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints;
+		break;
+
+	case SCCA_IconWin_IconScaleFactor:
+		*opg->opg_Storage = iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor;
+		break;
+
 	case SCCA_IconWin_ActiveTransparency:
 		*opg->opg_Storage = iwt->iwt_WindowTask.mt_WindowStruct->ws_WindowOpacityActive;
 		break;
@@ -1931,6 +1970,8 @@ static ULONG IconWindowClass_GetDefIcon(Class *cl, Object *o, Msg msg)
 			IDTA_Font, (ULONG) iwt->iwt_IconFont,
 			IDTA_Fonthandle, (ULONG) &iwt->iwt_IconTTFont,
 			IDTA_FontHook, (ULONG) (TTEngineBase ? &ScalosFontHook : NULL),
+			IDTA_SizeConstraints, (ULONG) &iwt->iwt_WindowTask.mt_WindowStruct->ws_IconSizeConstraints,
+			IDTA_ScalePercentage, iwt->iwt_WindowTask.mt_WindowStruct->ws_IconScaleFactor,
 			TAG_END);
 
 	d1(KPrintF("%s/%s/%ld: Name=<%s>\n", __FILE__, __FUNC__, __LINE__, mgd->mgd_Name));

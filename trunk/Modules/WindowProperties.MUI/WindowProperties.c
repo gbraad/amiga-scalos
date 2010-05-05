@@ -70,7 +70,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	40
-#define	VERSION_MINOR	8
+#define	VERSION_MINOR	9
 
 //----------------------------------------------------------------------------
 
@@ -194,6 +194,8 @@ DISPATCHER_PROTO(ThumbnailLifetimeSlider);
 static void SelectPattern(ULONG PatternNumber);
 static void AddDefaultPatternEntry(void);
 static struct PatternEntryDef *CreatePatternEntryDef(void);
+static void SetIconSizeConstraints(const struct Rectangle *SizeConstraints);
+static void GetIconSizeConstraints(struct Rectangle *SizeConstraints);
 
 //----------------------------------------------------------------------------
 
@@ -203,6 +205,8 @@ static UBYTE prefDefIconsFirst = TRUE;		// Flag: try Def-Diskicons first
 static CONST_STRPTR prefDefIconPath = "ENV:sys";
 static UWORD prefsActiveWindowTransparency;
 static UWORD prefsInactiveWindowTransparency;
+static UWORD prefsIconScaleFactor;
+static struct Rectangle prefIconSizeConstraints;
 
 struct IntuitionBase *IntuitionBase = NULL;
 struct Library *IconBase = NULL;
@@ -322,6 +326,39 @@ static STRPTR cHideControlBar[] =
 	NULL
 	};
 
+static STRPTR cRegisterTitleStrings[] =
+	{
+	(STRPTR) MSGID_REGISTERTITLE_WINDOW,
+	(STRPTR) MSGID_REGISTERTITLE_ICONS,
+	NULL
+	};
+
+static STRPTR cIconSizesMin[] =
+{
+	(STRPTR) MSGID_ICONSIZES_UNLIMITED,
+	(STRPTR) MSGID_ICONSIZES_16x16,
+	(STRPTR) MSGID_ICONSIZES_24x24,
+	(STRPTR) MSGID_ICONSIZES_32x32,
+	(STRPTR) MSGID_ICONSIZES_48x48,
+	(STRPTR) MSGID_ICONSIZES_64x64,
+	(STRPTR) MSGID_ICONSIZES_96x96,
+	(STRPTR) MSGID_ICONSIZES_128x128,
+	NULL
+};
+
+static STRPTR cIconSizesMax[] =
+{
+	(STRPTR) MSGID_ICONSIZES_16x16,
+	(STRPTR) MSGID_ICONSIZES_24x24,
+	(STRPTR) MSGID_ICONSIZES_32x32,
+	(STRPTR) MSGID_ICONSIZES_48x48,
+	(STRPTR) MSGID_ICONSIZES_64x64,
+	(STRPTR) MSGID_ICONSIZES_96x96,
+	(STRPTR) MSGID_ICONSIZES_128x128,
+	(STRPTR) MSGID_ICONSIZES_UNLIMITED,
+	NULL
+};
+
 static Object *Group_Buttons2;
 static Object *APP_Main;
 static Object *WIN_Main;
@@ -352,6 +389,14 @@ static Object *CheckboxTransparencyInactiveWindow;
 static Object *GroupTransparencyActiveWindow;
 static Object *GroupTransparencyInactiveWindow;
 
+static Object *SliderNominalIconSize;
+static Object *CycleIconMinSize;
+static Object *CycleIconMaxSize;
+static Object *CheckboxNominalIconSize;
+static Object *CheckboxIconSizeConstraints;
+static Object *GroupNominalIconSize;
+static Object *GroupIconSizeConstraints;
+
 static struct MUI_CustomClass *IconobjectClass;
 static struct MUI_CustomClass *ThumbnailLifetimeSliderClass;
 struct MUI_CustomClass *BitMapPicClass;
@@ -365,6 +410,10 @@ static ULONG ActiveWindowTransparency = 100;
 static ULONG InactiveWindowTransparency = 100;
 static BOOL ActiveWindowTransparencyDefault = TRUE;
 static BOOL InactiveWindowTransparencyDefault = TRUE;
+static ULONG IconScaleFactor = 100;
+static BOOL IconScaleFactorDefault = TRUE;
+static struct Rectangle IconSizeConstraints = { 0, 0, SHRT_MAX, SHRT_MAX };
+static BOOL IconSizeConstraintsDefault = TRUE;
 
 static ULONG BitMapsRead = 0;
 static ULONG ThumbnailImageNumber = 0;
@@ -453,7 +502,7 @@ int main(int argc, char *argv[])
 			IsWriteable = isDiskWritable(arg->wa_Lock);
 
 			ws = FindWindowByLock(arg->wa_Lock);
-			d1(kprintf(__FUNC__ "/%ld: ws=%08lx\n", __LINE__, ws));
+			d1(kprintf("%s/%s/%ld: ws=%08lx\n", __FILE__, __FUNC__, __LINE__, ws));
 			}
 		}
 
@@ -534,12 +583,54 @@ int main(int argc, char *argv[])
 				DoMethod(iconObj, IDTM_GetToolTypeValue, tt, (ULONG *) &InactiveWindowTransparency);
 				InactiveWindowTransparencyDefault = FALSE;
 				}
+
+			tt = NULL;
+			if (DoMethod(iconObj, IDTM_FindToolType, "SCALOS_ICONSCALEFACTOR", &tt))
+				{
+				IconScaleFactorDefault = FALSE;
+
+				DoMethod(iconObj, IDTM_GetToolTypeValue, tt, (ULONG *) &IconScaleFactor);
+
+				if (IconScaleFactor < IDTA_ScalePercentage_MIN)
+					IconScaleFactor = IDTA_ScalePercentage_MIN;
+				else if (IconScaleFactor > IDTA_ScalePercentage_MAX)
+					IconScaleFactor = IDTA_ScalePercentage_MAX;
+
+				d1(KPrintF("%s/%s/%ld: iwp_IconScaleFactor=%lu\n", __FILE__, __FUNC__, __LINE__, iwp->iwp_IconScaleFactor));
+				}
+
+			tt = NULL;
+			if (DoMethod(iconObj, IDTM_FindToolType, "SCALOS_ICONSIZECONSTRAINTS", &tt))
+				{
+				LONG IconSizeMin = 0, IconSizeMax = SHRT_MAX;
+
+				IconSizeConstraintsDefault = FALSE;
+
+				d1(KPrintF("%s/%s/%ld: tt=<%s>\n", __FILE__, __FUNC__, __LINE__, tt));
+				while (*tt && '=' !=  *tt)
+					tt++;
+
+				if (2 == sscanf(tt, "=%ld,%ld", &IconSizeMin, &IconSizeMax))
+					{
+					if ((IconSizeMax > 128) || (IconSizeMax < 0))
+						IconSizeMax = SHRT_MAX;
+					if ((IconSizeMin < 0) || (IconSizeMin >= IconSizeMax))
+						IconSizeMin = 0;
+
+					IconSizeConstraints.MinX = IconSizeConstraints.MinY = IconSizeMin;
+					IconSizeConstraints.MaxX = IconSizeConstraints.MaxY = IconSizeMax;
+					}
+				d1(KPrintF("%s/%s/%ld: IconSizeMin=%ld  IconSizeMax=%ld\n", __FILE__, __FUNC__, __LINE__, IconSizeMin, IconSizeMax));
+				}
 			}
 
 		TranslateStringArray(cShowThumbnails);
 		TranslateStringArray(cCheckOverlap);
 		TranslateStringArray(cHideStatusBar);
 		TranslateStringArray(cHideControlBar);
+		TranslateStringArray(cIconSizesMin);
+		TranslateStringArray(cIconSizesMax);
+		TranslateStringArray(cRegisterTitleStrings);
 
 		APP_Main = ApplicationObject,
 			MUIA_Application_Title,		GetLocString(MSGID_TITLENAME),
@@ -593,180 +684,260 @@ int main(int argc, char *argv[])
 								MUIA_CycleChain, TRUE,
 							End, //IconobjectMCCObject
 
-							Child, VSpace(0),
+							Child,	RegisterObject,
+								MUIA_Register_Titles, cRegisterTitleStrings,
+								MUIA_CycleChain, TRUE,
 
-							Child, VGroup,
-								Child, ColGroup(2),
-									Child, Label1(GetLocString(MSGID_POPUP_PATTERNNUMBER)),
+								Child,	VGroup,
 									Child, HGroup,
-										MUIA_Disabled, !IsWriteable,
+										Child, Label1(GetLocString(MSGID_POPUP_PATTERNNUMBER)),
+										Child, HGroup,
+											MUIA_Disabled, !IsWriteable,
 
-										Child, TextPatternNumber = TextObject,
-											MUIA_Text_PreParse, MUIX_C,
-											MUIA_Text_Contents, GetLocString(MSGID_PATTERNR_DEFAULT),
-											End, //TextObject
+											Child, TextPatternNumber = TextObject,
+												MUIA_Text_PreParse, MUIX_C,
+												MUIA_Text_Contents, GetLocString(MSGID_PATTERNR_DEFAULT),
+												End, //TextObject
 
-										Child, BackfillPatternPreview = NewObject(BackfillClass->mcc_Class, 0,
-											ImageButtonFrame,
-											MUIA_Background, MUII_ButtonBack,
-											ImageButtonFrame,
-											MUIA_InputMode, MUIV_InputMode_RelVerify,
-											MUIA_CycleChain, TRUE,
-											BFA_BitmapObject, EmptyThumbnailBitmap,
-											End, //BackfillClass
-
-										Child, PopObjectPatternNumber = PopobjectObject,
-											MUIA_CycleChain, TRUE,
-											MUIA_Popobject_WindowHook, &PatternPopupWindowHook,
-											MUIA_Popstring_Button, PopButton(MUII_PopUp),
-											MUIA_Popobject_Object, NListviewPatterns = NListviewObject,
-												MUIA_Listview_DragType, MUIV_Listview_DragType_None,
-												MUIA_Listview_Input, TRUE,
+											Child, BackfillPatternPreview = NewObject(BackfillClass->mcc_Class, 0,
+												ImageButtonFrame,
+												MUIA_Background, MUII_ButtonBack,
+												ImageButtonFrame,
+												MUIA_InputMode, MUIV_InputMode_RelVerify,
 												MUIA_CycleChain, TRUE,
-												MUIA_Listview_List, NListPatterns = NListObject,
-													InputListFrame,
-													MUIA_Background, MUII_ListBack,
-													MUIA_NList_Format, "P=\33r BAR, BAR",
-													MUIA_NList_TitleSeparator, FALSE,
-													MUIA_NList_Title, FALSE,
-													MUIA_NList_DisplayHook2, &PatternListDisplayHook,
-													MUIA_NList_ConstructHook2, &PatternListConstructHook,
-													MUIA_NList_DestructHook2, &PatternListDestructHook,
-													MUIA_NList_CompareHook2, &PatternListCompareHook,
-													MUIA_NList_PoolPuddleSize, sizeof(struct PatternListEntry) * 64,
-													MUIA_NList_PoolThreshSize, sizeof(struct PatternListEntry),
-													MUIA_NList_AutoVisible, TRUE,
-													MUIA_NList_SortType, 0,
-													MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 0,
-													MUIA_NList_EntryValueDependent, TRUE,
-													MUIA_NList_MultiSelect, MUIV_NList_MultiSelect_None,
-													End, //NListObject
-												MUIA_NListview_Horiz_ScrollBar, MUIV_NListview_HSB_FullAuto,
-												End, //NListviewObject
-											End, //PopobjectObject
+												BFA_BitmapObject, EmptyThumbnailBitmap,
+												End, //BackfillClass
+
+											Child, PopObjectPatternNumber = PopobjectObject,
+												MUIA_CycleChain, TRUE,
+												MUIA_Popobject_WindowHook, &PatternPopupWindowHook,
+												MUIA_Popstring_Button, PopButton(MUII_PopUp),
+												MUIA_Popobject_Object, NListviewPatterns = NListviewObject,
+													MUIA_Listview_DragType, MUIV_Listview_DragType_None,
+													MUIA_Listview_Input, TRUE,
+													MUIA_CycleChain, TRUE,
+													MUIA_Listview_List, NListPatterns = NListObject,
+														InputListFrame,
+														MUIA_Background, MUII_ListBack,
+														MUIA_NList_Format, "P=\33r BAR, BAR",
+														MUIA_NList_TitleSeparator, FALSE,
+														MUIA_NList_Title, FALSE,
+														MUIA_NList_DisplayHook2, &PatternListDisplayHook,
+														MUIA_NList_ConstructHook2, &PatternListConstructHook,
+														MUIA_NList_DestructHook2, &PatternListDestructHook,
+														MUIA_NList_CompareHook2, &PatternListCompareHook,
+														MUIA_NList_PoolPuddleSize, sizeof(struct PatternListEntry) * 64,
+														MUIA_NList_PoolThreshSize, sizeof(struct PatternListEntry),
+														MUIA_NList_AutoVisible, TRUE,
+														MUIA_NList_SortType, 0,
+														MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 0,
+														MUIA_NList_EntryValueDependent, TRUE,
+														MUIA_NList_MultiSelect, MUIV_NList_MultiSelect_None,
+														End, //NListObject
+													MUIA_NListview_Horiz_ScrollBar, MUIV_NListview_HSB_FullAuto,
+													End, //NListviewObject
+												End, //PopobjectObject
+											End, //HGroup
 										End, //HGroup
-								
-									Child, Label1(GetLocString(MSGID_CYCLE_NOSTATUSBAR)),
-									Child, CycleMarkNoStatusBar = CycleObject,
-										MUIA_CycleChain, TRUE,
-										MUIA_Cycle_Active, NoStatusBar,
-										MUIA_Cycle_Entries, cHideStatusBar,
-										MUIA_Disabled, !IsWriteable,
-										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_NOSTATUSBAR_SHORTHELP),
-									End, //CycleObject
 
-									Child, Label1(GetLocString(MSGID_CYCLE_NOCONTROLBAR)),
-									Child, CycleMarkNoControlBar = CycleObject,
-										MUIA_CycleChain, TRUE,
-										MUIA_Cycle_Active, NoControlBar,
-										MUIA_Cycle_Entries, cHideControlBar,
-										MUIA_Disabled, !IsWriteable,
-										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_NOCONTROLBAR_SHORTHELP),
-									End, //CycleObject
+									Child, HVSpace,
 
-									Child, Label1(GetLocString(MSGID_CYCLE_CHECKOVERLAP)),
-									Child, CycleCheckOverlap = CycleObject,
-										MUIA_CycleChain, TRUE,
-										MUIA_Disabled, !IsWriteable,
-										MUIA_Cycle_Entries, cCheckOverlap,
-										MUIA_Cycle_Active, CheckOverlap,
-										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_CHECKOVERLAP_SHORTHELP),
-									End, //CycleObject
+									Child, ColGroup(2),
+										Child, Label1(GetLocString(MSGID_CYCLE_NOSTATUSBAR)),
+										Child, CycleMarkNoStatusBar = CycleObject,
+											MUIA_CycleChain, TRUE,
+											MUIA_Cycle_Active, NoStatusBar,
+											MUIA_Cycle_Entries, cHideStatusBar,
+											MUIA_Disabled, !IsWriteable,
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_NOSTATUSBAR_SHORTHELP),
+											End, //CycleObject
 
-									Child, Label1(GetLocString(MSGID_CYCLE_THUMBNAILS)),
-									Child, CycleThumbnails = CycleObject,
-										MUIA_CycleChain, TRUE,
-										MUIA_Disabled, !IsWriteable,
-										MUIA_Cycle_Entries, cShowThumbnails,
-										MUIA_Cycle_Active, ThumbnailMode,
-										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_THUMBNAILS_SHORTHELP),
-									End, //CycleObject
+										Child, Label1(GetLocString(MSGID_CYCLE_NOCONTROLBAR)),
+										Child, CycleMarkNoControlBar = CycleObject,
+											MUIA_CycleChain, TRUE,
+											MUIA_Cycle_Active, NoControlBar,
+											MUIA_Cycle_Entries, cHideControlBar,
+											MUIA_Disabled, !IsWriteable,
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_NOCONTROLBAR_SHORTHELP),
+											End, //CycleObject
 
-									Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE)),
-									Child, NumericButtonThumbnailsLifetime = NewObject(ThumbnailLifetimeSliderClass->mcc_Class, 0,
-										MUIA_CycleChain, TRUE,
-										MUIA_Numeric_Min, 0,
-										MUIA_Numeric_Max, 366,
-										MUIA_Slider_Horiz, TRUE,
-										MUIA_Numeric_Value, ThumbnailLifetime,
-										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE_SHORTHELP),
-									End, //ThumbnailLifetimeSliderClass
-								End, //ColGroup
+										End, //ColGroup
 
-							Child, VGroup,
+									Child, HVSpace,
+
+									Child, VGroup,
 #if defined(__MORPHOS__)
-								MUIA_ShowMe, IntuitionBase->LibNode.lib_Version >= 51,
+										MUIA_ShowMe, IntuitionBase->LibNode.lib_Version >= 51,
 #elif !defined(__amigaos4__)
-								MUIA_ShowMe, FALSE,
+										MUIA_ShowMe, FALSE,
 #endif //!defined(__MORPHOS__) && !defined(__amigaos4__)
-								Child, VGroup,
-									MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TRANSPARENCY_ACTIVEWINDOW),
-									GroupFrame,
-									MUIA_Background, MUII_GroupBack,
+										Child, VGroup,
+											MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TRANSPARENCY_ACTIVEWINDOW),
+											GroupFrame,
+											MUIA_Background, MUII_GroupBack,
 
-									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TRANSPARENCY_ACTIVEWINDOW_SHORTHELP),
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TRANSPARENCY_ACTIVEWINDOW_SHORTHELP),
 
-									Child, HGroup,
-										Child, Label1((ULONG) GetLocString(MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT)),
-										Child, CheckboxTransparencyActiveWindow = CheckMarkHelp(ActiveWindowTransparencyDefault, MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT_SHORTHELP),
-										Child, HVSpace,
-										End, //HGroup
+											Child, HGroup,
+												Child, Label1((ULONG) GetLocString(MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT)),
+												Child, CheckboxTransparencyActiveWindow = CheckMarkHelp(ActiveWindowTransparencyDefault, MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT_SHORTHELP),
+												Child, HVSpace,
+												End, //HGroup
 
-									Child, GroupTransparencyActiveWindow = ColGroup(3),
-										MUIA_Disabled, ActiveWindowTransparencyDefault,
-										Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_TRANSPARENT)),
+											Child, GroupTransparencyActiveWindow = ColGroup(3),
+												MUIA_Disabled, ActiveWindowTransparencyDefault,
+												Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_TRANSPARENT)),
 
-										Child, SliderTransparencyActiveWindow = SliderObject,
-											MUIA_CycleChain, TRUE,
-											MUIA_Numeric_Min, 0,
-											MUIA_Numeric_Max, 100,
-											MUIA_Slider_Horiz, TRUE,
-											MUIA_Numeric_Value, ActiveWindowTransparency,
-										End, //Slider
+												Child, SliderTransparencyActiveWindow = SliderObject,
+													MUIA_CycleChain, TRUE,
+													MUIA_Numeric_Min, 0,
+													MUIA_Numeric_Max, 100,
+													MUIA_Slider_Horiz, TRUE,
+													MUIA_Numeric_Value, ActiveWindowTransparency,
+													End, //Slider
 
-										Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_OPAQUE)),
+												Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_OPAQUE)),
 
-										End, //ColGroup
+												End, //ColGroup
 
+											End, //VGroup
+
+										Child, VGroup,
+											MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TRANSPARENCY_INACTIVEWINDOW),
+											GroupFrame,
+											MUIA_Background, MUII_GroupBack,
+
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TRANSPARENCY_INACTIVEWINDOW_SHORTHELP),
+
+											Child, HGroup,
+												Child, Label1((ULONG) GetLocString(MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT)),
+												Child, CheckboxTransparencyInactiveWindow = CheckMarkHelp(InactiveWindowTransparencyDefault, MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT_SHORTHELP),
+												Child, HVSpace,
+												End, //HGroup
+
+											Child, GroupTransparencyInactiveWindow = ColGroup(3),
+												MUIA_Disabled, InactiveWindowTransparencyDefault,
+												Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_TRANSPARENT)),
+
+												Child, SliderTransparencyInactiveWindow = SliderObject,
+													MUIA_CycleChain, TRUE,
+													MUIA_Numeric_Min, 0,
+													MUIA_Numeric_Max, 100,
+													MUIA_Slider_Horiz, TRUE,
+													MUIA_Numeric_Value, InactiveWindowTransparency,
+												End, //Slider
+
+												Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_OPAQUE)),
+
+												End, //ColGroup
+
+											End, //VGroup
+
+										End, //VGroup
+
+									Child, HVSpace,
 									End, //VGroup
 
-								Child, VGroup,
-									MUIA_FrameTitle, (ULONG) GetLocString(MSGID_TRANSPARENCY_INACTIVEWINDOW),
-									GroupFrame,
-									MUIA_Background, MUII_GroupBack,
+								Child,	VGroup,
+									Child, ColGroup(2),
+										Child, Label1(GetLocString(MSGID_CYCLE_CHECKOVERLAP)),
+										Child, CycleCheckOverlap = CycleObject,
+											MUIA_CycleChain, TRUE,
+											MUIA_Disabled, !IsWriteable,
+											MUIA_Cycle_Entries, cCheckOverlap,
+											MUIA_Cycle_Active, CheckOverlap,
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_CHECKOVERLAP_SHORTHELP),
+											End, //CycleObject
 
-									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TRANSPARENCY_INACTIVEWINDOW_SHORTHELP),
+										Child, Label1(GetLocString(MSGID_CYCLE_THUMBNAILS)),
+										Child, CycleThumbnails = CycleObject,
+											MUIA_CycleChain, TRUE,
+											MUIA_Disabled, !IsWriteable,
+											MUIA_Cycle_Entries, cShowThumbnails,
+											MUIA_Cycle_Active, ThumbnailMode,
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_CYCLE_THUMBNAILS_SHORTHELP),
+											End, //CycleObject
 
-									Child, HGroup,
-										Child, Label1((ULONG) GetLocString(MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT)),
-										Child, CheckboxTransparencyInactiveWindow = CheckMarkHelp(InactiveWindowTransparencyDefault, MSGID_CHECKBOX_TRANSPARENCY_USEDEFAULT_SHORTHELP),
-										Child, HVSpace,
-										End, //HGroup
-
-									Child, GroupTransparencyInactiveWindow = ColGroup(3),
-										MUIA_Disabled, InactiveWindowTransparencyDefault,
-										Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_TRANSPARENT)),
-
-										Child, SliderTransparencyInactiveWindow = SliderObject,
+										Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE)),
+										Child, NumericButtonThumbnailsLifetime = NewObject(ThumbnailLifetimeSliderClass->mcc_Class, 0,
 											MUIA_CycleChain, TRUE,
 											MUIA_Numeric_Min, 0,
-											MUIA_Numeric_Max, 100,
+											MUIA_Numeric_Max, 366,
 											MUIA_Slider_Horiz, TRUE,
-											MUIA_Numeric_Value, InactiveWindowTransparency,
-										End, //Slider
-
-										Child, Label1((ULONG) GetLocString(MSGID_TRANSPARENCY_OPAQUE)),
-
+											MUIA_Numeric_Value, ThumbnailLifetime,
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE_SHORTHELP),
+											End, //ThumbnailLifetimeSliderClass
 										End, //ColGroup
 
+									Child, HVSpace,
+
+									Child, VGroup,
+										MUIA_FrameTitle, (ULONG) GetLocString(MSGID_GROUP_ICONSCALING),
+										GroupFrame,
+										MUIA_Background, MUII_GroupBack,
+
+										Child, HGroup,
+											Child, Label1((ULONG) GetLocString(MSGID_CHECKBOX_ICONSCALING_NOMINALSIZE)),
+											Child, CheckboxNominalIconSize  = CheckMarkHelp(IconScaleFactorDefault, MSGID_CHECKBOX_ICONSCALING_NOMINALSIZE_SHORTHELP),
+											Child, HVSpace,
+											End, //HGroup
+
+										Child, GroupNominalIconSize = HGroup,
+											MUIA_Disabled, IconScaleFactorDefault,
+											MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSCALING_NOMINALSIZE_SHORTHELP),
+
+											Child, Label1((ULONG) GetLocString(MSGID_ICONSCALING_NOMINALSIZE)),
+
+											Child, SliderNominalIconSize = SliderObject,
+												MUIA_CycleChain, TRUE,
+												MUIA_Numeric_Min, IDTA_ScalePercentage_MIN,
+												MUIA_Numeric_Max, IDTA_ScalePercentage_MAX,
+												MUIA_Slider_Horiz, TRUE,
+												MUIA_Numeric_Value, IconScaleFactor,
+												End, //Slider
+
+											Child, Label1((ULONG) GetLocString(MSGID_ICONSCALING_PERCENT)),
+											End, //HGroup
+
+										Child, HVSpace,
+
+										Child, HGroup,
+											Child, Label1((ULONG) GetLocString(MSGID_CHECKBOX_ICONSIZECONSTRAINTS_USEDEFAULT)),
+											Child, CheckboxIconSizeConstraints  = CheckMarkHelp(IconSizeConstraintsDefault, MSGID_CHECKBOX_ICONSIZECONSTRAINTS_USEDEFAULT_SHORTHELP),
+											Child, HVSpace,
+											End, //HGroup
+
+										Child, GroupIconSizeConstraints = HGroup,
+											MUIA_Disabled, IconSizeConstraintsDefault,
+
+											Child, HVSpace,
+
+											Child, Label1((ULONG) GetLocString(MSGID_ICONSCALING_MINSIZE)),
+											Child, CycleIconMinSize = CycleObject,
+												MUIA_CycleChain, TRUE,
+												MUIA_Cycle_Entries, cIconSizesMin,
+												MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSCALING_MINSIZE_SHORTHELP),
+												End, //Cycle
+
+											Child, HVSpace,
+
+											Child, Label1((ULONG) GetLocString(MSGID_ICONSCALING_MAXSIZE)),
+											Child, CycleIconMaxSize = CycleObject,
+												MUIA_CycleChain, TRUE,
+												MUIA_Cycle_Entries, cIconSizesMax,
+												MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSCALING_MAXSIZE_SHORTHELP),
+												End, //Cycle
+
+											Child, HVSpace,
+											End, //HGroup
+
+										End, //VGroup
 									End, //VGroup
 
+									Child, HVSpace,
 								End, //VGroup
-							End, //VGroup
 
-							Child, RectangleObject, End, //--- Added
-
-						End, //HGroup
+							End, //RegisterObject
 
 						Child, Group_Virtual = ScrollgroupObject, // +jmc+
 							MUIA_Scrollgroup_VertBar, NULL,
@@ -780,13 +951,13 @@ int main(int argc, char *argv[])
 									MUIA_Text_PreParse, MUIX_C,
 									MUIA_Text_Contents, PathName,
 									MUIA_ShortHelp, GetLocString(MSGID_TEXT_PARENTDIR_SHORTHELP),
-								End, //TextObject
-							End, //VirtgroupObject
-						End, //ScrollgroupObject
+									End, //TextObject
+								End, //VirtgroupObject
+							End, //ScrollgroupObject
 
-					End, //VGroup,
+						Child, HVSpace,
 
-					// Child, VSpace(0), //--- Removed
+						End, //VGroup,
 
 					Child, Group_Buttons2 = HGroup,
 						MUIA_Group_SameWidth, TRUE,
@@ -850,6 +1021,12 @@ int main(int argc, char *argv[])
 			setslider(SliderTransparencyActiveWindow, prefsActiveWindowTransparency);
 		if (InactiveWindowTransparencyDefault)
 			setslider(SliderTransparencyInactiveWindow, prefsInactiveWindowTransparency);
+		if (IconScaleFactorDefault)
+			setslider(SliderNominalIconSize, prefsIconScaleFactor);
+		if (IconSizeConstraintsDefault)
+			SetIconSizeConstraints(&prefIconSizeConstraints);
+		else
+			SetIconSizeConstraints(&IconSizeConstraints);
 
 		DoMethod(WIN_Main, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, 
 			WIN_Main, 3, MUIM_Set, MUIA_Window_Open, FALSE);
@@ -895,6 +1072,18 @@ int main(int argc, char *argv[])
 		// Set SliderTransparencyInactiveWindow to prefs value when "use default" is checked
 		DoMethod(CheckboxTransparencyInactiveWindow, MUIM_Notify, MUIA_Selected, TRUE,
 			SliderTransparencyInactiveWindow, 3, MUIM_Set, MUIA_Numeric_Value, prefsInactiveWindowTransparency);
+
+		// GroupIconSizeConstraints is disabled whenever CheckboxIconSizeConstraints is checked
+		DoMethod(CheckboxIconSizeConstraints, MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+			GroupIconSizeConstraints, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
+
+		// GroupNominalIconSize is disabled whenever CheckboxNominalIconSize is checked
+		DoMethod(CheckboxNominalIconSize, MUIM_Notify, MUIA_Selected, MUIV_EveryTime,
+			GroupNominalIconSize, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
+
+		// Set SliderNominalIconSize  to prefs value when "use default" is checked
+		DoMethod(CheckboxNominalIconSize, MUIM_Notify, MUIA_Selected, TRUE,
+			SliderNominalIconSize, 3, MUIM_Set, MUIA_Numeric_Value, prefsIconScaleFactor);
 
 		// disable Ok button for read-only icons
 		set(OkButton, MUIA_Disabled, !IsWriteable);
@@ -1459,6 +1648,8 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 		ULONG ThumbnailLifetime = THUMBNAIL_LIFETIME_NOTSET;
 		ULONG NewActiveWindowTransparencyDefault;
 		ULONG NewInactiveWindowTransparencyDefault;
+		ULONG NewIconScaleFactorDefault;
+		ULONG NewIconSizeConstraintsDefault;
 		APTR UndoStep = NULL;
 		CONST_STRPTR *ToolTypesArray;
 		STRPTR *OldToolTypesArray;
@@ -1637,6 +1828,53 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 				TAG_END);
 			}
 
+		get(CheckboxNominalIconSize, MUIA_Selected, &NewIconScaleFactorDefault);
+		if (NewIconScaleFactorDefault)
+			{
+			RemoveToolType(IconObj, "SCALOS_ICONSCALEFACTOR");
+
+			SetAttrs(ws->ws_WindowTask->mt_MainObject,
+				SCCA_IconWin_IconScaleFactor, prefsIconScaleFactor,
+				TAG_END);
+			}
+		else
+			{
+			char IconSizeString[10];
+
+			get(SliderNominalIconSize, MUIA_Numeric_Value, &IconScaleFactor);
+
+			snprintf(IconSizeString, sizeof(IconSizeString), "%ld", IconScaleFactor);
+			SetToolType(IconObj, "SCALOS_ICONSCALEFACTOR", IconSizeString);
+
+			SetAttrs(ws->ws_WindowTask->mt_MainObject,
+				SCCA_IconWin_IconScaleFactor, IconScaleFactor,
+				TAG_END);
+			}
+
+		get(CheckboxIconSizeConstraints, MUIA_Selected, &NewIconSizeConstraintsDefault);
+		if (NewIconSizeConstraintsDefault)
+			{
+			RemoveToolType(IconObj, "SCALOS_ICONSIZECONSTRAINTS");
+
+			SetAttrs(ws->ws_WindowTask->mt_MainObject,
+				SCCA_IconWin_IconSizeConstraints, (ULONG) &prefIconSizeConstraints,
+				TAG_END);
+			}
+		else
+			{
+			char IconSizeConstraintsString[20];
+
+			GetIconSizeConstraints(&IconSizeConstraints);
+
+			snprintf(IconSizeConstraintsString, sizeof(IconSizeConstraintsString), "%ld,%ld",
+				(LONG) IconSizeConstraints.MinX, (LONG) IconSizeConstraints.MaxX);
+			SetToolType(IconObj, "SCALOS_ICONSIZECONSTRAINTS", IconSizeConstraintsString);
+
+			SetAttrs(ws->ws_WindowTask->mt_MainObject,
+				SCCA_IconWin_IconSizeConstraints, (ULONG) &IconSizeConstraints,
+				TAG_END);
+			}
+
 		if (ws)
 			{
 			CONST_STRPTR *NewToolTypeArray = NULL;
@@ -1659,7 +1897,6 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 				);
 
 			DoMethod(ws->ws_WindowTask->mt_MainObject, SCCM_IconWin_EndUndoStep, UndoStep);
-			SCA_UnLockWindowList();
 			}
 		if (OldToolTypesArray)
 			{
@@ -1956,6 +2193,8 @@ static BOOL ReadScalosPrefs(void)
 
 	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_ActiveWindowTransparency, &prefsActiveWindowTransparency, sizeof(&prefsActiveWindowTransparency));
 	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_InactiveWindowTransparency, &prefsInactiveWindowTransparency, sizeof(&prefsInactiveWindowTransparency));
+	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconSizeConstraints, &prefIconSizeConstraints, sizeof(prefIconSizeConstraints));
+	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconNominalSize, &prefsIconScaleFactor, sizeof(prefsIconScaleFactor));
 
 	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_LoadDefIconsFirst, &prefDefIconsFirst, sizeof(prefDefIconsFirst));
 	prefDefIconPath = GetPrefsConfigString(MainPrefsHandle, SCP_PathsDefIcons, prefDefIconPath);
@@ -2972,6 +3211,118 @@ static struct PatternEntryDef *CreatePatternEntryDef(void)
 		}
 
 	return ped;
+}
+
+//----------------------------------------------------------------------------
+
+static void SetIconSizeConstraints(const struct Rectangle *SizeConstraints)
+{
+	ULONG MinSize, MaxSize;
+
+	if (SizeConstraints->MinX < 16)
+		MinSize = ICONSIZEMIN_Unlimited;
+	else if (SizeConstraints->MinX < 24)
+		MinSize = ICONSIZEMIN_16;
+	else if (SizeConstraints->MinX < 32)
+		MinSize = ICONSIZEMIN_24;
+	else if (SizeConstraints->MinX < 48)
+		MinSize = ICONSIZEMIN_32;
+	else if (SizeConstraints->MinX < 64)
+		MinSize = ICONSIZEMIN_48;
+	else if (SizeConstraints->MinX < 96)
+		MinSize = ICONSIZEMIN_64;
+	else if (SizeConstraints->MinX < 128)
+		MinSize = ICONSIZEMIN_96;
+	else
+		MinSize = ICONSIZEMIN_128;
+
+	if (SizeConstraints->MaxX <= 16)
+		MaxSize = ICONSIZEMAX_16;
+	else if (SizeConstraints->MaxX <= 24)
+		MaxSize = ICONSIZEMAX_24;
+	else if (SizeConstraints->MaxX <= 32)
+		MaxSize = ICONSIZEMAX_32;
+	else if (SizeConstraints->MaxX <= 48)
+		MaxSize = ICONSIZEMAX_48;
+	else if (SizeConstraints->MaxX <= 64)
+		MaxSize = ICONSIZEMAX_64;
+	else if (SizeConstraints->MaxX <= 96)
+		MaxSize = ICONSIZEMAX_96;
+	else if (SizeConstraints->MaxX <= 128)
+		MaxSize = ICONSIZEMAX_128;
+	else
+		MaxSize = ICONSIZEMAX_Unlimited;
+
+	set(CycleIconMinSize, MUIA_Cycle_Active, MinSize);
+	set(CycleIconMaxSize, MUIA_Cycle_Active, MaxSize);
+}
+
+//----------------------------------------------------------------------------
+
+static void GetIconSizeConstraints(struct Rectangle *SizeConstraints)
+{
+	ULONG MinSize, MaxSize;
+
+	get(CycleIconMinSize, MUIA_Cycle_Active, &MinSize);
+	get(CycleIconMaxSize, MUIA_Cycle_Active, &MaxSize);
+
+	switch (MinSize)
+		{
+	case ICONSIZEMIN_16:
+		SizeConstraints->MinX = SizeConstraints->MinY = 16;
+		break;
+	case ICONSIZEMIN_24:
+		SizeConstraints->MinX = SizeConstraints->MinY = 24;
+		break;
+	case ICONSIZEMIN_32:
+		SizeConstraints->MinX = SizeConstraints->MinY = 32;
+		break;
+	case ICONSIZEMIN_48:
+		SizeConstraints->MinX = SizeConstraints->MinY = 48;
+		break;
+	case ICONSIZEMIN_64:
+		SizeConstraints->MinX = SizeConstraints->MinY = 64;
+		break;
+	case ICONSIZEMIN_96:
+		SizeConstraints->MinX = SizeConstraints->MinY = 96;
+		break;
+	case ICONSIZEMIN_128:
+		SizeConstraints->MinX = SizeConstraints->MinY = 128;
+		break;
+	case ICONSIZEMIN_Unlimited:
+	default:
+		SizeConstraints->MinX = SizeConstraints->MinY = 0;
+		break;
+		}
+
+	switch (MaxSize)
+		{
+	case ICONSIZEMAX_16:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = 16;
+		break;
+	case ICONSIZEMAX_24:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = 24;
+		break;
+	case ICONSIZEMAX_32:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = 32;
+		break;
+	case ICONSIZEMAX_48:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = 48;
+		break;
+	case ICONSIZEMAX_64:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = 64;
+		break;
+	case ICONSIZEMAX_96:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = 96;
+		break;
+	case ICONSIZEMAX_128:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = 128;
+		break;
+	case ICONSIZEMAX_Unlimited:
+	default:
+		SizeConstraints->MaxX = SizeConstraints->MaxY = SHRT_MAX;
+		break;
+		}
 }
 
 //----------------------------------------------------------------------------

@@ -148,6 +148,9 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 		wsNew->ws_WindowOpacityActive = CurrentPrefs.pref_ActiveWindowTransparency;
 		wsNew->ws_WindowOpacityInactive = CurrentPrefs.pref_InactiveWindowTransparency;
 
+		wsNew->ws_IconSizeConstraints = CurrentPrefs.pref_IconSizeConstraints;
+		wsNew->ws_IconScaleFactor = CurrentPrefs.pref_IconScaleFactor;
+
 		Path = (STRPTR) GetTagData(SCA_Path, (ULONG)NULL, TagList);
 		d1(KPrintF("%s/%s/%ld: Path=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, Path, Path ? Path : (STRPTR) ""));
 		if (Path)
@@ -226,6 +229,8 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 			iwp.iwp_XOffset = iwp.iwp_YOffset = 0;
 			iwp.iwp_OpacityActive = wsNew->ws_WindowOpacityActive;
 			iwp.iwp_OpacityInactive = wsNew->ws_WindowOpacityInactive;
+			iwp.iwp_IconSizeConstraints = wsNew->ws_IconSizeConstraints;
+			iwp.iwp_IconScaleFactor = wsNew->ws_IconScaleFactor;
 
 			FunctionsGetSettingsFromIconObject(&iwp, IconObj);
 
@@ -237,6 +242,8 @@ LIBFUNC_P2(BOOL, sca_OpenIconWindow,
 			wsNew->ws_ThumbnailView = iwp.iwp_ThumbnailView;
 			wsNew->ws_WindowOpacityActive = iwp.iwp_OpacityActive;
 			wsNew->ws_WindowOpacityInactive = iwp.iwp_OpacityInactive;
+			wsNew->ws_IconSizeConstraints = iwp.iwp_IconSizeConstraints;
+			wsNew->ws_IconScaleFactor = iwp.iwp_IconScaleFactor;
 
 			if (iwp.iwp_NoStatusBar)
 				wsNew->ws_Flags |= WSV_FlagF_NoStatusBar;
@@ -1109,6 +1116,42 @@ void FunctionsGetSettingsFromIconObject(struct IconWindowProperties *iwp, Object
 		DoMethod(IconObj, IDTM_GetToolTypeValue, tt, (ULONG *) &lDummy);
 		iwp->iwp_OpacityInactive = (UWORD) lDummy;
 		d1(KPrintF("%s/%s/%ld: iwp->iwp_OpacityInactive=%lu\n", __FILE__, __FUNC__, __LINE__, iwp->iwp_OpacityInactive));
+		}
+
+	tt = NULL;
+	if (DoMethod(IconObj, IDTM_FindToolType, "SCALOS_ICONSCALEFACTOR", &tt))
+		{
+		DoMethod(IconObj, IDTM_GetToolTypeValue, tt, (ULONG *) &lDummy);
+		iwp->iwp_IconScaleFactor = lDummy;
+
+		if (iwp->iwp_IconScaleFactor < IDTA_ScalePercentage_MIN)
+			iwp->iwp_IconScaleFactor = IDTA_ScalePercentage_MIN;
+		else if (iwp->iwp_IconScaleFactor > IDTA_ScalePercentage_MAX)
+			iwp->iwp_IconScaleFactor = IDTA_ScalePercentage_MAX;
+
+		d1(KPrintF("%s/%s/%ld: iwp_IconScaleFactor=%lu\n", __FILE__, __FUNC__, __LINE__, iwp->iwp_IconScaleFactor));
+		}
+
+	tt = NULL;
+	if (DoMethod(IconObj, IDTM_FindToolType, "SCALOS_ICONSIZECONSTRAINTS", &tt))
+		{
+		LONG IconSizeMin, IconSizeMax;
+
+		d1(KPrintF("%s/%s/%ld: tt=<%s>\n", __FILE__, __FUNC__, __LINE__, tt));
+		while (*tt && '=' !=  *tt)
+			tt++;
+
+		if (2 == sscanf(tt, "=%ld,%ld", &IconSizeMin, &IconSizeMax))
+			{
+			if ((IconSizeMax > 128) || (IconSizeMax < 0))
+				IconSizeMax = SHRT_MAX;
+			if ((IconSizeMin < 0) || (IconSizeMin >= IconSizeMax))
+				IconSizeMin = 0;
+
+			iwp->iwp_IconSizeConstraints.MinX = iwp->iwp_IconSizeConstraints.MinY = IconSizeMin;
+			iwp->iwp_IconSizeConstraints.MaxX = iwp->iwp_IconSizeConstraints.MaxY = IconSizeMax;
+			}
+		d1(KPrintF("%s/%s/%ld: IconSizeMin=%ld  IconSizeMax=%ld\n", __FILE__, __FUNC__, __LINE__, IconSizeMin, IconSizeMax));
 		}
 }
 

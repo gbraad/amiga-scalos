@@ -84,6 +84,8 @@ SAVEDS(void) INTERRUPT WBStartup(void)
 		ws.ws_WindowTask = &iwt->iwt_WindowTask;
 		iwt->iwt_WindowTask.mt_WindowStruct = &ws;
 		iwt->iwt_ThumbnailMode = THUMBNAILS_Never;
+		ws.ws_IconSizeConstraints = CurrentPrefs.pref_IconSizeConstraints;
+		ws.ws_IconScaleFactor = CurrentPrefs.pref_IconScaleFactor;
 
 		ws.ws_Lock = Lock((STRPTR) CurrentPrefs.pref_WBStartupDir, ACCESS_READ);
 		if ((BPTR)NULL == ws.ws_Lock)

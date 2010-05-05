@@ -60,6 +60,10 @@
 #include <devices/timer.h>
 #endif
 
+#ifndef GRAPHICS_GFX_H
+#include <graphics/gfx.h>
+#endif
+
 #ifndef SCALOS_SCALOSGFX_H
 #include <scalos/scalosgfx.h>
 #endif
@@ -286,10 +290,12 @@ struct ScaWindowStruct
 	UWORD			ws_ViewAll;             // DDFLAGS_SHOWDEFAULT, DDFLAGS_SHOWICONS, or DDFLAGS_SHOWALL
 	ULONG			ws_ThumbnailView;       // THUMBNAILS_Never, THUMBNAILS_Always, THUMBNAILS_AsDefault
 	ULONG			ws_ThumbnailsLifetimeDays;     //Maximum lifetime for generated thumbnails
-	enum ScalosSortOrder	ws_SortOrder;		 // current sorting or ascending or descending
-	UWORD			ws_WindowOpacityActive;		// percentage of active Scalos Window transparency - not used on all platforms!
-								// (0=PREFS_TRANSPARENCY_TRANSPARENT=invisible, 100=PREFS_TRANSPARENCY_OPAQUE=opaque)
+	enum ScalosSortOrder	ws_SortOrder;		// current sorting or ascending or descending
+	UWORD			ws_WindowOpacityActive;	// percentage of active Scalos Window transparency - not used on all platforms!
+							// (0=PREFS_TRANSPARENCY_TRANSPARENT=invisible, 100=PREFS_TRANSPARENCY_OPAQUE=opaque)
 	UWORD			ws_WindowOpacityInactive;	// percentage of inactive Scalos Window transparency - not used on all platforms!
+	struct Rectangle 	ws_IconSizeConstraints;	// size limits for icons, larger or smaller icons are scaled
+	UWORD			ws_IconScaleFactor;	// icon scaling factor in percent
 	ULONG			ws_MoreFlags;		// various flags, see below
 };
 
@@ -1101,6 +1107,8 @@ struct ScalosNodeList
 #define	SCCA_IconWin_ActiveTransparency		(SCC_Dummy+1015)	// (ULONG) [SG] degree of transparency for active window state (0=transparent, 100=opaque)
 #define	SCCA_IconWin_InactiveTransparency	(SCC_Dummy+1016)	// (ULONG) [SG] degree of transparency for inactive window state (0=transparent, 100=opaque)
 #define	SCCA_IconWin_ControlBar			(SCC_Dummy+1017)	// (BOOL)  [SG] Flag: Control bar is present
+#define	SCCA_IconWin_IconScaleFactor            (SCC_Dummy+1018)	// (ULONG) [SG] icon scaling factor in percent
+#define	SCCA_IconWin_IconSizeConstraints        (SCC_Dummy+1019)	// (struct Rectangle *) [SG] icon size constraints
 
 // ---------------------------------------------------------------------------
 // --------------- Methods -------------

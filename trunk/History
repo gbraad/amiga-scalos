@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20100501	jl	- Improvement: arbitrary scaling of icons is now possible.
+41.8    20100505	jl	- Improvement: allow individual icon size constraints and icon scale factor per window.
+				- Bugfix: Windowproperties.module: fixed enforcer hit/crash when saving changes.
+	20100501	jl	- Improvement: arbitrary scaling of icons is now possible.
 	20100418	jl	- Bugfix: scaling of newicons always displayed garbage.
 				- Improvement: updated libcurl (used by updater.module) to version 7.20.1
 	20100411	jl	- Bugfix: corrected recognition of active 3D-Layers ("Enhanced Display") with MorphOS 2.x
