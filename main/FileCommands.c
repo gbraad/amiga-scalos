@@ -70,7 +70,6 @@ static LONG CopyVolume(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 static LONG CopyEntry(Class *cl, Object *o,
 	struct GlobalCopyArgs *gca, BPTR SrcDirLock, BPTR DestDirLock, 
 	const T_ExamineData *fib, CONST_STRPTR DestName, LONG DirEntryType, CONST_STRPTR eName);
-static BOOL ExistsObject(BPTR DirLock, CONST_STRPTR Name);
 static LONG ReportError(Class *cl, Object *o, LONG *Result, ULONG BodyTextID, ULONG GadgetTextID);
 static LONG DeleteEntry(Class *cl, Object *o, BPTR parentLock, CONST_STRPTR Name, BOOL DoCount);
 static LONG ScaDeleteFile(Class *cl, Object *o, BPTR ParentLock, CONST_STRPTR Name);
@@ -1517,7 +1516,7 @@ static LONG CopyEntry(Class *cl, Object *o,
 
 
 // check if named object (file/directory) exists
-static BOOL ExistsObject(BPTR DirLock, CONST_STRPTR Name)
+BOOL ExistsObject(BPTR DirLock, CONST_STRPTR Name)
 {
 	BOOL Exists = FALSE;
 	BPTR oldDir = CurrentDir(DirLock);

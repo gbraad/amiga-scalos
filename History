@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20100505	jl	- Improvement: allow individual icon size constraints and icon scale factor per window.
+41.8    20100509	jl	- Bugfix: for file copying and link creation, detection of already existing icons didn't work.
+	20100505	jl	- Improvement: allow individual icon size constraints and icon scale factor per window.
 				- Bugfix: Windowproperties.module: fixed enforcer hit/crash when saving changes.
 	20100501	jl	- Improvement: arbitrary scaling of icons is now possible.
 	20100418	jl	- Bugfix: scaling of newicons always displayed garbage.

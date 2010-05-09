@@ -846,12 +846,15 @@ static LONG DoFileTransCopy(Class *cl, Object *o, struct FileTransOp *fto)
 					stccpy(IconName, fto->fto_DestName, Max_PathLen);
 					SafeStrCat(IconName, Extension, Max_PathLen);
 
-					existsResult = ftci->ftci_MostCurrentReplaceMode = DoMethod(o, SCCM_FileTrans_OverwriteRequest,
-						OVERWRITEREQ_CopyIcon,
-						fto->fto_SrcDirLock, IconName,
-						fto->fto_DestDirLock, IconName,
-						ftci->ftci_Window, 
-						MSGID_EXISTSICON_COPY, MSGID_EXISTS_GNAME_NEW);
+					if (ExistsObject(fto->fto_DestDirLock, IconName))
+						{
+						existsResult = ftci->ftci_MostCurrentReplaceMode = DoMethod(o, SCCM_FileTrans_OverwriteRequest,
+							OVERWRITEREQ_CopyIcon,
+							fto->fto_SrcDirLock, IconName,
+							fto->fto_DestDirLock, IconName,
+							ftci->ftci_Window, 
+							MSGID_EXISTSICON_COPY, MSGID_EXISTS_GNAME_NEW);
+						}
 
 					d1(kprintf("%s/%s/%ld: Result=%08lx  ftci_MostCurrentReplaceMode=%ld\n", \
 						__LINE__, Result, ftci->ftci_MostCurrentReplaceMode));
@@ -1075,12 +1078,15 @@ static LONG DoFileTransCreateLink(Class *cl, Object *o, struct FileTransOp *fto)
 						stccpy(SrcIconName, fto->fto_SrcName, Max_PathLen);
 						SafeStrCat(SrcIconName, Extension, Max_PathLen);
 
-						existsResult = ftci->ftci_MostCurrentReplaceMode = DoMethod(o, SCCM_FileTrans_OverwriteRequest,
-							OVERWRITEREQ_CopyIcon,
-							fto->fto_SrcDirLock, SrcIconName,
-							fto->fto_DestDirLock, DestIconName,
-							ftci->ftci_Window, 
-							MSGID_EXISTSICON_COPY, MSGID_EXISTS_GNAME_NEW);
+						if (ExistsObject(fto->fto_DestDirLock, DestIconName))
+							{
+							existsResult = ftci->ftci_MostCurrentReplaceMode = DoMethod(o, SCCM_FileTrans_OverwriteRequest,
+								OVERWRITEREQ_CopyIcon,
+								fto->fto_SrcDirLock, SrcIconName,
+								fto->fto_DestDirLock, DestIconName,
+								ftci->ftci_Window,
+								MSGID_EXISTSICON_COPY, MSGID_EXISTS_GNAME_NEW);
+							}
 
 						d1(KPrintF("%s/%s/%ld: Result=%08lx  ftci_MostCurrentReplaceMode=%ld\n", \
 							__LINE__, Result, ftci->ftci_MostCurrentReplaceMode));
