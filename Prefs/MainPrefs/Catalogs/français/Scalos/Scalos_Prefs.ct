@@ -1,6 +1,7 @@
 ; ScalosPrefs.ct
 ; $Date$
 ; $Revision$
+; $Id$
 ;
 ## version $VER: Scalos_Prefs.catalog 40.28 (28 Mar 2010 19:20:49)
 ## codeset 0s
@@ -1612,17 +1613,14 @@ autour du test des cônes sélectionnées.
 ;Corner radius of the rectangle drawn\n\
 ;around the text of selected icons.
 ;
-;+++translateme+++
 MSGID_ICONSPAGE_SCALING_NOMINALSIZE
-Nominal Size:
+taille nominale :
 ;Nominal Size:
 ;
-;+++translateme+++
 MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP
-Standard size adjustment applied to all icons.
+Ajustement standard de la taille appliquée aux icônes.
 ;Standard size adjustment applied to all icons.
 ;
-;+++translateme+++
 MSGID_ICONSPAGE_SCALING_PERCENT
 %
 ;%
