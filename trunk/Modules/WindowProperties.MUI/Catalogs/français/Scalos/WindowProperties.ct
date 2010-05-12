@@ -1,6 +1,7 @@
 ; WindowProperties.ct
 ; $Date$
 ; $Revision$
+; $Id$
 ;
 ## version $VER: WindowProperties.catalog 40.6 (11.01.2009 19:01:45)
 ## codeset 0s
@@ -196,76 +197,65 @@ MSGID_HIDECONTROLBAR_HIDE
 Caché
 ;Hidden
 ;
-;+++translateme+++
 MSGID_GROUP_ICONSCALING
-Icon Scaling
+Dimensions de l'icône
 ;Icon Scaling
 ;
-;+++translateme+++
 MSGID_ICONSCALING_NOMINALSIZE_SHORTHELP
-Standard size adjustment applied to all icons.
+Ajustement standard appliqué à toutes les icônes.
 ;Standard size adjustment applied to all icons.
 ;
-;+++translateme+++
 MSGID_ICONSCALING_NOMINALSIZE
-Nominal Size:
+Taille nominale :
 ;Nominal Size:
 ;
-;+++translateme+++
 MSGID_ICONSCALING_PERCENT
 %
 ;
-;+++translateme+++
 MSGID_ICONSCALING_MINSIZE
-Minimum Size:
+Taille minimum :
 ;Minimum Size:
 ;
-;+++translateme+++
 MSGID_ICONSCALING_MINSIZE_SHORTHELP
-Minimum size for displayed icons.\n\
-Smaller icons will be scaled to\n\
-the specified minimum size.
+Taille minimum d'affichage des icôness.\n\
+Les plus petites icônes seront redimensionnées\n\
+d'aprés la taille minimum spécifiée.
 ;Minimum size for displayed icons.\n\
 ;Smaller icons will be scaled to\n\
 ;the specified minimum size.
 ;
-;+++translateme+++
 MSGID_ICONSCALING_MAXSIZE
-Maximum Size:
+Taille maximum :
 ;Maximum Size:
 ;
-;+++translateme+++
 MSGID_ICONSCALING_MAXSIZE_SHORTHELP
-Maximum size for displayed icons.\n\
-Larger icons will be scaled to\n\
-the specified maximum size.
+taille maximum d'affichage des icônes.\n\
+Les plus grandes icônes seront redimensionnées\n\
+d'aprés la taille maxiimum spécifiée.
 ;Maximum size for displayed icons.\n\
 ;Larger icons will be scaled to\n\
 ;the specified maximum size.
 ;
-;+++translateme+++
 MSGID_CHECKBOX_ICONSCALING_NOMINALSIZE
-Use default:
+Par défaut :
 ;Use default:
 ;
-;+++translateme+++
 MSGID_CHECKBOX_ICONSCALING_NOMINALSIZE_SHORTHELP
-If this checkbox is checked, global icon scaling from Scalos Preferences is used.\n\
-Turn off this checkbox to specify individual icon scaling for this window.
+Si ce gadget est activé, la redimension globale, depuis les préferences de Scalos\n\
+est utilisée. Décochez ce gadget afin de spécifier la redimension individuelle d'une\n\
+icône, pour cette fenêtre.
 ;If this checkbox is checked, global icon scaling from Scalos Preferences is used.\n\
 ;Turn off this checkbox to specify individual icon scaling for this window.
 ;
-;+++translateme+++
 MSGID_CHECKBOX_ICONSIZECONSTRAINTS_USEDEFAULT
-Use default:
+Par défaut :
 ;Use default:
 ;
-;+++translateme+++
 MSGID_CHECKBOX_ICONSIZECONSTRAINTS_USEDEFAULT_SHORTHELP
-If this checkbox is checked, global icon size\n\
-constraints from Scalos Preferences are used.\n\
-Turn off this checkbox to specify individual\n\
-icon size constraints for this window.
+Si ce gadget est activé, les contraintes globales de la taille\n\
+des icônes, depuis les préferences de Scalos, seront utilisées.\n\
+décochez ce gadget afin de spécifier les contraintes\n\
+de la taille des icônes pour cette fenêtre.
 ;If this checkbox is checked, global icon size\n\
 ;constraints from Scalos Preferences are used.\n\
 ;Turn off this checkbox to specify individual\n\
@@ -387,55 +377,47 @@ MSGID_PATTERNR_DEFAULT
 ;(default)
 ;
 ;-----------------------------------------------------------
-;+++translateme+++
+;
 MSGID_ICONSIZES_16x16
 16 x 16
 ;16 x 16
 ;
-;+++translateme+++
 MSGID_ICONSIZES_24x24
 24 x 24
 ;24 x 24
 ;
-;+++translateme+++
 MSGID_ICONSIZES_32x32
 32 x 32
 ;32 x 32
 ;
-;+++translateme+++
 MSGID_ICONSIZES_48x48
 48 x 48
 ;48 x 48
 ;
-;+++translateme+++
 MSGID_ICONSIZES_64x64
 64 x 64
 ;64 x 64
 ;
-;+++translateme+++
 MSGID_ICONSIZES_96x96
 96 x 96
 ;96 x 96
 ;
-;+++translateme+++
 MSGID_ICONSIZES_128x128
 128 x 128
 ;128 x 128
 ;
-;+++translateme+++
 MSGID_ICONSIZES_UNLIMITED
-unlimited
+Illimitée
 ;unlimited
 ;
 ;-----------------------------------------------------------
-;+++translateme+++
+;
 MSGID_REGISTERTITLE_WINDOW
-Window
+Fenêtre
 ;Window
 ;
-;+++translateme+++
 MSGID_REGISTERTITLE_ICONS
-Icons
+Icônes
 ;Icons
 ;
 ;-----------------------------------------------------------
