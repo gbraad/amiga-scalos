@@ -1,3 +1,6 @@
+05-05-2010
+bugfixes
+The hotfix 40.8.1 of Windowproperties.module has been released.<br>It resolves enforcer hits and crashes when saving changes.
 15-04-2010
 bugfixes
 The hotfix 40.3 of Updater.module has been released.<br>It adds support for patch versions like 41.7.1. This update is required for online update of Scalos from 41.7 to 41.7.1
