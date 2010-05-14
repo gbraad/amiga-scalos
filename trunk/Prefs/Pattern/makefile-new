@@ -50,9 +50,9 @@ SUBDIRS 	= $(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
 #
 # Some lame deps
 
-$(OBJDIR)/Pattern.o $(OBJDIR)/Pattern.d : ScalosPattern_locale.h
+$(OBJDIR)/Pattern.o $(OBJDIR)/Pattern.d : $(OBJDIR)/ScalosPattern_locale.h
 
-ScalosPattern_locale.h : ScalosPattern.cd
+$(OBJDIR)/ScalosPattern_locale.h : ScalosPattern.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $< cfile=$@
 
@@ -94,7 +94,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		ScalosPattern_locale.h
+		$(OBJDIR)/ScalosPattern_locale.h
 
 clean:  clean_subdirs
 

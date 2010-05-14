@@ -1,7 +1,15 @@
+# $Date$
+# $Revision$
 ##############################################################################
 
 include $(TOPLEVEL)/config.mk
 include $(TOPLEVEL)/rules.mk
+
+##############################################################################
+
+SCALOS_LOCALE	= $(OBJDIR)/ScalosPattern_locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
 
 ##############################################################################
 # Check gcc

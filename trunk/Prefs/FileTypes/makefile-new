@@ -34,9 +34,9 @@ SUBDIRS	=       Catalogs/deutsch/Scalos		\
 #
 # Some lame deps
 
-$(OBJDIR)/FileTypes.o $(OBJDIR)/FileTypes.d : ScalosFileTypes_locale.h
+$(OBJDIR)/FileTypes.o $(OBJDIR)/FileTypes.d : $(OBJDIR)/ScalosFileTypes_locale.h
 
-ScalosFileTypes_locale.h : ScalosFileTypes.cd
+$(OBJDIR)/ScalosFileTypes_locale.h : ScalosFileTypes.cd
 	@$(ECHO) "CatComp $@"
 	catcomp $< cfile=$@
 
@@ -59,7 +59,7 @@ all:    $(BINDIR)/$(NAME) \
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@protect $@ +e
@@ -77,7 +77,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-                ScalosFileTypes_locale.h
+                $(OBJDIR)/ScalosFileTypes_locale.h
 
 clean:  clean_subdirs
 
