@@ -24,6 +24,8 @@ SCALOS_LOCALE	= $(OBJDIR)/Scalos_Locale.h
 
 CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
 
+GENMSGIDNAMES 	= Tools/$(BINDIR)/GenMsgIdNames
+
 ###############################################################################
 
 INCLUDES	+=	-I$(MCPGFX_DIR)/ \
@@ -39,7 +41,6 @@ ifeq ($(MACHINE), ppc-morphos)
 ###############################################################################
 # MorphOS
 
-GENMSGIDNAMES 	= Tools/$(BINDIR)/GenMsgIdNames
 INCLUDES	+=
 
 LFLAGS	+=	-lpng \
@@ -53,7 +54,6 @@ ifeq ($(MACHINE), ppc-amigaos)
 ###############################################################################
 # AmigOS4
 
-GENMSGIDNAMES 	= ./GenMsgIdNames
 INCLUDES	+=
 
 LFLAGS	+=      -lpng \
@@ -66,7 +66,6 @@ else
 ###############################################################################
 # AmigaOS
 
-GENMSGIDNAMES 	= GenMsgIdNames
 INCLUDES	+=
 
 LFLAGS	+=	-lpng \
