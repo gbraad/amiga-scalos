@@ -69,9 +69,8 @@
 #include "PrefsPlugins.h"
 #include "UrlSubject.h" // +jmc+ define url subject for mailer.
 
-#define	CATCOMP_NUMBERS
 #define	CATCOMP_ARRAY
-#include "ScalosPrefs_locale.h"
+#include "locale.h"
 
 //-----------------------------------------------------------------
 
@@ -2666,7 +2665,7 @@ static SAVEDS(LONG) INTERRUPT CmdListCompareHookFunc(struct Hook *hook, Object *
 
 //----------------------------------------------------------------------------
 
-CONST_STRPTR GetLocString(ULONG MsgId)
+CONST_STRPTR GetLocString(LONG MsgId)
 {
 	struct LocaleInfo li;
 

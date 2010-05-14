@@ -49,9 +49,7 @@
 #include "DataTypesMCC.h"
 #include "SelectMarkSampleClass.h"
 #include "Hooks.h"
-
-#define	CATCOMP_NUMBERS
-#include "ScalosPrefs_locale.h"
+#include "locale.h"
 
 //-----------------------------------------------------------------
 

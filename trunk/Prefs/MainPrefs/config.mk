@@ -13,6 +13,10 @@ INCLUDES	+=	-I$(FONTSAMPLE_DIR)/	\
 			-I$(MCPGFX_DIR)/	\
 			-I$(DATATYPESMCC_DIR)/	\
 
+SCALOS_LOCALE	= $(OBJDIR)/ScalosPrefs_locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 ##############################################################################
 # Check gcc
 

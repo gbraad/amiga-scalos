@@ -551,7 +551,6 @@ enum ThumbnailSizes
 //--------------------------------------------------------------------
 
 VOID MsgBox(char *message, char *, struct SCAModule *);
-CONST_STRPTR GetLocString(ULONG MsgId);
 LONG SaveIcon(CONST_STRPTR IconName);
 BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev);
 void SetThumbNailSize(struct SCAModule *app, UWORD ThumbnailSize);
