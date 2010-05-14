@@ -58,9 +58,9 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	@$(run-cc)
 
-Updater.c : Updater_Locale.h
+Updater.c : $(OBJDIR)/Updater_Locale.h
 
-Updater_Locale.h : Updater.cd
+$(OBJDIR)/Updater_Locale.h : Updater.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
@@ -89,7 +89,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		Updater_Locale.h
+		$(OBJDIR)/Updater_Locale.h
 
 ##############################################################################
 

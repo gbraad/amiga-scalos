@@ -52,16 +52,16 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	$(run-cc)
 
-Rename.c : Rename_Locale.h
+Rename.c : $(OBJDIR)/Rename_Locale.h
 
-Rename_Locale.h : Rename.cd
+$(OBJDIR)/Rename_Locale.h : Rename.cd
 	$(ECHO) "CatComp $@"
 	catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -81,7 +81,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		Rename_Locale.h
+		$(OBJDIR)/Rename_Locale.h
 
 clean:	clean_subdirs
 

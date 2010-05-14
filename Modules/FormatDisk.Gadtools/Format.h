@@ -3,7 +3,6 @@
  *
  * $Date$
  * $Revision$
- * $Id$
  *
  */
 

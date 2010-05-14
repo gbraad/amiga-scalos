@@ -1,7 +1,6 @@
 // DoFullFormat.c
 // $Date$
 // $Revision$
-// $Id$
 
 
 #include <string.h>
@@ -27,9 +26,11 @@
 
 #include <devices/newstyle.h>
 
+#include <defs.h>
+
 #include "Format.h"
 #define	CATCOMP_NUMBERS
-#include "FormatDisk_Locale.h"
+#include STR(SCALOSLOCALE)
 
 //-----------------------------------------------------------------------------
 

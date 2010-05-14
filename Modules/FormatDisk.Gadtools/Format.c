@@ -1,7 +1,6 @@
 // Format.c
 // $Date$
 // $Revision$
-// $Id$
 
 
 /************************************************************************************************/
@@ -99,7 +98,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "FormatDisk_Locale.h"
+#include STR(SCALOSLOCALE)
 
 #include <libraries/asl.h>
 #include <proto/asl.h>

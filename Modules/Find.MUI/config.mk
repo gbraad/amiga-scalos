@@ -7,6 +7,10 @@ include $(TOPLEVEL)/rules.mk
 
 ##############################################################################
 
+SCALOS_LOCALE	= $(OBJDIR)/Find_Locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 ICONOBJMCC_DIR	= $(TOPLEVEL)/common/IconobjectMCC
 
 ##############################################################################

@@ -59,9 +59,9 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	@$(run-cc)
 
-IconProperties.c : IconProperties_Locale.h
+IconProperties.c : $(OBJDIR)/IconProperties_Locale.h
 
-IconProperties_Locale.h : IconProperties.cd
+$(OBJDIR)/IconProperties_Locale.h : IconProperties.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
@@ -90,7 +90,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		IconProperties_Locale.h
+		$(OBJDIR)/IconProperties_Locale.h
 
 ##############################################################################
 

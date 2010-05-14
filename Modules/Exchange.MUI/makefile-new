@@ -57,16 +57,16 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	@$(run-cc)
 
-Exchange.c : Exchange_Locale.h
+Exchange.c : $(OBJDIR)/Exchange_Locale.h
 
-Exchange_Locale.h : Exchange.cd
+$(OBJDIR)/Exchange_Locale.h : Exchange.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -88,7 +88,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		Exchange_Locale.h
+		$(OBJDIR)/Exchange_Locale.h
 
 ##############################################################################
 

@@ -45,7 +45,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "Exchange_Locale.h"
+#include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
 
