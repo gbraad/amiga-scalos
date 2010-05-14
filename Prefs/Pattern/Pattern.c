@@ -50,7 +50,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "ScalosPattern_locale.h"
+#include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
 
