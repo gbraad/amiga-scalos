@@ -69,9 +69,9 @@ $(OBJDIR)/%.o: $(DATATYPESMCC_DIR)/%.c
 $(OBJDIR)/%.o: $(MCPGFX_DIR)/%.c
 	@$(run-cc)
 
-$(OBJDIR)/Hooks.o $(OBJDIR)/Hooks.d $(OBJDIR)/Scalos.o $(OBJDIR)/Scalos.d : ScalosPrefs_locale.h
+$(OBJDIR)/Hooks.o $(OBJDIR)/Hooks.d $(OBJDIR)/Scalos.o $(OBJDIR)/Scalos.d : $(OBJDIR)/ScalosPrefs_locale.h
 
-ScalosPrefs_locale.h : Scalos_Prefs.cd
+$(OBJDIR)/ScalosPrefs_locale.h : Scalos_Prefs.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $< cfile=$@
 
@@ -108,7 +108,7 @@ clean:
         	$(OBJDIR)/*.d.* $(OBJDIR)/*.s \
 		@$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-                ScalosPrefs_locale.h
+                $(OBJDIR)/ScalosPrefs_locale.h
 
 clean:  clean_subdirs
 
