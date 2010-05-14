@@ -58,16 +58,16 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	@$(run-cc)
 
-Find.c : Find_Locale.h
+Find.c : $(OBJDIR)/Find_Locale.h
 
-Find_Locale.h : Find.cd
+$(OBJDIR)/Find_Locale.h : Find.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -89,7 +89,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		Find_Locale.h
+		$(OBJDIR)/Find_Locale.h
 
 ##############################################################################
 

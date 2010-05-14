@@ -10,6 +10,10 @@ include $(TOPLEVEL)/rules.mk
 ICONOBJMCC_DIR	= $(TOPLEVEL)/common/IconobjectMCC
 AMISSL_INC_DIR	= /gg/amissl-v3-sdk/include/include_h
 
+SCALOS_LOCALE	= $(OBJDIR)/Updater_Locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 ##############################################################################
 # Check gcc
 

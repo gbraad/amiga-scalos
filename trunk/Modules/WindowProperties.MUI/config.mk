@@ -17,6 +17,10 @@ INCLUDES	+= 	-I$(TOOLTYPE_DIR) \
 			-I$(BACKFILLMCC_DIR) \
 			-I$(ICONOBJMCC_DIR)
 
+SCALOS_LOCALE	= $(OBJDIR)/WindowProperties_Locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 ##############################################################################
 # Check gcc
 

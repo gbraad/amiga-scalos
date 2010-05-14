@@ -52,16 +52,16 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	@$(run-cc)
 
-NewDrawer.c : NewDrawer_Locale.h
+NewDrawer.c : $(OBJDIR)/NewDrawer_Locale.h
 
-NewDrawer_Locale.h : NewDrawer.cd
+$(OBJDIR)/NewDrawer_Locale.h : NewDrawer.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -81,7 +81,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		NewDrawer_Locale.h
+		$(OBJDIR)/NewDrawer_Locale.h
 
 clean:	clean_subdirs
 

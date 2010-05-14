@@ -6,6 +6,12 @@ include $(TOPLEVEL)/config.mk
 include $(TOPLEVEL)/rules.mk
 
 ##############################################################################
+
+SCALOS_LOCALE	= $(OBJDIR)/Delete_Locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
+##############################################################################
 # Check gcc
 
 ifeq ($(MACHINE), ppc-morphos)

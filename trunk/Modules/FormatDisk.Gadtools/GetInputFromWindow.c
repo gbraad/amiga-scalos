@@ -1,7 +1,6 @@
 // GetInputFromWindow.c
 // $Date$
 // $Revision$
-// $Id$
 
 
 #include <string.h>
@@ -26,10 +25,11 @@
 #include <proto/graphics.h>
 #include <proto/utility.h>
 
+#include <defs.h>
 
 #include "Format.h"
 #define	CATCOMP_NUMBERS
-#include "FormatDisk_Locale.h"
+#include STR(SCALOSLOCALE)
 
 #include "gui.h"
 

@@ -40,7 +40,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "Empty_Trashcan_Locale.h"
+#include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
 

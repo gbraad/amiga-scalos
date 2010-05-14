@@ -54,16 +54,16 @@ $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	$(run-cc)
 
 $(OBJDIR)/Delete.module.o $(OBJDIR)/Delete.module.d \
-$(OBJDIR)/Delete.module_files.o $(OBJDIR)/Delete.module_files.d : Delete_Locale.h
+$(OBJDIR)/Delete.module_files.o $(OBJDIR)/Delete.module_files.d : $(OBJDIR)/Delete_Locale.h
 
-Delete_Locale.h : Delete.cd
-	$(ECHO) "CatComp $@"
+$(OBJDIR)/Delete_Locale.h : Delete.cd
+	@$(ECHO) "CatComp $@"
 	catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -83,7 +83,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		Delete_Locale.h
+		$(OBJDIR)/Delete_Locale.h
 
 clean:	clean_subdirs
 

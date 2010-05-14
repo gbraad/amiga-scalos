@@ -50,16 +50,16 @@ all:	$(BINDIR)/$(NAME) \
 
 ##############################################################################
 
-WindowProperties.c : WindowProperties_Locale.h
+WindowProperties.c : $(OBJDIR)/WindowProperties_Locale.h
 
-WindowProperties_Locale.h : WindowProperties.cd
-	$(ECHO) "CatComp $@"
+$(OBJDIR)/WindowProperties_Locale.h : WindowProperties.cd
+	@$(ECHO) "CatComp $@"
 	catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -80,7 +80,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		WindowProperties_Locale.h
+		$(OBJDIR)/WindowProperties_Locale.h
 
 clean: clean_subdirs
 

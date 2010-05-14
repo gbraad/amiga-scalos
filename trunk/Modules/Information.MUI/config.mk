@@ -14,6 +14,10 @@ FS_DIR	     	= $(TOPLEVEL)/common/Fs
 
 vpath	%.c	$(TOOLTYPE_DIR) $(ICONOBJMCC_DIR) $(INT64_DIR) $(FS_DIR)
 
+SCALOS_LOCALE	= $(OBJDIR)/Information_Locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 ##############################################################################
 
 INCLUDES	+= 	-I$(TOOLTYPE_DIR) \

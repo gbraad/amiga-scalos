@@ -9,6 +9,10 @@ include $(TOPLEVEL)/rules.mk
 
 ICONOBJMCC_DIR	= $(TOPLEVEL)/common/IconobjectMCC
 
+SCALOS_LOCALE	= $(OBJDIR)/IconProperties_Locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 ##############################################################################
 # Check gcc
 

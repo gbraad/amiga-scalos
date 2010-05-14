@@ -67,7 +67,7 @@
 #include"Delete.module_rev.h"
 
 #define	CATCOMP_NUMBERS
-#include"Delete_Locale.h"
+#include STR(SCALOSLOCALE)
 
 
 // Couple of macros to make the code more readable.

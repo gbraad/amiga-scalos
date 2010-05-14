@@ -53,16 +53,16 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	@$(run-cc)
 
-Empty_Trashcan.c : Empty_Trashcan_Locale.h
+Empty_Trashcan.c : $(OBJDIR)/Empty_Trashcan_Locale.h
 
-Empty_Trashcan_Locale.h : Empty_Trashcan.cd
+$(OBJDIR)/Empty_Trashcan_Locale.h : Empty_Trashcan.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -82,7 +82,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		Empty_Trashcan_Locale.h
+		$(OBJDIR)/Empty_Trashcan_Locale.h
 
 clean:	clean_subdirs
 

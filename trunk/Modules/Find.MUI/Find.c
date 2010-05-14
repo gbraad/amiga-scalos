@@ -52,7 +52,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "Find_Locale.h"
+#include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
 

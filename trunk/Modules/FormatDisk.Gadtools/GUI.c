@@ -1,7 +1,6 @@
 // Gui.c
 // $Date$
 // $Revision$
-// $Id$
 
 
 #include <exec/types.h>
@@ -29,14 +28,14 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <defs.h>
 
 #include "Format.h"
 #define	CATCOMP_NUMBERS
-#include "FormatDisk_Locale.h"
+#include STR(SCALOSLOCALE)
 
 #include "GUI.h"
 #include "Format_disk_rev.h"
-#include <defs.h>
 #include <Year.h>
 
 //-----------------------------------------------------------------------------

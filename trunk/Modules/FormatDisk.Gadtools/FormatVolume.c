@@ -26,9 +26,11 @@
 #include <proto/icon.h>
 #include <proto/graphics.h>
 
+#include <defs.h>
+
 #include "Format.h"
 #define	CATCOMP_NUMBERS
-#include "FormatDisk_Locale.h"
+#include STR(SCALOSLOCALE)
 
 //----
 extern ULONG FFS;

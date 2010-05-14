@@ -60,16 +60,16 @@ $(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	$(run-cc)
 
-Format.c : FormatDisk_Locale.h
+Format.c : $(OBJDIR)/FormatDisk_Locale.h
 
-FormatDisk_Locale.h : FormatDisk.cd
-	$(ECHO) "CatComp $@"
+$(OBJDIR)/FormatDisk_Locale.h : FormatDisk.cd
+	@$(ECHO) "CatComp $@"
 	catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 ifneq ($(MACHINE), ppc-amigaos)
@@ -89,7 +89,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		Format_Disk_Locale.h
+		$(OBJDIR)/Format_Disk_Locale.h
 
 clean:	clean_subdirs
 
