@@ -19,7 +19,7 @@ LD      	= slink
 ECHO		= echo
 LDFLAGS 	= QUIET NOICONS BATCH
 LDLIBS  	= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 COMMON_DIR 	= ../../../common/Plugin
 PREFS_DIR	= prefs
 
@@ -41,16 +41,16 @@ CSRCS	=	$(COMMON_DIR)/plugin-classic.c \
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
-$(OBJ_DIR)/title_clock.o: $(CHEADERS)
-$(OBJ_DIR)/plugin-classic.o: $(COMMON_DIR)/plugin-classic.c $(CHEADERS) 
+$(OBJDIR)/title_clock.o: $(CHEADERS)
+$(OBJDIR)/plugin-classic.o: $(COMMON_DIR)/plugin-classic.c $(CHEADERS) 
 
 #############################################################
 
@@ -64,33 +64,33 @@ $(PLUGNAME).debug : $(OBJS)
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o  : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o  : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/prefs_file.o : $(PREFS_DIR)/prefs_file.c
+$(OBJDIR)/prefs_file.o : $(PREFS_DIR)/prefs_file.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
-$(OBJ_DIR)/%.o : %.s
+$(OBJDIR)/%.o : %.s
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
-$(OBJ_DIR)/%.o : %.asm
+$(OBJDIR)/%.o : %.asm
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
 #############################################################
 
-$(OBJ_DIR)/libfuncs.o	: $(CHEADERS)
-$(OBJ_DIR)/prefs_file.o : $(PREFS_DIR)/prefs_file.h
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c $(CHEADERS)
+$(OBJDIR)/libfuncs.o	: $(CHEADERS)
+$(OBJDIR)/prefs_file.o : $(PREFS_DIR)/prefs_file.h
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c $(CHEADERS)
 
 #############################################################
 

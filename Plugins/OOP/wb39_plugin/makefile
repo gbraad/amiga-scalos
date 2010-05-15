@@ -12,7 +12,7 @@ PRECOMP 	= INCLUDE:All.gst
 LD      	= slink
 LDFLAGS 	= quiet batch noicons sd
 LDLIBS  	= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 DESTPLUG	= Scalos:Plugins/OOP
 COMMON_DIR 	= ../../../common/Plugin
 
@@ -72,7 +72,7 @@ WB39CSRCS = 	$(COMMON_DIR)/plugin-classic.c \
 		Scalos_Helper.c \
 
 XSRCS = $(notdir $(WB39CSRCS))
-WB39OBJS= $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+WB39OBJS= $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -90,36 +90,36 @@ all:	$(WB39NAME) \
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/VolumeGauge.o : volumegauge/VolumeGauge.c
+$(OBJDIR)/VolumeGauge.o : volumegauge/VolumeGauge.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
-$(OBJ_DIR)/wb39.o : wb39.c
+$(OBJDIR)/wb39.o : wb39.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS2) $< objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c \
 	$(COMMON_DIR)/plugin-common.c $(COMMON_DIR)/plugin.h plugin_data.h
 
-$(OBJ_DIR)/wb39.o AppWindow.o WorkbenchControl.o VolumeGauge.o \
+$(OBJDIR)/wb39.o AppWindow.o WorkbenchControl.o VolumeGauge.o \
 	AppIcons.o Scalos_Helper.o : wb39.h
 
-$(OBJ_DIR)/wb39.o VolumeGauge.o vg_plugin.o : volumegauge/VolumeGauge.h
+$(OBJDIR)/wb39.o VolumeGauge.o vg_plugin.o : volumegauge/VolumeGauge.h
 
 #############################################################
 
@@ -133,9 +133,9 @@ $(WB39NAME).debug: $(WB39OBJS)
 
 #############################################################
 
-test: $(OBJ_DIR)/test.o
+test: $(OBJDIR)/test.o
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
-	@$(LD) FROM LIB:c.o $(OBJ_DIR)/test.o TO $@ LIB $(LIBS) $(LDFLAGS) $(DBFLAG)
+	@$(LD) FROM LIB:c.o $(OBJDIR)/test.o TO $@ LIB $(LIBS) $(LDFLAGS) $(DBFLAG)
 
 #############################################################
 
@@ -149,7 +149,7 @@ install:
 clean:
 	@printf '\033[32mCleanup: \033[31m\033[1m'
 	-@delete $(WB39OBJS) \
-		$(OBJ_DIR)/test.o \
+		$(OBJDIR)/test.o \
 		test \
 		$(WB39NAME) \
 		$(WB39NAME).debug

@@ -15,7 +15,7 @@ LNFLAGS		= quiet batch noicons stripdebug
 LNDBFLAGS 	= quiet batch noicons addsym
 LIBS		= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
 CSTARTUP	= LIB:c.o
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 
 .SUFFIXES: .asm
 
@@ -34,7 +34,7 @@ all:	$(NAME) $(DBGNAME)
 CSRCS =		newdrawer.c \
 
 
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #####################################################################
 
@@ -48,12 +48,12 @@ $(DBGNAME): $(OBJS)
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #############################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 

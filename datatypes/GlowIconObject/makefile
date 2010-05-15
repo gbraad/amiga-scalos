@@ -20,7 +20,7 @@ LIBS 		= 	LIB:debug.lib \
                         LIB:amiga.lib
 PRECOMP 	= Include:all.gst
 DT_DIR		= scalos:IconDatatypes/datatypes
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 
 .SUFFIXES: .asm
 
@@ -43,7 +43,7 @@ endif
 
 #####################################################################
 
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #####################################################################
 
@@ -57,20 +57,20 @@ all:	$(DTNAME) \
 
 #####################################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #####################################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $* objectname $@
 
-$(OBJ_DIR)/%.o : %.s
+$(OBJDIR)/%.o : %.s
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
-$(OBJ_DIR)/%.o : %.asm
+$(OBJDIR)/%.o : %.asm
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
@@ -86,8 +86,8 @@ $(DTDBGNAME): $(OBJS)
 
 #####################################################################
 
-$(OBJ_DIR)/GlowIconObject-classic.o : GlowIconObject.h
-$(OBJ_DIR)/GlowIconObject.o : GlowIconObject.h
+$(OBJDIR)/GlowIconObject-classic.o : GlowIconObject.h
+$(OBJDIR)/GlowIconObject.o : GlowIconObject.h
 
 #####################################################################
 

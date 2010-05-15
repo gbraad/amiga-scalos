@@ -11,7 +11,7 @@ PRECOMP 	= INCLUDE:All.gst
 LD      	= slink
 LDFLAGS 	= quiet batch noicons sd
 LDLIBS  	= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 DESTPLUG	= Scalos:Plugins/OOP
 COMMON_DIR 	= ../../../../common/Plugin
 
@@ -47,7 +47,7 @@ CSRCS 		= 	$(COMMON_DIR)/plugin-classic.c \
 			persist.c \
 
 XSRCS = $(notdir $(CSRCS))
-OBJS= $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS= $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -62,25 +62,25 @@ all:	$(PERSISTNAME) \
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c \
 	$(COMMON_DIR)/plugin-common.c $(COMMON_DIR)/plugin.h plugin_data.h
 
-$(OBJ_DIR)/persist.o : Persist.c Persist.h plugin_data.h
+$(OBJDIR)/persist.o : Persist.c Persist.h plugin_data.h
 
 #############################################################
 

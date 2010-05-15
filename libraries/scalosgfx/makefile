@@ -20,7 +20,7 @@ LINK 	= slink
 CC	= sc
 LIBS 	= LIB:scmnb.lib LIB:scnb.lib LIB:debug.lib LIB:amiga.lib
 PRECOMP = Include:all.gst
-OBJ_DIR	= .sasobj
+OBJDIR	= .sasobj
 
 #############################################################
 
@@ -36,16 +36,16 @@ LNDBFLAGS 	= quiet batch noicons addsym
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #############################################################
 
-OBJS = $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+OBJS = $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $* objectname $@
 
@@ -62,13 +62,13 @@ all:	$(NAME) $(DBGNAME)
 
 #############################################################
 
-$(OBJ_DIR)/scalosgfx-classic.o 	: scalosgfx_base.h scalosgfx.h
-$(OBJ_DIR)/scalosgfx.o 		: scalosgfx_base.h scalosgfx.h
-$(OBJ_DIR)/argb.o 		: scalosgfx_base.h scalosgfx.h
-$(OBJ_DIR)/blit.o 		: scalosgfx_base.h scalosgfx.h
-$(OBJ_DIR)/Dither.o 		: scalosgfx_base.h scalosgfx.h
-$(OBJ_DIR)/Render.o 		: scalosgfx_base.h scalosgfx.h
-$(OBJ_DIR)/BitMapScale.o	: scalosgfx_base.h scalosgfx.h
+$(OBJDIR)/scalosgfx-classic.o 	: scalosgfx_base.h scalosgfx.h
+$(OBJDIR)/scalosgfx.o 		: scalosgfx_base.h scalosgfx.h
+$(OBJDIR)/argb.o 		: scalosgfx_base.h scalosgfx.h
+$(OBJDIR)/blit.o 		: scalosgfx_base.h scalosgfx.h
+$(OBJDIR)/Dither.o 		: scalosgfx_base.h scalosgfx.h
+$(OBJDIR)/Render.o 		: scalosgfx_base.h scalosgfx.h
+$(OBJDIR)/BitMapScale.o	: scalosgfx_base.h scalosgfx.h
 
 #############################################################
 

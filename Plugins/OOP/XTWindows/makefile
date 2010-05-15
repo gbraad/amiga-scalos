@@ -17,7 +17,7 @@ LIBS 		= LIB:scm.lib LIB:sc.lib LIB:mempools.lib \
 		  LIB:debug.lib LIB:amiga.lib
 PRECOMP 	= Include:all.gst
 ECHO		= echo
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 LNFLAGS 	= quiet batch noicons stripdebug SD
 LNDBFLAGS 	= quiet batch noicons addsym SD
 OPENPATH	= ../wb39_Plugin
@@ -35,11 +35,11 @@ AFLAGS 		= QUIET DS opt=NRQB NOEXE linedebug I=SC:Assembler_Headers
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -55,19 +55,19 @@ All:	$(PLUGIN) \
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o  : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o  : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[1m\033[31m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/XTWindows.o : XTWindows.h AutoMsg.h $(COMMON_DIR)/plugin.h
+$(OBJDIR)/XTWindows.o : XTWindows.h AutoMsg.h $(COMMON_DIR)/plugin.h
 
-$(OBJ_DIR)/plugin-classic.o : plugin_data.h \
+$(OBJDIR)/plugin-classic.o : plugin_data.h \
 	$(COMMON_DIR)/plugin.h $(COMMON_DIR)/plugin-common.c
 
 #############################################################

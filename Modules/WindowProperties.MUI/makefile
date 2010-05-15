@@ -28,13 +28,13 @@ LIBS		= LIB:scnb.lib LIB:mempools.lib \
 			//SAS-lib/snprintf.lib \
                 	LIB:amiga.lib
 CSTARTUP	= LIB:c.o
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 TOOLTYPE_DIR	=  ../IconProperties.MUI
 ICONOBJMCC_DIR	=  ../../common/IconobjectMCC
 BITMAPMCC_DIR	=  ../../common/BitMapMCC
 BACKFILLMCC_DIR	=  ../../common/BackfillMCC
 
-SCALOS_LOCALE	= $(OBJ_DIR)/WindowProperties_Locale.h
+SCALOS_LOCALE	= $(OBJDIR)/WindowProperties_Locale.h
 
 .SUFFIXES: .asm .cd
 
@@ -74,13 +74,13 @@ CSRCS =		WindowProperties.c \
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #############################################################
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -90,23 +90,23 @@ $(CATCOMPHEADER) : WindowProperties.cd
 
 #############################################################
 
-$(OBJ_DIR)/WindowProperties.o : WindowProperties.c WindowProperties.h \
+$(OBJDIR)/WindowProperties.o : WindowProperties.c WindowProperties.h \
 	$(SCALOS_LOCALE) \
         $(ICONOBJMCC_DIR)/IconobjectMCC.h \
         $(BITMAPMCC_DIR)/BitMapMCC.h \
 	$(TOOLTYPE_DIR)/ToolTypes.h \
         debug.h
 
-$(OBJ_DIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c \
+$(OBJDIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c \
 	$(BITMAPMCC_DIR)/BitMapMCC.h debug.h
 
-$(OBJ_DIR)/Backfill.o : $(BACKFILLMCC_DIR)/Backfill.c \
+$(OBJDIR)/Backfill.o : $(BACKFILLMCC_DIR)/Backfill.c \
 	$(BACKFILLMCC_DIR)/Backfill.h $(BITMAPMCC_DIR)/BitMapMCC.h
 
-$(OBJ_DIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c \
+$(OBJDIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c \
 	$(ICONOBJMCC_DIR)/IconobjectMCC.h debug.h
 
-$(OBJ_DIR)/ToolTypes.o      : $(TOOLTYPE_DIR)/ToolTypes.c \
+$(OBJDIR)/ToolTypes.o      : $(TOOLTYPE_DIR)/ToolTypes.c \
 	$(TOOLTYPE_DIR)/ToolTypes.h debug.h
 
 #############################################################
@@ -125,31 +125,31 @@ $(DBGNAME): $(OBJS)
 .ct.catalog:
 	$(CATCOMP) $*.cd $< CATALOG $*.catalog VB=1
 
-$(OBJ_DIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c
+$(OBJDIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c
+$(OBJDIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/Backfill.o  : $(BACKFILLMCC_DIR)/Backfill.c
+$(OBJDIR)/Backfill.o  : $(BACKFILLMCC_DIR)/Backfill.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/ToolTypes.o      : $(TOOLTYPE_DIR)/ToolTypes.c
+$(OBJDIR)/ToolTypes.o      : $(TOOLTYPE_DIR)/ToolTypes.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
-$(OBJ_DIR)/%.o : %.s
+$(OBJDIR)/%.o : %.s
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
-$(OBJ_DIR)/%.o : %.asm
+$(OBJDIR)/%.o : %.asm
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
