@@ -21,14 +21,14 @@ LNDBFLAGS 	= quiet noicons batch addsym
 LDLIBS  	= LIB:scnb.lib LIB:debug.lib LIB:amiga.lib
 CSTARTUP 	= LIB:c.o
 ECHO		= echo
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 INT64_DIR	= ../../common/Int64
 FS_DIR		= ../../common/Fs
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #############################################################
 
@@ -58,10 +58,10 @@ all: 	$(CTRL) \
 # List of all the object files that go together to make up the final executable
 # Make sure that startup.o is first in the list as this contains our own startup
 # code (which must be used, as we link without startup code for shared objects)
-OBJS		= $(OBJ_DIR)/ScalosCtrl.o
-OBJSSEMA	= $(OBJ_DIR)/ScalosSema.o
-OBJSLWB		= $(OBJ_DIR)/LoadWB.o
-OBJSGENMSGID	= $(OBJ_DIR)/GenMsgIdNames.o
+OBJS		= $(OBJDIR)/ScalosCtrl.o
+OBJSSEMA	= $(OBJDIR)/ScalosSema.o
+OBJSLWB		= $(OBJDIR)/LoadWB.o
+OBJSGENMSGID	= $(OBJDIR)/GenMsgIdNames.o
 
 #############################################################
 
@@ -103,7 +103,7 @@ $(LWBDBG) : $(OBJSLWB)
 
 # CLI command used when compiling. This is generic and will be called for all the
 # dependancies (C source files) that need compiling.
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
