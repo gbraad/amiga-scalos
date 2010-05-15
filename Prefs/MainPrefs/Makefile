@@ -19,6 +19,7 @@ CFLAGS  	= nostkchk nochkabort dbg=f nover streq \
 		  data=far code=far strmer stringsection=far \
 		  memorysize=huge \
                   define SVN_VERSION=$(SVNVERSION) \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=68 idir=//include \
                   idir=$(subst ../,/,$(FONTSAMPLEMCC_DIR)) \
                   idir=$(subst ../,/,$(DATATYPESMCC_DIR)) \
@@ -42,6 +43,8 @@ FONTSAMPLEMCC_DIR  = ../../common/FontSampleMCC
 DATATYPESMCC_DIR = ../../common/DataTypesMCC
 MCPGFX_DIR	= ../../common/McpGfx
 SCALOSINCDIR = ../../include/scalos
+
+SCALOS_LOCALE	= $(OBJ_DIR)/ScalosPrefs_locale.h
 
 #############################################################
 
@@ -72,7 +75,7 @@ OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
 NAME		= Scalos_Prefs
 NAMEDBG		= $(NAME).debug
 CAT_FILE	= Scalos/Scalos_Prefs.catalog
-CATCOMPHEADER	= ScalosPrefs_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:Prefs/Scalos Prefs
 DESTCAT		= Locale:Catalogs
 CATS		= deutsch \
@@ -131,7 +134,7 @@ $(OBJ_DIR)/SelectMarkSampleClass.o : SelectMarkSampleClass.c SelectMarkSampleCla
 $(OBJ_DIR)/FontSampleMCC.o : $(FONTSAMPLEMCC_DIR)/FontSampleMCC.c \
 	$(FONTSAMPLEMCC_DIR)/FontSampleMCC.h $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/Hooks.o: Hooks.c Hooks.h General.h ScalosPrefs.h ScalosPrefs_locale.h \
+$(OBJ_DIR)/Hooks.o: Hooks.c Hooks.h General.h ScalosPrefs.h $(SCALOS_LOCALE) \
 	PrefsPlugins.h HiddenDevices.h $(DATATYPESMCC_DIR)/DataTypesMCC.h \
         $(FONTSAMPLEMCC_DIR)/FontSampleMCC.h $(SCALOSINCDIR)/scalos.h
 
@@ -152,7 +155,7 @@ $(OBJ_DIR)/Scalos.o: Scalos.c General.h ScalosPrefs.h \
 	ReadWritePrefs.h $(DATATYPESMCC_DIR)/DataTypesMCC.h \
 	McpFrameMCC.h $(FONTSAMPLEMCC_DIR)/FontSampleMCC.h \
          $(SCALOSINCDIR)/scalos.h \
-	HiddenDevices.h Hooks.h ScalosPrefs_locale.h \
+	HiddenDevices.h Hooks.h $(SCALOS_LOCALE) \
 	SelectMarkSampleClass.h
 
 

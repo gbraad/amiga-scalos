@@ -9,6 +9,7 @@ CHEADERS	=
 CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s NOWVRET \
 		  strmer nover streq idlen=128 IGNORE=217 \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=sc:include/ \
 		  idir=include: idir=//include
 AFLAGS		= QUIET m=68020 linedebug opt=NRQB i=include:
@@ -23,13 +24,15 @@ LIBS		= LIB:sc.lib \
 CSTARTUP	= LIB:c.o
 OBJ_DIR		= .sasobj
 
+SCALOS_LOCALE	= $(OBJ_DIR)/Find_Locale.h
+
 .SUFFIXES: .cd
 
 #############################################################
 
 NAME		= Find.module
 DBGNAME		= $(NAME).debug
-CATCOMPHEADER	= Find_Locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/
 CAT_FILE	= Scalos/Find.catalog
 DESTCAT		= Locale:Catalogs
@@ -75,7 +78,7 @@ $(CATCOMPHEADER) : Find.cd
 #####################################################################
 
 $(OBJ_DIR)/Find.o : Find.c Find.h \
-	Find_Locale.h \
+	$(SCALOS_LOCALE) \
         debug.h
 
 #####################################################################

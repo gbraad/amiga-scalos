@@ -1,7 +1,6 @@
 # MakeFile für WindowProperties MUI module
 # $Date$
 # $Revision$
-
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -11,6 +10,7 @@ CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s NOWVRET \
 		  strmer nover streq idlen=128 \
 		  data=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=sc:include/ \
 		  idir=include: \
 		  idir=//include \
@@ -34,13 +34,15 @@ ICONOBJMCC_DIR	=  ../../common/IconobjectMCC
 BITMAPMCC_DIR	=  ../../common/BitMapMCC
 BACKFILLMCC_DIR	=  ../../common/BackfillMCC
 
+SCALOS_LOCALE	= $(OBJ_DIR)/WindowProperties_Locale.h
+
 .SUFFIXES: .asm .cd
 
 #############################################################
 
 NAME		= WindowProperties.module
 DBGNAME		= $(NAME).debug
-CATCOMPHEADER	= WindowProperties_Locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/
 CAT_FILE	= Scalos/WindowProperties.catalog
 DESTCAT		= Locale:Catalogs
@@ -89,7 +91,7 @@ $(CATCOMPHEADER) : WindowProperties.cd
 #############################################################
 
 $(OBJ_DIR)/WindowProperties.o : WindowProperties.c WindowProperties.h \
-	WindowProperties_Locale.h \
+	$(SCALOS_LOCALE) \
         $(ICONOBJMCC_DIR)/IconobjectMCC.h \
         $(BITMAPMCC_DIR)/BitMapMCC.h \
 	$(TOOLTYPE_DIR)/ToolTypes.h \

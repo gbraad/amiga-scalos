@@ -1,7 +1,6 @@
 // Device_Handler.c
 // $Date$
 // $Revision$
-// $Id$
 
 
 #include <stdlib.h>

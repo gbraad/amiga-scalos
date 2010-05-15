@@ -15,6 +15,7 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort strmer dbg=f nover streq data=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=64 idir=//include
 AS      	= phxass
 AFLAGS  	= quiet noexe m=68020 opt=NRQB i=sc:Assembler_Headers/
@@ -24,6 +25,7 @@ LDLIBS  	= LIB:mempools.lib LIB:scm.lib LIB:sc.lib LIB:debug.lib LIB:amiga.lib
 CSTARTUP 	= LIB:c.o
 OBJ_DIR		= .sasobj
 CATCOMP 	= CatComp
+SCALOS_LOCALE	= $(OBJ_DIR)/ScalosPalette_locale.h
 
 #############################################################
 
@@ -42,7 +44,7 @@ NAME    	= Scalos_Palette
 NAMEDBG 	= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos Palette
 CAT_FILE	= Scalos/ScalosPalette.catalog
-CATCOMPHEADER	= ScalosPalette_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTCAT		= Locale:Catalogs
 CATS		= dansk \
 		  deutsch \
@@ -66,7 +68,7 @@ all:	$(NAME) $(NAMEDBG) \
 
 #############################################################
 
-$(OBJ_DIR)/Palette.o : Palette.c ScalosPalette_locale.h
+$(OBJ_DIR)/Palette.o : Palette.c $(SCALOS_LOCALE)
 
 $(CATCOMPHEADER) : ScalosPalette.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'

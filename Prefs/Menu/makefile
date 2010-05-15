@@ -15,6 +15,7 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort strmer dbg=f nover streq data=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=64 idir=//include
 AS      	= phxass
 AFLAGS  	= noexe m=68020 opt=NRQB i=sc:Assembler_Headers/
@@ -25,6 +26,7 @@ ASTARTUP 	=
 CSTARTUP 	= LIB:c.o
 OBJ_DIR		= .sasobj
 CATCOMP 	= CatComp
+SCALOS_LOCALE	= $(OBJ_DIR)/ScalosMenu_locale.h
 
 #############################################################
 
@@ -43,7 +45,7 @@ NAME		= Scalos_Menu
 NAMEDBG		= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos Menu
 CAT_FILE	= Scalos/ScalosMenu.catalog
-CATCOMPHEADER	= ScalosMenu_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTCAT		= Locale:Catalogs
 CATS		= dansk \
 		  deutsch \
@@ -66,7 +68,7 @@ all:	$(NAME) $(NAMEDBG) \
 
 #############################################################
 
-$(OBJ_DIR)/Menu.o : Menu.c ScalosMenu_locale.h
+$(OBJ_DIR)/Menu.o : Menu.c $(SCALOS_LOCALE)
 
 $(CATCOMPHEADER) : ScalosMenu.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'

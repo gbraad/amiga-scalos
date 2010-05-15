@@ -63,7 +63,7 @@ $(OBJDIR)::
 
 APP		= Scalos
 APP_DBG		= Scalos.debug
-CATHEADER	= $(OBJDIR)/Scalos_Locale.h
+CATHEADER	= $(SCALOS_LOCALE)
 MSG_NAMES 	= MsgIdNames.h
 DESTCAT		= Locale:Catalogs
 CAT_FILE	= Scalos/Scalos.catalog

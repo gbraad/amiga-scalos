@@ -10,6 +10,7 @@ CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s \
 		  idlen=128 strmer nover streq data=far \
 		  ignore=217 idir=sc:include/ \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=include: idir=//include
 AS		= phxass
 AFLAGS		= QUIET m=68020 linedebug opt=NRQB i=include:
@@ -21,6 +22,8 @@ CATCOMP		= catcomp
 CSTARTUP	= LIB:c.o
 OBJ_DIR		= .sasobj
 
+SCALOS_LOCALE	= $(OBJ_DIR)/Execute_Command_Locale.h
+
 #####################################################################
 
 .SUFFIXES: .asm
@@ -29,7 +32,7 @@ OBJ_DIR		= .sasobj
 
 NAME		= Execute_Command.module
 DBGNAME		= $(NAME).debug
-CATCOMPH	= Execute_Command_Locale.h
+CATCOMPH	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/Execute_Command.catalog
 DESTCAT		= Locale:Catalogs
 ALLCATS 	= Catalogs/deutsch/$(CAT_FILE) \

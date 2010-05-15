@@ -1,13 +1,14 @@
 # Makefile for NewDrawer.module (MUI)
 # using GNU make and SAS/C
 # $Date$
-
+# $Revision$
 #####################################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
 CHEADERS	= 
 CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=128 strmer nover streq data=far \
 		  ignore=217 idir=sc:include/ \
 		  idir=include: idir=//include
@@ -21,6 +22,8 @@ CATCOMP		= catcomp
 CSTARTUP	= LIB:c.o
 OBJ_DIR		= .sasobj
 
+SCALOS_LOCALE	= $(OBJ_DIR)/NewDrawer_Locale.h
+
 #####################################################################
 
 .SUFFIXES: .asm
@@ -29,7 +32,7 @@ OBJ_DIR		= .sasobj
 
 NAME	= NewDrawer.module
 DBGNAME	= $(NAME).debug
-CATCOMPH	= NewDrawer_Locale.h
+CATCOMPH	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/NewDrawer.catalog
 DESTCAT		= Locale:Catalogs
 ALLCATS 	= Catalogs/deutsch/$(CAT_FILE) \

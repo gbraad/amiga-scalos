@@ -22,13 +22,18 @@ LIBS		= \
 # Ignore Note 306: local function inlined: "InsertMH"
 # Ignore Note 308: inline function does not use formal parameter ...
 OPT_FLG 	= OPTIMIZE OPTINLOCAL OPTTIME OPTSCHED IGNORE=306 IGNORE=308 IGNORE=304
-COPTS 		= NOWVRET NOVERSION nostackcheck idlen=128 idir=///include
+COPTS 		= NOWVRET NOVERSION nostackcheck \
+	                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
+			idlen=128 \
+			idir=///include
 OPTIONS 	=  $(OPT_FLG) DATA=FAR DEBUG=L $(COPTS) def=NDEBUG
 DBFLAG 		= nodebug
 CSTARTUP 	= LIB:c.o
 CATCOMP		= catcomp
 OBJ_DIR		= .sasobj
 SUBDIRMAKE 	= $(MAKE) -s -C 
+
+SCALOS_LOCALE	= $(OBJ_DIR)/Delete_Locale.h
 
 #############################################################
 
@@ -53,7 +58,7 @@ CATS		= deutsch \
 		  français
 
 ALLCATS		= $(foreach cat,$(CATS),Catalogs/$(cat)/$(CAT_FILE))
-CATCOMPH	= Delete_Locale.h
+CATCOMPH	= $(SCALOS_LOCALE)
 
 #############################################################
 
