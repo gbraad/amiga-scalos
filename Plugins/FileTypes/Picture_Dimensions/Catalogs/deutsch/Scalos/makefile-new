@@ -1,6 +1,6 @@
 # makefile for PictureDimensionsPlugin (translated Texts : deutsch)
 # $Date: 2009-02-17 21:22:13 +0200 (Di, 17 Feb 2009) $
-# §Revision:                 $
+# $Revision:                 $
 
 .SUFFIXES: .ct .catalog
 .PHONY: all install clean
