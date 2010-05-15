@@ -1,6 +1,6 @@
 # makefile for Scalos (translated Texts français)
 # $Date$
-# §Revision:                 $
+# $Revision$
 
 .SUFFIXES: .ct .catalog
 
