@@ -1,3 +1,5 @@
+# $Date$
+# $Revision$
 ##############################################################################
 
 include $(TOPLEVEL)/config.mk
@@ -8,6 +10,10 @@ include $(TOPLEVEL)/rules.mk
 COMMON_DIR	= $(TOPLEVEL)/common/Plugin
 
 INCLUDES	+= -I$(COMMON_DIR)
+
+SCALOS_LOCALE	= $(OBJDIR)/PictureDimensions_locale.h
+
+CFLAGS 		+= -D SCALOSLOCALE=$(SCALOS_LOCALE)
 
 vpath 	%.c	$(COMMON_DIR)
 

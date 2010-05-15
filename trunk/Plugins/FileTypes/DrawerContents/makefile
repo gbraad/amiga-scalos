@@ -1,5 +1,7 @@
+# $Date$
+# $Revision$
 # makefile für Scalos drawercontents.plugin
-# 17 Jan 2004 15:15:06
+##############################################################################
 
 .SUFFIXES: .plugin .plugin.debug
 
@@ -11,6 +13,7 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort strmer dbg=f nover streq data=far \
 		  idlen=64 \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=///include \
 		  idir=///common/Plugin
 AS      	= phxass
@@ -41,7 +44,8 @@ OBJS = $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 #############################################################
 
 PLUGIN		= drawercontents.plugin
-CATCOMPHEADER	= DrawerContents_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/DrawerContents_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/DrawerContentsPlugin.catalog
 DESTTOOL	= Scalos:plugins/FileTypes/
 DESTCAT		= Locale:Catalogs
@@ -75,7 +79,7 @@ $(OBJDIR)/%.o : %.c
 $(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h DrawerContents_base.h $(COMMON_DIR)/plugin.h
 $(OBJDIR)/DrawerContents.o : DrawerContents.h DrawerContents_base.h \
-	DrawerContents_locale.h
+        $(SCALOS_LOCALE)
 
 #############################################################
 

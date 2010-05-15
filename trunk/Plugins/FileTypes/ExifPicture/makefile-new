@@ -61,9 +61,9 @@ all:	$(BINDIR)/$(NAME) \
 
 ##############################################################################
 
-ExifPicture.c : ExifPicture_locale.h
+ExifPicture.c : $(SCALOS_LOCALE)
 
-ExifPicture_locale.h : ExifPicturePlugin.cd
+$(SCALOS_LOCALE) : ExifPicturePlugin.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
@@ -89,7 +89,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		ExifPicture_locale.h
+                $(SCALOS_LOCALE)
 
 clean:  clean_subdirs
 
