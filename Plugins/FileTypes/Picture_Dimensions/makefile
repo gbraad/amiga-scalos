@@ -1,5 +1,7 @@
 # makefile für Scalos picturedimensions.plugin
-# 17 Jan 2004 15:15:06
+# $Date$
+# $Revision$
+##############################################################################
 
 .SUFFIXES: .plugin .plugin.debug .cd
 
@@ -11,6 +13,7 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort strmer dbg=f nover streq data=far \
 		  idlen=64 \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=///include \
 		  idir=///common/Plugin
 AS      	= phxass
@@ -41,7 +44,8 @@ OBJS = $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 #############################################################
 
 PLUGIN		= picturedimensions.plugin
-CATCOMPHEADER	= PictureDimensions_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/PictureDimensions_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/PictureDimensionsPlugin.catalog
 DESTTOOL	= Scalos:plugins/FileTypes/
 DESTCAT		= Locale:Catalogs
@@ -75,7 +79,7 @@ $(OBJDIR)/%.o : %.c
 $(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h PictureDimensions_base.h $(COMMON_DIR)/plugin.h
 $(OBJDIR)/PictureDimensions.o : PictureDimensions.h \
-	PictureDimensions_base.h PictureDimensions_locale.h
+	PictureDimensions_base.h $(SCALOS_LOCALE)
 
 #############################################################
 

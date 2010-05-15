@@ -44,7 +44,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "ExifPicture_locale.h"
+#include STR(SCALOSLOCALE)
 
 //---------------------------------------------------------------
 

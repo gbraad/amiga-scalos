@@ -1,7 +1,7 @@
 # makefile für Scalos exifpicture.plugin
-# // $Date$
-# // $Revision$
-
+# $Date$
+# $Revision$
+##############################################################################
 
 .SUFFIXES: .plugin .plugin.debug .cd
 
@@ -15,6 +15,7 @@ PRECOMP 	= Include:all.gst
 CC      	= sc
 CFLAGS  	= nostackcheck nochkabort strmer dbg=l nover streq data=far \
 		  idlen=64 Math=s \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=///include \
 		  idir=///common/Plugin
 
@@ -55,7 +56,8 @@ OBJS = $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 #############################################################
 
 PLUGIN		= exifpicture.plugin
-CATCOMPHEADER	= ExifPicture_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/ExifPicture_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/ExifPicturePlugin.catalog
 DESTTOOL	= Scalos:plugins/FileTypes/
 DESTCAT		= Locale:Catalogs
@@ -88,7 +90,7 @@ $(OBJDIR)/%.o : %.c
 
 $(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h ExifPicture_base.h $(COMMON_DIR)/plugin.h
-$(OBJDIR)/ExifPicture.o : ExifPicture.h ExifPicture_base.h ExifPicture_locale.h
+$(OBJDIR)/ExifPicture.o : ExifPicture.h ExifPicture_base.h $(SCALOS_LOCALE)
 
 #############################################################
 

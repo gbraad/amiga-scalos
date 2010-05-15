@@ -63,16 +63,16 @@ all:	$(BINDIR)/$(NAME) \
 $(OBJDIR)/%.o: $(FONTSAMPLE_DIR)/%.c
 	@$(run-cc)
 
-DrawerContents.c : DrawerContents_locale.h
+DrawerContents.c : $(SCALOS_LOCALE)
 
-DrawerContents_locale.h : DrawerContentsPlugin.cd
-	$(ECHO) "CatComp $@"
+$(SCALOS_LOCALE) : DrawerContentsPlugin.cd
+	@$(ECHO) "CatComp $@"
 	catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@protect $@ +e
@@ -91,7 +91,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		DrawerContents_locale.h
+                $(SCALOS_LOCALE)
 
 clean:  clean_subdirs
 

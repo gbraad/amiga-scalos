@@ -59,16 +59,16 @@ all:	$(BINDIR)/$(NAME) \
 
 ##############################################################################
 
-PictureDimensions.c : PictureDimensions_locale.h
+PictureDimensions.c : $(SCALOS_LOCALE)
 
-PictureDimensions_locale.h : PictureDimensionsPlugin.cd
-	$(ECHO) "CatComp $@"
+$(SCALOS_LOCALE) : PictureDimensionsPlugin.cd
+	@$(ECHO) "CatComp $@"
 	catcomp $(subst ../,/,$<) cfile=$@
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@protect $@ +e
@@ -87,7 +87,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		PictureDimensions_locale.h \
+		$(SCALOS_LOCALE) \
 
 clean:  clean_subdirs
 
