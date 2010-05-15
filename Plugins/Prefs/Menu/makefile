@@ -1,6 +1,6 @@
 # makefile für Scalos Menu.prefsplugin
 # $Date$
-# §Revision:                 $
+# $Revision$
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
