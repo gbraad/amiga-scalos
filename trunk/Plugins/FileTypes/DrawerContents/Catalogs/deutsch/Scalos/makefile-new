@@ -1,6 +1,6 @@
 # makefile for DrawerContentsPlugin (translated Texts : deutsch)
 # $Date$
-# §Revision:                 $
+# $Revision$
 
 .SUFFIXES: .ct .catalog
 .PHONY: all install clean
