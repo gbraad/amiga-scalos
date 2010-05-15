@@ -1,8 +1,6 @@
 # MakeFile for Format_Disk.module (Gadtools) module.
 # $Date$
 # $Revision$
-# $Id$
-
 #############################################################
 
 .PHONY: dirs clean install nodebug
@@ -15,7 +13,11 @@ CC 		= sc
 SPLAT 		= sc:c/splat
 
 CFLAGS		= optimize nostackcheck nochkabort debug=s idlen=128 \
-		strmer nover streq idir=sc:include/ idir=include: idir=//include
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
+		  strmer nover streq \
+		  idir=sc:include/ \
+		  idir=include: \
+		  idir=//include
 
 LIBS	 	= lib:sc.lib LIB:debug.lib lib:amiga.lib
 CSTARTUP 	= LIB:c.o
@@ -28,6 +30,8 @@ LNDBFLAGS	= quiet batch noicons addsym
 OBJDIR		= .sasobj
 MKDIR		= mkdir -p
 DESTTOOL	= Scalos:modules/
+
+SCALOS_LOCALE	= $(OBJDIR)/FormatDisk_Locale.h
 
 #############################################################
 
@@ -42,7 +46,7 @@ $(OBJDIR)::
 
 NAME    	=  Format_Disk.module
 DBGNAME 	=  $(NAME).debug
-CATCOMPHEADER	= FormatDisk_Locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/FormatDisk.catalog
 DESTCAT		= Locale:Catalogs
 ALLCATS 	= Catalogs/français/$(CAT_FILE) \
@@ -114,12 +118,12 @@ $(OBJDIR)/%.o : %.c
 
 $(OBJDIR)/NSD_64bit.o 		: NSD_64bit.c
 $(OBJDIR)/Device_Handler.o 	: Device_Handler.c Format.h
-$(OBJDIR)/FullFormat.o 		: FullFormat.c Format.h FormatDisk_Locale.h
-$(OBJDIR)/FormatVolume.o 	: FormatVolume.c Format.h FormatDisk_Locale.h
+$(OBJDIR)/FullFormat.o 		: FullFormat.c Format.h $(SCALOS_LOCALE)
+$(OBJDIR)/FormatVolume.o 	: FormatVolume.c Format.h $(SCALOS_LOCALE)
 $(OBJDIR)/ParseArgs.o 		: ParseArgs.c Format.h GUI.h
-$(OBJDIR)/Format.o 		: Format.c Format.h FormatDisk_Locale.h GUI.h
+$(OBJDIR)/Format.o 		: Format.c Format.h $(SCALOS_LOCALE) GUI.h
 $(OBJDIR)/GetInputFromWindow.o 	: GetInputFromWindow.c Format.h GUI.h
-$(OBJDIR)/GUI.o 		: GUI.c FormatDisk_Locale.h Format.h GUI.h
+$(OBJDIR)/GUI.o 		: GUI.c $(SCALOS_LOCALE) Format.h GUI.h
 
 #############################################################
 

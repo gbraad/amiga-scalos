@@ -15,6 +15,7 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort strmer dbg=f nover streq data=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=64 idir=//include
 AS      	= phxass
 AFLAGS  	= quiet noexe m=68020 opt=NRQB i=sc:Assembler_Headers/
@@ -24,6 +25,7 @@ LDLIBS  	= LIB:mempools.lib LIB:scm.lib LIB:sc.lib LIB:debug.lib LIB:amiga.lib
 CSTARTUP 	= LIB:c.o
 OBJ_DIR		= .sasobj
 CATCOMP 	= CatComp
+SCALOS_LOCALE	= $(OBJ_DIR)/ScalosFileTypes_locale.h
 
 #############################################################
 
@@ -42,7 +44,7 @@ NAME		= Scalos_FileTypes
 DBGNAME		= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos FileTypes
 CAT_FILE 	= Scalos/ScalosFileTypes.catalog
-CATCOMPHEADER	= ScalosFileTypes_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTCAT		= Locale:Catalogs
 CATS		= deutsch \
 		  français
@@ -65,7 +67,7 @@ $(CATCOMPHEADER) : ScalosFileTypes.cd
 
 #############################################################
 
-$(OBJ_DIR)/FileTypes.o : FileTypes.c ScalosFileTypes_locale.h
+$(OBJ_DIR)/FileTypes.o : FileTypes.c $(SCALOS_LOCALE)
 
 # CLI command used when linking the final executables
 $(NAME) : $(OBJS)

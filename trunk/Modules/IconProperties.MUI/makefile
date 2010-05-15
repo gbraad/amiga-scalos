@@ -1,6 +1,6 @@
 # MakeFile für IconProperties MUI module
 # $Date$
-
+# $Revision$
 #####################################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -9,6 +9,7 @@ CHEADERS	=
 CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s NOWVRET \
 		  strmer nover streq idlen=128 idir=sc:include/ \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=include: idir=//include \
 		  idir=$(subst ../,/,$(ICONOBJMCC_DIR))
 AS		= phxass
@@ -20,13 +21,15 @@ LIBS		= LIB:sc.lib LIB:mempools.lib LIB:debug.lib LIB:amiga.lib
 CSTARTUP	= LIB:c.o
 OBJ_DIR		= .sasobj
 
+SCALOS_LOCALE	= $(OBJ_DIR)/IconProperties_Locale.h
+
 .SUFFIXES: .asm .cd
 
 #############################################################
 
 NAME		= IconProperties.module
 DBGNAME		= $(NAME).debug
-CATCOMPHEADER	= IconProperties_Locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/
 CAT_FILE	= Scalos/IconProperties.catalog
 DESTCAT		= Locale:Catalogs
@@ -78,7 +81,7 @@ $(CATCOMPHEADER) : IconProperties.cd
 #####################################################################
 
 $(OBJ_DIR)/IconProperties.o : IconProperties.c IconProperties.h \
-	IconProperties_Locale.h $(ICONOBJMCC_DIR)/IconobjectMCC.h \
+	$(SCALOS_LOCALE) $(ICONOBJMCC_DIR)/IconobjectMCC.h \
         ToolTypes.h debug.h
 
 $(OBJ_DIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.h debug.h

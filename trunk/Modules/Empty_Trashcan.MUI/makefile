@@ -10,6 +10,7 @@ CHEADERS	=
 CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s \
 		  idlen=128 strmer nover streq data=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  ignore=217 idir=sc:include/ \
 		  idir=include: idir=//include
 AS		= phxass
@@ -22,6 +23,8 @@ CATCOMP		= catcomp
 CSTARTUP	= LIB:c.o
 OBJ_DIR		= .sasobj
 
+SCALOS_LOCALE	= $(OBJ_DIR)/Empty_Trashcan_Locale.h
+
 #####################################################################
 
 .SUFFIXES: .asm
@@ -30,7 +33,7 @@ OBJ_DIR		= .sasobj
 
 NAME		= Empty_Trashcan.module
 DBGNAME		= $(NAME).debug
-CATCOMPH	= Empty_Trashcan_Locale.h
+CATCOMPH	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/Empty_Trashcan.catalog
 DESTCAT		= Locale:Catalogs
 ALLCATS 	= Catalogs/deutsch/$(CAT_FILE) \

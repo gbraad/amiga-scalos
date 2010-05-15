@@ -10,6 +10,7 @@ CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s NOWVRET \
 		  strmer nover streq idlen=128 IGNORE=217 \
 		  idir=sc:include/ \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=include: idir=//include
 AFLAGS		= QUIET m=68020 linedebug opt=NRQB i=include:
 LD		= slink
@@ -23,13 +24,15 @@ LIBS		= LIB:sc.lib \
 CSTARTUP	= LIB:c.o
 OBJ_DIR		= .sasobj
 
+SCALOS_LOCALE	= $(OBJ_DIR)/Exchange_Locale.h
+
 .SUFFIXES: .cd
 
 #############################################################
 
 NAME		= Exchange.module
 DBGNAME		= $(NAME).debug
-CATCOMPHEADER	= Exchange_Locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/
 CAT_FILE	= Scalos/Exchange.catalog
 DESTCAT		= Locale:Catalogs
@@ -74,7 +77,7 @@ $(CATCOMPHEADER) : Exchange.cd
 #####################################################################
 
 $(OBJ_DIR)/Exchange.o : Exchange.c Exchange.h \
-	Exchange_Locale.h \
+	$(SCALOS_LOCALE) \
         cx_private.h \
         cx_private_protos.h \
         cx_private_pragmas.h \

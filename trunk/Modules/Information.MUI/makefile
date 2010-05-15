@@ -1,7 +1,6 @@
 # MakeFile für Information MUI module
 # $Date$
 # $Revision$
-# $Id$
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -10,6 +9,7 @@ CHEADERS	=
 CC		= sc
 CFLAGS		= nostackcheck nochkabort debug=s data=far code=far \
 		  strmer nover streq stringsection=far idlen=64 idir=sc:include/ \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=include: \
 		  idir=//include \
 		  idir=$(subst ../,/,$(TOOLTYPE_DIR)) \
@@ -35,13 +35,15 @@ ICONOBJMCC_DIR	=  ../../common/IconobjectMCC
 INT64_DIR	=  ../../common/Int64
 FS_DIR	     	=  ../../common/Fs
 
+SCALOS_LOCALE	= $(OBJ_DIR)/Information_Locale.h
+
 .SUFFIXES: .asm .cd
 
 #############################################################
 
 NAME		= Information.module
 DBGNAME		= $(NAME).debug
-CATCOMPHEADER	= Information_Locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/
 CAT_FILE	= Scalos/Information.catalog
 DESTCAT		= Locale:Catalogs
@@ -90,7 +92,7 @@ $(CATCOMPHEADER) : Information.cd
 #############################################################
 
 $(OBJ_DIR)/Information.o : Information.c Information.h \
-	Information_Locale.h $(ICONOBJMCC_DIR)/IconobjectMCC.h \
+	$(SCALOS_LOCALE) $(ICONOBJMCC_DIR)/IconobjectMCC.h \
 	$(TOOLTYPE_DIR)/ToolTypes.h $(INT64_DIR)/int64.h $(FS_DIR)/FsAbstraction.h debug.h
 
 $(OBJ_DIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c \

@@ -15,6 +15,7 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort strmer dbg=f nover streq data=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=64 idir=//include
 AS      	= phxass
 AFLAGS  	= quiet noexe m=68020 opt=NRQB i=sc:Assembler_Headers/
@@ -25,7 +26,7 @@ ASTARTUP	=
 CSTARTUP 	= LIB:c.o
 OBJ_DIR		= .sasobj
 CATCOMP 	= CatComp
-
+SCALOS_LOCALE	= $(OBJ_DIR)/ScalosPattern_locale.h
 
 #############################################################
 
@@ -44,7 +45,7 @@ NAME		= Scalos_Pattern
 NAMEDBG		= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos Pattern
 CAT_FILE	= Scalos/ScalosPattern.catalog
-CATCOMPHEADER	= ScalosPattern_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTCAT		= Locale:Catalogs
 
 CATS		= dansk \
@@ -67,7 +68,7 @@ all:	$(NAME) $(NAMEDBG) allcatalogs
 
 #############################################################
 
-$(OBJ_DIR)/Pattern.o : Pattern.c Pattern.h ScalosPattern_locale.h
+$(OBJ_DIR)/Pattern.o : Pattern.c Pattern.h $(SCALOS_LOCALE)
 
 $(CATCOMPHEADER) : ScalosPattern.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
