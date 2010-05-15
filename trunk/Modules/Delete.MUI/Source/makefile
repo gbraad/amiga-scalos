@@ -30,21 +30,21 @@ OPTIONS 	=  $(OPT_FLG) DATA=FAR DEBUG=L $(COPTS) def=NDEBUG
 DBFLAG 		= nodebug
 CSTARTUP 	= LIB:c.o
 CATCOMP		= catcomp
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 SUBDIRMAKE 	= $(MAKE) -s -C 
 
-SCALOS_LOCALE	= $(OBJ_DIR)/Delete_Locale.h
+SCALOS_LOCALE	= $(OBJDIR)/Delete_Locale.h
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
-OBJS = $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+OBJS = $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(OPTIONS) $*.c objectname $@
 
@@ -71,9 +71,9 @@ $(NAME): $(OBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
 	@$(LINK) FROM $(CSTARTUP) $(OBJS) TO $@ lib $(LIBS) noicons batch quiet
 
-$(OBJ_DIR)/Delete.module.o: Delete.module.c Delete.module.h $(CATCOMPH)
+$(OBJDIR)/Delete.module.o: Delete.module.c Delete.module.h $(CATCOMPH)
 
-$(OBJ_DIR)/Delete.module_files.o: Delete.module_files.c Delete.module.h $(CATCOMPH)
+$(OBJDIR)/Delete.module_files.o: Delete.module_files.c Delete.module.h $(CATCOMPH)
 
 #####################################################################
 

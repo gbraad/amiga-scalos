@@ -12,7 +12,7 @@ AS = phxAss
 LD = slink
 LDLIBS = LIB:debug.lib LIB:amiga.lib
 PRECOMP = Include:all.gst
-OBJ_DIR	= .sasobj
+OBJDIR	= .sasobj
 
 #############################################################
 
@@ -27,10 +27,10 @@ endif
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
-OBJS = $(ASRCS:%.s=$(OBJ_DIR)/%.o)
+OBJS = $(ASRCS:%.s=$(OBJDIR)/%.o)
 
 #############################################################
 
@@ -45,7 +45,7 @@ all: 	$(NAME) $(DBGNAME)
 
 #############################################################
 
-$(OBJ_DIR)/%.o : %.s
+$(OBJDIR)/%.o : %.s
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 

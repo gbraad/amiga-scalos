@@ -37,14 +37,14 @@ LDLIBS  	= LIB:mempools.lib \
 		LIB:debug.lib \
 		LIB:amiga.lib
 CSTARTUP 	= LIB:c.o
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 CATCOMP 	= CatComp
 FONTSAMPLEMCC_DIR  = ../../common/FontSampleMCC
 DATATYPESMCC_DIR = ../../common/DataTypesMCC
 MCPGFX_DIR	= ../../common/McpGfx
 SCALOSINCDIR = ../../include/scalos
 
-SCALOS_LOCALE	= $(OBJ_DIR)/ScalosPrefs_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/ScalosPrefs_locale.h
 
 #############################################################
 
@@ -64,11 +64,11 @@ CSRCS =						\
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -96,19 +96,19 @@ all:	$(NAME) $(NAMEDBG) allcatalogs
 .ct.catalog:
 	$(CATCOMP) $*.cd $< CATALOG $*.catalog VB=1
 
-$(OBJ_DIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
+$(OBJDIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/FontSampleMCC.o : $(FONTSAMPLEMCC_DIR)/FontSampleMCC.c
+$(OBJDIR)/FontSampleMCC.o : $(FONTSAMPLEMCC_DIR)/FontSampleMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/ScalosMcpGfx.o : $(MCPGFX_DIR)/ScalosMcpGfx.c
+$(OBJDIR)/ScalosMcpGfx.o : $(MCPGFX_DIR)/ScalosMcpGfx.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
@@ -124,34 +124,34 @@ $(NAMEDBG) : $(OBJS)
 
 #############################################################
 
-$(OBJ_DIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
+$(OBJDIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
 	$(DATATYPESMCC_DIR)/DataTypesMCC.h $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/McpFrameMCC.o : McpFrameMCC.c McpFrameMCC.h MCPFrame_mcc.h
+$(OBJDIR)/McpFrameMCC.o : McpFrameMCC.c McpFrameMCC.h MCPFrame_mcc.h
 
-$(OBJ_DIR)/SelectMarkSampleClass.o : SelectMarkSampleClass.c SelectMarkSampleClass.h
+$(OBJDIR)/SelectMarkSampleClass.o : SelectMarkSampleClass.c SelectMarkSampleClass.h
 
-$(OBJ_DIR)/FontSampleMCC.o : $(FONTSAMPLEMCC_DIR)/FontSampleMCC.c \
+$(OBJDIR)/FontSampleMCC.o : $(FONTSAMPLEMCC_DIR)/FontSampleMCC.c \
 	$(FONTSAMPLEMCC_DIR)/FontSampleMCC.h $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/Hooks.o: Hooks.c Hooks.h General.h ScalosPrefs.h $(SCALOS_LOCALE) \
+$(OBJDIR)/Hooks.o: Hooks.c Hooks.h General.h ScalosPrefs.h $(SCALOS_LOCALE) \
 	PrefsPlugins.h HiddenDevices.h $(DATATYPESMCC_DIR)/DataTypesMCC.h \
         $(FONTSAMPLEMCC_DIR)/FontSampleMCC.h $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/Images.o : Images.c Images.h General.h \
+$(OBJDIR)/Images.o : Images.c Images.h General.h \
 	$(DATATYPESMCC_DIR)/DataTypesMCC.h  ScalosPrefs.h $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/PrefsPlugins.o : PrefsPlugins.c PrefsPlugins.h \
+$(OBJDIR)/PrefsPlugins.o : PrefsPlugins.c PrefsPlugins.h \
 	ScalosPrefs.h  $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/HiddenDevices.o : HiddenDevices.c HiddenDevices.h \
+$(OBJDIR)/HiddenDevices.o : HiddenDevices.c HiddenDevices.h \
 	ScalosPrefs.h  $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/ReadWritePrefs.o: ReadWritePrefs.c ReadWritePrefs.h \
+$(OBJDIR)/ReadWritePrefs.o: ReadWritePrefs.c ReadWritePrefs.h \
 	ScalosPrefs.h HiddenDevices.h \
         $(FONTSAMPLEMCC_DIR)/FontSampleMCC.h  $(SCALOSINCDIR)/scalos.h
 
-$(OBJ_DIR)/Scalos.o: Scalos.c General.h ScalosPrefs.h \
+$(OBJDIR)/Scalos.o: Scalos.c General.h ScalosPrefs.h \
 	ReadWritePrefs.h $(DATATYPESMCC_DIR)/DataTypesMCC.h \
 	McpFrameMCC.h $(FONTSAMPLEMCC_DIR)/FontSampleMCC.h \
          $(SCALOSINCDIR)/scalos.h \
@@ -159,7 +159,7 @@ $(OBJ_DIR)/Scalos.o: Scalos.c General.h ScalosPrefs.h \
 	SelectMarkSampleClass.h
 
 
-$(OBJ_DIR)/PrefsVersion.o: PrefsVersion.c FORCE
+$(OBJDIR)/PrefsVersion.o: PrefsVersion.c FORCE
 
 FORCE:
 

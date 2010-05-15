@@ -28,7 +28,7 @@ LIBS		= 	//SAS-lib/png.lib \
 			LIB:amiga.lib
 PRECOMP 	= Include:all.gst
 DT_DIR		= scalos:IconDatatypes/datatypes
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 
 .SUFFIXES: .asm
 
@@ -47,7 +47,7 @@ CSTARTUP	=
 
 #####################################################################
 
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #####################################################################
 
@@ -61,20 +61,20 @@ all:	$(DTNAME) \
 
 #####################################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #####################################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
-$(OBJ_DIR)/%.o : %.s
+$(OBJDIR)/%.o : %.s
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
-$(OBJ_DIR)/%.o : %.asm
+$(OBJDIR)/%.o : %.asm
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
@@ -90,10 +90,10 @@ $(DTDBGNAME): $(OBJS)
 
 #####################################################################
 
-$(OBJ_DIR)/PNGIconDt-classic.o : PNGIconDt.c PngIconDt.h PNGIconProto.h
-$(OBJ_DIR)/PNGIconDt.o : PNGIconDt.c PngIconDt.h PNGIconProto.h
-$(OBJ_DIR)/LoadPngIcon.o : LoadPngIcon.c PngIconDt.h PNGIconProto.h
-$(OBJ_DIR)/SavePngIcon.o : SavePngIcon.c PngIconDt.h PNGIconProto.h
+$(OBJDIR)/PNGIconDt-classic.o : PNGIconDt.c PngIconDt.h PNGIconProto.h
+$(OBJDIR)/PNGIconDt.o : PNGIconDt.c PngIconDt.h PNGIconProto.h
+$(OBJDIR)/LoadPngIcon.o : LoadPngIcon.c PngIconDt.h PNGIconProto.h
+$(OBJDIR)/SavePngIcon.o : SavePngIcon.c PngIconDt.h PNGIconProto.h
 
 #####################################################################
 

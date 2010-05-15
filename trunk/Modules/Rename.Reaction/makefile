@@ -19,7 +19,7 @@ LIBS		= LIB:sc.lib LIB:debug.lib LIB:amiga.lib \
 		  LIB:reaction.lib
 CATCOMP		= catcomp
 CSTARTUP	=
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 
 #####################################################################
 
@@ -46,12 +46,12 @@ CSRCS =		Rename.c
 
 #####################################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #####################################################################
 
-XOBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+XOBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 OBJS = $(XOBJS) RenameGUI.o
 
 #####################################################################
@@ -66,11 +66,11 @@ $(DBGNAME): $(OBJS)
 
 #####################################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
-$(OBJ_DIR)/%.o : %.asm
+$(OBJDIR)/%.o : %.asm
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
@@ -80,9 +80,9 @@ $(CATCOMPH) $(CATCOMPI) : RenameGUI.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) $@ \033[32mfrom \033[31m$<\033[0m\n'
 	@$(CATCOMP) $< cfile=$(CATCOMPH) asmfile=$@ NOCODE XDEF
 
-$(OBJ_DIR)/RENStrings.o : RenameStrings.i
+$(OBJDIR)/RENStrings.o : RenameStrings.i
 
-$(OBJ_DIR)/Rename.o : Rename.c RenameGUI.h RenameStrings.h
+$(OBJDIR)/Rename.o : Rename.c RenameGUI.h RenameStrings.h
 
 #####################################################################
 

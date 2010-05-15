@@ -32,7 +32,7 @@ LINK 	= slink
 CC	= sc
 LIBS 	= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
 PRECOMP = Include:all.gst
-OBJ_DIR	= .sasobj
+OBJDIR	= .sasobj
 
 #############################################################
 
@@ -54,16 +54,16 @@ endif
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #############################################################
 
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $* objectname $@
 
@@ -82,24 +82,24 @@ pmpriv.h : compiler.h popupmenu.h pmtypes.h pmmem.h \
 	pmshadow.h pmtopography.h pminput.h \
         pmfind.h pminternals.h pmgraph.h pmimages.h
 
-$(OBJ_DIR)/popupmenu-classic.o 	: pmpriv.h
-$(OBJ_DIR)/pm.o 		: pmpriv.h
-$(OBJ_DIR)/pmgraph.o 		: pmpriv.h
-$(OBJ_DIR)/pminit.o 		: pmpriv.h
-$(OBJ_DIR)/window.o 		: pmpriv.h
-$(OBJ_DIR)/pmfind.o 		: pmpriv.h
-$(OBJ_DIR)/pmshadow.o 		: pmpriv.h
-$(OBJ_DIR)/pmtopography.o 	: pmpriv.h
-$(OBJ_DIR)/pmdlist.o 		: pmpriv.h
-$(OBJ_DIR)/pmlayout.o 		: pmpriv.h
-$(OBJ_DIR)/pmdrawshadow.o 	: pmpriv.h
-$(OBJ_DIR)/pmtags.c 		: pmpriv.h
-$(OBJ_DIR)/pmcreate.o 		: pmpriv.h
-$(OBJ_DIR)/pmmem.o 		: pmpriv.h
-$(OBJ_DIR)/pmprefs.o 		: pmpriv.h
-$(OBJ_DIR)/pminput.o 		: pmpriv.h
-$(OBJ_DIR)/pmverson.o 		: pmpriv.h
-$(OBJ_DIR)/iff.o 		: pmpriv.h
+$(OBJDIR)/popupmenu-classic.o 	: pmpriv.h
+$(OBJDIR)/pm.o 		: pmpriv.h
+$(OBJDIR)/pmgraph.o 		: pmpriv.h
+$(OBJDIR)/pminit.o 		: pmpriv.h
+$(OBJDIR)/window.o 		: pmpriv.h
+$(OBJDIR)/pmfind.o 		: pmpriv.h
+$(OBJDIR)/pmshadow.o 		: pmpriv.h
+$(OBJDIR)/pmtopography.o 	: pmpriv.h
+$(OBJDIR)/pmdlist.o 		: pmpriv.h
+$(OBJDIR)/pmlayout.o 		: pmpriv.h
+$(OBJDIR)/pmdrawshadow.o 	: pmpriv.h
+$(OBJDIR)/pmtags.c 		: pmpriv.h
+$(OBJDIR)/pmcreate.o 		: pmpriv.h
+$(OBJDIR)/pmmem.o 		: pmpriv.h
+$(OBJDIR)/pmprefs.o 		: pmpriv.h
+$(OBJDIR)/pminput.o 		: pmpriv.h
+$(OBJDIR)/pmverson.o 		: pmpriv.h
+$(OBJDIR)/iff.o 		: pmpriv.h
 
 #############################################################
 

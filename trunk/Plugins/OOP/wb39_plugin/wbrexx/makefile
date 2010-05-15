@@ -16,7 +16,7 @@ LDLIBS  	= LIB:sc.lib \
 			LIB:mempools.lib \
 			////SAS-lib/snprintf.lib \
 			LIB:sc.lib 
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 DESTPLUG	= Scalos:Plugins/OOP
 COMMON_DIR 	= ../../../../common/Plugin
 
@@ -59,7 +59,7 @@ WBREXXCSRCS = 	$(COMMON_DIR)/plugin-classic.c \
 		RexxCmd.c \
 		../Scalos_Helper.c \
 
-WBREXXOBJS = $(WBREXXCSRCS:%.c=$(OBJ_DIR)/%.o)
+WBREXXOBJS = $(WBREXXCSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
@@ -70,36 +70,36 @@ all:	$(WBREXXNAME) \
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(WBREXXCSRCS))
-WBREXXOBJS = $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+WBREXXOBJS = $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/Scalos_Helper.o : ../Scalos_Helper.c
+$(OBJDIR)/Scalos_Helper.o : ../Scalos_Helper.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c \
 	$(COMMON_DIR)/plugin-common.c $(COMMON_DIR)/plugin.h plugin_data.h
 
-$(OBJ_DIR)/RexxGetAttrs.o $(OBJ_DIR)/RexxIcon.o $(OBJ_DIR)/Scalos_Helper.o \
-	$(OBJ_DIR)/WBRexxMain.o : ../wb39.h
+$(OBJDIR)/RexxGetAttrs.o $(OBJDIR)/RexxIcon.o $(OBJDIR)/Scalos_Helper.o \
+	$(OBJDIR)/WBRexxMain.o : ../wb39.h
 
-$(OBJ_DIR)/WBRexx.o $(OBJ_DIR)/RexxGetAttrs.o $(OBJ_DIR)/RexxIcon.o \
-	$(OBJ_DIR)/RexxCmd.o : wbrexx.h ../Scalos_Helper.h
+$(OBJDIR)/WBRexx.o $(OBJDIR)/RexxGetAttrs.o $(OBJDIR)/RexxIcon.o \
+	$(OBJDIR)/RexxCmd.o : wbrexx.h ../Scalos_Helper.h
 
 #############################################################
 

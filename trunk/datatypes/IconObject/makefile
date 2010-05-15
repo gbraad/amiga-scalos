@@ -23,7 +23,7 @@ MKDIR   	= mkdir -p #makedir force
 LIBS 		= LIB:debug.lib LIB:amiga.lib
 PRECOMP 	= Include:all.gst
 DT_DIR		= scalos:IconDatatypes/datatypes
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 MCPGFX_DIR	= ../../common/McpGfx
 
 .SUFFIXES: .asm
@@ -46,12 +46,12 @@ endif
 #####################################################################
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #####################################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #####################################################################
 
@@ -65,11 +65,11 @@ all:	$(DTNAME) \
 
 #####################################################################
 
-$(OBJ_DIR)/ScalosMcpGfx.o: $(MCPGFX_DIR)/ScalosMcpGfx.c
+$(OBJDIR)/ScalosMcpGfx.o: $(MCPGFX_DIR)/ScalosMcpGfx.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $* objectname $@
 
@@ -85,9 +85,9 @@ $(DTDBGNAME): $(OBJS)
 
 #####################################################################
 
-$(OBJ_DIR)/iconobj-classic.o	: iconobj.h
-$(OBJ_DIR)/iconobj.o	: iconobj.h
-$(OBJ_DIR)/argb.o	: iconobj.h
+$(OBJDIR)/iconobj-classic.o	: iconobj.h
+$(OBJDIR)/iconobj.o	: iconobj.h
+$(OBJDIR)/argb.o	: iconobj.h
 $(OBJDIR)/ScalosMcpGfx.o : $(MCPGFX_DIR)/ScalosMcpGfx.c
 
 #####################################################################

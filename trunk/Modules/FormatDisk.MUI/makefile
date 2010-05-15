@@ -19,7 +19,7 @@ LNDBFLAGS 	= quiet batch noicons addsym
 LIBS		= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
 CATCOMP		= catcomp
 CSTARTUP	= LIB:c.o
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 
 #####################################################################
 
@@ -54,12 +54,12 @@ CSRCS =		FormatDisk.c
 
 #####################################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 #####################################################################
 
-XOBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(CSRCS:%.c=$(OBJ_DIR)/%.o)
+XOBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 OBJS = $(XOBJS)
 
 #####################################################################
@@ -74,11 +74,11 @@ $(DBGNAME): $(OBJS)
 
 #####################################################################
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
-$(OBJ_DIR)/%.o : %.asm
+$(OBJDIR)/%.o : %.asm
 	@printf '\033[32mAssemble: \033[31m\033[1m$<\033[0m\n'
 	@$(AS) $(AFLAGS) $< to $@
 
@@ -88,7 +88,7 @@ $(CATCOMPH) : FormatDiskMUI.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) \033[32mfrom \033[31m$<\033[0m\n'
 	@$(CATCOMP) $< cfile=$(CATCOMPH) XDEF
 
-$(OBJ_DIR)/FormatDisk.o : FormatDisk.c FormatDisk.h $(CATCOMPH)
+$(OBJDIR)/FormatDisk.o : FormatDisk.c FormatDisk.h $(CATCOMPH)
 
 #####################################################################
 
