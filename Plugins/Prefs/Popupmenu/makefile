@@ -1,7 +1,6 @@
 # makefile für Scalos PopupMenu.prefsplugin
 # $Date$
 # $Revision$
-
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -13,7 +12,7 @@ ECHO		= echo
 LIBS 		= LIB:sc.lib LIB:debug.lib LIB:mempools.lib LIB:amiga.lib
 LDFLAGS		= quiet batch noicons 
 PRECOMP 	= Include:all.gst
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 DATATYPESMCC_DIR = ../../../common/DataTypesMCC
 COMMON_DIR	= ../../../common/Plugin
 PREFS_DIR	= ../../../include/prefs
@@ -34,7 +33,8 @@ PLUGINDBG	= $(PLUGIN).debug
 CAT_FILE	= Scalos/ScalosPopupMenu.catalog
 DESTTOOL	= Scalos:Prefs/
 DESTCAT		= Locale:Catalogs
-CATCOMPHEADER	= PopupMenu_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/PopupMenu_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 
 CATS		= deutsch \
 		  français \
@@ -46,17 +46,18 @@ ALLCATS		= $(foreach cat,$(CATS),Catalogs/$(cat)/$(CAT_FILE))
 
 CFLAGS 		= optimize nostackcheck nover dbg=s DATA=far \
 		  idlen=64 \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=///include \
                   idir=$(subst ../,/,$(DATATYPESMCC_DIR)) \
 		  idir=///common/Plugin
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -67,31 +68,31 @@ All:	$(PLUGIN) $(PLUGINDBG) \
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
+$(OBJDIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h $(COMMON_DIR)/plugin.h
 
-$(OBJ_DIR)/FrameButtonMCC.o : FrameButtonMCC.c FrameButtonMCC.h \
+$(OBJDIR)/FrameButtonMCC.o : FrameButtonMCC.c FrameButtonMCC.h \
 	PopupMenuPrefs.h $(PREFS_DIR)/popupmenu.h
 
-$(OBJ_DIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
+$(OBJDIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
 	$(DATATYPESMCC_DIR)/DataTypesMCC.h
 
-$(OBJ_DIR)/PopupMenuPrefs.o : PopupMenuPrefs.h PopupMenuPrefsImage.h \
-	plugin_data.h $(COMMON_DIR)/plugin.h PopupMenu_locale.h \
+$(OBJDIR)/PopupMenuPrefs.o : PopupMenuPrefs.h PopupMenuPrefsImage.h \
+	plugin_data.h $(COMMON_DIR)/plugin.h $(SCALOS_LOCALE) \
         $(PREFS_DIR)/popupmenu.h FrameButtonMCC.h
 
 #############################################################

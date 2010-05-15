@@ -69,9 +69,9 @@ $(OBJDIR)/%.o: $(FONTSAMPLE_DIR)/%.c
 $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 	@$(run-cc)
 
-FileTypesPrefs.c DefIconsPrefs.c : ScalosFileTypes_locale.h
+FileTypesPrefs.c DefIconsPrefs.c : $(SCALOS_LOCALE)
 
-ScalosFileTypes_locale.h : $(PREFSDIR)/ScalosFileTypes.cd
+$(SCALOS_LOCALE) : $(PREFSDIR)/ScalosFileTypes.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
@@ -95,7 +95,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		ScalosFileTypes_locale.h
+		$(SCALOS_LOCALE)
 
 ##############################################################################
 

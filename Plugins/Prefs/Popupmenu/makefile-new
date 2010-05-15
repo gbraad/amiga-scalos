@@ -74,9 +74,9 @@ all:	$(BINDIR)/$(NAME) \
 
 ##############################################################################
 
-PopupMenuPrefs.c : PopupMenu_locale.h
+PopupMenuPrefs.c : $(SCALOS_LOCALE)
 
-PopupMenu_locale.h : $(PREFSDIR)/ScalosPopupMenu.cd
+$(SCALOS_LOCALE) : $(PREFSDIR)/ScalosPopupMenu.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
@@ -102,7 +102,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		PopupMenu_locale.h
+		$(SCALOS_LOCALE)
 
 clean:  clean_subdirs
 

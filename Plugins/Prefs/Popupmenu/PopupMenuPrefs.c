@@ -61,7 +61,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "PopupMenu_locale.h"
+#include STR(SCALOSLOCALE)
 
 #include "PopupMenuPrefs.h"
 #include "DataTypesMCC.h"

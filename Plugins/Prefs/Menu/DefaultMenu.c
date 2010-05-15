@@ -10,7 +10,7 @@
 #include <defs.h>
 
 #define	CATCOMP_NUMBERS
-#include "ScalosMenu_locale.h"
+#include STR(SCALOSLOCALE)
 
 #include "MenuPrefs.h"
 

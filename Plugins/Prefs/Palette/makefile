@@ -1,7 +1,6 @@
 # makefile für Scalos Palette.prefsplugin
 # $Date$
-# $Id$
-#
+# $Revision$
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -14,7 +13,7 @@ LIBS 		= LIB:scm.lib LIB:sc.lib LIB:mempools.lib \
 		  LIB:debug.lib LIB:amiga.lib
 LDFLAGS		= quiet batch noicons 
 PRECOMP 	= Include:all.gst
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 PREFSPATH	= ../../../Prefs/Palette
 DATATYPESMCC_DIR = ../../../common/DataTypesMCC
 COMMON_DIR	= ../../../common/Plugin
@@ -31,6 +30,7 @@ CSRCS = 	$(COMMON_DIR)/plugin-classic.c \
 
 CFLAGS 		= optimize nostackcheck nover dbg=s DATA=far \
 		  idlen=64 \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=///include \
                   idir=$(subst ../,/,$(DATATYPESMCC_DIR)) \
 		  idir=$(subst ../,/,$(PREFSPATH)) \
@@ -46,7 +46,8 @@ CAT_FILE	= Scalos/ScalosPalette.catalog
 DESTTOOL	= Scalos:Prefs/
 DESTCAT		= Locale:Catalogs
 SRCCAT		= $(subst ../,/,$(PREFSPATH))
-CATCOMPHEADER	= $(PREFSPATH)/ScalosPalette_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/ScalosPalette_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 CATS		= dansk \
 		  deutsch \
 		  español \
@@ -59,11 +60,11 @@ ALLCATS		= $(foreach cat,$(CATS),$(SRCCAT)/catalogs/$(cat)/$(CAT_FILE))
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -75,29 +76,29 @@ All:	$(PLUGIN) \
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
+$(OBJDIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h $(COMMON_DIR)/plugin.h
 
-$(OBJ_DIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
+$(OBJDIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
 	$(DATATYPESMCC_DIR)/DataTypesMCC.h
 
-$(OBJ_DIR)/PalettePrefs.o : PalettePrefs.h PalettePrefsImage.h \
+$(OBJDIR)/PalettePrefs.o : PalettePrefs.h PalettePrefsImage.h \
 	plugin_data.h $(COMMON_DIR)/plugin.h \
-	$(PREFSPATH)/ScalosPalette_locale.h
+	$(SCALOS_LOCALE)
 
 #############################################################
 

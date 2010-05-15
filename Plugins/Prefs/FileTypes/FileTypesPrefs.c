@@ -55,16 +55,17 @@
 #include <MUI/NListtree_mcc.h>
 #include <MUI/Lamp_mcc.h>
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
-#include "ScalosFileTypes_locale.h"
 #include <scalos/scalosprefsplugin.h>
 #include <scalos/preferences.h>
 #include <DefIcons.h>
 
 #include "defs.h"
 #include <Year.h> // +jmc+
+
+#define	CATCOMP_NUMBERS
+#define	CATCOMP_BLOCK
+#define	CATCOMP_CODE
+#include STR(SCALOSLOCALE)
 
 #include <FontSampleMCC.h>
 #include "IconobjectMCC.h"

@@ -52,9 +52,9 @@ all:	$(BINDIR)/$(NAME) \
 
 ##############################################################################
 
-PatternPrefs.c : ScalosPattern_locale.h
+PatternPrefs.c : $(SCALOS_LOCALE)
 
-ScalosPattern_locale.h : $(PREFSDIR)/ScalosPattern.cd
+$(SCALOS_LOCALE) : $(PREFSDIR)/ScalosPattern.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
@@ -79,7 +79,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		ScalosPattern_locale.h
+		$(SCALOS_LOCALE)
 
 ##############################################################################
 

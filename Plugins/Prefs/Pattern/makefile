@@ -1,8 +1,6 @@
 # makefile für Scalos Pattern.prefsplugin
 # $Date$
 # $Revision$
-# $Id$
-#
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -16,7 +14,7 @@ LIBS 		= LIB:scm.lib LIB:sc.lib LIB:mempools.lib \
 LDFLAGS		= quiet batch noicons 
 PRECOMP 	= Include:all.gst
 ECHO		= echo
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 
 COMMON_DIR		= ../../../common/Plugin
 BITMAPMCC_DIR		= ../../../common/BitMapMCC
@@ -45,6 +43,7 @@ CSRCS = 	$(COMMON_DIR)/plugin-classic.c \
 
 CFLAGS 		= optimize nostackcheck nover dbg=s DATA=far \
 		  idlen=64 ignore=306 \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idir=///include \
 		  idir=$(subst ../,/,$(PREFSPATH)) \
 		  idir=$(subst ../,/,$(BACKFILLMCC_DIR)) \
@@ -62,7 +61,8 @@ CAT_FILE	= Scalos/ScalosPattern.catalog
 DESTTOOL	= Scalos:Prefs/
 DESTCAT		= Locale:Catalogs
 SRCCAT		= $(subst ../,/,$(PREFSPATH))
-CATCOMPHEADER	= ScalosPattern_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/ScalosPattern_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 
 CATS		= dansk \
 		  deutsch \
@@ -76,11 +76,11 @@ ALLCATS		= $(foreach cat,$(CATS),$(SRCCAT)/catalogs/$(cat)/$(CAT_FILE))
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -92,40 +92,40 @@ All:	$(PLUGIN) \
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c
+$(OBJDIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/Backfill.o  : $(BACKFILLMCC_DIR)/Backfill.c
+$(OBJDIR)/Backfill.o  : $(BACKFILLMCC_DIR)/Backfill.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/DataTypesMCC.o  : $(DATATYPESMCC_DIR)/DataTypesMCC.c
+$(OBJDIR)/DataTypesMCC.o  : $(DATATYPESMCC_DIR)/DataTypesMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h $(COMMON_DIR)/plugin.h
 
-$(OBJ_DIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c \
+$(OBJDIR)/BitMapMCC.o  : $(BITMAPMCC_DIR)/BitMapMCC.c \
 	$(BITMAPMCC_DIR)/BitMapMCC.h debug.h
 
-$(OBJ_DIR)/Backfill.o : $(BACKFILLMCC_DIR)/Backfill.c \
+$(OBJDIR)/Backfill.o : $(BACKFILLMCC_DIR)/Backfill.c \
 	$(BACKFILLMCC_DIR)/Backfill.h $(BITMAPMCC_DIR)/BitMapMCC.h
 
-$(OBJ_DIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.h
+$(OBJDIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.h
 
-$(OBJ_DIR)/PatternPrefs.o : PatternPrefs.h \
+$(OBJDIR)/PatternPrefs.o : PatternPrefs.h \
 		PatternPrefsImage.h \
 		plugin_data.h \
                 $(COMMON_DIR)/plugin.h \
@@ -136,7 +136,7 @@ $(OBJ_DIR)/PatternPrefs.o : PatternPrefs.h \
 
 #############################################################
 
-PatternPrefs.c : ScalosPattern_locale.h
+PatternPrefs.c : $(SCALOS_LOCALE)
 
 $(CATCOMPHEADER) : $(PREFSPATH)/ScalosPattern.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'

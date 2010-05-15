@@ -1,7 +1,6 @@
 # makefile für Scalos Menu.prefsplugin
 # $Date$
 # §Revision:                 $
-
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -17,7 +16,7 @@ LIBS 		= LIB:sc.lib \
 		LIB:amiga.lib
 LDFLAGS		= quiet batch noicons 
 PRECOMP 	= Include:all.gst
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 PREFSPATH	= ../../../Prefs/Menu
 DATATYPESMCC_DIR = ../../../common/DataTypesMCC
 COMMON_DIR	= ../../../common/Plugin
@@ -39,7 +38,8 @@ CAT_FILE	= Scalos/ScalosMenu.catalog
 DESTTOOL	= Scalos:Prefs/
 DESTCAT		= Locale:Catalogs
 SRCCAT		= $(subst ../,/,$(PREFSPATH))
-CATCOMPHEADER	= $(PREFSPATH)/ScalosMenu_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/ScalosMenu_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 
 CATS		= dansk \
 		  deutsch \
@@ -54,6 +54,7 @@ ALLCATS		= $(foreach cat,$(CATS),$(SRCCAT)/catalogs/$(cat)/$(CAT_FILE))
 #############################################################
 
 CFLAGS 		= optimize nostackcheck nover dbg=s DATA=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=64 idir=///include \
                   idir=$(subst ../,/,$(DATATYPESMCC_DIR)) \
                   idir=$(subst ../,/,$(PREFSPATH)) \
@@ -64,11 +65,11 @@ AFLAGS 		= quiet DS opt=NRQB NOEXE linedebug I=SC:Assembler_Headers
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -79,31 +80,31 @@ All:	$(PLUGIN) $(PLUGINDBG) \
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
+$(OBJDIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $*.c objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h $(COMMON_DIR)/plugin.h
 
-$(OBJ_DIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
+$(OBJDIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
 	$(DATATYPESMCC_DIR)/DataTypesMCC.h
 
-$(OBJ_DIR)/MenuPrefs.o : MenuPrefs.h MenuPrefsImage.h \
-	$(PREFSPATH)/ScalosMenu_locale.h plugin_data.h $(COMMON_DIR)/plugin.h
+$(OBJDIR)/MenuPrefs.o : MenuPrefs.h MenuPrefsImage.h \
+	$(SCALOS_LOCALE) plugin_data.h $(COMMON_DIR)/plugin.h
 
-$(OBJ_DIR)/DefaultMenu.o : DefaultMenu.c MenuPrefs.h \
-        $(PREFSPATH)/ScalosMenu_locale.h
+$(OBJDIR)/DefaultMenu.o : DefaultMenu.c MenuPrefs.h \
+        $(SCALOS_LOCALE)
 
 #############################################################
 
