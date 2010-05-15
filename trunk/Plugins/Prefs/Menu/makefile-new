@@ -57,9 +57,9 @@ all:	$(BINDIR)/$(NAME) \
 
 ##############################################################################
 
-MenuPrefs.c DefaultMenu.c : ScalosMenu_locale.h
+MenuPrefs.c DefaultMenu.c : $(SCALOS_LOCALE)
 
-ScalosMenu_locale.h : $(PREFSDIR)/ScalosMenu.cd
+$(SCALOS_LOCALE) : $(PREFSDIR)/ScalosMenu.cd
 	@$(ECHO) "CatComp $@"
 	@catcomp $(subst ../,/,$<) cfile=$@
 
@@ -84,7 +84,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		ScalosMenu_locale.h
+		$(SCALOS_LOCALE)
 
 ##############################################################################
 

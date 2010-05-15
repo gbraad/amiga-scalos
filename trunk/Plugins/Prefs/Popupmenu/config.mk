@@ -10,6 +10,10 @@ COMMON_DIR	= $(TOPLEVEL)/common/Plugin
 
 INCLUDES	+= -I$(DATATYPESMCC_DIR) -I$(COMMON_DIR)
 
+SCALOS_LOCALE	= $(OBJDIR)/PopupMenu_locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 vpath 	%.c	$(COMMON_DIR)
 
 ##############################################################################

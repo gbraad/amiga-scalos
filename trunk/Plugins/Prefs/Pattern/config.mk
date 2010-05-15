@@ -15,6 +15,10 @@ INCLUDES	+= 	-I$(COMMON_DIR) \
 			-I$(BITMAPMCC_DIR) \
 			-I$(DATATYPESMCC_DIR)
 
+SCALOS_LOCALE	= $(OBJDIR)/ScalosPattern_locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 vpath 	%.c	$(COMMON_DIR) $(BITMAPMCC_DIR) $(BACKFILLMCC_DIR) $(DATATYPESMCC_DIR)
 
 ##############################################################################

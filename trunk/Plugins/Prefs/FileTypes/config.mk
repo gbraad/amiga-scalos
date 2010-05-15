@@ -17,6 +17,10 @@ INCLUDES	+=	-I$(FONTSAMPLE_DIR) \
 			-I$(DATATYPESMCC_DIR) \
 			-I$(COMMON_DIR)
 
+SCALOS_LOCALE	= $(OBJDIR)/ScalosFileTypes_locale.h
+
+CFLAGS += -D SCALOSLOCALE=$(SCALOS_LOCALE)
+
 vpath 	%.c	$(COMMON_DIR)
 
 ##############################################################################

@@ -54,7 +54,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "ScalosPalette_locale.h"
+#include STR(SCALOSLOCALE)
 #include <Scalos/scalosprefsplugin.h>
 
 #include <defs.h>
@@ -63,7 +63,7 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
-#include "ScalosPalette_locale.h"
+#include STR(SCALOSLOCALE)
 
 #include "PalettePrefs.h"
 #include "DataTypesMCC.h"

@@ -1,6 +1,6 @@
 # makefile für Scalos FileTypesPrefs.prefsplugin
 # $Date$
-
+# $Revision$
 #############################################################
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
@@ -17,7 +17,7 @@ LIBS 		= LIB:scm.lib \
 		LIB:amiga.lib
 LDFLAGS		= quiet batch noicons 
 PRECOMP 	= Include:all.gst
-OBJ_DIR		= .sasobj
+OBJDIR		= .sasobj
 PREFSPATH	= ../../../Prefs/FileTypes
 FONTSAMPLE_DIR	= ../../../common/FontSampleMCC
 ICONOBJMCC_DIR	= ../../../common/IconobjectMCC
@@ -43,6 +43,7 @@ CSRCS 	= 	$(COMMON_DIR)/plugin-classic.c \
 
 CFLAGS 		= optimize nostackcheck nover dbg=s \
 		  data=FAR code=far \
+                  define SCALOSLOCALE=$(SCALOS_LOCALE) \
 		  idlen=64 idir=///include idir=///common/FontSampleMCC \
 		  idir=$(subst ../,/,$(PREFSPATH)) \
 		  idir=$(subst ../,/,$(ICONOBJMCC_DIR)) \
@@ -59,7 +60,8 @@ CAT_FILE	= Scalos/ScalosFileTypes.catalog
 DESTTOOL	= Scalos:Prefs/
 DESTCAT		= Locale:Catalogs
 SRCCAT		= $(subst ../,/,$(PREFSPATH))
-CATCOMPHEADER	= $(PREFSPATH)/ScalosFileTypes_locale.h
+SCALOS_LOCALE	= $(OBJDIR)/ScalosFileTypes_locale.h
+CATCOMPHEADER	= $(SCALOS_LOCALE)
 CATS		= deutsch \
 		  français
 
@@ -67,11 +69,11 @@ ALLCATS		= $(foreach cat,$(CATS),$(SRCCAT)/catalogs/$(cat)/$(CAT_FILE))
 
 #############################################################
 
-$(OBJ_DIR)::
-	@[ -d $(OBJ_DIR) ] || mkdir $(OBJ_DIR) > /dev/null 2>&1
+$(OBJDIR)::
+	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
 XSRCS = $(notdir $(CSRCS))
-OBJS = $(ASRCS:%.asm=$(OBJ_DIR)/%.o) $(XSRCS:%.c=$(OBJ_DIR)/$(notdir %).o)
+OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
@@ -83,58 +85,58 @@ All:	$(PLUGIN) \
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-classic.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
+$(OBJDIR)/DataTypesMCC.o : $(DATATYPESMCC_DIR)/DataTypesMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/FontSampleMCC.o : $(FONTSAMPLE_DIR)/FontSampleMCC.c
+$(OBJDIR)/FontSampleMCC.o : $(FONTSAMPLE_DIR)/FontSampleMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/IconobjectMCC.o : $(ICONOBJMCC_DIR)/IconobjectMCC.c
+$(OBJDIR)/IconobjectMCC.o : $(ICONOBJMCC_DIR)/IconobjectMCC.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $(subst ../,/,$<) objectname $@
 
-$(OBJ_DIR)/%.o : %.c
+$(OBJDIR)/%.o : %.c
 	@printf '\033[32mCompile: \033[31m\033[1m$<\033[0m\n'
 	@$(CC) $(CFLAGS) $< objectname $@
 
 #############################################################
 
-$(OBJ_DIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
+$(OBJDIR)/plugin-classic.o : $(COMMON_DIR)/plugin-common.c \
 	plugin_data.h $(COMMON_DIR)/plugin.h
 
-$(OBJ_DIR)/FileTypesPrefs.o : FileTypesPrefs.h FileTypesPrefs_proto.h \
+$(OBJDIR)/FileTypesPrefs.o : FileTypesPrefs.h FileTypesPrefs_proto.h \
 	$(ICONOBJMCC_DIR)/IconobjectMCC.h \
 	FileTypesPrefsImage.h plugin_data.h $(COMMON_DIR)/plugin.h \
-      	$(PREFSPATH)/ScalosFileTypes_locale.h debug.h
+      	$(SCALOS_LOCALE) debug.h
 
-$(OBJ_DIR)/ReadFtPrefs.o : ReadFtPrefs.c FileTypesPrefs.h \
+$(OBJDIR)/ReadFtPrefs.o : ReadFtPrefs.c FileTypesPrefs.h \
 	FileTypesPrefs_proto.h debug.h
 
-$(OBJ_DIR)/WriteFtPrefs.o : WriteFtPrefs.c FileTypesPrefs.h \
+$(OBJDIR)/WriteFtPrefs.o : WriteFtPrefs.c FileTypesPrefs.h \
 	FileTypesPrefs_proto.h debug.h
 
-$(OBJ_DIR)/DefIcons.o : DefIcons.c FileTypesPrefs.h \
+$(OBJDIR)/DefIcons.o : DefIcons.c FileTypesPrefs.h \
 	FileTypesPrefs_proto.h debug.h
 
-$(OBJ_DIR)/DefIconsPrefs.o : DefIconsPrefs.c FileTypesPrefs.h \
+$(OBJDIR)/DefIconsPrefs.o : DefIconsPrefs.c FileTypesPrefs.h \
 	FileTypesPrefs_proto.h debug.h \
-        $(PREFSPATH)/ScalosFileTypes_locale.h
+        $(SCALOS_LOCALE)
 
-$(OBJ_DIR)/DefaultDefIconsPrefs.o : DefaultDefIconsPrefs.c
+$(OBJDIR)/DefaultDefIconsPrefs.o : DefaultDefIconsPrefs.c
 
-$(OBJ_DIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
+$(OBJDIR)/DataTypesMCC.o: $(DATATYPESMCC_DIR)/DataTypesMCC.c \
 	$(DATATYPESMCC_DIR)/DataTypesMCC.h
 
-$(OBJ_DIR)/FontSampleMCC.o : $(FONTSAMPLE_DIR)/FontSampleMCC.c \
+$(OBJDIR)/FontSampleMCC.o : $(FONTSAMPLE_DIR)/FontSampleMCC.c \
 	$(FONTSAMPLE_DIR)/FontSampleMCC.h
 
-$(OBJ_DIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c \
+$(OBJDIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c \
 	$(ICONOBJMCC_DIR)/IconobjectMCC.h debug.h
 
 #############################################################
