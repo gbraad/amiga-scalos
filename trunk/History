@@ -2102,7 +2102,8 @@ Additions/changes:
 
 --------------------Scalos FileTypes Preferences----------------------------
 
- 40.24	20100411	jl	- Improvement: number of find hits is now displayed.
+ 40.24  20100516	jl	- Bugfix: new filetype recognition methods are now insert below selected method.
+	20100411	jl	- Improvement: number of find hits is now displayed.
 				  In filetypes listtree, string matches are now marked with fill pen.
 				  Drawback: DOS-style patterns are no longer supported to find filetypes.
 	20100404	jl	- Improvement: added preview of menu icon images to listview.
