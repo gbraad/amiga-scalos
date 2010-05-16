@@ -123,7 +123,6 @@ enum HookIndex
 	HOOKNDX_RemoveFileType,
 
 	HOOKNDX_AddFileTypesMethod,
-	HOOKNDX_AddFileTypesAction,
 	HOOKNDX_RemoveFileTypeAction,
 
 	HOOKNDX_ChangedFileTypesActionMatchMatch,
@@ -278,7 +277,6 @@ enum ObjectIndex
 	OBJNDX_Popobject_FileTypes_Methods_Add,
 	OBJNDX_NListview_FileTypes_Methods_Add,
 	OBJNDX_Nlist_FileTypes_Methods_Add,
-	OBJNDX_String_FileTypes_Methods_Add,
 
 	OBJNDX_Button_FileTypes_Actions_Remove,
 	OBJNDX_Button_FileTypes_Actions_Learn,

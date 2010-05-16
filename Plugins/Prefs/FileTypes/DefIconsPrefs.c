@@ -1268,39 +1268,17 @@ SAVEDS(void) INTERRUPT RemoveFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *
 }
 
 
-// Double click into "Add method" popup listview
+// Close "Add method" popup
 SAVEDS(void) INTERRUPT AddFileTypesMethodHookFunc(struct Hook *hook, APTR obj, Msg msg)
-{
-	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
-	LONG pos;
-	ULONG Result = 0;
-
-	get(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods_Add], MUIA_NList_DoubleClick, (APTR) &pos);
-	if (pos >= 0)
-		{
-		CONST_STRPTR entry;
-
-		DoMethod(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods_Add],
-			MUIM_NList_GetEntry, pos, &entry);
-
-		setstring(inst->fpb_Objects[OBJNDX_String_FileTypes_Methods_Add], entry);
-		}
-
-	DoMethod(inst->fpb_Objects[OBJNDX_Popobject_FileTypes_Methods_Add],
-		MUIM_Popstring_Close, Result);
-}
-
-
-SAVEDS(void) INTERRUPT AddFileTypesActionHookFunc(struct Hook *hook, APTR obj, Msg msg)
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
 	struct FileTypesActionEntry *fae;
 	struct MUI_NListtree_TreeNode *ln;
 
-	d1(KPrintF(__FUNC__ "/%ld: inst=%08lx\n", __FUNC__, __LINE__, inst));
+	d1(KPrintF("%s/%s//%ld: inst=%08lx\n", __FILE__, __FUNC__, __LINE__, inst));
 
 	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
-	d1(KPrintF(__FUNC__ "/%ld: ln=%08lx\n", __FUNC__, __LINE__, ln));
+	d1(KPrintF("%s/%s//%ld: ln=%08lx\n", __FILE__, __FUNC__, __LINE__, ln));
 	if (ln)
 		{
 		struct FileTypesEntry *fte = (struct FileTypesEntry *) ln->tn_User;
@@ -1310,8 +1288,11 @@ SAVEDS(void) INTERRUPT AddFileTypesActionHookFunc(struct Hook *hook, APTR obj, M
 			MUIM_NList_GetEntry,
 			MUIV_NList_GetEntry_Active, &fae);
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Methods_Add], MUIA_String_Contents, (APTR) &NewActionString);
-		d1(KPrintF(__FUNC__ "/%ld: NewAction=<%s>\n", __FUNC__, __LINE__, NewActionString));
+		DoMethod(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods_Add],
+			MUIM_NList_GetEntry,
+			MUIV_NList_GetEntry_Active,
+			&NewActionString);
+		d1(KPrintF("%s/%s//%ld: NewAction=<%s>\n", __FILE__, __FUNC__, __LINE__, NewActionString));
 
 		if (NewActionString && strlen(NewActionString))
 			{
@@ -1321,7 +1302,7 @@ SAVEDS(void) INTERRUPT AddFileTypesActionHookFunc(struct Hook *hook, APTR obj, M
 			memset(&Newmg, 0, sizeof(Newmg));
 			Newmg.action = GetActionFromString(NewActionString);
 			Newmg.str = (STRPTR) "";
-			d1(KPrintF(__FUNC__ "/%ld: NewAction=<%s>  %ld\n", __FUNC__, __LINE__, NewActionString, Newmg.action));
+			d1(KPrintF("%s/%s//%ld: NewAction=<%s>  %ld\n", __FILE__, __FUNC__, __LINE__, NewActionString, Newmg.action));
 
 			ftaleNew = AddFileTypesAction(fte, &Newmg, fae ? &fae->fae_ftale->ftale_Node : NULL);
 
@@ -1329,19 +1310,33 @@ SAVEDS(void) INTERRUPT AddFileTypesActionHookFunc(struct Hook *hook, APTR obj, M
 				{
 				ULONG InsertPos;
 
+				if (fae)
+					{
+					InsertPos = MUIV_NList_GetPos_Start;
+
+					DoMethod(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods],
+						MUIM_NList_GetPos, fae, &InsertPos);
+
+					d1(KPrintF("%s/%s/%ld: InsertPos=%ld\n", __FILE__, __FUNC__, __LINE__, InsertPos));
+
+					InsertPos++;
+					}
+				else
+					InsertPos = MUIV_NList_Insert_Bottom;
+
 				DoMethod(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods],
 					MUIM_NList_InsertSingle,
 					ftaleNew,
-					fae ? MUIV_NList_Insert_Active : MUIV_NList_Insert_Bottom);
+					InsertPos);
 
 				// Make the new action the active one
 				get(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods], MUIA_NList_InsertPosition, &InsertPos);
 				set(inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods], MUIA_NList_Active, InsertPos);
 				}
-
-			set(inst->fpb_Objects[OBJNDX_String_FileTypes_Methods_Add], MUIA_String_Contents, "");
 			}
 		}
+
+	DoMethod(inst->fpb_Objects[OBJNDX_Popobject_FileTypes_Methods_Add], MUIM_Popstring_Close, TRUE);
 }
 
 

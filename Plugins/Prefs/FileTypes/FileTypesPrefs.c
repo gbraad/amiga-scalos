@@ -530,7 +530,6 @@ static const struct Hook FileTypesPrefsHooks[] =
 	{ { NULL, NULL }, HOOKFUNC_DEF(RemoveFileTypeHookFunc), NULL },
 
 	{ { NULL, NULL }, HOOKFUNC_DEF(AddFileTypesMethodHookFunc), NULL },
-	{ { NULL, NULL }, HOOKFUNC_DEF(AddFileTypesActionHookFunc), NULL },
 	{ { NULL, NULL }, HOOKFUNC_DEF(RemoveFileTypesActionHookFunc), NULL },
 
 	{ { NULL, NULL }, HOOKFUNC_DEF(ChangedFileTypesActionMatchMatchHookFunc), NULL },
@@ -2214,12 +2213,6 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 							MUIA_Disabled, TRUE,
 							MUIA_UserData, inst,
 							MUIA_CycleChain, TRUE,
-							MUIA_Popstring_String, inst->fpb_Objects[OBJNDX_String_FileTypes_Methods_Add] = StringObject,
-								MUIA_ShowMe, FALSE,
-								StringFrame,
-								MUIA_String_AdvanceOnCR, TRUE,
-								MUIA_String_Contents, "",
-								End, //StringObject
 							MUIA_Popstring_Button, KeyButtonHelp(MSGID_BUTTON_ADD_FILETYPEACTION,
 								'a',
 								MSGID_SHORTHELP_BUTTON_ADD_FILETYPEACTION),
@@ -2230,6 +2223,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 									MUIA_NList_AdjustWidth, TRUE,
 									End, //NListObject
 								End, //NListviewObject
+							MUIA_Popstring_CloseHook, &inst->fpb_Hooks[HOOKNDX_AddFileTypesMethod],
 							End, //PopobjectObject
 						Child, inst->fpb_Objects[OBJNDX_Button_FileTypes_Actions_Remove] = KeyButtonHelp(MSGID_BUTTON_REMOVE_FILETYPEACTION,
 							'r',
@@ -2628,14 +2622,14 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 						MUIA_Popstring_Button, inst->fpb_Objects[OBJNDX_ButtonAddAttribute] = KeyButtonHelp(MSGID_BUTTON_ADD_ATTRIBUTE,
 							' ',
 							MSGID_SHORTHELP_BUTTON_ADD_ATTRIBUTE),
-							MUIA_Popobject_Object, inst->fpb_Objects[OBJNDX_AddAttrListView] = NListviewObject,
-								MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_AddAttrList] = NListObject,
-									InputListFrame,
-									MUIA_Background, MUII_ListBack,
-									MUIA_NList_ConstructHook2, &inst->fpb_Hooks[HOOKNDX_AddAttrListConstruct],
-									MUIA_NList_DestructHook2, &inst->fpb_Hooks[HOOKNDX_AddAttrListDestruct],
-									MUIA_NList_DisplayHook2, &inst->fpb_Hooks[HOOKNDX_AddAttrListDisplay],
-									MUIA_NList_AdjustWidth, TRUE,
+						MUIA_Popobject_Object, inst->fpb_Objects[OBJNDX_AddAttrListView] = NListviewObject,
+							MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_AddAttrList] = NListObject,
+								InputListFrame,
+								MUIA_Background, MUII_ListBack,
+								MUIA_NList_ConstructHook2, &inst->fpb_Hooks[HOOKNDX_AddAttrListConstruct],
+								MUIA_NList_DestructHook2, &inst->fpb_Hooks[HOOKNDX_AddAttrListDestruct],
+								MUIA_NList_DisplayHook2, &inst->fpb_Hooks[HOOKNDX_AddAttrListDisplay],
+								MUIA_NList_AdjustWidth, TRUE,
 								End, //NListObject
 							End, //NListviewObject
 						End, //PopobjectObject
@@ -2711,10 +2705,6 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 	// call hook everytime the filetype actions list is drag-drop sorted
 	DoMethod(inst->fpb_Objects[OBJNDX_NList_FileTypes_Actions], MUIM_Notify, MUIA_NList_DragSortInsert, MUIV_EveryTime,
 		inst->fpb_Objects[OBJNDX_NList_FileTypes_Actions], 2, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_DragDropSort_FileTypesAction] );
-
-	// call hook everytime a new filetypes action is added
-	DoMethod(inst->fpb_Objects[OBJNDX_String_FileTypes_Methods_Add], MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
-		inst->fpb_Objects[OBJNDX_String_FileTypes_Methods_Add], 2, MUIM_CallHook, &inst->fpb_Hooks[HOOKNDX_AddFileTypesAction] );
 
 	// call hook everytime a new filetype is added
 	DoMethod(inst->fpb_Objects[OBJNDX_Button_FileTypes_Add], MUIM_Notify, MUIA_Pressed, FALSE,
@@ -5229,7 +5219,7 @@ static SAVEDS(APTR) INTERRUPT EditAttributeHookFunc(struct Hook *hook, Object *o
 				case ATTRTYPE_DtImageName:
 				case ATTRTYPE_UnselIconName:
 				case ATTRTYPE_SelIconName:
-					d2(KPrintF("%s/%ld: OBJNDX_DtPic_AttributeSelectAslFile=%08lx  ValueString=<%s>\n", \
+					d1(KPrintF("%s/%ld: OBJNDX_DtPic_AttributeSelectAslFile=%08lx  ValueString=<%s>\n", \
 						__FUNC__, __LINE__, inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile], ValueString));
 					set(inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile], MUIA_ScaDtpic_Name, ValueString);
 					break;
