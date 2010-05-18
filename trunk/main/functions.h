@@ -148,7 +148,7 @@ void ClassSetDefaultIconFlags(struct ScaIconNode *in, BOOL IsDefIcon);
 
 // defined in cleanup.c
 ///
-extern void IconWindow_UnCleanup(struct internalScaWindowTask *iwt);
+void IconWindow_UnCleanup(struct internalScaWindowTask *iwt, struct Region *UnCleanUpRegion);
 extern void IconWindow_Cleanup(struct internalScaWindowTask *iwt);
 ///
 /* ------------------------------------------------- */

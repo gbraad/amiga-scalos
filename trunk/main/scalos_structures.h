@@ -449,6 +449,11 @@ struct internalScaWindowTask
 
 	struct List iwt_PopChildList;			// List for ScaPopChildWindow structures;
 	SCALOSSEMAPHORE iwt_PopChildListSemaphore;	// Semaphore for protection of iwt_PopChildList
+
+	struct Rect32 iwt_IconBBox;			// Bounding Box of all icons
+
+	WORD	iwt_LastUnCleanupInnerWidth;
+	WORD	iwt_LastUnCleanupInnerHeight;
         };
 
 //-----------------------------------------------------------------------

@@ -1,7 +1,7 @@
 	IFND	SCALOS_I
 SCALOS_I	SET	1
 **
-**  $VER: scalos.h 41.6 (10 Jan 2009 16:50:39)
+**  $VER: scalos.h 41.9 (13. Mai 2010 15:47:59)
 **
 ** $Date$
 ** $Revision$
@@ -9,11 +9,12 @@ SCALOS_I	SET	1
 **      Scalos.library include
 **
 **   (C) Copyright 1996-1997 ALiENDESiGN
-**   (C) Copyright 1999-2009 The Scalos Team
+**   (C) Copyright 1999-2010 The Scalos Team
 **	All Rights Reserved
 **
 
 	include	scalos/iconobject.i
+	include	graphics/regions.i
 
 ;---------------------------------------------------------------------------
 
@@ -848,6 +849,10 @@ SCCM_IconWin_EndUndoStep	equ	SCC_Dummy+220
 SCCM_IconWin_RandomizePatternNumber equ	SCC_Dummy+222
 ; ./.
 
+SCCM_IconWin_UnCleanUpRegion	equ	SCC_Dummy+224
+; struct Region *UnCleanupRegion;
+
+
 ;---------------- DeviceWindow Class ----------------------------
 ;Name: "DeviceWindow.sca"
 
@@ -1439,6 +1444,13 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
 	ULONG 	eus_MethodID		
 	APTR 	eus_UndoStep            ; Result from SCCM_IconWin_BeginUndoStep
 	LABEL	eus_SIZEOF
+
+; SCCM_IconWin_UnCleanUpRegion
+    STRUCTURE msg_UnCleanUpRegion,0
+	ULONG 	ucr_MethodID
+	struct Region *ucr_UnCleanUpRegion;
+	STRUCT	ucr_UnCleanUpRegion,rg_SIZEOF ; struct Region
+	LABEL	ucr_SIZEOF
 
 ; --- TextWindowClass methods ------------------------------------------
 

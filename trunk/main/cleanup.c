@@ -33,8 +33,8 @@
 
 //----------------------------------------------------------------------------
 
-#define TILE_SIZE_X	2
-#define TILE_SIZE_Y	2
+#define TILE_SIZE_X	4
+#define TILE_SIZE_Y	4
 
 //----------------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ static void AddPositionedIconsToTiles(const struct internalScaWindowTask *iwt,
 
 //----------------------------------------------------------------------------
 
-void IconWindow_UnCleanup(struct internalScaWindowTask *iwt)
+void IconWindow_UnCleanup(struct internalScaWindowTask *iwt, struct Region *UnCleanUpRegion)
 {
 	struct ScaIconNode *in, *inNext;
 
@@ -117,17 +117,39 @@ void IconWindow_UnCleanup(struct internalScaWindowTask *iwt)
 
 		if (in->in_Flags & INF_FreeIconPosition)
 			{
+			BOOL MoveIcon = FALSE;
 			struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 
 			d1(KPrintF("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
-			in->in_OldLeftEdge = gg->LeftEdge;
-			in->in_OldTopEdge = gg->TopEdge;
+			if (UnCleanUpRegion)
+				{
+				// Do not uncleanup any icon which lies outside of <UnCleanUpRegion>
+				struct Rectangle IconRect;
 
-			in->in_Flags |= INF_IconVisible;
+				IconRect.MinX = IconRect.MaxX = gg->BoundsLeftEdge;
+				IconRect.MinY = IconRect.MaxY = gg->BoundsTopEdge;
+				IconRect.MaxX += gg->BoundsWidth;
+				IconRect.MaxY += gg->BoundsHeight;
 
-			SCA_MoveIconNode(&iwt->iwt_WindowTask.wt_IconList,
-				&iwt->iwt_WindowTask.wt_LateIconList, in);
+				if (ScaRectInRegion(UnCleanUpRegion, &IconRect))
+					MoveIcon = TRUE;
+				}
+			else
+				{
+				MoveIcon = TRUE;
+				}
+
+			if (MoveIcon)
+				{
+				in->in_OldLeftEdge = gg->LeftEdge;
+				in->in_OldTopEdge = gg->TopEdge;
+
+				in->in_Flags |= INF_IconVisible;
+
+				SCA_MoveIconNode(&iwt->iwt_WindowTask.wt_IconList,
+					&iwt->iwt_WindowTask.wt_LateIconList, in);
+				}
 			}
 		}
 
