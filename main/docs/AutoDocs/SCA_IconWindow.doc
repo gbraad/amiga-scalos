@@ -55,6 +55,8 @@ IconWindow.sca/SCCM_IconWin_ShowIconToolTip
 IconWindow.sca/SCCM_IconWin_ShowPopupMenu
 IconWindow.sca/SCCM_IconWin_Sleep
 IconWindow.sca/SCCM_IconWin_StartNotify
+IconWindow.sca/SCCM_IconWin_UnCleanUp
+IconWindow.sca/SCCM_IconWin_UnCleanUpRegion
 IconWindow.sca/SCCM_IconWin_Update
 IconWindow.sca/SCCM_IconWin_UpdateIcon
 IconWindow.sca/SCCM_IconWin_UpdateControlBar
@@ -1302,6 +1304,47 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 	Success - TRUE if notification successfully started, FALSE on failure.
 
     SEE ALSO
+IconWindow.sca/SCCM_IconWin_UnCleanUp
+
+    NAME
+        SCCM_IconWin_UnCleanUp
+
+    SYNOPSIS
+	DoMethod(obj,SCCM_IconWin_UnCleanUp);
+
+    FUNCTION
+	Revoke layout of all icons without fixed position.
+	In order to display those icons, SCCM_IconWin_CleanUp must be
+	performed to move those icons back to the normal icon display list.
+
+    INPUTS
+	none
+
+    RESULT
+        none
+
+    SEE ALSO
+IconWindow.sca/SCCM_IconWin_UnCleanUpRegion
+
+    NAME
+        SCCM_IconWin_UnCleanUpRegion
+
+    SYNOPSIS
+	DoMethod(obj,SCCM_IconWin_UnCleanUpRegion,region);
+
+    FUNCTION
+	Revoke layout of all icons without fixed position which are
+	located at least partially inside region.
+	In order to display those icons, SCCM_IconWin_CleanUp must be
+	performed to move those icons back to the normal icon display list.
+
+    INPUTS
+	region - Region where icons will be un-positioned
+
+    RESULT
+        none
+
+    SEE ALSO
 IconWindow.sca/SCCM_IconWin_Update
 
     NAME
@@ -1317,7 +1360,8 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 	none
 
     RESULT
-	?
+	0 if everything worked ok
+	1 if window is about to be closed
 
     SEE ALSO
 IconWindow.sca/SCCM_IconWin_UpdateIcon
@@ -1336,7 +1380,7 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 	Name - name of icon
 
     RESULT
-	?
+	none
 
     SEE ALSO
 IconWindow.sca/SCCM_IconWin_UpdateControlBar

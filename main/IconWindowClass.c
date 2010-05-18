@@ -116,6 +116,7 @@ static ULONG IconWindowClass_MenuCommand(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_NewViewMode(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_DeltaMove(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_UnCleanup(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_UnCleanupRegion(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_Cleanup(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_Update(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_AddToStatusBar(Class *cl, Object *o, Msg msg);
@@ -182,7 +183,7 @@ static SAVEDS(LONG) IconSortBySizeFunc(struct Hook *hook, struct ScaIconNode *in
 static SAVEDS(LONG) IconSortByTypeFunc(struct Hook *hook, struct ScaIconNode *in2, struct ScaIconNode *in1);
 static void SetThumbnailView(struct internalScaWindowTask *iwt, ULONG NewThumbnailMode);
 static void SetThumbnailsGenerating(struct internalScaWindowTask *iwt, BOOL ThumbnailsGenerating);
-static void GetIconsTotalBoundingBox(struct internalScaWindowTask *iwt, struct Rect32 *BBox);
+static void GetIconsTotalBoundingBox(struct internalScaWindowTask *iwt);
 static void IconWindowUpdateTransparency(struct internalScaWindowTask *iwt);
 
 //----------------------------------------------------------------------------
@@ -297,6 +298,10 @@ static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 
 	case SCCM_IconWin_UnCleanUp:
 		Result = IconWindowClass_UnCleanup(cl, o, msg);
+		break;
+
+	case SCCM_IconWin_UnCleanUpRegion:
+		Result = IconWindowClass_UnCleanupRegion(cl, o, msg);
 		break;
 
 	case SCCM_IconWin_SetVirtSize:
@@ -2269,7 +2274,26 @@ static ULONG IconWindowClass_UnCleanup(Class *cl, Object *o, Msg msg)
 
 	if (IsIwtViewByIcon(iwt) && iwt->iwt_WindowTask.wt_Window)
 		{
-		IconWindow_UnCleanup(iwt);
+		IconWindow_UnCleanup(iwt, NULL);
+		}
+
+	d1(KPrintF("%s/%s/%ld: Finished iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+	return 1;
+}
+
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_UnCleanupRegion(Class *cl, Object *o, Msg msg)
+{
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
+	struct msg_UnCleanUpRegion *ucr = (struct msg_UnCleanUpRegion *) msg;
+
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+	if (IsIwtViewByIcon(iwt) && iwt->iwt_WindowTask.wt_Window)
+		{
+		IconWindow_UnCleanup(iwt, ucr->ucr_UnCleanUpRegion);
 		}
 
 	d1(KPrintF("%s/%s/%ld: Finished iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
@@ -3574,8 +3598,6 @@ static void ScrollWindowXY(struct internalScaWindowTask *iwt, LONG dx, LONG dy)
 
 static void SetVirtSize(struct internalScaWindowTask *iwt, ULONG Flags)
 {
-	struct Rect32 BBox;
-
 	d1(KPrintF("%s/%s/%ld: Flags=%04lx\n", __FILE__, __FUNC__, __LINE__, Flags));
 
 	if (NULL == iwt->iwt_Gadgets)
@@ -3583,9 +3605,10 @@ static void SetVirtSize(struct internalScaWindowTask *iwt, ULONG Flags)
 	if (iwt->iwt_BackDrop)
 		return;
 
-	GetIconsTotalBoundingBox(iwt, &BBox);
+	GetIconsTotalBoundingBox(iwt);
 
-	d1(KPrintF("%s/%s/%ld: MinX=%ld  MaxX=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, BBox.MinX, BBox.MaxX, BBox.MinY, BBox.MaxY));
+	d1(KPrintF("%s/%s/%ld: MinX=%ld  MaxX=%ld  MinY=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		iwt->iwt_IconBBox.MinX, iwt->iwt_IconBBox.MaxX, iwt->iwt_IconBBox.MinY, iwt->iwt_IconBBox.MaxY));
 
 	if (Flags & SETVIRTF_AdjustBottomSlider)
 		{
@@ -3597,18 +3620,18 @@ static void SetVirtSize(struct internalScaWindowTask *iwt, ULONG Flags)
 		Top = 0;
 		Total = 0;
 
-		if (LONG_MAX != BBox.MinX)
+		if (LONG_MAX != iwt->iwt_IconBBox.MinX)
 			{
 			LONG Right = iwt->iwt_InnerWidth + iwt->iwt_WindowTask.wt_XOffset - 1;
 
-			BBox.MinX--;
-			BBox.MaxX++;
+			iwt->iwt_IconBBox.MinX--;
+			iwt->iwt_IconBBox.MaxX++;
 
-			Top = BBox.MinX;
+			Top = iwt->iwt_IconBBox.MinX;
 			if (iwt->iwt_WindowTask.wt_XOffset < Top)
 				Top = iwt->iwt_WindowTask.wt_XOffset;
 
-			Total = BBox.MaxX;
+			Total = iwt->iwt_IconBBox.MaxX;
 			if (Right > Total)
 				Total = Right;
 
@@ -3653,18 +3676,18 @@ static void SetVirtSize(struct internalScaWindowTask *iwt, ULONG Flags)
 		Top = 0;
 		Total = 0;
 
-		if (LONG_MAX != BBox.MinY)
+		if (LONG_MAX != iwt->iwt_IconBBox.MinY)
 			{
 			LONG Bottom = iwt->iwt_InnerHeight + iwt->iwt_WindowTask.wt_YOffset - 1;
 
-			BBox.MinY--;
-			BBox.MaxY++;
+			iwt->iwt_IconBBox.MinY--;
+			iwt->iwt_IconBBox.MaxY++;
 
-			Top = BBox.MinY;
+			Top = iwt->iwt_IconBBox.MinY;
 			if (iwt->iwt_WindowTask.wt_YOffset < Top)
 				Top = iwt->iwt_WindowTask.wt_YOffset;
 
-			Total = BBox.MaxY;
+			Total = iwt->iwt_IconBBox.MaxY;
 			if (Bottom > Total)
 				Total = Bottom;
 
@@ -4729,14 +4752,14 @@ static void SetThumbnailsGenerating(struct internalScaWindowTask *iwt, BOOL Thum
 }
 
 
-static void GetIconsTotalBoundingBox(struct internalScaWindowTask *iwt, struct Rect32 *BBox)
+static void GetIconsTotalBoundingBox(struct internalScaWindowTask *iwt)
 {
 	const struct ScaIconNode *in;
 
 	ScalosLockIconListShared(iwt);
 
-	BBox->MinX = BBox->MinY = LONG_MAX;
-	BBox->MaxX = BBox->MaxY = 0;
+	iwt->iwt_IconBBox.MinX = iwt->iwt_IconBBox.MinY = LONG_MAX;
+	iwt->iwt_IconBBox.MaxX = iwt->iwt_IconBBox.MaxY = 0;
 
 	for (in = iwt->iwt_WindowTask.wt_IconList; in; in = (const struct ScaIconNode *) in->in_Node.mln_Succ)
 		{
@@ -4745,14 +4768,14 @@ static void GetIconsTotalBoundingBox(struct internalScaWindowTask *iwt, struct R
 		d1(kprintf("%s/%s/%ld: <%s> Left=%ld Top=%ld Width=%ld Height=%ld\n", \
 			__FILE__, __FUNC__, __LINE__, GetIconName(in), gg->BoundsLeftEdge, gg->BoundsTopEdge, gg->BoundsWidth, gg->BoundsHeight));
 
-		if (gg->BoundsLeftEdge < BBox->MinX)
-			BBox->MinX = gg->BoundsLeftEdge;
-		if (gg->BoundsLeftEdge + gg->BoundsWidth >= BBox->MaxX)
-			BBox->MaxX = gg->BoundsLeftEdge + gg->BoundsWidth;
-		if (gg->BoundsTopEdge < BBox->MinY)
-			BBox->MinY = gg->BoundsTopEdge;
-		if (gg->BoundsTopEdge + gg->BoundsHeight >= BBox->MaxY)
-			BBox->MaxY = gg->BoundsTopEdge + gg->BoundsHeight;
+		if (gg->BoundsLeftEdge < iwt->iwt_IconBBox.MinX)
+			iwt->iwt_IconBBox.MinX = gg->BoundsLeftEdge;
+		if (gg->BoundsLeftEdge + gg->BoundsWidth >= iwt->iwt_IconBBox.MaxX)
+			iwt->iwt_IconBBox.MaxX = gg->BoundsLeftEdge + gg->BoundsWidth;
+		if (gg->BoundsTopEdge < iwt->iwt_IconBBox.MinY)
+			iwt->iwt_IconBBox.MinY = gg->BoundsTopEdge;
+		if (gg->BoundsTopEdge + gg->BoundsHeight >= iwt->iwt_IconBBox.MaxY)
+			iwt->iwt_IconBBox.MaxY = gg->BoundsTopEdge + gg->BoundsHeight;
 		}
 
 	ScalosUnLockIconList(iwt);

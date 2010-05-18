@@ -105,6 +105,7 @@ static ULONG WindowClass_DynamicResizeWindow(Class *cl, Object *o, Msg msg);
 static ULONG WindowClass_Set(Class *cl, Object *o, Msg msg);
 static ULONG WindowClass_Get(Class *cl, Object *o, Msg msg);
 static ULONG WindowClass_SetTransparency(Class *cl, Object *o, ULONG NewTransparency);
+static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInnerWidth, WORD OldInnerHeight);
 
 //----------------------------------------------------------------------------
 
@@ -769,6 +770,8 @@ static struct Window *WindowClass_Open(Class *cl, Object *o, Msg msg)
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  wt_Window=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, iwt->iwt_WindowTask.wt_Window));
 
+	iwt->iwt_LastUnCleanupInnerWidth = iwt->iwt_LastUnCleanupInnerHeight = 0;
+
 	iwt->iwt_WindowTask.wt_Window = ScaOpenWindow(iwt, cl, o);
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  wt_Window=%08lx\n", \
@@ -1329,12 +1332,8 @@ static ULONG WindowClass_ChangeWindow(Class *cl, Object *o, Msg msg)
 
 		if (CurrentPrefs.pref_AutoCleanupOnResize && IsIwtViewByIcon(iwt))
 			{
-			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_UnCleanUp);
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUp);
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_SetVirtSize,
-				SETVIRTF_AdjustBottomSlider | SETVIRTF_AdjustRightSlider);
+			d2(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+			WindowClass_ReCleanup(iwt, OldInnerWidth, OldInnerHeight);
 			}
 		}
 
@@ -1355,6 +1354,8 @@ static ULONG WindowClass_DynamicResizeWindow(Class *cl, Object *o, Msg msg)
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct ScaWindowStruct *ws = iwt->iwt_WindowTask.mt_WindowStruct;
 	WORD newWidth, newHeight;
+	WORD OldInnerHeight = iwt->iwt_InnerHeight;
+	WORD OldInnerWidth = iwt->iwt_InnerWidth;
 
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
@@ -1401,12 +1402,9 @@ static ULONG WindowClass_DynamicResizeWindow(Class *cl, Object *o, Msg msg)
 
 		if (CurrentPrefs.pref_AutoCleanupOnResize && IsIwtViewByIcon(iwt))
 			{
-			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+			d2(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_UnCleanUp);
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUp);
-			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_SetVirtSize,
-				SETVIRTF_AdjustBottomSlider | SETVIRTF_AdjustRightSlider);
+			WindowClass_ReCleanup(iwt, OldInnerWidth, OldInnerHeight);
 			}
 		}
 
@@ -1509,5 +1507,109 @@ static ULONG WindowClass_SetTransparency(Class *cl, Object *o, ULONG NewTranspar
 	d1(KPrintF("%s/%s/%ld: END wci_Transparency=%ld\n", __FILE__, __FUNC__, __LINE__, inst->wci_Transparency));
 
 	return 0;
+}
+
+
+static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInnerWidth, WORD OldInnerHeight)
+{
+	BOOL UnCleanup = FALSE;
+	struct Region *UnCleanupRegion = NULL;
+	struct Rect32 AllIconsBBox = iwt->iwt_IconBBox;
+
+	d2(KPrintF("%s/%s/%ld: MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_IconBBox.MaxX, iwt->iwt_IconBBox.MaxY));
+	d2(KPrintF("%s/%s/%ld: iwt_InnerWidth=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerWidth, iwt->iwt_InnerHeight));
+	d2(KPrintF("%s/%s/%ld: OldInnerWidth=%ld  OldInnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, OldInnerWidth, OldInnerHeight));
+	d2(KPrintF("%s/%s/%ld: wt_XOffset=%ld wt_YOffse=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
+
+	AllIconsBBox.MinX -= iwt->iwt_WindowTask.wt_XOffset;
+	AllIconsBBox.MinY -= iwt->iwt_WindowTask.wt_YOffset;
+	AllIconsBBox.MaxX -= iwt->iwt_WindowTask.wt_XOffset;
+	AllIconsBBox.MaxY -= iwt->iwt_WindowTask.wt_YOffset;
+
+	if ((AllIconsBBox.MaxX <= iwt->iwt_InnerWidth && AllIconsBBox.MaxX > OldInnerWidth)
+		|| (AllIconsBBox.MaxY <= iwt->iwt_InnerHeight && AllIconsBBox.MaxY > OldInnerHeight) )
+		{
+		d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+		UnCleanup = TRUE;
+		}
+
+	if (!UnCleanup && AllIconsBBox.MaxX > iwt->iwt_InnerWidth && AllIconsBBox.MaxX > OldInnerWidth
+			&& AllIconsBBox.MaxY <= iwt->iwt_InnerHeight)
+		{
+		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerWidth=%ld  iwt_InnerWidt=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			iwt->iwt_LastUnCleanupInnerWidth, iwt->iwt_InnerWidth));
+		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerHeight=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			iwt->iwt_LastUnCleanupInnerHeight, iwt->iwt_InnerHeight));
+
+		if (abs(iwt->iwt_LastUnCleanupInnerWidth - iwt->iwt_InnerWidth) >= 10
+			|| abs(iwt->iwt_LastUnCleanupInnerHeight - iwt->iwt_InnerHeight) >= 10)
+			{
+			d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+			UnCleanup = TRUE;
+
+			UnCleanupRegion = NewRegion();
+			if (UnCleanupRegion)
+				{
+				struct Rectangle Rect;
+				
+				Rect.MinX = iwt->iwt_InnerWidth;
+				Rect.MinY = iwt->iwt_IconBBox.MinY;
+				Rect.MaxX = iwt->iwt_IconBBox.MaxX;
+				Rect.MaxY = iwt->iwt_IconBBox.MaxY;
+
+				d2(KPrintF("%s/%s/%ld: Rect: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Rect.MinX, Rect.MinY, Rect.MaxX, Rect.MaxY));
+
+				OrRectRegion(UnCleanupRegion, &Rect);
+				}
+			}
+		}
+
+	if (!UnCleanup && AllIconsBBox.MaxY > iwt->iwt_InnerHeight && AllIconsBBox.MaxY > OldInnerHeight
+			&& AllIconsBBox.MaxX <= iwt->iwt_InnerWidth)
+		{
+		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerWidth=%ld  iwt_InnerWidt=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			iwt->iwt_LastUnCleanupInnerWidth, iwt->iwt_InnerWidth));
+		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerHeight=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, \
+			iwt->iwt_LastUnCleanupInnerHeight, iwt->iwt_InnerHeight));
+
+		if (abs(iwt->iwt_LastUnCleanupInnerWidth - iwt->iwt_InnerWidth) >= 10
+			|| abs(iwt->iwt_LastUnCleanupInnerHeight - iwt->iwt_InnerHeight) >= 10)
+			{
+			d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+			UnCleanup = TRUE;
+
+			UnCleanupRegion = NewRegion();
+			if (UnCleanupRegion)
+				{
+				struct Rectangle Rect;
+
+				Rect.MinX = iwt->iwt_IconBBox.MinX;
+				Rect.MinY = iwt->iwt_InnerHeight;
+				Rect.MaxX = iwt->iwt_IconBBox.MaxX;
+				Rect.MaxY = iwt->iwt_IconBBox.MaxY;
+
+				d2(KPrintF("%s/%s/%ld: Rect: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Rect.MinX, Rect.MinY, Rect.MaxX, Rect.MaxY));
+
+				OrRectRegion(UnCleanupRegion, &Rect);
+				}
+			}
+		}
+
+	if (UnCleanup)
+		{
+		d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+
+		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_UnCleanUpRegion,
+			UnCleanupRegion);
+		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_CleanUp);
+		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_SetVirtSize,
+			SETVIRTF_AdjustBottomSlider | SETVIRTF_AdjustRightSlider);
+
+		iwt->iwt_LastUnCleanupInnerWidth = iwt->iwt_InnerWidth;
+		iwt->iwt_LastUnCleanupInnerHeight = iwt->iwt_InnerHeight;
+		}
+
+	if (UnCleanupRegion)
+		DisposeRegion(UnCleanupRegion);
 }
 

@@ -1,7 +1,7 @@
 #ifndef SCALOS_SCALOS_H
 #define SCALOS_SCALOS_H
 /*
-**  $VER: scalos.h 41.6 (10 Jan 2009 16:50:39)
+**  $VER: scalos.h 41.9 (13. Mai 2010 15:49:13)
 **
 ** $Date: 2009-01-12 19:48:06 +0200 (Mo, 12 Jan 2009) $
 ** $Revision: 2977 $
@@ -9,11 +9,11 @@
 **	Scalos.library include
 **
 **   (C) Copyright 1996-1997 ALiENDESiGN
-**   (C) Copyright 2000-2009 The Scalos Team
+**   (C) Copyright 2000-2010 The Scalos Team
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+224)
+** next Tag to use :	(SCC_Dummy+225)
 */
 
 #ifndef DOS_DOS_H
@@ -64,6 +64,11 @@
 #include <graphics/gfx.h>
 #endif
 
+#ifndef GRAPHICS_REGIONS_H
+#include <graphics/regions.h>
+#endif
+
+#
 #ifndef SCALOS_SCALOSGFX_H
 #include <scalos/scalosgfx.h>
 #endif
@@ -1533,6 +1538,10 @@ enum sgttGadgetIDs
 
 // ---------------------------------------------------------------------------
 
+#define SCCM_IconWin_UnCleanUpRegion		(SCC_Dummy+224)
+// struct Region *UnCleanupRegion;
+
+// ---------------------------------------------------------------------------
 
 
 // ---------------------------------------------------------------------------
@@ -2520,6 +2529,13 @@ struct msg_EndUndoStep
 	{
 	ULONG eus_MethodID;
 	APTR eus_UndoStep;      // Result from SCCM_IconWin_BeginUndoStep
+	};
+
+// SCCM_IconWin_UnCleanUpRegion
+struct msg_UnCleanUpRegion
+	{
+	ULONG ucr_MethodID;
+	struct Region *ucr_UnCleanUpRegion;
 	};
 
 // --- TextWindowClass methods ------------------------------------------
