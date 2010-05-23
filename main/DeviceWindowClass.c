@@ -1084,7 +1084,7 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 	d1(kprintf("%s/%s/%ld: START iwt=%08lx  DevIn=%08lx <%s>  in_DeviceIcon=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, DevIn, DevIn->in_Name, DevIn->in_DeviceIcon));
 
-	InitBackDropList(&bdl);
+	BackDropInitList(&bdl);
 
 	do	{
 		struct ChainedLine *cnl;
@@ -1103,10 +1103,10 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 
 		oldDir = CurrentDir(vLock);
 
-		Result = LoadBackdropFile(&bdl);
+		Result = BackdropLoadList(&bdl);
 		if (RETURN_OK != Result)
 			{
-			d1(kprintf("%s/%s/%ld: LoadBackdropFile() failed,  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
+			d1(kprintf("%s/%s/%ld: BackdropLoadList() failed,  Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
 			break;
 			}
 
@@ -1133,7 +1133,7 @@ static LONG ReadDevBackdrop(struct internalScaWindowTask *iwt, struct ScaIconNod
 		DevIn->in_DeviceIcon->di_Flags |= DIBF_BackdropReadComplete;
 		}
 
-	FreeBackdropFile(&bdl);
+	BackdropFreeList(&bdl);
 
 	d1(kprintf("%s/%s/%ld: vLock=%08lx\n", __FILE__, __FUNC__, __LINE__, vLock));
 

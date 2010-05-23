@@ -995,7 +995,7 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 	if (NULL == iwtSrc || NULL == iwtDest)
 		return;
 
-	InitBackDropList(&bdl);	// +jmc+
+	BackDropInitList(&bdl);	// +jmc+
 
 	do	{
 		APTR undoStep;
@@ -1152,7 +1152,7 @@ static void Icon2DesktopDrop(struct ScalosArg **ArgList,
 	if (replyPort)
 		DeleteMsgPort(replyPort);
 
-	FreeBackdropFile(&bdl);
+	BackdropFreeList(&bdl);
 
 	ScalosReleaseSemaphore(iwtSrc->iwt_WindowTask.wt_WindowSemaphore);
 	ScalosReleaseSemaphore(iwtDest->iwt_WindowTask.wt_WindowSemaphore);

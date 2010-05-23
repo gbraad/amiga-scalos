@@ -454,6 +454,8 @@ struct internalScaWindowTask
 
 	WORD	iwt_LastUnCleanupInnerWidth;
 	WORD	iwt_LastUnCleanupInnerHeight;
+
+	struct EClockVal iwt_TimeStamps[20];
         };
 
 //-----------------------------------------------------------------------
@@ -973,6 +975,7 @@ struct BackDropList
 	struct List bdl_LinesList;
 	ULONG bdl_Changed;
 	ULONG bdl_Loaded;
+	ULONG bdl_Filtered;
 	ULONG bdl_NotPresent;
 	};
 
@@ -1060,9 +1063,12 @@ struct ReadIconListControl
 	struct List rilc_IconScanList;		// List of all icon files treated by LinkIconScanList
 	struct List rilc_NonIconScanList;	// List of all non-icon files found, after LinkIconScanList()
 	struct BTree *rilc_StdFilesTree;	// BTree of all non-icon files found during GetFileList()
+	struct BTree *rilc_IconTree;		// BTree of all icons in wt_IconList and wt_LateIconList
 	ULONG rilc_TotalFound;			// number of entries found
 	UBYTE rilc_OrigViewByType;		// Initial window view type 
-	enum ScanDirResult (*rilc_Check)(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc);
+	struct internalScaWindowTask *rilc_WindowTask;
+	enum ScanDirResult (*rilc_Check)(struct ReadIconListControl *rilc);
+	struct BackDropList rilc_BackdropList;
 	};
 
 struct IconScanEntry

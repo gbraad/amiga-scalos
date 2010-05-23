@@ -98,15 +98,13 @@ BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 	BPTR DirLock, CONST_STRPTR Name, ULONG Flags, APTR UndoStep)
 {
 	BOOL Success = FALSE;
-	BPTR fLock = BNULL;
-	BPTR OldDir = NOT_A_LOCK;
-	struct DataType *dth = NULL;
 
 	do	{
 		struct ExtGadget *gg = (struct ExtGadget *) IconObj;
 		ULONG ThumbnailWidth = CurrentPrefs.pref_ThumbNailWidth;
 		ULONG ThumbnailHeight = CurrentPrefs.pref_ThumbNailHeight;
 		struct ThumbnailIcon *tni;
+		struct FileTypeDef *ftd;
 		ULONG IconUserFlags;
 		ULONG IconType;
 
@@ -133,40 +131,22 @@ BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 		if (WBPROJECT != IconType)
 			break;
 
-		OldDir = CurrentDir(DirLock);
-
-		fLock = Lock(Name, ACCESS_READ);
-		d1(KPrintF("%s/%s/%ld:  Name=<%s>  fLock=%08lx\n", __FILE__, __FUNC__, __LINE__, Name, fLock));
-		if (BNULL == fLock)
+		TIMESTAMPCOUNT_START_d1(iwt, 13);
+		ftd = FindFileTypeForTypeNode(iwt, DefIconsIdentify(DirLock, Name));
+		d1(KPrintF("%s/%s/%ld:  ftd=%08lx\n", __FILE__, __FUNC__, __LINE__, ftd));
+		TIMESTAMPCOUNT_END_d1(iwt, 13);
+		if (NULL == ftd)
 			break;
 
-		dth = ObtainDataType(DTST_FILE, (APTR) fLock,
-			TAG_DONE);
-		d1(KPrintF("%s/%s/%ld:  dth=%08lx\n", __FILE__, __FUNC__, __LINE__, dth));
-		if (NULL == dth)
+		d1(KPrintF("%s/%s/%ld:  ftd_PreviewPluginBase=%08lx  ftd_PreviewPluginName=%08lx\n", \
+			__FILE__, __FUNC__, __LINE__, ftd->ftd_PreviewPluginBase, ftd->ftd_PreviewPluginName));
+
+		if (NULL == ftd->ftd_PreviewPluginBase && NULL == ftd->ftd_PreviewPluginName)
 			break;
 
-		d1(KPrintF("%s/%s/%ld:  GroupID=%08lx\n", __FILE__, __FUNC__, __LINE__, dth->dtn_Header->dth_GroupID));
-
-		if (GID_PICTURE != dth->dtn_Header->dth_GroupID)
-			{
-			// Don't try to create thumbnail if no datatype picture
-			// and no explicit thumbnail plugin defined.
-			struct FileTypeDef *ftd;
-
-			ftd = FindFileTypeForTypeNode(iwt, DefIconsIdentify(DirLock, Name));
-			d1(KPrintF("%s/%s/%ld:  ftd=%08lx\n", __FILE__, __FUNC__, __LINE__, ftd));
-			if (NULL == ftd)
-				break;
-
-			d1(KPrintF("%s/%s/%ld:  ftd_PreviewPluginBase=%08lx  ftd_PreviewPluginName=%08lx\n", \
-				__FILE__, __FUNC__, __LINE__, ftd->ftd_PreviewPluginBase, ftd->ftd_PreviewPluginName));
-
-			if (NULL == ftd->ftd_PreviewPluginBase && NULL == ftd->ftd_PreviewPluginName)
-				break;
-			}
-
+		TIMESTAMPCOUNT_START_d1(iwt, 14);
 		tni = AddThumbnailEntry(iwt, IconObj, DirLock, Name, Flags, UndoStep);
+		TIMESTAMPCOUNT_END_d1(iwt, 14);
 		if (NULL == tni)
 			break;
 
@@ -205,13 +185,6 @@ BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 			IDTA_UserFlags, IconUserFlags,
 			TAG_END);
 		} while (0);
-
-	if (dth)
-		ReleaseDataType(dth);
-	if (BNULL != fLock)
-		UnLock(fLock);
-	if (IS_VALID_LOCK(OldDir))
-		CurrentDir(OldDir);
 
 	d1(KPrintF("%s/%s/%ld:  END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 

@@ -52,8 +52,8 @@
 
 static BOOL IsBackDropIconTextWindow(struct internalScaWindowTask *iwt, struct BackDropList *bdl,
 	BPTR fLock, CONST_STRPTR FileName, ULONG pos);
-static enum ScanDirResult TextCheckCleanup(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc);
-static enum ScanDirResult GenerateTextIcons(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc, BOOL Final);
+static enum ScanDirResult TextCheckCleanup(struct ReadIconListControl *rilc);
+static enum ScanDirResult GenerateTextIcons(struct ReadIconListControl *rilc, BOOL Final);
 static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 	struct Hook *ColumnChangeHook, struct IconScanEntry *ise, 
 	struct BackDropList *bdl, const struct ReadIconListData *rild);
@@ -81,8 +81,7 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 	BPTR dirLock;
 	BOOL VolumeIsWritable;
 	BOOL ScanDirSemaphoreLocked = FALSE;
-	struct BackDropList bdl;
-
+	struct ReadIconListControl rilc;
 
 	do	{
 		BPTR iLock;
@@ -92,7 +91,8 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 
 		d1(KPrintF("%s/%s/%ld: Name=<%s>  ria=%08lx  iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, Name, ria, iwt));
 
-		InitBackDropList(&bdl);
+		if (!RilcInit(&rilc, iwt))
+			break;
 
 		if (NULL == iwt->iwt_WindowTask.wt_Window)
 			break;
@@ -222,7 +222,7 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 
 		if (IsShowAllType(iwt->iwt_OldShowType))
 			{
-			in = GetTextIcon(iwt, &iwt->iwt_ColumnWidthChangeHook, NULL, &bdl, &rild);
+			in = GetTextIcon(iwt, &iwt->iwt_ColumnWidthChangeHook, NULL, &rilc.rilc_BackdropList, &rild);
 
 			d1(kprintf("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
@@ -268,7 +268,7 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 				*((char *) pos) = '\0';
 				}
 
-			in = GetTextIcon(iwt, &iwt->iwt_ColumnWidthChangeHook, NULL, &bdl, &rild);
+			in = GetTextIcon(iwt, &iwt->iwt_ColumnWidthChangeHook, NULL, &rilc.rilc_BackdropList, &rild);
 			hasIcon = TRUE;
 
 			d1(kprintf("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
@@ -290,7 +290,7 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 				if (hasIcon)
 					in->in_SupportFlags |= INF_SupportsSnapshot | INF_SupportsUnSnapshot;
 
-				if (IsPermanentBackDropIcon(iwt, &bdl, dirLock, GetIconName(in)))
+				if (IsPermanentBackDropIcon(iwt, &rilc.rilc_BackdropList, dirLock, GetIconName(in)))
 					{
 					d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 					in->in_SupportFlags |= INF_SupportsPutAway;
@@ -332,7 +332,7 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 			}
 		} while (0);
 
-	FreeBackdropFile(&bdl);
+	RilcCleanup(&rilc);
 
 	if (ScanDirSemaphoreLocked)
 		ScalosReleaseSemaphore(&iwt->iwt_ScanDirSemaphore);
@@ -378,12 +378,14 @@ static BOOL IsBackDropIconTextWindow(struct internalScaWindowTask *iwt, struct B
 }
 
 
-static enum ScanDirResult TextCheckCleanup(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc)
+static enum ScanDirResult TextCheckCleanup(struct ReadIconListControl *rilc)
 {
 	enum ScanDirResult sdResult = SCANDIR_OK;
 
 	if (rilc->rilc_CleanupCount++ > 20)
 		{
+		struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
+
 		rilc->rilc_CleanupCount = 0;
 
 		d1(kprintf("%s/%s/%ld: IconList=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_LateIconList));
@@ -395,19 +397,17 @@ static enum ScanDirResult TextCheckCleanup(struct internalScaWindowTask *iwt, st
 }
 
 
-static enum ScanDirResult GenerateTextIcons(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc, BOOL Final)
+static enum ScanDirResult GenerateTextIcons(struct ReadIconListControl *rilc, BOOL Final)
 {
+	struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
 	struct IconScanEntry *ise;
 	enum ScanDirResult sdResult;
-	struct BackDropList bdl;
 
 
 	d1(KPrintF("%s/%s/%ld: START  Final=%ld\n", __FILE__, __FUNC__, __LINE__, Final));
 
-	InitBackDropList(&bdl);
-
 	// build links between icons and objects
-	sdResult = LinkIconScanList(iwt, rilc);
+	sdResult = LinkIconScanList(rilc);
 	if (SCANDIR_OK != sdResult)
 		return sdResult;
 
@@ -480,7 +480,7 @@ static enum ScanDirResult GenerateTextIcons(struct internalScaWindowTask *iwt, s
 					}
 				}
 
-			in = GetTextIcon(iwt, NULL, ise, &bdl, &rild);
+			in = GetTextIcon(iwt, NULL, ise, &rilc->rilc_BackdropList, &rild);
 
 			d1(kprintf("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
@@ -541,7 +541,7 @@ static enum ScanDirResult GenerateTextIcons(struct internalScaWindowTask *iwt, s
 
 			ScanDirFillRildFromIse(&rild, ise);
 
-			in = GetTextIcon(iwt, NULL, ise, &bdl, &rild);
+			in = GetTextIcon(iwt, NULL, ise, &rilc->rilc_BackdropList, &rild);
 
 			d1(kprintf("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
@@ -566,8 +566,6 @@ static enum ScanDirResult GenerateTextIcons(struct internalScaWindowTask *iwt, s
 		ise->ise_Flags |= ISEFLG_Used;
 		}
 
-	FreeBackdropFile(&bdl);
-
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return sdResult;
@@ -586,7 +584,8 @@ ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 
 	d1(KPrintF("\n" "%s/%s/%ld: START  iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 
-	RilcInit(&rilc);
+	if (!RilcInit(&rilc, iwt))
+		return 1;
 
 	rilc.rilc_OrigViewByType = iwt->iwt_WindowTask.mt_WindowStruct->ws_Viewmodes;
 	rilc.rilc_TotalFound = 0;
@@ -616,7 +615,7 @@ ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 
 	d1(kprintf("%s/%s/%ld: xOffset=%ld  yOffset=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
 
-	sdResult = GetFileList(iwt, &rilc, TextCheckCleanup, CurrentPrefs.pref_UseExAll, TRUE, FALSE);
+	sdResult = GetFileList(&rilc, TextCheckCleanup, CurrentPrefs.pref_UseExAll, TRUE, FALSE);
 
 	d1(kprintf("%s/%s/%ld: sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 
@@ -643,7 +642,7 @@ ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 		SETHOOKFUNC(SortHook, GetTextIconSortFunction(iwt));
 		SortHook.h_Data = NULL;
 
-		sdResult = GenerateTextIcons(iwt, &rilc, TRUE);
+		sdResult = GenerateTextIcons(&rilc, TRUE);
 
 		d1(kprintf("%s/%s/%ld: IconList=%08lx  SortFunc=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_IconList, SortHook.h_Entry));
 

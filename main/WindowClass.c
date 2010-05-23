@@ -1332,7 +1332,7 @@ static ULONG WindowClass_ChangeWindow(Class *cl, Object *o, Msg msg)
 
 		if (CurrentPrefs.pref_AutoCleanupOnResize && IsIwtViewByIcon(iwt))
 			{
-			d2(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 			WindowClass_ReCleanup(iwt, OldInnerWidth, OldInnerHeight);
 			}
 		}
@@ -1402,7 +1402,7 @@ static ULONG WindowClass_DynamicResizeWindow(Class *cl, Object *o, Msg msg)
 
 		if (CurrentPrefs.pref_AutoCleanupOnResize && IsIwtViewByIcon(iwt))
 			{
-			d2(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 			WindowClass_ReCleanup(iwt, OldInnerWidth, OldInnerHeight);
 			}
@@ -1516,10 +1516,10 @@ static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInn
 	struct Region *UnCleanupRegion = NULL;
 	struct Rect32 AllIconsBBox = iwt->iwt_IconBBox;
 
-	d2(KPrintF("%s/%s/%ld: MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_IconBBox.MaxX, iwt->iwt_IconBBox.MaxY));
-	d2(KPrintF("%s/%s/%ld: iwt_InnerWidth=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerWidth, iwt->iwt_InnerHeight));
-	d2(KPrintF("%s/%s/%ld: OldInnerWidth=%ld  OldInnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, OldInnerWidth, OldInnerHeight));
-	d2(KPrintF("%s/%s/%ld: wt_XOffset=%ld wt_YOffse=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
+	d1(KPrintF("%s/%s/%ld: MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_IconBBox.MaxX, iwt->iwt_IconBBox.MaxY));
+	d1(KPrintF("%s/%s/%ld: iwt_InnerWidth=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_InnerWidth, iwt->iwt_InnerHeight));
+	d1(KPrintF("%s/%s/%ld: OldInnerWidth=%ld  OldInnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, OldInnerWidth, OldInnerHeight));
+	d1(KPrintF("%s/%s/%ld: wt_XOffset=%ld wt_YOffse=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
 
 	AllIconsBBox.MinX -= iwt->iwt_WindowTask.wt_XOffset;
 	AllIconsBBox.MinY -= iwt->iwt_WindowTask.wt_YOffset;
@@ -1529,22 +1529,22 @@ static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInn
 	if ((AllIconsBBox.MaxX <= iwt->iwt_InnerWidth && AllIconsBBox.MaxX > OldInnerWidth)
 		|| (AllIconsBBox.MaxY <= iwt->iwt_InnerHeight && AllIconsBBox.MaxY > OldInnerHeight) )
 		{
-		d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
 		UnCleanup = TRUE;
 		}
 
 	if (!UnCleanup && AllIconsBBox.MaxX > iwt->iwt_InnerWidth && AllIconsBBox.MaxX > OldInnerWidth
 			&& AllIconsBBox.MaxY <= iwt->iwt_InnerHeight)
 		{
-		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerWidth=%ld  iwt_InnerWidt=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		d1(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerWidth=%ld  iwt_InnerWidt=%ld\n", __FILE__, __FUNC__, __LINE__, \
 			iwt->iwt_LastUnCleanupInnerWidth, iwt->iwt_InnerWidth));
-		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerHeight=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		d1(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerHeight=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, \
 			iwt->iwt_LastUnCleanupInnerHeight, iwt->iwt_InnerHeight));
 
 		if (abs(iwt->iwt_LastUnCleanupInnerWidth - iwt->iwt_InnerWidth) >= 10
 			|| abs(iwt->iwt_LastUnCleanupInnerHeight - iwt->iwt_InnerHeight) >= 10)
 			{
-			d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+			d1(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
 			UnCleanup = TRUE;
 
 			UnCleanupRegion = NewRegion();
@@ -1557,7 +1557,7 @@ static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInn
 				Rect.MaxX = iwt->iwt_IconBBox.MaxX;
 				Rect.MaxY = iwt->iwt_IconBBox.MaxY;
 
-				d2(KPrintF("%s/%s/%ld: Rect: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Rect.MinX, Rect.MinY, Rect.MaxX, Rect.MaxY));
+				d1(KPrintF("%s/%s/%ld: Rect: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Rect.MinX, Rect.MinY, Rect.MaxX, Rect.MaxY));
 
 				OrRectRegion(UnCleanupRegion, &Rect);
 				}
@@ -1567,15 +1567,15 @@ static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInn
 	if (!UnCleanup && AllIconsBBox.MaxY > iwt->iwt_InnerHeight && AllIconsBBox.MaxY > OldInnerHeight
 			&& AllIconsBBox.MaxX <= iwt->iwt_InnerWidth)
 		{
-		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerWidth=%ld  iwt_InnerWidt=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		d1(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerWidth=%ld  iwt_InnerWidt=%ld\n", __FILE__, __FUNC__, __LINE__, \
 			iwt->iwt_LastUnCleanupInnerWidth, iwt->iwt_InnerWidth));
-		d2(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerHeight=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, \
+		d1(KPrintF("%s/%s/%ld: iwt_LastUnCleanupInnerHeight=%ld  iwt_InnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, \
 			iwt->iwt_LastUnCleanupInnerHeight, iwt->iwt_InnerHeight));
 
 		if (abs(iwt->iwt_LastUnCleanupInnerWidth - iwt->iwt_InnerWidth) >= 10
 			|| abs(iwt->iwt_LastUnCleanupInnerHeight - iwt->iwt_InnerHeight) >= 10)
 			{
-			d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+			d1(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
 			UnCleanup = TRUE;
 
 			UnCleanupRegion = NewRegion();
@@ -1588,7 +1588,7 @@ static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInn
 				Rect.MaxX = iwt->iwt_IconBBox.MaxX;
 				Rect.MaxY = iwt->iwt_IconBBox.MaxY;
 
-				d2(KPrintF("%s/%s/%ld: Rect: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Rect.MinX, Rect.MinY, Rect.MaxX, Rect.MaxY));
+				d1(KPrintF("%s/%s/%ld: Rect: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FILE__, __FUNC__, __LINE__, Rect.MinX, Rect.MinY, Rect.MaxX, Rect.MaxY));
 
 				OrRectRegion(UnCleanupRegion, &Rect);
 				}
@@ -1597,7 +1597,7 @@ static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInn
 
 	if (UnCleanup)
 		{
-		d2(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld: SCCM_IconWin_UnCleanUp\n", __FILE__, __FUNC__, __LINE__));
 
 		DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_UnCleanUpRegion,
 			UnCleanupRegion);

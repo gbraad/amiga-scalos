@@ -80,9 +80,10 @@ void RealUpdateIcon(struct internalScaWindowTask *, struct WBArg *arg);
 
 // defined in Backdrop.c
 ///
-void InitBackDropList(struct BackDropList *bdl);
-LONG LoadBackdropFile(struct BackDropList *bdl);
-void FreeBackdropFile(struct BackDropList *bdl);
+void BackDropInitList(struct BackDropList *bdl);
+LONG BackdropLoadList(struct BackDropList *bdl);
+void BackdropFreeList(struct BackDropList *bdl);
+void BackdropFilterList(struct BackDropList *bdl, BPTR dirLock);
 BOOL RewriteBackdrop(struct ScaIconNode *in);
 ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in);
 struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WORD PosX, WORD PosY);
@@ -753,15 +754,13 @@ void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable);
 BOOL IsSoftLink(CONST_STRPTR Name);
 BOOL IsNoIconPosition(const struct ExtGadget *gg);
 void SetIconName(Object *IconObj, struct ScaIconNode *in);
-enum ScanDirResult GetFileList(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc,
-	enum ScanDirResult (*CheckFunc)(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc),
+enum ScanDirResult GetFileList(struct ReadIconListControl *rilc,
+	enum ScanDirResult (*CheckFunc)(struct ReadIconListControl *rilc),
 	BOOL UseExAll, BOOL FetchIconType, BOOL CheckOverlap);
-void RilcInit(struct ReadIconListControl *rilc);
+BOOL RilcInit(struct ReadIconListControl *rilc, struct internalScaWindowTask *iwt);
 void RilcCleanup(struct ReadIconListControl *rilc);
-enum ScanDirResult LinkIconScanList(struct internalScaWindowTask *iwt,
-	struct ReadIconListControl *rilc);
-LONG AddFileToFilesList(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc,
-	BPTR dirLock, CONST_STRPTR Name);
+enum ScanDirResult LinkIconScanList(struct ReadIconListControl *rilc);
+LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_STRPTR Name);
 BOOL IsFileHidden(CONST_STRPTR Filename, ULONG Protection);
 BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropList *bdl,
 	BPTR fLock, CONST_STRPTR FileName);
