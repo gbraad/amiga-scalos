@@ -31,12 +31,48 @@
 	KPrintF("%s/%s/%ld: " #LockName "=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, LockName, xxName);\
 	}
 
+/* ------------------------------------------------- */
+
+#define	TIMESTAMPCOUNT_RESET_d1(iwt)
+#define	TIMESTAMPCOUNT_START_d1(iwt,cnt)
+#define	TIMESTAMPCOUNT_END_d1(iwt,cnt)
+#define	TIMESTATS_d1(iwt)
+
+#define	TIMESTAMPCOUNT_RESET_d2(iwt) \
+	{ \
+	memset((iwt)->iwt_TimeStamps, 0, sizeof((iwt)->iwt_TimeStamps)); \
+	}
+#define	TIMESTAMPCOUNT_START_d2(iwt,cnt) \
+	{			\
+	struct EClockVal ev;	\
+	ReadEClock(&ev); \
+	(iwt)->iwt_TimeStamps[cnt].ev_hi = ev.ev_lo; \
+	}
+#define	TIMESTAMPCOUNT_END_d2(iwt,cnt) \
+	{			\
+	struct EClockVal ev;	\
+	ReadEClock(&ev); 	\
+	(iwt)->iwt_TimeStamps[cnt].ev_lo += ev.ev_lo - (iwt)->iwt_TimeStamps[cnt].ev_hi; \
+	}
+#define	TIMESTATS_d2(iwt)	   \
+	{			\
+	struct EClockVal ev;	\
+	ULONG n;	    \
+	ULONG ticks = ReadEClock(&ev); \
+	KPrintF("%s/%s/%ld: =====================================\n", __FILE__, __FUNC__, __LINE__);   \
+	for (n = 0; n < sizeof((iwt)->iwt_TimeStamps) / sizeof((iwt)->iwt_TimeStamps[0]); n++) \
+		{ \
+		ULONG micro = ((ULONG64) 1000000 * (iwt)->iwt_TimeStamps[n].ev_lo) / ticks; \
+		KPrintF("%s/%s/%ld: Counter[%ld]=%lu us\n", __FILE__, __FUNC__, __LINE__, n, micro);   \
+		} \
+	KPrintF("%s/%s/%ld: =====================================\n", __FILE__, __FUNC__, __LINE__);   \
+	}
+
 #define	TIMESTAMP_d1()		;
 #define	TIMESTAMP_d2()		\
 	{			\
 	struct EClockVal ev;	\
-	ULONG ticks;		\
-	ticks = ReadEClock(&ev); \
+	ULONG ticks = ReadEClock(&ev); \
 	KPrintF("%s/%s/%ld: ticks=%lu  hi=%8lu  lo=%8lu\n", __FILE__, __FUNC__, __LINE__, ticks, ev.ev_hi, ev.ev_lo);	\
 	}
 

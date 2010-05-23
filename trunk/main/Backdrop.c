@@ -56,7 +56,7 @@
 
 static BOOL BackdropAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine);
 static BOOL BackdropRemoveLine(struct BackDropList *bdl, BPTR iconLock);
-static LONG BackdropWriteFile(struct BackDropList *bdl);
+static LONG BackdropWriteList(struct BackDropList *bdl);
 static struct ChainedLine *BackdropAllocChainedLine(CONST_STRPTR TextLine);
 static void BackdropFreeChainedLine(struct ChainedLine *cnl);
 static void BackdropRemoveObsoleteEntriesFromBackdropFile(struct BackDropList *bdl);
@@ -68,23 +68,24 @@ static void BackdropRedrawMainIconObject(struct internalScaWindowTask *iwtMain, 
 
 //----------------------------------------------------------------------------
 
-void InitBackDropList(struct BackDropList *bdl)
+void BackDropInitList(struct BackDropList *bdl)
 {
 	NewList(&bdl->bdl_LinesList);
 	bdl->bdl_Loaded = FALSE;
 	bdl->bdl_Changed = FALSE;
+	bdl->bdl_Filtered = FALSE;
 	bdl->bdl_NotPresent = FALSE;
 }
 
 
-LONG LoadBackdropFile(struct BackDropList *bdl)
+LONG BackdropLoadList(struct BackDropList *bdl)
 {
 	const size_t LineSize = 300;
 	LONG Result = RETURN_OK;
 	char *Line;
 	BPTR fh;
 
-	InitBackDropList(bdl);
+	BackDropInitList(bdl);
 
 	fh = Open(".backdrop", MODE_OLDFILE);
 	d1(kprintf("%s/%s/%ld: fh=%08lx\n", __FILE__, __FUNC__, __LINE__, fh));
@@ -136,7 +137,7 @@ LONG LoadBackdropFile(struct BackDropList *bdl)
 }
 
 
-void FreeBackdropFile(struct BackDropList *bdl)
+void BackdropFreeList(struct BackDropList *bdl)
 {
 	struct ChainedLine *cnl;
 
@@ -147,7 +148,95 @@ void FreeBackdropFile(struct BackDropList *bdl)
 }
 
 
-static LONG BackdropWriteFile(struct BackDropList *bdl)
+void BackdropFilterList(struct BackDropList *bdl, BPTR dirLock)
+{
+	struct ChainedLine *cnl;
+	BPTR oldDir;
+	STRPTR Path;
+
+	d1(kprintf("%s/%s/%ld: START bdl=%08lx\n", __FILE__, __FUNC__, __LINE__, bdl));
+	debugLock_d1(dirLock);
+
+	if (BNULL == dirLock)
+		return;
+
+	if (bdl->bdl_Filtered)
+		return;
+
+	Path = AllocPathBuffer();
+	if (NULL == Path)
+		return;
+
+	oldDir = CurrentDir(dirLock);
+
+	if (!bdl->bdl_Loaded && !bdl->bdl_NotPresent)
+		{
+		BPTR RootDirLock;
+
+		do	{
+			RootDirLock = Lock(":", ACCESS_READ);
+			debugLock_d1(RootDirLock);
+			if (BNULL == RootDirLock)
+				break;
+
+			// change to root directory of icon drawer
+			CurrentDir(RootDirLock);
+
+			if (RETURN_OK != BackdropLoadList(bdl))
+				break;
+			} while (0);
+
+		CurrentDir(dirLock);
+
+		if (RootDirLock)
+			UnLock(RootDirLock);
+		}
+
+	bdl->bdl_Filtered = TRUE;
+
+	for (cnl = (struct ChainedLine *) bdl->bdl_LinesList.lh_Head;
+		cnl != (struct ChainedLine *) &bdl->bdl_LinesList.lh_Tail; )
+		{
+		BPTR tmpLock;
+		STRPTR lp;
+		struct ChainedLine *cnlNext = (struct ChainedLine *) cnl->cnl_Node.ln_Succ;;
+
+		d1(kprintf("%s/%s/%ld: Line=<%s>\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line));
+
+		stccpy(Path, cnl->cnl_Line, Max_PathLen);
+
+		// remove file part
+		lp = PathPart(Path);
+		if (lp)
+			*lp = '\0';
+
+		tmpLock = Lock(Path, ACCESS_READ);
+		debugLock_d1(tmpLock);
+		if (tmpLock)
+			{
+			if (LOCK_SAME != ScaSameLock(tmpLock, dirLock))
+				{
+				// delete entry from .backdrop
+				d1(kprintf("%s/%s/%ld: Filter Line <%s>\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line));
+
+				Remove(&cnl->cnl_Node);
+
+				BackdropFreeChainedLine(cnl);
+				}
+			UnLock(tmpLock);
+			}
+
+		cnl = cnlNext;
+		}
+
+	FreePathBuffer(Path);
+	CurrentDir(oldDir);
+
+	d1(kprintf("%s/%s/%ld: END bdl=%08lx\n", __FILE__, __FUNC__, __LINE__, bdl));
+}
+
+
+static LONG BackdropWriteList(struct BackDropList *bdl)
 {
 	struct ChainedLine *cnl;
 	LONG Result = RETURN_OK;
@@ -290,17 +379,17 @@ BOOL RewriteBackdrop(struct ScaIconNode *in)
 
 		d1(kprintf("%s/%s/%ld: rootDirLock OK\n", __FILE__, __FUNC__, __LINE__));
 
-		if (RETURN_OK == LoadBackdropFile(&bdl))
+		if (RETURN_OK == BackdropLoadList(&bdl))
 			{
-			d1(kprintf("%s/%s/%ld: LoadBackdropFile OK - GO BackdropWriteFile(&bdl)\n", __FILE__, __FUNC__, __LINE__));
+			d1(kprintf("%s/%s/%ld: LoadBackdropFile OK - GO BackdropWriteList(&bdl)\n", __FILE__, __FUNC__, __LINE__));
 
 			// Write .backdrop if it has any changes
-			BackdropWriteFile(&bdl);
+			BackdropWriteList(&bdl);
 
 			Success = TRUE;
 			}
 
-		FreeBackdropFile(&bdl);
+		BackdropFreeList(&bdl);
 
 		UnLock(rootDirLock);
 		}
@@ -329,7 +418,7 @@ ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in)
 
 	d1(kprintf("%s/%s/%ld: oLock=%08lx  OldPath=<%s>\n", __FILE__, __FUNC__, __LINE__, oLock, OldPath));
 
-	InitBackDropList(&bdl);
+	BackDropInitList(&bdl);
 
 	do	{
 		NewPath = AllocPathBuffer();
@@ -399,7 +488,7 @@ ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in)
 
 		oldDir = CurrentDir(rootLock);
 
-		Result = LoadBackdropFile(&bdl);
+		Result = BackdropLoadList(&bdl);
 		if (RETURN_OK != Result)
 			break;
 
@@ -418,10 +507,10 @@ ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in)
 				}
 			}
 
-		BackdropWriteFile(&bdl);
+		BackdropWriteList(&bdl);
 		} while (0);
 
-	FreeBackdropFile(&bdl);
+	BackdropFreeList(&bdl);
 
 	if (WasChanged)
 		{
@@ -574,7 +663,7 @@ struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WOR
 			d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 			// Check if is a real permanent backdrop icon before to set ICONOVERLAYF_LeftOut Overlay type flag.
-			InitBackDropList(&bdl);
+			BackDropInitList(&bdl);
 
 			
 			if (IsPermanentBackDropIcon(iwtMain, &bdl, iconDirLock, GetIconName(inMain)))
@@ -602,7 +691,7 @@ struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WOR
 				inMain->in_SupportFlags |= INF_SupportsLeaveOut;
 				}
 
-			FreeBackdropFile(&bdl);
+			BackdropFreeList(&bdl);
 			}
 		else
 			{
@@ -760,7 +849,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 	d1(KPrintF("%s/%s/%ld: START Icon=<%s>  Lock=%08lx\n", __FILE__, __FUNC__, __LINE__, IconName, DirLock));
 	debugLock_d1(DirLock);
 
-	InitBackDropList(&bdl);
+	BackDropInitList(&bdl);
 
 	do	{
 		if (IsPermanentBackDropIcon(iwt, &bdl, DirLock, IconName))
@@ -800,7 +889,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 		oldDir = CurrentDir(rootLock);
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		if (RETURN_OK != LoadBackdropFile(&bdl))
+		if (RETURN_OK != BackdropLoadList(&bdl))
 			break;
 
 		lp = strchr(DirName, ':');
@@ -814,7 +903,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		BackdropWriteFile(&bdl);
+		BackdropWriteList(&bdl);
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -898,7 +987,7 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	FreeBackdropFile(&bdl);
+	BackdropFreeList(&bdl);
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -939,7 +1028,7 @@ BOOL IsPermanentBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropL
 			// change to root directory of icon drawer
 			CurrentDir(DirLock);
 
-			if (RETURN_OK != LoadBackdropFile(bdl))
+			if (RETURN_OK != BackdropLoadList(bdl))
 				break;
 			} while (0);
 
@@ -948,38 +1037,24 @@ BOOL IsPermanentBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropL
 			UnLock(DirLock);
 		}
 
-	d1(kprintf("%s/%s/%ld: bdl=%08lx  Loaded=%ld  NotPresent=%ld\n", \
-		__FILE__, __FUNC__, __LINE__, bdl, bdl->bdl_Loaded, bdl->bdl_NotPresent));
+	d1(kprintf("%s/%s/%ld: bdl=%08lx  Loaded=%ld  NotPresent=%ld  bdl_Filtered=%ld\n", \
+		__FILE__, __FUNC__, __LINE__, bdl, bdl->bdl_Loaded, bdl->bdl_NotPresent, bdl->bdl_Filtered));
+
 	if (bdl->bdl_Loaded)
 		{
-		char *IconPath;
-		struct ChainedLine *cnl;
-		STRPTR PathStart;
-
-		do	{
-			IconPath = AllocPathBuffer();
-			if (NULL == IconPath)
-				break;
-
-			if (!NameFromLock(fLock, IconPath, Max_PathLen-1))
-				break;
-
-			if (!AddPart(IconPath, (STRPTR) FileName, Max_PathLen-1))
-				break;
-
-			d1(kprintf("%s/%s/%ld: IconPath=<%s>\n", __FILE__, __FUNC__, __LINE__, IconPath));
-
-			PathStart = strchr(IconPath, ':');
-			if (NULL == PathStart)
-				PathStart = IconPath;
+		if (bdl->bdl_Filtered)
+			{
+			struct ChainedLine *cnl;
 
 			for (cnl = (struct ChainedLine *) bdl->bdl_LinesList.lh_Head;
 				cnl != (struct ChainedLine *) &bdl->bdl_LinesList.lh_Tail;
 				cnl = (struct ChainedLine *) cnl->cnl_Node.ln_Succ)
 				{
-				d1(kprintf("%s/%s/%ld: Line=<%s>\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line));
+				STRPTR lp = FilePart(cnl->cnl_Line);
 
-				if (0 == Stricmp((STRPTR) PathStart, cnl->cnl_Line))
+				d1(kprintf("%s/%s/%ld: lp=<%s>\n", __FILE__, __FUNC__, __LINE__, lp));
+
+				if (0 == Stricmp(FileName, lp))
 					{
 					// entry found
 					d1(kprintf("%s/%s/%ld: Line=<%s> IsBackdrop=[ %ld ]\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line, IsBackdrop));
@@ -987,10 +1062,49 @@ BOOL IsPermanentBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropL
 					break;
 					}
 				}
-			} while (0);
+			}
+		else
+			{
+			char *IconPath;
+			struct ChainedLine *cnl;
+			STRPTR PathStart;
 
-		if (IconPath)
-			FreePathBuffer(IconPath);
+			do	{
+				IconPath = AllocPathBuffer();
+				if (NULL == IconPath)
+					break;
+
+				if (!NameFromLock(fLock, IconPath, Max_PathLen-1))
+					break;
+
+				if (!AddPart(IconPath, (STRPTR) FileName, Max_PathLen-1))
+					break;
+
+				d1(kprintf("%s/%s/%ld: IconPath=<%s>\n", __FILE__, __FUNC__, __LINE__, IconPath));
+
+				PathStart = strchr(IconPath, ':');
+				if (NULL == PathStart)
+					PathStart = IconPath;
+
+				for (cnl = (struct ChainedLine *) bdl->bdl_LinesList.lh_Head;
+					cnl != (struct ChainedLine *) &bdl->bdl_LinesList.lh_Tail;
+					cnl = (struct ChainedLine *) cnl->cnl_Node.ln_Succ)
+					{
+					d1(kprintf("%s/%s/%ld: Line=<%s>\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line));
+
+					if (0 == Stricmp((STRPTR) PathStart, cnl->cnl_Line))
+						{
+						// entry found
+						d1(kprintf("%s/%s/%ld: Line=<%s> IsBackdrop=[ %ld ]\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line, IsBackdrop));
+						IsBackdrop = TRUE;
+						break;
+						}
+					}
+				} while (0);
+
+			if (IconPath)
+				FreePathBuffer(IconPath);
+			}
 		}
 
 	d1(KPrintF("%s/%s/%ld: IsBackdrop=%ld\n", __FILE__, __FUNC__, __LINE__, IsBackdrop));
@@ -1010,7 +1124,7 @@ void PutAwayIcon(struct internalScaWindowTask *iwt,
 	STRPTR Path = NULL;
 	struct ScaUpdateIcon_IW UpdateIcon = { (BPTR)NULL, NULL };
 
-	InitBackDropList(&bdl);
+	BackDropInitList(&bdl);
 
 	d1(KPrintF("%s/%s/%ld: Icon=<%s>\n", __FILE__, __FUNC__, __LINE__, IconName));
 	debugLock_d1(iconDirLock);
@@ -1078,7 +1192,7 @@ void PutAwayIcon(struct internalScaWindowTask *iwt,
 			CurrentDir(rootLock);
 
 			if (bdl.bdl_Changed)
-				BackdropWriteFile(&bdl);
+				BackdropWriteList(&bdl);
 			}
 
 		if (iwt->iwt_WindowTask.mt_WindowStruct == iInfos.xii_iinfos.ii_MainWindowStruct)
@@ -1110,7 +1224,7 @@ void PutAwayIcon(struct internalScaWindowTask *iwt,
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-	FreeBackdropFile(&bdl);
+	BackdropFreeList(&bdl);
 
 	if (Path)
 		FreePathBuffer(Path);

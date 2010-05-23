@@ -65,7 +65,7 @@ struct CudFilesList
 
 static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesList *cfl, BPTR dirLock);
 static void DeviceWindowBuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesList *cfl, BPTR dirLock);
-static void DeviceWindowBuildFileList(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc);
+static void DeviceWindowBuildFileList(struct ReadIconListControl *rilc);
 static void CheckLeftoutIcons(struct CudFilesList *cfl, BPTR dirLock);
 static struct CheckUpdateData *FindCudByName(struct CudFilesList *list, const char *Name);
 static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *inUpdate);
@@ -105,7 +105,9 @@ ULONG DeviceWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		ULONG count = 0;
 
 		memset(&cfl, 0, sizeof(cfl));
-		RilcInit(&rilc);
+		
+		if (!RilcInit(&rilc, iwt))
+			break;
 
 		if (++iwt->iwt_CheckUpdateCount > 1)
 			{
@@ -143,12 +145,12 @@ ULONG DeviceWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		DeviceWindowBuildCUDIconList(iwt, &cfl, dirLock);
 
 		// this is the main window, add files for left-out icons to <rilc.rilc_IconScanList> and <rilc.rilc_NonIconScanList>
-		DeviceWindowBuildFileList(iwt, &rilc);
+		DeviceWindowBuildFileList(&rilc);
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		// build links between icons and objects
-		LinkIconScanList(iwt, &rilc);
+		LinkIconScanList(&rilc);
 
 		// Add (left-out) file entries for icons
 		for (ise = (struct IconScanEntry *) rilc.rilc_IconScanList.lh_Head;
@@ -336,7 +338,6 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 	struct DateStamp dsIconUpdate;
 	BPTR dirLock = iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
 	BOOL VolumeIsWritable;
-	struct BackDropList bdl;
 	ULONG Success = FALSE;
 	BOOL SemaphoresLocked = FALSE;
 
@@ -349,8 +350,9 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		struct ScaIconNode *in;
 
 		memset(&cfl, 0, sizeof(cfl));
-		InitBackDropList(&bdl);
-		RilcInit(&rilc);
+		
+		if (!RilcInit(&rilc, iwt))
+			break;
 
 		if (++iwt->iwt_CheckUpdateCount > 1)
 			{
@@ -420,7 +422,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		DateStamp(&dsIconUpdate);
 
 		// fill <rilc.rilc_IconScanList> and <rilc.rilc_NonIconScanList> from directory
-		sdResult = GetFileList(iwt, &rilc, NULL, CurrentPrefs.pref_UseExAll, FALSE, iwt->iwt_CheckOverlappingIcons);
+		sdResult = GetFileList(&rilc, NULL, CurrentPrefs.pref_UseExAll, FALSE, iwt->iwt_CheckOverlappingIcons);
 
 		d1(KPrintF("%s/%s/%ld: GetFileList() complete. sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 
@@ -430,7 +432,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		// build links between icons and objects
-		LinkIconScanList(iwt, &rilc);
+		LinkIconScanList(&rilc);
 
 		// add icon files
 		for (ise = (struct IconScanEntry *) rilc.rilc_IconScanList.lh_Head;
@@ -512,7 +514,7 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 
 				ClassSetDefaultIconFlags(cud->cud_IconNode, NULL == cud->cud_iseIcon);
 
-				if (IsPermanentBackDropIcon(iwt, &bdl, dirLock, cud->cud_IconName))
+				if (IsPermanentBackDropIcon(iwt, &rilc.rilc_BackdropList, dirLock, cud->cud_IconName))
 					{
 					d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 					cud->cud_IconNode->in_SupportFlags |= INF_SupportsPutAway;
@@ -642,7 +644,6 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 
 	d1(KPrintF("%s/%s/%ld: before cleanup.\n", __FILE__, __FUNC__, __LINE__));
 
-	FreeBackdropFile(&bdl);
 	CleanupCudFilesList(&cfl);
 	RilcCleanup(&rilc);
 
@@ -674,7 +675,6 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 	struct DateStamp dsIconUpdate;
 	BPTR dirLock = iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock;
 	BOOL VolumeIsWritable;
-	struct BackDropList bdl;
 	BOOL SemaphoresLocked = FALSE;
 	ULONG Success = FALSE;
 	STRPTR fileName;
@@ -690,8 +690,9 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 			break;
 
 		memset(&cfl, 0, sizeof(cfl));
-		InitBackDropList(&bdl);
-		RilcInit(&rilc);
+		
+		if (!RilcInit(&rilc, iwt))
+			break;
 
 		debugLock_d1(dirLock);
 
@@ -762,7 +763,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		DateStamp(&dsIconUpdate);
 
 		// fill <rilc.rilc_IconScanList> and <rilc.rilc_NonIconScanList> from directory
-		sdResult = GetFileList(iwt, &rilc, NULL, CurrentPrefs.pref_UseExAll, FALSE, iwt->iwt_CheckOverlappingIcons);
+		sdResult = GetFileList(&rilc, NULL, CurrentPrefs.pref_UseExAll, FALSE, iwt->iwt_CheckOverlappingIcons);
 
 		d1(KPrintF("%s/%s/%ld: sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 
@@ -773,7 +774,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 
 
 		// build links between icons and objects
-		LinkIconScanList(iwt, &rilc);
+		LinkIconScanList(&rilc);
 
 		// add icon files
 		for (ise = (struct IconScanEntry *) rilc.rilc_IconScanList.lh_Head;
@@ -866,7 +867,7 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 					ClassSetDefaultIconFlags(cud->cud_IconNode, NULL == cud->cud_iseIcon);	// +jmc+
 					}
 
-				if (IsPermanentBackDropIcon(iwt, &bdl, dirLock, cud->cud_IconName))
+				if (IsPermanentBackDropIcon(iwt, &rilc.rilc_BackdropList, dirLock, cud->cud_IconName))
 					{
 					d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 					cud->cud_IconNode->in_SupportFlags |= INF_SupportsPutAway;
@@ -1085,7 +1086,6 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 		Success = TRUE;
 		} while (0);
 
-	FreeBackdropFile(&bdl);
 	CleanupCudFilesList(&cfl);
 	RilcCleanup(&rilc);
 
@@ -1171,12 +1171,14 @@ static void DeviceWindowBuildCUDIconList(struct internalScaWindowTask *iwt, stru
 }
 
 
-static void DeviceWindowBuildFileList(struct internalScaWindowTask *iwt, struct ReadIconListControl *rilc)
+static void DeviceWindowBuildFileList(struct ReadIconListControl *rilc)
 {
 	STRPTR IconPath = AllocPathBuffer();
 
 	if (IconPath)
 		{
+		struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
+
 		if (ScalosAttemptLockIconListShared(iwt))
 			{
 			struct ScaIconNode *in;
@@ -1185,14 +1187,14 @@ static void DeviceWindowBuildFileList(struct internalScaWindowTask *iwt, struct 
 				{
 				if (in->in_Lock)
 					{
-					AddFileToFilesList(iwt, rilc, in->in_Lock, GetIconName(in));
+					AddFileToFilesList(rilc, in->in_Lock, GetIconName(in));
 
 					d1(KPrintF("%s/%s/%ld: in=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, in, GetIconName(in)));
 
 					stccpy(IconPath, GetIconName(in), Max_PathLen - 1);
 					SafeStrCat(IconPath, ".info", Max_PathLen - 1);
 
-					AddFileToFilesList(iwt, rilc, in->in_Lock, IconPath);
+					AddFileToFilesList(rilc, in->in_Lock, IconPath);
 					}
 				}
 
