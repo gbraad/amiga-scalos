@@ -344,6 +344,8 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 	TIMESTAMPCOUNT_START_d1(iwt, 0);
 
 	do	{
+		struct ScaIconNode *in;
+
 		if (!RilcInit(&rilc, iwt))
 			break;
 
@@ -378,6 +380,17 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 		ScanDirUpdateStatusBarText(iwt, 0);
 
 		BackdropWait(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock);
+
+		// Add currently present icons to rilc_IconTree
+		// to allow for correct check for duplicates
+		ScalosLockIconListShared(iwt);
+		for (in=iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
+			{
+			BTreeInsert(rilc.rilc_IconTree,
+				GetIconName(in),
+				in);
+			}
+		ScalosUnLockIconList(iwt);
 
 		if (iwt->iwt_WindowTask.wt_Window)
 			{
