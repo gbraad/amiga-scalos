@@ -1359,7 +1359,7 @@ static BOOL StartUpdaterProcess(void)
 	STATIC_PATCHFUNC(UpdaterProcess)
 
 	// CreateNewProc()
-	UpdaterProc = CreateNewProcTags(NP_Name, (ULONG) "PersistentWindowsUpdater",
+	UpdaterProc = CreateNewProcTags(NP_Name, (ULONG) "Scalos_PersistentWindowsUpdater",
 			NP_Priority, 0,
 			NP_Entry, (ULONG) PATCH_NEWFUNC(UpdaterProcess),
 			NP_StackSize, 32768,
