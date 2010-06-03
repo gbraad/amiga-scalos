@@ -968,6 +968,8 @@ struct ChainedLine
 	{
 	struct Node cnl_Node;
 	STRPTR cnl_Line;
+	LONG cnl_PosX;
+	LONG cnl_PosY;
 	};
 
 struct BackDropList

@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20100509	jl	- Bugfix: for file copying and link creation, detection of already existing icons didn't work.
+41.8	20100603	jl	- Bugfix: finally implemented complete support for backdrop icons
+				  created by MorphOS Ambient (shortcuts.prefs).
+	20100509	jl	- Bugfix: for file copying and link creation, detection of already existing icons didn't work.
 	20100505	jl	- Improvement: allow individual icon size constraints and icon scale factor per window.
 				- Bugfix: Windowproperties.module: fixed enforcer hit/crash when saving changes.
 	20100501	jl	- Improvement: arbitrary scaling of icons is now possible.

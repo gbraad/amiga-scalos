@@ -53,24 +53,6 @@
 
 // local data definitions
 
-#define	ID_SCT		MAKE_ID('S','C','T',0)
-#define	MAGIC_SCT	0x800e0000
-
-struct SctPrefsField
-	{
-	ULONG spf_Number;	// ordinal number of this field
-	ULONG spf_Length;	// Length of data in bytes
-	UBYTE spf_Data[1];	// Field Data <spf_Length> Bytes
-	};
-
-struct SctShortcut
-	{
-	struct Node ssc_Node;
-	struct SctPrefsField *ssc_Name;
-	struct SctPrefsField *ssc_Left;
-	struct SctPrefsField *ssc_Top;
-	};
-
 struct DeviceWindowClassInstance
 	{
 	ULONG dwci_Dummy;
@@ -107,8 +89,6 @@ static BOOL CreateSbi(struct ScaIconNode *DevIn, struct ScaIconNode *in);
 static struct ScaIconNode *IconAlreadyExists(struct internalScaWindowTask *iwt, struct ScaDeviceIcon *di);
 static BOOL FindIconInDrawerWindows(BPTR dirLock, CONST_STRPTR IconName);
 static Object *ReadDefaultIconByName(struct internalScaWindowTask *iwt, CONST_STRPTR iconName, STRPTR DevName);
-static void ReadShortcutPrefs(CONST_STRPTR FileName);
-static struct SctPrefsField *ReadSctField(BPTR fh);
 static BOOL StartDeviceIconNotify(struct internalScaWindowTask *iwt, struct ScaDeviceIcon *di);
 static void SetDeviceIconSupportsFlags(struct ScaIconNode *in);
 static void SetBackdropIconSupportsFlags(struct internalScaWindowTask *iwt, 
@@ -259,8 +239,6 @@ static ULONG DeviceWindowClass_ReadIconList(Class *cl, Object *o, Msg msg)
 	SplashRemoveUser();
 
 	d1(kprintf("%s/%s/%ld: Finished iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
-
-	ReadShortcutPrefs("SYS:Prefs/Ambient/shortcuts.prefs");
 
 	return 0;
 }
@@ -1727,229 +1705,6 @@ static Object *ReadDefaultIconByName(struct internalScaWindowTask *iwt, CONST_ST
 	d1(kprintf("%s/%s/%ld: iconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, iconObj));
 
 	return iconObj;
-}
-
-
-static void ReadShortcutPrefs(CONST_STRPTR FileName)
-{
-	BPTR fh;
-	BPTR IconDirLock = BNULL;
-	STRPTR IconPath = NULL;
-
-	do	{
-		ULONG FileVersion;
-		ULONG NumberOfEntries;
-		LONG Length;
-		ULONG LData;
-		BOOL Abort = FALSE;
-
-		fh = Open((STRPTR) FileName, MODE_OLDFILE);
-		d1(KPrintF("%s/%s/%ld:  fh=%08lx\n", __FILE__, __FUNC__, __LINE__, fh));
-		if ((BPTR)NULL == fh)
-			break;
-
-		IconPath = AllocPathBuffer();
-		d1(KPrintF("%s/%s/%ld:  IconPath=%08lx\n", __FILE__, __FUNC__, __LINE__, IconPath));
-		if (NULL == IconPath)
-			break;
-
-		Length = Read(fh, &LData, sizeof(LData));
-		d1(KPrintF("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-		if (sizeof(LData) != Length)
-			break;
-
-		d1(KPrintF("%s/%s/%ld:  LData=%08lx\n", __FILE__, __FUNC__, __LINE__, LData));
-
-		if ((LData & 0xffffff00) != ID_SCT)
-			break;
-
-		FileVersion = LData & 0x000000ff;
-
-		Length = Read(fh, &LData, sizeof(LData));
-		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-		if (sizeof(LData) != Length)
-			break;
-
-		d1(KPrintF("%s/%s/%ld:  LData=%08lx\n", __FILE__, __FUNC__, __LINE__, LData));
-
-		if (LData != 1)
-			break;
-
-		if (1 == FileVersion)
-			{
-			Length = Read(fh, &LData, sizeof(LData));
-			d1(KPrintF("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-			if (sizeof(LData) != Length)
-				break;
-			}
-
-		Length = Read(fh, &LData, sizeof(LData));
-		d1(KPrintF("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-		if (sizeof(LData) != Length)
-			break;
-
-		d1(KPrintF("%s/%s/%ld:  LData=%08lx\n", __FILE__, __FUNC__, __LINE__, LData));
-		if (LData != MAGIC_SCT)
-		      break;
-
-		Length = Read(fh, &NumberOfEntries, sizeof(NumberOfEntries));
-		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-		if (sizeof(NumberOfEntries) != Length)
-			break;
-
-		d1(KPrintF("%s/%s/%ld:  NumberOfEntries=%lu\n", __FILE__, __FUNC__, __LINE__, NumberOfEntries));
-
-		while (NumberOfEntries--)
-			{
-			ULONG EntryNumber;
-			ULONG NumberOfFields;
-			struct SctShortcut ssc;
-
-			memset(&ssc, 0, sizeof(ssc));
-
-			Length = Read(fh, &EntryNumber, sizeof(EntryNumber));
-			d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-			if (sizeof(EntryNumber) != Length)
-				break;
-
-			d1(KPrintF("%s/%s/%ld:  EntryNumber=%lu\n", __FILE__, __FUNC__, __LINE__, EntryNumber));
-
-			Length = Read(fh, &NumberOfFields, sizeof(NumberOfFields));
-			d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-			if (sizeof(NumberOfFields) != Length)
-				break;
-
-			d1(KPrintF("%s/%s/%ld:  NumberOfFields=%lu\n", __FILE__, __FUNC__, __LINE__, NumberOfFields));
-
-			// we expect 3 fields
-			if (3 != NumberOfFields)
-				break;
-
-			while (!Abort && NumberOfFields--)
-				{
-				struct SctPrefsField *sct;
-
-				sct = ReadSctField(fh);
-				if (NULL == sct)
-					{
-					Abort = TRUE;
-					break;
-					}
-
-				switch (sct->spf_Number)
-					{
-				case 1:		// Path
-					ssc.ssc_Name = sct;
-					break;
-				case 2:		// Left
-					ssc.ssc_Left = sct;
-					break;
-				case 3:		// Top
-					ssc.ssc_Top = sct;
-					break;
-				default:
-					ScalosFree(sct);
-					break;
-					}
-				}
-
-			if (ssc.ssc_Name && ssc.ssc_Left && ssc.ssc_Top)
-				{
-				WORD PosX, PosY;
-				STRPTR lp;
-				STRPTR IconName;
-				struct ScaIconNode *in;
-
-				IconName = FilePart((STRPTR)ssc.ssc_Name->spf_Data);
-				stccpy(IconPath, (char *)ssc.ssc_Name->spf_Data, Max_PathLen);
-				lp = PathPart(IconPath);
-				if (NULL == lp)
-					break;
-
-				*lp = '\0';
-				IconDirLock = Lock(IconPath, ACCESS_READ);
-				if ((BPTR)NULL == IconDirLock)
-					break;
-
-				PosX = (WORD) *((ULONG *) ssc.ssc_Left->spf_Data);
-				PosY = (WORD) *((ULONG *) ssc.ssc_Top->spf_Data);
-
-				d1(kprintf("%s/%s/%ld:  Name=<%s>  Left=%ld  Top=%ld\n", \
-					__FILE__, __FUNC__, __LINE__, ssc.ssc_Name->spf_Data, PosX, PosY));
-
-				in = AddBackdropIcon(IconDirLock, IconName, PosX, PosY);
-				if (in)
-					{
-					in->in_SupportFlags &= ~INF_SupportsLeaveOut;
-					in->in_SupportFlags |= INF_SupportsPutAway;
-					}
-				}
-
-			if (ssc.ssc_Name)
-				ScalosFree(ssc.ssc_Name);
-			if (ssc.ssc_Left)
-				ScalosFree(ssc.ssc_Left);
-			if (ssc.ssc_Top)
-				ScalosFree(ssc.ssc_Top);
-			}
-		} while (0);
-
-	if (IconDirLock)
-		UnLock(IconDirLock);
-	if (IconPath)
-		FreePathBuffer(IconPath);
-	if (fh)
-		Close(fh);
-}
-
-
-static struct SctPrefsField *ReadSctField(BPTR fh)
-{
-	struct SctPrefsField *sct = NULL;
-	ULONG FieldOrdinal;
-	ULONG FieldDataSize;
-	BOOL Success = FALSE;
-
-	do	{
-		LONG Length;
-
-		Length = Read(fh, &FieldOrdinal, sizeof(FieldOrdinal));
-		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-		if (sizeof(FieldOrdinal) != Length)
-			break;
-
-		d1(KPrintF("%s/%s/%ld:  FieldOrdinal=%ld\n", __FILE__, __FUNC__, __LINE__, FieldOrdinal));
-
-		Length = Read(fh, &FieldDataSize, sizeof(FieldDataSize));
-		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-		if (sizeof(FieldDataSize) != Length)
-			break;
-
-		d1(KPrintF("%s/%s/%ld:  FieldDataSize=%ld\n", __FILE__, __FUNC__, __LINE__, FieldDataSize));
-
-		sct = ScalosAlloc(sizeof(struct SctPrefsField) + FieldDataSize);
-		d1(kprintf("%s/%s/%ld:  sct=%08lx\n", __FILE__, __FUNC__, __LINE__, sct));
-		if (NULL == sct)
-			break;
-
-		sct->spf_Number = FieldOrdinal;
-		sct->spf_Length = FieldDataSize;
-
-		Length = Read(fh, sct->spf_Data, FieldDataSize);
-		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
-		if (FieldDataSize != Length)
-			break;
-
-		Success = TRUE;
-		} while (0);
-
-	if (sct && !Success)
-		{
-		ScalosFree(sct);
-		sct = NULL;
-		}
-
-	return sct;
 }
 
 

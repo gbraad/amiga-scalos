@@ -1375,6 +1375,7 @@ static void ScalosMain(LONG *ArgArray)
 		ReadPalettePrefs();
 //		ReadScalosPrefs();
 		ReadFontPrefs();
+		ShortcutReadPrefs();
 
 		LINE_TRACE;
 
@@ -1752,6 +1753,7 @@ static void ScalosMain(LONG *ArgArray)
 	if (MainWindowTask && iInfos.xii_iinfos.ii_MainMsgPort && ScalosBase)
 		PatternsOff(MainWindowTask, iInfos.xii_iinfos.ii_MainMsgPort);
 
+	ShortcutFreePrefs();
 	FreeFontPrefs();
 	FreePatternPrefs();
 	FreeMenuPrefs();

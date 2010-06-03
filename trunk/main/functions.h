@@ -84,6 +84,8 @@ void BackDropInitList(struct BackDropList *bdl);
 LONG BackdropLoadList(struct BackDropList *bdl);
 void BackdropFreeList(struct BackDropList *bdl);
 void BackdropFilterList(struct BackDropList *bdl, BPTR dirLock);
+BOOL BackdropAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine, LONG PosX, LONG PosY);
+BOOL BackdropRemoveLine(struct BackDropList *bdl, BPTR iconLock);
 BOOL RewriteBackdrop(struct ScaIconNode *in);
 ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in);
 struct ScaIconNode *AddBackdropIcon(BPTR iconDirLock, CONST_STRPTR iconName, WORD PosX, WORD PosY);
@@ -113,7 +115,6 @@ void WindowBackFill(struct RastPort *rp,
 ///
 struct ScalosClass *initButtonGadgetClass(const struct PluginClass *plug);
 ///
-
 /* ------------------------------------------------- */
 
 // defined in ChildProcess.c
@@ -177,6 +178,12 @@ struct ExtGadget *ControlBarFindGadget(struct internalScaWindowTask *iwt,
 struct ControlBarGadgetEntry *ControlBarFindGadgetByID(struct internalScaWindowTask *iwt, UWORD GadgetID);
 UWORD ControlBarQueryGadgetType(struct internalScaWindowTask *iwt, struct ExtGadget *gg);
 void ControlBarActionButton(struct internalScaWindowTask *iwt, struct ExtGadget *gg);
+///
+/* ------------------------------------------------- */
+
+// defined in crc32.c
+///
+ULONG update_crc(ULONG crc, const unsigned char *buf, size_t len);
 ///
 /* ------------------------------------------------- */
 
@@ -820,6 +827,16 @@ ULONG ScalosAttemptSemaphoreShared(SCALOSSEMAPHORE *xsema);
 // defined in SeparatorClassGadget.c
 ///
 struct ScalosClass *initSeparatorGadgetClass(const struct PluginClass *plug);
+///
+/* ------------------------------------------------- */
+
+// defined in Shortcuts.c
+///
+BOOL ShortcutAddLines(struct BackDropList *bdlVolume);
+void ShortcutReadPrefs(void);
+void ShortcutFreePrefs(void);
+BOOL ShortcutAddEntry(STRPTR path, LONG PosX, LONG PosY);
+BOOL ShortcutRemoveEntry(BPTR iconLock);
 ///
 /* ------------------------------------------------- */
 
