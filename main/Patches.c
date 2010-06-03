@@ -148,9 +148,7 @@ APTR OldAddAppIconA;
 APTR OldAddAppWindowA;
 APTR OldAppAppMenuItemA;
 APTR OldSetBackFill;
-#if defined(__MORPHOS__)
 APTR OldWBInfo;
-#endif /* __MORPHOS__ */
 LIBFUNC_P3_DPROTO(BOOL, (*OldPutDiskObject),
 	A0, CONST_STRPTR, Name,
 	A1, const struct DiskObject *, diskObj,
@@ -1451,7 +1449,6 @@ LIBFUNC_END
 
 
 
-#if defined(__MORPHOS__)
 //	  worked = WBInfo(lock, name, screen)
 //	  d0              a0    a1    a2
 //
@@ -1498,7 +1495,6 @@ LIBFUNC_P4(ULONG, sca_WBInfo,
 	return Success;
 }
 LIBFUNC_END
-#endif /* __MORPHOS__ */
 
 
 //	status = PutDiskObject(name, diskobj)

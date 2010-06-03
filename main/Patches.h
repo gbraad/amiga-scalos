@@ -110,13 +110,11 @@ LIBFUNC_P4_PROTO(void, sca_UpdateWorkbench,
 	A6, struct Library *, wbBase);
 LIBFUNC_P1_PROTO(LONG, sca_SetBackFill,
 	A6, struct Library *, wbBase);
-#if defined(__MORPHOS__)
 LIBFUNC_P4_PROTO(ULONG, sca_WBInfo,
 	A0, BPTR, lock,
 	A1, STRPTR, name,
 	A2, struct Screen *, screen,
 	A6, struct Library *, wbBase);
-#endif /* __MORPHOS__ */
 LIBFUNC_P3_PROTO(BOOL, sca_PutDiskObject,
 	A0, CONST_STRPTR, Name,
 	A1, const struct DiskObject *, diskObj,
@@ -188,9 +186,7 @@ extern APTR OldAddAppIconA;
 extern APTR OldAddAppWindowA;
 extern APTR OldAppAppMenuItemA;
 extern APTR OldSetBackFill;
-#if defined(__MORPHOS__)
 extern APTR OldWBInfo;
-#endif /* __MORPHOS__ */
 extern LIBFUNC_P3_DPROTO(BOOL, (*OldPutDiskObject),
 	A0, CONST_STRPTR, Name,
 	A1, const struct DiskObject *, diskObj,

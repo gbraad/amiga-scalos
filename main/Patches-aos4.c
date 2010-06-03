@@ -127,6 +127,7 @@ static APTR OldOpenScreen;
 #define OffsetAddAppMenuItemA      	offsetof(struct WorkbenchIFace, AddAppMenuItemA)
 #define OffsetAddAppMenuItem       	offsetof(struct WorkbenchIFace, AddAppMenuItem)
 #define OffsetRemoveAppMenuItem 	offsetof(struct WorkbenchIFace, RemoveAppMenuItem)
+#define OffsetWBInfo			offsetof(struct WorkbenchIFace, WBInfo)
 //#define OffsetSetBackFill          	offsetof(struct WorkbenchIFace, ...)
 
 #define OffsetPutDiskObject        	offsetof(struct IconIFace, PutDiskObject)
@@ -155,6 +156,8 @@ static const struct PatchEntry EmulationPatches[] =
 	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppMenuItemA,		(APTR)sca_AddAppMenuItemA,        (APTR) &OldAppAppMenuItemA },
 	{ (struct Interface **)(APTR) &IWorkbench,	OffsetAddAppMenuItem,		(APTR)sca_AddAppMenuItem,         (APTR) &OldAppAppMenuItem },
 	{ (struct Interface **)(APTR) &IWorkbench,	OffsetRemoveAppMenuItem,	(APTR)sca_RemoveAppMenuItem,      (APTR) &OldRemoveAppMenuItem },
+	{ (struct Interface **)(APTR) &IWorkbench,	OffsetWBInfo,			(APTR)sca_WBInfo,      		  (APTR) &OldWBInfo },
+
 //	{ (struct Interface **)(APTR) &IWorkbench,	OffsetwbPrivate2,		(APTR)sca_GetLocString,           (APTR) &OldwbPrivate2 },
 	{ NULL, 					0, 				(APTR)NULL, 		       	  NULL },
 	};

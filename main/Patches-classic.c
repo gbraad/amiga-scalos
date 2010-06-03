@@ -153,9 +153,7 @@ static const struct PatchEntry HardEmulationPatches[] =
 	{
 	{ (struct Library **) &WorkbenchBase, 39, 	LVOUpdateWorkbench,	PPATCHFUNC(sca_UpdateWorkbench),     	(APTR) &OldUpdateWorkbench },
 	{ (struct Library **) &WorkbenchBase, 39, 	LVOSetBackFill,		PPATCHFUNC(sca_SetBackFill),	     	(APTR) &OldSetBackFill },
-#if defined(__MORPHOS__)
 	{ (struct Library **) &WorkbenchBase, 39, 	LVOWBInfo,		PPATCHFUNC(sca_WBInfo),	        	(APTR) &OldWBInfo },
-#endif /* __MORPHOS__ */
 	{ NULL, 				0, 0, 			PPATCHFUNC(NULL), 			NULL },
 	};
 
