@@ -105,6 +105,7 @@ SRCS  =	about.c			\
 	cleanup.c		\
 	CLIStart.c		\
         ControlBar.c		\
+	crc32.c			\
         CycleGadgetClass.c	\
 	DefIcons.c		\
 	DeviceWindowClass.c	\
@@ -166,6 +167,7 @@ SRCS  =	about.c			\
 	ScanDirText.c		\
 	Semaphores.c		\
         SeparatorGadgetClass.c	\
+	Shortcuts.c		\
 	Splash.c		\
         StatusBar.c		\
 	StringGadgetClass.c	\
@@ -266,6 +268,7 @@ $(OBJDIR)/Class.o			: Class.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/cleanup.o			: cleanup.c $(CHEADERS)
 $(OBJDIR)/CLIStart.o			: CLIStart.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/ControlBar.o			: ControlBar.c $(CHEADERS) $(LOCALE_HEADERS) DtImageClass.h HistoryGadgetClass.h CycleGadgetClass.h FrameImageClass.h
+$(OBJDIR)/crc32.o			: crc32.c $(CHEADERS)
 $(OBJDIR)/CycleGadgetClass.o		: CycleGadgetClass.c $(CHEADERS) DtImageClass.h CycleGadgetClass.h FrameImageClass.h
 $(OBJDIR)/DefIcons.o			: DefIcons.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/DeviceWindowClass.o		: DeviceWindowClass.c ../include/DefIcons.h $(LOCALE_HEADERS) $(CHEADERS)
@@ -327,6 +330,7 @@ $(OBJDIR)/ScanDir.o			: ScanDir.c ../include/DefIcons.h $(LOCALE_HEADERS) $(CHEA
 $(OBJDIR)/ScanDirText.o			: ScanDirText.c ../include/DefIcons.h $(LOCALE_HEADERS) $(CHEADERS)
 $(OBJDIR)/Semaphores.o			: Semaphores.c $(CHEADERS)
 $(OBJDIR)/SeparatorGadgetClass.o	: SeparatorGadgetClass.c $(CHEADERS)
+$(OBJDIR)/Shortcuts.o			: Shortcuts.c $(CHEADERS)
 $(OBJDIR)/Splash.o			: Splash.c TTLayout.h $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/StatusBar.o			: StatusBar.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/StringGadgetClass.o		: StringGadgetClass.c $(CHEADERS)

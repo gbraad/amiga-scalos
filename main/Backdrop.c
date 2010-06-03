@@ -54,12 +54,12 @@
 
 // local functions
 
-static BOOL BackdropAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine);
-static BOOL BackdropRemoveLine(struct BackDropList *bdl, BPTR iconLock);
 static LONG BackdropWriteList(struct BackDropList *bdl);
+static BOOL BackdropInternalAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine, LONG PosX, LONG PosY);
 static struct ChainedLine *BackdropAllocChainedLine(CONST_STRPTR TextLine);
 static void BackdropFreeChainedLine(struct ChainedLine *cnl);
 static void BackdropRemoveObsoleteEntriesFromBackdropFile(struct BackDropList *bdl);
+static void BackdropRemoveDuplicateEntriesFromBackdropFile(struct BackDropList *bdl);
 static void BackdropRedrawMainIconObject(struct internalScaWindowTask *iwtMain, Object *IconObj);
 
 //----------------------------------------------------------------------------
@@ -87,6 +87,8 @@ LONG BackdropLoadList(struct BackDropList *bdl)
 
 	BackDropInitList(bdl);
 
+	ShortcutAddLines(bdl);		// add left-out icons from Ambient shortcuts
+
 	fh = Open(".backdrop", MODE_OLDFILE);
 	d1(kprintf("%s/%s/%ld: fh=%08lx\n", __FILE__, __FUNC__, __LINE__, fh));
 	if ((BPTR)NULL == fh)
@@ -112,8 +114,6 @@ LONG BackdropLoadList(struct BackDropList *bdl)
 
 	while (FGets(fh, Line, LineSize))
 		{
-		struct ChainedLine *cnl;
-
 		if ('\n' == Line[strlen(Line) - 1])	// strip trailing LF
 			Line[strlen(Line) - 1] = '\0';
 
@@ -121,10 +121,7 @@ LONG BackdropLoadList(struct BackDropList *bdl)
 
 		if (strlen(Line) >= 1)
 			{
-			cnl = BackdropAllocChainedLine(Line);
-
-			if (cnl)
-				AddTail(&bdl->bdl_LinesList, (struct Node *) &cnl->cnl_Node);
+			BackdropAddLine(bdl, Line, NO_ICON_POSITION, NO_ICON_POSITION);
 			}
 		}
 
@@ -247,6 +244,8 @@ static LONG BackdropWriteList(struct BackDropList *bdl)
 	// remove obsolete entries which refer to non-existing icons
 	BackdropRemoveObsoleteEntriesFromBackdropFile(bdl);
 
+	BackdropRemoveDuplicateEntriesFromBackdropFile(bdl);
+
 	if (!bdl->bdl_Changed)
 		return RETURN_OK;	// No changes
 
@@ -270,7 +269,26 @@ static LONG BackdropWriteList(struct BackDropList *bdl)
 }
 
 
-static BOOL BackdropAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine)
+BOOL BackdropAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine, LONG PosX, LONG PosY)
+{
+	struct ChainedLine *cnl;
+
+	for (cnl = (struct ChainedLine *) bdl->bdl_LinesList.lh_Head;
+		cnl != (struct ChainedLine *) &bdl->bdl_LinesList.lh_Tail;
+		cnl = (struct ChainedLine *) cnl->cnl_Node.ln_Succ )
+		{
+		if (0 == Stricmp(NewLine, cnl->cnl_Line))
+			{
+			// Duplicate line, ignore it silently
+			return TRUE;
+			}
+		}
+
+	return BackdropInternalAddLine(bdl, NewLine, PosX, PosY);
+}
+
+
+static BOOL BackdropInternalAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine, LONG PosX, LONG PosY)
 {
 	BOOL Success = FALSE;
 	struct ChainedLine *cnl;
@@ -280,6 +298,8 @@ static BOOL BackdropAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine)
 		{
 		AddTail(&bdl->bdl_LinesList, (struct Node *) &cnl->cnl_Node);
 		bdl->bdl_Changed = TRUE;
+		cnl->cnl_PosX = PosX;
+		cnl->cnl_PosY = PosY;
 		Success = TRUE;
 		}
 
@@ -287,7 +307,7 @@ static BOOL BackdropAddLine(struct BackDropList *bdl, CONST_STRPTR NewLine)
 }
 
 
-static BOOL BackdropRemoveLine(struct BackDropList *bdl, BPTR iconLock)
+BOOL BackdropRemoveLine(struct BackDropList *bdl, BPTR iconLock)
 {
 	struct ChainedLine *cnl;
 	BOOL Found = FALSE;
@@ -304,7 +324,7 @@ static BOOL BackdropRemoveLine(struct BackDropList *bdl, BPTR iconLock)
 		cnl != (struct ChainedLine *) &bdl->bdl_LinesList.lh_Tail; )
 		{
 		BPTR tmpLock;
-		struct ChainedLine *cnlNext = (struct ChainedLine *) cnl->cnl_Node.ln_Succ;;
+		struct ChainedLine *cnlNext = (struct ChainedLine *) cnl->cnl_Node.ln_Succ;
 
 		d1(kprintf("%s/%s/%ld: Line=<%s>\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line));
 
@@ -344,6 +364,7 @@ static struct ChainedLine *BackdropAllocChainedLine(CONST_STRPTR TextLine)
 	if (NULL == cnl)
 		return NULL;
 
+	cnl->cnl_PosX = cnl->cnl_PosY = NO_ICON_POSITION;
 	cnl->cnl_Line = AllocCopyString(TextLine);
 
 	return cnl;
@@ -838,6 +859,49 @@ static void BackdropRemoveObsoleteEntriesFromBackdropFile(struct BackDropList *b
 
 //----------------------------------------------------------------------------
 
+static void BackdropRemoveDuplicateEntriesFromBackdropFile(struct BackDropList *bdl)
+{
+	char *IconPath;
+	struct ChainedLine *cnl;
+
+	IconPath = AllocPathBuffer();
+	if (NULL == IconPath)
+		return;
+
+	for (cnl = (struct ChainedLine *) bdl->bdl_LinesList.lh_Head;
+		cnl != (struct ChainedLine *) &bdl->bdl_LinesList.lh_Tail;
+		cnl = (struct ChainedLine *) cnl->cnl_Node.ln_Succ )
+		{
+		ULONG Removed = 0;
+		struct ChainedLine *cnl2;
+
+		d1(kprintf("%s/%s/%ld: Line=<%s>\n", __FILE__, __FUNC__, __LINE__, cnl->cnl_Line));
+
+		for (cnl2 = (struct ChainedLine *) bdl->bdl_LinesList.lh_Head;
+			cnl2 != (struct ChainedLine *) &bdl->bdl_LinesList.lh_Tail; )
+			{
+			struct ChainedLine *cnl2Next = (struct ChainedLine *) cnl2->cnl_Node.ln_Succ;
+
+			if ((cnl2 != cnl) && (0 == Stricmp(cnl2->cnl_Line, cnl->cnl_Line)) )
+				{
+				// Remove Duplicate line
+				d1(kprintf("%s/%s/%ld: LockResult=%ld - GO Remove <%s> \n", __FILE__, __FUNC__, __LINE__, LockResult, cnl->cnl_Line));
+				Remove(&cnl2->cnl_Node);
+				BackdropFreeChainedLine(cnl2);
+				bdl->bdl_Changed = TRUE;
+				Removed++;
+				}
+
+			cnl2 = cnl2Next;
+			}
+		if (Removed)
+			cnl = (struct ChainedLine *) bdl->bdl_LinesList.lh_Head;
+		}
+
+	FreePathBuffer(IconPath);
+}
+
+//----------------------------------------------------------------------------
 void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 	CONST_STRPTR IconName, WORD x, WORD y)
 {
@@ -898,8 +962,10 @@ void DoLeaveOutIcon(struct internalScaWindowTask *iwt, BPTR DirLock,
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		if (!BackdropAddLine(&bdl, lp))
+		if (!BackdropAddLine(&bdl, lp, x, y))
 			break;
+
+		ShortcutAddEntry(DirName, x, y);
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -1188,6 +1254,8 @@ void PutAwayIcon(struct internalScaWindowTask *iwt,
 			oldDir = CurrentDir(rootLock);
 
 			BackdropRemoveLine(&bdl, iconLock);
+
+			ShortcutRemoveEntry(iconLock);
 
 			CurrentDir(rootLock);
 

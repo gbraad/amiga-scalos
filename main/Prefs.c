@@ -102,12 +102,6 @@ static const char DefaultScreenTitle[] = "Scalos V%wb %fc graphics mem %ff other
 
 static BYTE UnderlineSoftLinkNames = TRUE;
 
-/* Table of CRCs of all 8-bit messages. */
-static ULONG crc_table[256];
-
-/* Flag: has the table been computed? Initially false. */
-static BOOL crc_table_computed = FALSE;
-
 static ULONG PalettePrefsCRC = 0;
 static ULONG PatternPrefsCRC = 0;
 static ULONG FontPrefsCRC = 0;
@@ -426,8 +420,6 @@ static SAVEDS(LONG) PatternNodeCompareFunc(struct Hook *theHook, struct PatternN
 static void FreePatternNode(struct PatternNode **PatternNodeList, struct PatternNode *pNode);
 static ULONG NewPaletteProc(APTR arg, struct SM_RunProcess *msg);
 static void ShowScreenTitle(BOOL showTitle);
-static void make_crc_table(void);
-static ULONG update_crc(ULONG crc, const unsigned char *buf, size_t len);
 static void SetTextAttr(struct ScalosTextAttr *Attr, struct PrefsStruct *ps);
 static void CleanupControlBarGadgetsList(struct List *CbGadgetsList);
 static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List *CbGadgetsList,
@@ -1965,51 +1957,6 @@ static void ShowScreenTitle(BOOL showTitle)
 		}
 }
 
-
-/* Make the table for a fast CRC. */
-static void make_crc_table(void)
-{
-	ULONG n;
-
-	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
-
-	for (n = 0; n < 256; n++)
-		{
-		ULONG c = (ULONG) n;
-		ULONG k;
-
-		for (k = 0; k < 8; k++) 
-			{
-			if (c & 1)
-				c = 0xedb88320L ^ (c >> 1);
-			else
-				c = c >> 1;
-			}
-
-		crc_table[n] = c;
-		}
-	crc_table_computed = TRUE;
-}
-
-/* Update a running CRC with the bytes buf[0..len-1]--the CRC
-	 should be initialized to all 1's, and the transmitted value
-	 is the 1's complement of the final running CRC (see the
-	 crc() routine below)). */
-
-static ULONG update_crc(ULONG crc, const unsigned char *buf, size_t len)
-{
-	if (!crc_table_computed)
-		make_crc_table();
-
-	while (len--)
-		{
-		UBYTE ndx = (crc ^ *buf++) & 0xff;
-
-		crc = crc_table[ndx] ^ (crc >> 8);
-		}
-
-	return crc;
-}
 
 ULONG GetPrefsCRCFromFH(BPTR fh)
 {

@@ -27,6 +27,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/cleanup.o                 	\
 		$(OBJDIR)/CLIStart.o                	\
 		$(OBJDIR)/ControlBar.o		    	\
+		$(OBJDIR)/crc32.o                   	\
 		$(OBJDIR)/CycleGadgetClass.o	    	\
 		$(OBJDIR)/DefIcons.o                	\
 		$(OBJDIR)/DeviceWindowClass.o       	\
@@ -86,6 +87,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/ScanDirText.o             	\
 		$(OBJDIR)/Semaphores.o		    	\
 		$(OBJDIR)/SeparatorGadgetClass.o	\
+		$(OBJDIR)/Shortcuts.o                  	\
 		$(OBJDIR)/Splash.o                  	\
 		$(OBJDIR)/StatusBar.o	            	\
 		$(OBJDIR)/StringGadgetClass.o       	\
