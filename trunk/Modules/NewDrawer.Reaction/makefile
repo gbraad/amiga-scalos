@@ -5,12 +5,11 @@
 #####################################################################
 
 CHEADERS	= 
-CC		= sc
+CC		= gcc
 CFLAGS		= optimize nostackcheck nochkabort debug=s \
 		  idlen=128 strmer nover streq data=far \
 		  idir=sc:include/ \
 		  idir=include: idir=//include
-AS		= phxass
 AFLAGS		= QUIET m=68020 linedebug opt=NRQB i=include:
 LD		= slink
 LNFLAGS		= quiet batch noicons stripdebug
@@ -46,7 +45,7 @@ CSRCS =		NewDrawer.c
 
 #####################################################################
 
-XOBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
+XOBJS = $(CSRCS:%.c=$(OBJDIR)/%.o)
 OBJS = $(XOBJS) NewDrawerGUI.o
 
 #####################################################################
@@ -77,8 +76,8 @@ $(OBJDIR)/%.o : %.asm
 #####################################################################
 
 $(CATCOMPH) $(CATCOMPI) : NewDrawerGUI.cd
-	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) $@ \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$(CATCOMPH) asmfile=$@ NOCODE XDEF
+	@$(ECHO) "CatComp $@"
+	@$(CATCOMP) $< cfile=$(CATCOMPH) NOCODE
 
 $(OBJDIR)/NDStrings.o : NewDrawerStrings.i
 
