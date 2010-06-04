@@ -52,10 +52,15 @@
 // local functions
 static SAVEDS(LONG) CompareStartPriFunc(struct Hook * hook, struct ScaIconNode * in2, struct ScaIconNode * in1);
 static void StartTool(BPTR DirLock, struct ScaIconNode *in);
+static BOOL ReadWbStartupPrefs(void);
+static void AddWbStartupEntries(struct internalScaWindowTask *iwt);
 
 //----------------------------------------------------------------------------
 
 // local data items
+
+// AmigaOS4.x WBStartup preferences flags
+#define	WBSTARTUP_DISABLED	(1 << 8)	// Flag: this entry is disabled
 
 static struct Hook CompareStartPriHook = 
 	{
@@ -63,6 +68,8 @@ static struct Hook CompareStartPriHook =
 	HOOKFUNC_DEF(CompareStartPriFunc),	// h_Entry + h_SubEntry
 	NULL,						// h_Data
 	};
+
+static struct BackDropList bdlWBStartup;
 
 //----------------------------------------------------------------------------
 
@@ -87,6 +94,8 @@ SAVEDS(void) INTERRUPT WBStartup(void)
 		ws.ws_IconSizeConstraints = CurrentPrefs.pref_IconSizeConstraints;
 		ws.ws_IconScaleFactor = CurrentPrefs.pref_IconScaleFactor;
 
+		(void) ReadWbStartupPrefs();	// Read AmigaOS4.x WBStartup preferences
+
 		ws.ws_Lock = Lock((STRPTR) CurrentPrefs.pref_WBStartupDir, ACCESS_READ);
 		if ((BPTR)NULL == ws.ws_Lock)
 			break;
@@ -97,8 +106,10 @@ SAVEDS(void) INTERRUPT WBStartup(void)
 
 		ReadIconList(iwt);
 
+		AddWbStartupEntries(iwt);
+
 		// move all nodes from LateIconList to IconList
-		for (in=iwt->iwt_WindowTask.wt_LateIconList; in; in = inNext)
+		for (in = iwt->iwt_WindowTask.wt_LateIconList; in; in = inNext)
 			{
 			d1(kprintf("%s/%s/%ld: in=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, in, in->in_Name));
 
@@ -143,7 +154,9 @@ SAVEDS(void) INTERRUPT WBStartup(void)
 				1,
 				(ULONG) in->in_Name);
 
-			StartTool(ws.ws_Lock, in);
+			debugLock_d1(in->in_Lock);
+
+			StartTool(in->in_Lock ? in->in_Lock : ws.ws_Lock, in);
 			}
 		} while (0);
 
@@ -173,6 +186,9 @@ static void StartTool(BPTR DirLock, struct ScaIconNode *in)
 	STRPTR tt;
 	LONG WaitTime = 0;
 	ULONG Flags = SCAF_WBStart_Wait;
+
+	debugLock_d1(DirLock);
+	d1(kprintf("%s/%s/%ld: in=<%s>\n", __FILE__, __FUNC__, __LINE__, GetIconName(in)));
 
 	tt = NULL;
 	if (DoMethod(in->in_Icon, IDTM_FindToolType, "DONOTWAIT", &tt))
@@ -223,5 +239,142 @@ void WBStartupFinished(void)
 		SCA_UnLockWindowList();
 		}
 
+	BackdropFreeList(&bdlWBStartup);
+}
+
+
+// Read AmigaOS4.x WBStartup preferences
+
+static BOOL ReadWbStartupPrefs(void)
+{
+	CONST_STRPTR FileName = "ENV:Sys/wbstartup.prefs";
+	BPTR fh = BNULL;
+	BOOL Success = FALSE;
+
+	do	{
+		ULONG LData;
+		LONG Length;
+
+		BackDropInitList(&bdlWBStartup);
+
+		fh = Open(FileName, MODE_OLDFILE);
+		d1(KPrintF("%s/%s/%ld:  fh=%08lx\n", __FILE__, __FUNC__, __LINE__, fh));
+		if ((BPTR)NULL == fh)
+			break;
+
+		// read CRC
+		Length = Read(fh, &LData, sizeof(LData));
+		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
+		if (sizeof(LData) != Length)
+			break;
+
+		// read unknown longword
+		Length = Read(fh, &LData, sizeof(LData));
+		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
+		if (sizeof(LData) != Length)
+			break;
+
+		Success = TRUE;
+
+		// process entries
+		while (1)
+			{
+			ULONG Flags;
+			ULONG NameLength;
+			STRPTR Name;
+
+			// Read flags
+			Length = Read(fh, &Flags, sizeof(Flags));
+			d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
+			if (sizeof(Flags) != Length)
+				break;
+
+			// Read Length of name
+			Length = Read(fh, &NameLength, sizeof(NameLength));
+			d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
+			if (sizeof(NameLength) != Length)
+				break;
+
+			Name = ScalosAlloc(1 + NameLength);
+			if (Name)
+				{
+				// Read name
+				Length = Read(fh, Name, NameLength);
+				d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
+				if (NameLength != Length)
+					{
+					ScalosFree(Name);
+					break;
+					}
+
+				Name[NameLength] = '\0';
+
+				d1(kprintf("%s/%s/%ld:  Name=<%s>  Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, Name, Flags));
+
+				if (!(Flags & WBSTARTUP_DISABLED))
+					BackdropAddLine(&bdlWBStartup, Name, NO_ICON_POSITION, NO_ICON_POSITION);
+
+				ScalosFree(Name);
+				}
+			}
+		} while (0);
+
+	if (fh)
+		Close(fh);
+
+	return Success;
+}
+
+
+// Create icons for all entries configured in AmigaOS4.x WBStartup preferences
+static void AddWbStartupEntries(struct internalScaWindowTask *iwt)
+{
+	do	{
+		struct ChainedLine *cnl;
+
+		for (cnl = (struct ChainedLine *) bdlWBStartup.bdl_LinesList.lh_Head;
+			cnl != (struct ChainedLine *) &bdlWBStartup.bdl_LinesList.lh_Tail;
+			cnl = (struct ChainedLine *) cnl->cnl_Node.ln_Succ )
+			{
+			STRPTR IconPath;
+			
+			IconPath = AllocCopyString(cnl->cnl_Line);
+			if (IconPath)
+				{
+				BPTR dirLock;
+				STRPTR lp;
+
+				lp = PathPart(IconPath);
+				*lp = '\0';	 // strip file part for icon directory
+
+				d1(kprintf("%s/%s/%ld:  IconPath=<%s>\n", __FILE__, __FUNC__, __LINE__, IconPath));
+
+				dirLock = Lock(IconPath, ACCESS_READ);
+				debugLock_d1(dirLock);
+				if (dirLock)
+					{
+					struct ScaIconNode *in;
+					struct ScaReadIconArg ria;
+					CONST_STRPTR IconName;
+
+					ria.ria_Lock = dirLock;
+					ria.ria_x = ria.ria_y = NO_ICON_POSITION_SHORT;
+
+					IconName = FilePart(cnl->cnl_Line);
+
+					debugLock_d1(ria.ria_Lock);
+					d1(kprintf("%s/%s/%ld:  IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, IconName));
+
+					in = IconWindowReadIcon(iwt, IconName, &ria);
+					if (in)
+						in->in_Lock = dirLock;
+					else
+						UnLock(dirLock);
+					}
+
+				FreeCopyString(IconPath);
+				}
+			}
+		} while (0);
 }
 
