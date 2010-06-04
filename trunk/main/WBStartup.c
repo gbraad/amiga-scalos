@@ -59,8 +59,15 @@ static void AddWbStartupEntries(struct internalScaWindowTask *iwt);
 
 // local data items
 
-// AmigaOS4.x WBStartup preferences flags
-#define	WBSTARTUP_DISABLED	(1 << 8)	// Flag: this entry is disabled
+// ID for AmigaOS4.x WBStartup preferences
+#define	OS4_WBSTARTUP_ID		0x000c6fbd	// ID at offset 0 of preferences file
+
+// Bits in global flags of AmigaOS4.x WBStartup preferences
+#define	OS4_WBSTART_TRANSPARENTWINDOW	(1 << 3)
+#define	OS4_WBSTART_PROGRESSWINDOW	(1 << 0)
+
+// AmigaOS4.x WBStartup preferences entry flags
+#define	OS4_WBSTARTUP_DISABLED		(1 << 8)	// Flag: this entry is disabled
 
 static struct Hook CompareStartPriHook = 
 	{
@@ -262,13 +269,18 @@ static BOOL ReadWbStartupPrefs(void)
 		if ((BPTR)NULL == fh)
 			break;
 
-		// read CRC
+		// read ID
 		Length = Read(fh, &LData, sizeof(LData));
 		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
 		if (sizeof(LData) != Length)
 			break;
 
-		// read unknown longword
+		d1(kprintf("%s/%s/%ld:  ID=%08lx, expect=%08lx\n", __FILE__, __FUNC__, __LINE__, LData, OS4_WBSTARTUP_ID));
+
+		if (OS4_WBSTARTUP_ID != LData)
+			break;
+
+		// read global flags
 		Length = Read(fh, &LData, sizeof(LData));
 		d1(kprintf("%s/%s/%ld:  Length=%ld\n", __FILE__, __FUNC__, __LINE__, Length));
 		if (sizeof(LData) != Length)
@@ -311,7 +323,7 @@ static BOOL ReadWbStartupPrefs(void)
 
 				d1(kprintf("%s/%s/%ld:  Name=<%s>  Flags=%08lx\n", __FILE__, __FUNC__, __LINE__, Name, Flags));
 
-				if (!(Flags & WBSTARTUP_DISABLED))
+				if (!(Flags & OS4_WBSTARTUP_DISABLED))
 					BackdropAddLine(&bdlWBStartup, Name, NO_ICON_POSITION, NO_ICON_POSITION);
 
 				ScalosFree(Name);
@@ -367,7 +379,10 @@ static void AddWbStartupEntries(struct internalScaWindowTask *iwt)
 
 					in = IconWindowReadIcon(iwt, IconName, &ria);
 					if (in)
+						{
 						in->in_Lock = dirLock;
+						(void) SetToolType(in->in_Icon, "DONOTWAIT", "", FALSE);
+						}
 					else
 						UnLock(dirLock);
 					}

@@ -958,8 +958,8 @@ void GetProtectionString(ULONG Protection, STRPTR String, size_t MaxLen);
 
 // defined in ToolTypes.c
 ///
-LONG SetToolType(Object *IconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTypeValue);
-LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName);
+LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTypeValue, BOOL SaveIcon);
+LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName, BOOL SaveIcon);
 STRPTR *CloneToolTypeArray(CONST_STRPTR *ToolTypeArray, ULONG AdditionalEntries);
 ///
 /* ------------------------------------------------- */

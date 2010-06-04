@@ -609,10 +609,10 @@ static void SnapshotIconifiedIcon(struct internalScaWindowTask *iwt)
 		oldDir = CurrentDir(parentLock);
 
 		ScaFormatStringMaxLength(Buffer, sizeof(Buffer), "%ld", (LONG) gg->LeftEdge);
-		SetToolType(iconObj, "SCALOS_ICONIFIED_XPOS", Buffer);
+		SetToolType(iconObj, "SCALOS_ICONIFIED_XPOS", Buffer, FALSE);
 
 		ScaFormatStringMaxLength(Buffer, sizeof(Buffer), "%ld", (LONG) gg->TopEdge);
-		SetToolType(iconObj, "SCALOS_ICONIFIED_YPOS", Buffer);
+		SetToolType(iconObj, "SCALOS_ICONIFIED_YPOS", Buffer, TRUE);
 		} while (0);
 
 	if (IS_VALID_LOCK(oldDir))
@@ -648,8 +648,8 @@ static void UnSnapshotIconifiedIcon(struct internalScaWindowTask *iwt)
 
 		oldDir = CurrentDir(parentLock);
 
-		SetToolType(iconObj, "SCALOS_ICONIFIED_XPOS", "-1");
-		SetToolType(iconObj, "SCALOS_ICONIFIED_YPOS", "-1");
+		SetToolType(iconObj, "SCALOS_ICONIFIED_XPOS", "-1", FALSE);
+		SetToolType(iconObj, "SCALOS_ICONIFIED_YPOS", "-1", TRUE);
 		} while (0);
 
 	if (IS_VALID_LOCK(oldDir))
