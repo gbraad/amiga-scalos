@@ -1460,8 +1460,7 @@ LIBFUNC_P4(ULONG, sca_WBInfo,
 	A2, struct Screen *, screen,
 	A6, struct Library *, wbBase)
 {
-	ULONG Success = FALSE;
-	struct ScaWindowList *WinList;
+	ULONG Success;
 	struct ScaIconNode in;
 
 	(void) wbBase;
@@ -1470,7 +1469,7 @@ LIBFUNC_P4(ULONG, sca_WBInfo,
 	d1(KPrintF("%s/%s/%ld: START Name=<%s>  screen=%08lx\n", __FILE__, __FUNC__, __LINE__, name, screen));
 	debugLock_d1(lock);
 
-	WinList = SCA_LockWindowList(SCA_LockWindowList_Shared);
+	(void) SCA_LockWindowList(SCA_LockWindowList_Shared);
 
 	memset(&in, 0, sizeof(in));
 
