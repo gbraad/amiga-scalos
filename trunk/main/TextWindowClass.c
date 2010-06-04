@@ -710,7 +710,9 @@ static ULONG TextWindowClass_New(Class *cl, Object *o, Msg msg)
 
 		Scalos_SetFont(&rp, iwt->iwt_IconFont, &iwt->iwt_IconTTFont);
 		Scalos_TextExtent(&rp, "OÖÄgyM", 6, &textExtent);
-		iwt->iwt_TextWindowLineHeight = 1 + max(textExtent.te_Height, Scalos_GetFontHeight(&rp));
+
+		iwt->iwt_TextWindowLineHeight = Scalos_GetFontHeight(&rp);
+		iwt->iwt_TextWindowLineHeight = 1 + max(textExtent.te_Height, iwt->iwt_TextWindowLineHeight);
 
 		Scalos_DoneRastPort(&rp);
 

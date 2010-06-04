@@ -1521,8 +1521,6 @@ static void WindowClass_ReCleanup(struct internalScaWindowTask *iwt, WORD OldInn
 	d1(KPrintF("%s/%s/%ld: OldInnerWidth=%ld  OldInnerHeight=%ld\n", __FILE__, __FUNC__, __LINE__, OldInnerWidth, OldInnerHeight));
 	d1(KPrintF("%s/%s/%ld: wt_XOffset=%ld wt_YOffse=%ld\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.wt_XOffset, iwt->iwt_WindowTask.wt_YOffset));
 
-	AllIconsBBox.MinX -= iwt->iwt_WindowTask.wt_XOffset;
-	AllIconsBBox.MinY -= iwt->iwt_WindowTask.wt_YOffset;
 	AllIconsBBox.MaxX -= iwt->iwt_WindowTask.wt_XOffset;
 	AllIconsBBox.MaxY -= iwt->iwt_WindowTask.wt_YOffset;
 
