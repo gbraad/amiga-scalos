@@ -2180,7 +2180,6 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 }
 
-
 #if 0
 static void ByteDump(unsigned char *Data, size_t Length)
 {
