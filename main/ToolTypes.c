@@ -54,7 +54,7 @@ static STRPTR *scaFindToolType(STRPTR *ToolTypeArray, CONST_STRPTR typeName);
 
 //----------------------------------------------------------------------------
 
-LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTypeValue)
+LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTypeValue, BOOL SaveIcon)
 {
 	LONG Result = RETURN_OK;
 	STRPTR newTT = NULL;
@@ -120,9 +120,12 @@ LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTy
 			IDTA_ToolTypes, (ULONG) ttClone,
 			TAG_END);
 
-		PutIconObjectTags(iconObj, iconName,
-			ICONA_NoNewImage, TRUE,
-			TAG_END);
+		if (SaveIcon)
+			{
+			Result = PutIconObjectTags(iconObj, iconName,
+				ICONA_NoNewImage, TRUE,
+				TAG_END);
+			}
 		} while (0);
 
 	if (newTT)
@@ -135,7 +138,7 @@ LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTy
 
 //----------------------------------------------------------------------------
 
-LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName)
+LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName, BOOL SaveIcon)
 {
 	LONG Result = RETURN_OK;
 	STRPTR *ttClone = NULL;
@@ -187,9 +190,12 @@ LONG RemoveToolType(Object *iconObj, CONST_STRPTR ToolTypeName)
 				IDTA_ToolTypes, (ULONG) ttClone,
 				TAG_END);
 
-			PutIconObjectTags(iconObj, iconName,
-				ICONA_NoNewImage, TRUE,
-				TAG_END);
+			if (SaveIcon)
+				{
+				Result = PutIconObjectTags(iconObj, iconName,
+					ICONA_NoNewImage, TRUE,
+					TAG_END);
+				}
 			}
 		} while (0);
 
