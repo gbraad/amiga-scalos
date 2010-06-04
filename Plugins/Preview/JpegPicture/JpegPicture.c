@@ -271,7 +271,9 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 	BPTR fh = (BPTR)NULL;	      // filehandle for reading of image file
 	LONG Success = FALSE;
 	struct jpeg_decompress_struct cinfo;
+	struct FileInfoBlock *fib = NULL;
 	BOOL DecompressStarted = FALSE;
+	APTR FileBuffer = NULL;
 
 	(void) PluginBase;
 
@@ -294,6 +296,7 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 		BOOL DoRemap;
 		ULONG quality;
 		ULONG ReservedColors;
+		size_t FileSize;
 
 		memset(&jerr, 0, sizeof(jerr));
 
@@ -332,6 +335,23 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 		if ((BPTR)NULL == fh)
 			break;
 
+		fib = AllocDosObject(DOS_FIB, NULL);
+		if (NULL == fib)
+			break;
+
+		if (!ExamineFH(fh, fib))
+			break;
+
+		FileSize = fib->fib_Size;
+
+		FileBuffer = malloc(FileSize);
+		if (NULL == FileBuffer)
+			break;
+
+		// Read entire file into FileBuffer
+		if (FileSize != Read(fh, FileBuffer, FileSize))
+			break;
+
 		ScreenDepth = GetBitMapAttr(WBScreen->RastPort.BitMap, BMA_DEPTH);
 
 		DoRemap = (ScreenDepth <= 8) || (NULL == CyberGfxBase) || SupportedColors <= 256;
@@ -352,8 +372,8 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 			jpeg_create_decompress(&cinfo);
 
-			// set stdio as data source (we provide out own fread() which maps to FRead()
-			jpeg_stdio_src(&cinfo, (FILE *) fh);
+			// set memory as data source
+			jpeg_mem_src(&cinfo, FileBuffer, FileSize);
 
 			// obtain image info
 			jpeg_read_header(&cinfo, TRUE);
@@ -463,6 +483,12 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 	if (fh)
 		Close(fh);
+
+	if (fib)
+		FreeDosObject(DOS_FIB, fib);
+
+	if (FileBuffer)
+		free(FileBuffer);
 
 	d1(KPrintF(__FILE__ "/%s/%ld:  END Success=%ld\n", __FUNC__, __LINE__, Success));
 
@@ -811,7 +837,7 @@ static BOOL GenerateARGBFromJPG(struct ARGBHeader *argbSrc,
 }
 
 //-----------------------------------------------------------------------------
-
+#if 1
 FILE *fopen(const char *name, const char *mode)
 {
 	LONG accessMode;
@@ -843,9 +869,9 @@ FILE *fopen(const char *name, const char *mode)
 
 	return fh;
 }
-
+#endif
 //-----------------------------------------------------------------------------
-
+#if 1
 int fclose(FILE *fh)
 {
 	d1(kprintf("%s/%ld: fh=%08lx\n", __FUNC__, __LINE__, fh));
@@ -854,9 +880,9 @@ int fclose(FILE *fh)
 
 	return Close((BPTR) fh) ? 0 : -1;
 }
-
+#endif
 //-----------------------------------------------------------------------------
-
+#if 1
 size_t fread(void *buf, size_t length, size_t nobj, FILE *fh)
 {
 	d1(KPrintF(__FILE__ "/%s/%ld:  fh=%08lx  buf=%08lx  nobj=%lu  length=%lu\n", \
@@ -866,9 +892,9 @@ size_t fread(void *buf, size_t length, size_t nobj, FILE *fh)
 
 	return (size_t) FRead((BPTR) fh, buf, length, nobj);
 }
-
+#endif
 //-----------------------------------------------------------------------------
-
+#if 1
 size_t fwrite(const void *buf, size_t length, size_t nobj, FILE *fh)
 {
 	d1(KPrintF(__FILE__ "/%s/%ld:  fh=%08lx  buf=%08lx  nobj=%lu  length=%lu\n", \
@@ -876,9 +902,9 @@ size_t fwrite(const void *buf, size_t length, size_t nobj, FILE *fh)
 
 	return (size_t) FWrite((BPTR) fh, (STRPTR) buf, length, nobj);
 }
-
+#endif
 //-----------------------------------------------------------------------------
-
+#if 1
 int fseek(FILE *fh, long offset, int origin)
 {
 	LONG OldPos;
@@ -910,7 +936,7 @@ int fseek(FILE *fh, long offset, int origin)
 
 	return OldPos >= 0 ? 0 : -1;
 }
-
+#endif
 //-----------------------------------------------------------------------------
 
 int unlink(const char *FileName)
