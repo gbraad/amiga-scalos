@@ -255,7 +255,7 @@ void WBStartupFinished(void)
 static BOOL ReadWbStartupPrefs(void)
 {
 	CONST_STRPTR FileName = "ENV:Sys/wbstartup.prefs";
-	BPTR fh = BNULL;
+	BPTR fh;
 	BOOL Success = FALSE;
 
 	do	{
