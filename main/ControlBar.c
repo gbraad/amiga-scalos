@@ -865,6 +865,8 @@ static struct ControlBarMember *ControlBarCreateHistoryGadget(struct internalSca
 		if (NULL == Member->cbm_NormalImage)
 			break;
 
+		ScalosObtainSemaphoreShared(&iwt->iwt_WindowHistoryListSemaphore);
+
 		Member->cbm_Gadget = SCA_NewScalosObjectTags("HistoryGadget.sca",
 			GA_Immediate, TRUE,
 			GA_BottomBorder, TRUE,
@@ -877,6 +879,8 @@ static struct ControlBarMember *ControlBarCreateHistoryGadget(struct internalSca
 			TAG_END);
 		if (NULL == Member->cbm_Gadget)
 			break;
+
+		ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 
 		Member->cbm_DisableFunc = ControlBarHistoryListDisable;
 
@@ -1054,9 +1058,13 @@ static void ControlBarBackDisable(struct internalScaWindowTask *iwt, struct Cont
 {
 	BOOL Disable;
 	
+	ScalosObtainSemaphoreShared(&iwt->iwt_WindowHistoryListSemaphore);
+
 	Disable = IsListEmpty(&iwt->iwt_HistoryList)	   // should not happen
 		|| NULL == iwt->iwt_CurrentHistoryEntry		// should not happen
 		|| iwt->iwt_CurrentHistoryEntry == (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_Head;
+
+	ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 
 	d1(KPrintF("%s/%s/%ld: IsListEmpty=%ld  iwt_CurrentHistoryEntry=%08lx  Disable=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, IsListEmpty(&iwt->iwt_HistoryList), iwt->iwt_CurrentHistoryEntry, Disable));
@@ -1073,9 +1081,13 @@ static void ControlBarForwardDisable(struct internalScaWindowTask *iwt, struct C
 {
 	BOOL Disable;
 
+	ScalosObtainSemaphoreShared(&iwt->iwt_WindowHistoryListSemaphore);
+
 	Disable = IsListEmpty(&iwt->iwt_HistoryList)	   // should not happen
 		|| NULL == iwt->iwt_CurrentHistoryEntry		// should not happen
 		|| iwt->iwt_CurrentHistoryEntry == (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_TailPred;
+
+	ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 
 	SetGadgetAttrs((struct Gadget *) cbm->cbm_Gadget,
 		iwt->iwt_WindowTask.wt_Window, NULL,
@@ -1089,7 +1101,11 @@ static void ControlBarHistoryListDisable(struct internalScaWindowTask *iwt, stru
 {
 	BOOL Disable;
 
+	ScalosObtainSemaphoreShared(&iwt->iwt_WindowHistoryListSemaphore);
+
 	Disable = IsListEmpty(&iwt->iwt_HistoryList);
+
+	ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 
 	SetGadgetAttrs((struct Gadget *) cbm->cbm_Gadget,
 		iwt->iwt_WindowTask.wt_Window, NULL,
@@ -1132,6 +1148,7 @@ void ControlBarSwitchHistoryEntry(struct internalScaWindowTask *iwt)
 					SCA_YOffset, whe->whe_YOffset,
 					SCA_IconList, whe->whe_IconList,
 					TAG_END);
+				ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 				}
 			else
 				{

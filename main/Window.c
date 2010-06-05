@@ -2248,6 +2248,8 @@ struct WindowHistoryEntry *WindowFindHistoryEntry(struct internalScaWindowTask *
 {
 	struct WindowHistoryEntry *whe;
 
+	ScalosObtainSemaphoreShared(&iwt->iwt_WindowHistoryListSemaphore);
+
 	for (whe = (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_Head;
 		whe != (struct WindowHistoryEntry *) &iwt->iwt_HistoryList.lh_Tail;
 		whe = (struct WindowHistoryEntry *) whe->whe_Node.ln_Succ)
@@ -2261,9 +2263,14 @@ struct WindowHistoryEntry *WindowFindHistoryEntry(struct internalScaWindowTask *
 			UnLock(xLock);
 
 			if (LOCK_SAME == sameLock)
+				{
+				// Take care: iwt_WindowHistoryListSemaphore stays locked here!!!
 				return whe;
+				}
 			}
 		}
+
+	ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 
 	return NULL;
 }
@@ -2291,6 +2298,7 @@ void WindowNewPath(struct internalScaWindowTask *iwt, CONST_STRPTR path)
 			SCA_YOffset, whe->whe_YOffset,
 			SCA_IconList, whe->whe_IconList,
 			TAG_END);
+		ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 		}
 	else
 		{

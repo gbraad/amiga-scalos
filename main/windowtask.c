@@ -100,6 +100,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 		ScalosInitSemaphore(&iwt->iwt_ThumbnailIconSemaphore);
 		ScalosInitSemaphore(&iwt->iwt_ThumbGenerateSemaphore);
 		ScalosInitSemaphore(&iwt->iwt_PopChildListSemaphore);
+		ScalosInitSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 
 		iwt->iwt_WindowTask.wt_PatternInfo.ptinf_BgPen = NO_PEN;
 
@@ -173,7 +174,10 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 			{
 			struct FileLock *fLock = BADDR(ws->ws_Lock);
 
+			ScalosObtainSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 			iwt->iwt_CurrentHistoryEntry = WindowAddHistoryEntry(iwt, ws->ws_Lock);
+			ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
+
 			iwt->iwt_OldFileSys = SetFileSysTask(fLock->fl_Task);
 
 			iwt->iwt_ReadOnly = !ClassIsDiskWritable(ws->ws_Lock);

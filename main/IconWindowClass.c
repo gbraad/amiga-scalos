@@ -3053,6 +3053,8 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 				iwpNew.iwp_ShowAll = whe->whe_ViewAll;
 				newIconList = whe->whe_IconList;
 				memcpy(iwpNew.iwp_WidthArray, whe->whe_WidthArray, sizeof(iwpNew.iwp_WidthArray));
+
+				ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 				}
 			}
 
@@ -3265,7 +3267,12 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 		whe = WindowFindHistoryEntry(iwt, ws->ws_Lock);
 		d1(KPrintF("%s/%s/%ld: whe=%08lx\n", __FILE__, __FUNC__, __LINE__, whe));
 		if (NULL == whe)
+			{
+			ScalosObtainSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 			whe = WindowAddHistoryEntry(iwt, ws->ws_Lock);
+			if (NULL == whe)
+				ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
+			}
 
 		d1(KPrintF("%s/%s/%ld: whe=%08lx\n", __FILE__, __FUNC__, __LINE__, whe));
 
@@ -3276,6 +3283,7 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 			iwt->iwt_CurrentHistoryEntry = whe;
 			iwt->iwt_CurrentHistoryEntry->whe_IconList = NULL;
 			ControlBarUpdateHistory(iwt);
+			ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 			}
 
 		SetMenuOnOff(iwt);	// must be called AFTER updating iwt_CurrentHistoryEntry !
@@ -3319,6 +3327,8 @@ static ULONG IconWindowClass_HistoryBack(Class *cl, Object *o, Msg msg)
 
 	if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock)
 		{
+		ScalosObtainSemaphoreShared(&iwt->iwt_WindowHistoryListSemaphore);
+
 		if (!IsListEmpty(&iwt->iwt_HistoryList)	      // should not happen
 			&& NULL != iwt->iwt_CurrentHistoryEntry		// should not happen
 			&&  iwt->iwt_CurrentHistoryEntry != (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_Head)
@@ -3340,6 +3350,7 @@ static ULONG IconWindowClass_HistoryBack(Class *cl, Object *o, Msg msg)
 			d1(KPrintF("%s/%s/%ld: whe=%08lx  ln_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, whe, whe->whe_Node.ln_Name));
 			}
 
+		ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 		}
 
 	return 0;

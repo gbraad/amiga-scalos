@@ -153,6 +153,7 @@ SRCS  =	about.c			\
 	PopupMenus.c		\
 	PopOpenWindows.c	\
 	Prefs.c			\
+	Rename.c		\
 	Request.c		\
 	RootClass.c		\
 	ScaLibrary.c		\
@@ -317,6 +318,7 @@ $(OBJDIR)/Pattern.o			: Pattern.c $(CHEADERS)
 $(OBJDIR)/PopOpenWindows.o		: PopOpenWindows.c $(CHEADERS)
 $(OBJDIR)/PopupMenus.o			: PopupMenus.c ../include/DefIcons.h $(CHEADERS)
 $(OBJDIR)/Prefs.o			: Prefs.c $(CHEADERS) $(LOCALE_HEADERS)
+$(OBJDIR)/Rename.o			: Rename.c $(CHEADERS)
 $(OBJDIR)/Request.o			: Request.c $(CHEADERS) $(LOCALE_HEADERS)
 $(OBJDIR)/RootClass.o			: RootClass.c $(CHEADERS)
 $(OBJDIR)/ScaLibrary.o			: ScaLibrary.c Scalos_rev.h ../include/DefIcons.h $(CHEADERS) $(LOCALE_HEADERS)

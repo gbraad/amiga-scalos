@@ -442,6 +442,7 @@ struct internalScaWindowTask
 
 	struct DatatypesImage *iwt_IconOverlays[ICONOVERLAY_MAX];      // DatatypesImage's for icon overlays
 
+	SCALOSSEMAPHORE iwt_WindowHistoryListSemaphore;	// Semaphore for protection of iwt_HistoryList
 	struct List iwt_HistoryList;			//List of recent window paths
 	struct WindowHistoryEntry *iwt_CurrentHistoryEntry;	// Pointer to "current" entry in iwt_HistoryList
 
