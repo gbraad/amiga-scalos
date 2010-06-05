@@ -664,6 +664,14 @@ void OpenTextWindowFont(void);
 ///
 /* ------------------------------------------------- */
 
+// defined in Rename.c
+///
+BOOL CollectRenameAdjustHistoryPaths(struct List *HList, BPTR fLock);
+void AdjustRenameAdjustHistoryPaths(struct List *HList, BPTR fLock);
+void CleanupRenameAdjustHistoryPaths(struct List *HList, BOOL WinListLocked);
+///
+/* ------------------------------------------------- */
+
 // defined in Request.c
 ///
 LONG UseRequest(struct Window *parentWin, ULONG BodyTextNum,

@@ -1652,22 +1652,29 @@ LIBFUNC_P3(ULONG, sca_Rename,
 	STRPTR fName = NULL;
 	BOOL Success;
 	BPTR fLock;
-	BPTR parentLock = (BPTR)NULL;
+	BPTR parentLock = BNULL;
 	struct ScaIconNode *in = NULL;
+	struct List HistoryPathList;
+	BOOL WinListLocked = FALSE;
 
 	d1(kprintf("%s/%s/%ld: oldName=<%s>  newName=<%s>  Task=<%s>\n", __FILE__, __FUNC__, __LINE__, oldName, newName, FindTask(NULL)->tc_Node.ln_Name));
 
-	PatchAsyncWBUndoRename(oldName, newName);
-
 	do	{
+		NewList(&HistoryPathList);
+
+		PatchAsyncWBUndoRename(oldName, newName);
+
 		fLock = Lock((STRPTR) oldName, ACCESS_READ);
 		debugLock_d1(fLock);
 
 		isIcon = IsIconName(oldName);
 
-		if (FALSE == isIcon)
+		if (BNULL == fLock)
 			break;
-		if ((BPTR)NULL == fLock)
+
+		WinListLocked = CollectRenameAdjustHistoryPaths(&HistoryPathList, fLock);
+
+		if (FALSE == isIcon)
 			break;
 
 		parentLock = ParentDir(fLock);
@@ -1695,6 +1702,8 @@ LIBFUNC_P3(ULONG, sca_Rename,
 	if (Success)
 		{
 		d1(KPrintF("%s/%s/%ld: isIcon=%08lx  parentLock=%08lx\n", __FILE__, __FUNC__, __LINE__, isIcon, parentLock));
+
+		AdjustRenameAdjustHistoryPaths(&HistoryPathList, fLock);
 
 		if (0 == isIcon && fLock)
 			{
@@ -1791,6 +1800,8 @@ LIBFUNC_P3(ULONG, sca_Rename,
 		FreeCopyString(fName);
 	if (fLock)
 		UnLock(fLock);
+
+	CleanupRenameAdjustHistoryPaths(&HistoryPathList, WinListLocked);
 
 	d1(KPrintF("%s/%s/%ld: END  Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
