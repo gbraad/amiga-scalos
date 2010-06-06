@@ -32,9 +32,14 @@ ifeq ($(MACHINE), ppc-morphos)
 # MorphOS
 ##############################################################################
 
-CC 		=	gcc4
+CC 		=	gcc
 
 ifndef GCCVERSION
+	GCCVERSION := $(shell $(CC) $(CFLAGS) -dumpversion)
+endif
+
+ifneq ($(GCCVERSION), 4.4.4)
+	CC 	=	gcc4
 	GCCVERSION := $(shell $(CC) $(CFLAGS) -dumpversion)
 endif
 
@@ -49,10 +54,12 @@ CODETYPE	=	PPC
 
 WARNINGS	=	-Wall -Wno-parentheses -Wunused -Wuninitialized -Winline 
 
+ifeq ($(GCCVERSION), 4.4.4)
+	WARNINGS	+=	-Wno-pointer-sign
+endif
 ifeq ($(GCCVERSION), 4.0.4)
 	WARNINGS	+=	-Wno-pointer-sign
 endif
-
 CPU		=	-mcpu=604e
 #CPU		 +=	 -maltivec
 
@@ -78,7 +85,7 @@ BINDIR		=	.bin_mos
 
 ############################################################################
 
-DEFINES		=	-D$(CODETYPE) -D__MORPHOS__ -DSVN_VERSION="$(SVNVERSION)"
+DEFINES		=	-D$(CODETYPE) -D__MORPHOS__ -DAMIGA -DSVN_VERSION="$(SVNVERSION)"
 
 ##############################################################################
 # End of MorphOS

@@ -315,7 +315,8 @@ int fcntl(int fd, int cmd, ...)
 
 //-----------------------------------------------------------------------------
 
-static double trunc(double x)
+#if (__GNUC__ < 4) || (__GNUC_MINOR__ < 4)
+double trunc(double x)
 {
 	if (isinf(x))
 		return x;
@@ -343,6 +344,7 @@ float cbrtf(float x)
 			return -powf (-x, 1.0 / 3.0);
 		}
 }
+#endif // __VERSION__
 
 //-----------------------------------------------------------------------------
 

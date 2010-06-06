@@ -14,12 +14,13 @@ vpath 	%.c	$(COMMON_DIR)
 
 ##############################################################################
 
-LFLAGS	+=	\
+LFLAGS	:=	\
 		-lavcodec \
 		-lavformat \
 		-lavcodec \
 		-lavutil \
-		-lz
+		-lz \
+		$(LFLAGS) \
 
 ##############################################################################
 
@@ -36,8 +37,9 @@ ifeq ($(MACHINE), ppc-morphos)
 
 INCLUDES	+=	#
 
-LFLAGS	+=	-nostartfiles \
+LFLAGS	:=	-nostartfiles \
 		-lmempools \
+		$(LFLAGS) \
 #		 -Wl,-Map,video.map \
 #		--verbose \
 #		-nostdlib
