@@ -1,3 +1,9 @@
+40.28
+Improvement: rearranged values in minimum icon size cycle gadget
+Improvement: added slider to select nominal icon size between 25% and 400%
+Improvement: added option to select whether drawers in text windows are displayed before files, after files, or with files
+Improvement: prefs pages are now virtual. Currently, the drawback is that NListtree fails to display tree lines (this is a known bug in NListtree.mcc).
+
 40.27
 Bugfix: when saving preferences, Workbench preferences was overwritten, silently removing all chunks Scalos isn't aware of. Now all unknown chunks are written back 1:1
 

@@ -1,4 +1,14 @@
 V41.8
+Bugfix: window history entries are now adjusted correctly when a listed directory is renamed
+Improvement: jpegpicture.pvplugin : now JPG pictures are read in one big chunk. This method uses more memory, but greatly speeds up reading images on some file systems (e.g. MorphOS USB ptp)
+Bugfix: finally implemented complete support for backdrop icons created by MorphOS Ambient (shortcuts.prefs). Now Ambient shortcuts can be correctly added and removed.
+Bugfix: enabled workbench.library WBInfo path for all systems. With this fix, AmigaOS4.x Workbenchstart "Information" button works again with Scalos
+Bugfix: for file copying and link creation, detection of already existing icons didn't work
+Improvement: allow individual icon size constraints and icon scale factor per window
+Bugfix: Windowproperties.module: fixed enforcer hit/crash when saving changes
+Improvement: arbitrary scaling of icons (25%..400%) is now possible
+Bugfix: scaling of newicons always displayed garbage
+Improvement: updated libcurl (used by updater.module) to version 7.20.1
 Bugfix: corrected recognition of active 3D-Layers (&quot;Enhanced Display&quot;) with MorphOS 2.x
 Bugfix: do not check RAM disk for sucfficient space (when copying files) when it returns 0 blocks free (AmigaOS3.x RAM disk always returns 0 free blocks)
 Improvement: added option to select whether drawers in text windows are displayed before files, after files, or with files
