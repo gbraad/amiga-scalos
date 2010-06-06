@@ -16,7 +16,6 @@ extern struct MUI_CustomClass *FontSampleClass;
 
 struct MUI_CustomClass *InitFontSampleClass(void);
 void CleanupFontSampleClass(struct MUI_CustomClass *mcc);
-Object *FontSampleMCCObject(Tag tags, ...);
 
 /* ------------------------------------------------------------------------- */
 

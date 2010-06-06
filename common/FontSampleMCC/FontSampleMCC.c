@@ -54,12 +54,12 @@ extern struct Library *TTEngineBase;
 
 /* ------------------------------------------------------------------------- */
 
-static ULONG mNew(struct IClass *cl, Object *obj, Msg msg);
+static ULONG mNew(struct IClass *cl,Object *obj,Msg msg);
 static ULONG mDispose(struct IClass *cl, Object *obj, Msg msg);
 static ULONG mAskMinMax(struct IClass *cl, Object *obj, struct MUIP_AskMinMax *msg);
 static ULONG mDraw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg);
 static ULONG mSet(struct IClass *cl, Object *obj, struct opSet *ops);
-DISPATCHER_PROTO(m);
+DISPATCHER_PROTO(FontSampleMCC);
 static void ClearInstanceData(struct FsMCCInstance *inst);
 static BOOL SetInstanceData(struct FsMCCInstance *inst, struct TagItem *TagList);
 static APTR OpenTTFontFromDesc(CONST_STRPTR FontDesc);
@@ -71,33 +71,36 @@ static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 
 /* ------------------------------------------------------------------------- */
 
-Object *FontSampleMCCObject(Tag tags, ...)
-{
-	return NewObjectA(FontSampleClass->mcc_Class, 0, (struct TagItem *) &tags);
-}
-
-/* ------------------------------------------------------------------------- */
-
 static ULONG mNew(struct IClass *cl,Object *obj,Msg msg)
 {
-	struct FsMCCInstance *inst;
-	struct opSet *ops;
+	d1(KPrintF("%s/%ld: START  obj=%08lx\n", __FUNC__, __LINE__, obj));
 
-	if (!(obj=(Object *) DoSuperMethodA(cl,obj,msg)))
-		return(0);
+	do	{
+		struct FsMCCInstance *inst;
+		struct opSet *ops;
 
-	inst = INST_DATA(cl,obj);
-	ClearInstanceData(inst);
+		d1(KPrintF("%s/%ld: cl=%08lx  obj=%08lx  msg=%08lx\n", __FUNC__, __LINE__, cl, obj, msg));
 
-	inst->fsm_String = strdup("The quick brown fox jumps over the lazy dog");
+		obj = (Object *) DoSuperMethodA(cl, obj, msg);
+		d1(KPrintF("%s/%ld: obj=%08lx\n", __FUNC__, __LINE__, obj));
+		if (NULL == obj)
+			break;
 
-	set(obj, MUIA_FillArea, TRUE);
+		inst = INST_DATA(cl,obj);
+		ClearInstanceData(inst);
 
-	ops = (struct opSet *) msg;
+		inst->fsm_String = strdup("The quick brown fox jumps over the lazy dog");
 
-	SetInstanceData(inst, ops->ops_AttrList);
+		set(obj, MUIA_FillArea, TRUE);
 
-	inst->fsm_NeedRelayout = FALSE;
+		ops = (struct opSet *) msg;
+
+		SetInstanceData(inst, ops->ops_AttrList);
+
+		inst->fsm_NeedRelayout = FALSE;
+		} while (0);
+
+	d1(KPrintF("%s/%ld: END  obj=%08lx\n", __FUNC__, __LINE__, obj));
 
 	return((ULONG)obj);
 }
@@ -259,42 +262,46 @@ static ULONG mSet(struct IClass *cl,Object *obj, struct opSet *ops)
 }
 
 
-DISPATCHER(m)
+DISPATCHER(FontSampleMCC)
 {
 	ULONG Result;
+
+	d1(KPrintF("%s/%ld: START  MethodID=%08lx\n", __FUNC__, __LINE__, msg->MethodID));
 
 	switch (msg->MethodID)
 		{
 	case OM_NEW:
-		d1(kprintf(__FUNC__ "/%ld: OM_NEW\n", __LINE__));
-		Result = mNew(cl,obj,(APTR)msg);
+		d1(kprintf("%s/%s/%ld: OM_NEW\n", __FILE__, __FUNC__, __LINE__));
+		Result = mNew(cl, obj, (APTR)msg);
 		break;
 
 	case OM_DISPOSE:
-		d1(kprintf(__FUNC__ "/%ld: OM_DISPOSE\n", __LINE__));
+		d1(kprintf("%s/%s/%ld: OM_DISPOSE\n",  __FILE__, __FUNC__, __LINE__));
 		Result = mDispose(cl,obj,(APTR)msg);
 		break;
 
 	case OM_SET:
-		d1(kprintf(__FUNC__ "/%ld: OM_SET\n", __LINE__));
+		d1(kprintf("%s/%s/%ld: OM_SET\n",  __FILE__, __FUNC__, __LINE__));
 		Result = mSet(cl, obj, (struct opSet *) msg);
 		break;
 
 	case MUIM_AskMinMax:
-		d1(kprintf(__FUNC__ "/%ld: MUIM_AskMinMax\n", __LINE__));
+		d1(kprintf("%s/%s/%ld: MUIM_AskMinMax\n",  __FILE__, __FUNC__, __LINE__));
 		Result = mAskMinMax(cl,obj,(APTR)msg);
 		break;
 
 	case MUIM_Draw:
-		d1(kprintf(__FUNC__ "/%ld: MUIM_Draw\n", __LINE__));
+		d1(kprintf("%s/%s/%ld: MUIM_Draw\n",  __FILE__, __FUNC__, __LINE__));
 		Result = mDraw(cl,obj,(APTR)msg);
 		break;
 
 	default:
-		d1(kprintf(__FUNC__ "/%ld: MethodID=%08lx\n", __LINE__, msg->MethodID));
+		d1(kprintf("%s/%s/%ld: MethodID=%08lx\n",  __FILE__, __FUNC__, __LINE__, msg->MethodID));
 		Result = DoSuperMethodA(cl,obj,msg);
 		break;
 		}
+
+	d1(KPrintF("%s/%ld: END  Result=%08lx\n", __FUNC__, __LINE__, Result));
 
 	return Result;
 }
@@ -355,8 +362,8 @@ static BOOL SetInstanceData(struct FsMCCInstance *inst, struct TagItem *TagList)
 
 		inst->fsm_TTFontHandle = OpenTTFontFromDesc(inst->fsm_TTFontDesc);
 
-		d1(kprintf(__FUNC__ "/%ld: fsm_TTFontHandle = %08lx FontDesc=<%s>\n", \
-			__LINE__, inst->fsm_TTFontHandle, inst->fsm_TTFontDesc ? inst->fsm_TTFontDesc : (STRPTR) ""));
+		d1(kprintf("%s/%s/%ld: fsm_TTFontHandle = %08lx FontDesc=<%s>\n", \
+			_ __FILE__, __FUNC__, _LINE__, inst->fsm_TTFontHandle, inst->fsm_TTFontDesc ? inst->fsm_TTFontDesc : (STRPTR) ""));
 
 		// Force redraw if antialias or gamma has changed
 		if (OldGamma != inst->fsm_Gamma || OldAntiAlias != inst->fsm_AntiAlias)
@@ -379,8 +386,8 @@ static BOOL SetInstanceData(struct FsMCCInstance *inst, struct TagItem *TagList)
 
 			TT_TextExtent(&rp, (STRPTR) inst->fsm_String, strlen(inst->fsm_String), &inst->fsm_TextExtent);
 
-			d1(kprintf(__FUNC__ "/%ld: fsm_TextExtent width=%ld  height=%ld\n", \
-				__LINE__, inst->fsm_TextExtent.te_Width, inst->fsm_TextExtent.te_Height));
+			d1(kprintf("%s/%s/%ld: fsm_TextExtent width=%ld  height=%ld\n", \
+				 __FILE__, __FUNC__, __LINE__, inst->fsm_TextExtent.te_Width, inst->fsm_TextExtent.te_Height));
 
 			TT_DoneRastPort(&rp);
 
@@ -400,8 +407,8 @@ static BOOL SetInstanceData(struct FsMCCInstance *inst, struct TagItem *TagList)
 
 		inst->fsm_StdFont = OpenDiskFontFromDesc(inst->fsm_StdFontDesc);
 
-		d1(kprintf(__FUNC__ "/%ld: fsm_StdFont=%08lx FontDesc=<%s>\n", \
-			__LINE__, inst->fsm_StdFont, inst->fsm_StdFontDesc ? inst->fsm_StdFontDesc : (STRPTR) ""));
+		d1(kprintf("%s/%s/%ld: fsm_StdFont=%08lx FontDesc=<%s>\n", \
+			 __FILE__, __FUNC__, __LINE__, inst->fsm_StdFont, inst->fsm_StdFontDesc ? inst->fsm_StdFontDesc : (STRPTR) ""));
 
 		OldHeight = inst->fsm_TextExtent.te_Height;
 
@@ -416,8 +423,8 @@ static BOOL SetInstanceData(struct FsMCCInstance *inst, struct TagItem *TagList)
 
 		TextExtent(&rp, (STRPTR) inst->fsm_String, strlen(inst->fsm_String), &inst->fsm_TextExtent);
 
-		d1(kprintf(__FUNC__ "/%ld: fsm_TextExtent width=%ld  height=%ld\n", \
-			__LINE__, inst->fsm_TextExtent.te_Width, inst->fsm_TextExtent.te_Height));
+		d1(kprintf("%s/%s/%ld: fsm_TextExtent width=%ld  height=%ld\n", \
+			 __FILE__, __FUNC__, __LINE__, inst->fsm_TextExtent.te_Width, inst->fsm_TextExtent.te_Height));
 
 		Redraw = TRUE;
 
@@ -514,7 +521,7 @@ static struct TextFont *OpenDiskFontFromDesc(CONST_STRPTR FontDesc)
 
 	Font = OpenDiskFont(&ta);
 
-	d1(kprintf(__FUNC__ "/%ld: Font=%08lx  FontName=<%s>  Size=%ld\n", __LINE__, Font, FontName, ta.ta_YSize));
+	d1(kprintf("%s/%s/%ld: Font=%08lx  FontName=<%s>  Size=%ld\n",  __FILE__, __FUNC__, __LINE__, Font, FontName, ta.ta_YSize));
 
 	free(FontName);
 
@@ -548,7 +555,7 @@ static void ForceRelayout(struct IClass *cl, Object *obj)
 
 struct MUI_CustomClass *InitFontSampleClass(void)
 {
-	return MUI_CreateCustomClass(NULL, MUIC_Area, NULL, sizeof(struct FsMCCInstance), DISPATCHER_REF(m));
+	return MUI_CreateCustomClass(NULL, MUIC_Area, NULL, sizeof(struct FsMCCInstance), DISPATCHER_REF(FontSampleMCC));
 }
 
 void CleanupFontSampleClass(struct MUI_CustomClass *mcc)

@@ -2910,7 +2910,7 @@ static Object **CreateSubWindows(Class *cl, Object *o)
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
 				End, //PopaslObject
 
-				Child, inst->fpb_Objects[OBJNDX_AslFont_Sample] = FontSampleMCCObject(
+				Child, inst->fpb_Objects[OBJNDX_AslFont_Sample] = NewObject(FontSampleClass->mcc_Class, 0,
 					TextFrame,
 					MUIA_Background, MUII_TextBack,
 					MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -2933,7 +2933,7 @@ static Object **CreateSubWindows(Class *cl, Object *o)
 					MUIA_Popstring_CloseHook, &inst->fpb_Hooks[HOOKNDX_EditAttributeTTFontClose],
 				End, //PopstringObject
 
-				Child, inst->fpb_Objects[OBJNDX_TTFont_Sample] = FontSampleMCCObject(
+				Child, inst->fpb_Objects[OBJNDX_TTFont_Sample] = NewObject(FontSampleClass->mcc_Class, 0,
 					TextFrame,
 					MUIA_Background, MUII_TextBack,
 					MUIA_FontSample_Antialias, inst->fpb_TTfAntialias,
