@@ -19,6 +19,7 @@ SAVEDS(void) INTERRUPT SaveAsFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT ResetToDefaultsFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT RestoreFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT OpenAboutFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(void) INTERRUPT OpenAboutMorpOSFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT OpenAboutMUIFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT RemovePluginFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT ModulesPrefsPopupHookFunc(struct Hook *hook, Object *o, Msg msg);

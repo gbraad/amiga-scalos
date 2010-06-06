@@ -475,6 +475,14 @@ SAVEDS(void) INTERRUPT OpenAboutFunc(struct Hook *hook, Object *o, Msg msg)
 		VERSION_MAJOR, VERSION_MINOR, COMPILER_STRING, CURRENTYEAR);
 }
 
+SAVEDS(void) INTERRUPT OpenAboutMorpOSFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
+
+	set(app->Obj[WIN_ABOUT_MORPHOS], MUIA_Window_Open, TRUE);
+}
+
+
 SAVEDS(void) INTERRUPT OpenAboutMUIFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
