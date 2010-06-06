@@ -26,11 +26,12 @@ ifeq ($(MACHINE), ppc-morphos)
 
 INCLUDES	+=	#
 
-LFLAGS	+=	-nostartfiles \
+LFLAGS	:=	 -nostartfiles \
 		-ljpeg \
 		-lmempools \
+		$(LFLAGS) \
 #		 -Wl,-Map,jpegpicture.map \
-#		--verbose
+#		--verbose \
 
 
 else

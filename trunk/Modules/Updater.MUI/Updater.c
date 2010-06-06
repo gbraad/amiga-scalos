@@ -27,6 +27,8 @@
 #include <libraries/amissl.h>
 #include <openssl/pem.h>
 #include <scalos/scalos.h>
+
+#define	CURL_DISABLE_TYPECHECK
 #include <curl/curl.h>
 
 #include <mui/NListview_mcc.h>

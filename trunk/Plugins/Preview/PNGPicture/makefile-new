@@ -46,7 +46,7 @@ all:	$(BINDIR)/$(NAME) \
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
-	$(ECHO) "Link $(NAME)"
+	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@protect $@ +e
