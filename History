@@ -1966,7 +1966,8 @@ Additions/changes:
 
 --------------------Scalos main Preferences---------------------------------
 
- 40.28  20100501	jl      - Improvement: rearranged values in minimum icon size cycle gadget.
+ 40.28  20100606	jl	- Improvement: added "About MorphOS" menu item (MorphOS version only).
+	20100501	jl      - Improvement: rearranged values in minimum icon size cycle gadget.
 				- Improvement: added slider to select nominal icon size between 25% and 400%.
 	20100328	jl	- Improvement: added option to select whether drawers in text windows are
 				  displayed before files, after files, or with files.

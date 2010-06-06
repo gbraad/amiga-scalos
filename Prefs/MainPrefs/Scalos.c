@@ -802,6 +802,7 @@ static struct Hook ControlBarGadgetListBrowserActiveHook = {{NULL, NULL}, HOOKFU
 static struct Hook ResetToDefaultsHook = { { NULL, NULL }, HOOKFUNC_DEF(ResetToDefaultsFunc), NULL };
 static struct Hook RestoreHook = { { NULL, NULL }, HOOKFUNC_DEF(RestoreFunc), NULL };
 static struct Hook AboutHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutFunc), NULL };
+static struct Hook AboutMorphosHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMorpOSFunc), NULL };
 static struct Hook AboutMUIHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenAboutMUIFunc), NULL };
 static struct Hook CreateIconsHook = { { NULL, NULL }, HOOKFUNC_DEF(CreateIconsHookFunc), NULL };
 static struct Hook RemovePluginHook = { { NULL, NULL }, HOOKFUNC_DEF(RemovePluginFunc), NULL };
@@ -869,6 +870,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	RestoreHook.h_Data = app;
 	ResetToDefaultsHook.h_Data = app;
 	AboutHook.h_Data = app;
+        AboutMorphosHook.h_Data = app;
 	AboutMUIHook.h_Data = app;
 	CreateIconsHook.h_Data = app;
 	RemovePluginHook.h_Data = app;
@@ -1119,6 +1121,12 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 			End, //VGroup
 
 		End, //Window
+
+#if defined(__MORPHOS__)
+		SubWindow, app->Obj[WIN_ABOUT_MORPHOS] = MUI_NewObject("Pantheon.mcc",
+			MUIA_Window_ID, MAKE_ID('A','M','A','M'),
+			End, //Pantheon.mcc"
+#endif //defined(__MORPHOS__)
 
 // -----------------------------------------------------------------------------------------------
 ///
@@ -1414,6 +1422,11 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 				Child, app->Obj[MENU_ABOUT] = MenuitemObject,
 					MUIA_Menuitem_Title, (ULONG) GetLocString(MSGID_MENU_PROJECT_ABOUT),
 				End,
+#if defined(__MORPHOS__)
+				Child, app->Obj[MENU_ABOUT_MORPHOS] = MenuitemObject,
+					MUIA_Menuitem_Title, (ULONG) GetLocString(MSGID_MENU_PROJECT_ABOUTMORPHOS),
+				End,
+#endif //defined(__MORPHOS__)
 				Child, app->Obj[MENU_ABOUT_MUI] = MenuitemObject,
 					MUIA_Menuitem_Title, (ULONG) GetLocString(MSGID_MENU_PROJECT_ABOUTMUI),
 				End,
@@ -1933,6 +1946,14 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 
 	DoMethod(app->Obj[MENU_ABOUT], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
 		MUIV_Notify_Application, 2, MUIM_CallHook, &AboutHook);
+
+#if defined(__MORPHOS__)
+	DoMethod(app->Obj[MENU_ABOUT_MORPHOS], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
+		MUIV_Notify_Application, 2, MUIM_CallHook, &AboutMorphosHook);
+
+	DoMethod(app->Obj[WIN_ABOUT_MORPHOS], MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
+		app->Obj[WIN_ABOUT_MORPHOS], 2, MUIA_Window_Open, FALSE);
+#endif //defined(__MORPHOS__)
 
 	DoMethod(app->Obj[MENU_ABOUT_MUI], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
 		MUIV_Notify_Application, 2, MUIM_CallHook, &AboutMUIHook);

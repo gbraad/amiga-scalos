@@ -92,6 +92,10 @@ R
 MSGID_MENU_PROJECT_ABOUTMUI (//)
 About MUI...
 ;
+;
+MSGID_MENU_PROJECT_ABOUTMORPHOS (//)
+About MorphOS...
+;
 ;-----------------------------------------------------------
 ;
 MSGID_FILEDISP_COLUMN_NAME (1100//)
