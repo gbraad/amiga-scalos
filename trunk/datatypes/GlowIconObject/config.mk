@@ -18,9 +18,10 @@ ifeq ($(MACHINE), ppc-morphos)
 ###############################################################################
 # MorphOS
 
-LFLAGS	+=	-nostartfiles \
+LFLAGS	:=	-nostartfiles \
 		-lz \
 		-lmempools \
+		$(LFLAGS) \
 #		--verbose
 
 
