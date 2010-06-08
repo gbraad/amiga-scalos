@@ -18,10 +18,11 @@ ifeq ($(MACHINE), ppc-morphos)
 ###############################################################################
 # MorphOS
 
-LFLAGS	+=      -nostartfiles \
+LFLAGS	:=      -nostartfiles \
 		-lpng \
 		-lz \
 		-lmempools \
+		$(LFLAGS) \
 #		-Wl,-Map,png.map \
 #		--verbose
 
@@ -33,7 +34,9 @@ ifeq ($(MACHINE), ppc-amigaos)
 # AmigaOS4
 
 LFLAGS	+=      -nostartfiles \
-		-lpng -lz -lm
+		-lpng \
+		-lz \
+		-lm
 
 else
 
