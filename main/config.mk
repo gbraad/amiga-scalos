@@ -43,8 +43,9 @@ ifeq ($(MACHINE), ppc-morphos)
 
 INCLUDES	+=
 
-LFLAGS	+=	-lpng \
+LFLAGS	:=	-lpng \
 		-lz \
+		$(LFLAGS) \
 		#
 
 
