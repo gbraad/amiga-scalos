@@ -670,8 +670,6 @@ static BOOL InitializeVideo(struct AVInfo *avInfo)
 	BOOL Success = FALSE;
 
 	do	{
-		size_t BuffSize;
-
 		d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
 		// Retrieve stream information
@@ -745,33 +743,14 @@ static BOOL InitializeVideo(struct AVInfo *avInfo)
 		if (NULL == avInfo->avinf_pFrame)
 			break;
 
-		avInfo->avinf_pRGBFrame = avcodec_alloc_frame();
-		d1(KPrintF("%s/%s/%ld:  avinf_pRGBFrame=%08lx\n", __FILE__, __FUNC__, __LINE__, avInfo->avinf_pRGBFrame));
-		if (NULL == avInfo->avinf_pRGBFrame)
-			break;
-
-		d1(KPrintF("%s/%s/%ld:  width=%ld  height=%ld\n", __FILE__, __FUNC__, __LINE__, \
-			avInfo->avinf_pCodecContext->width, avInfo->avinf_pCodecContext->height));
-
-		// Calculate required buffer size
-		BuffSize = avpicture_get_size(PIX_FMT_RGB24,
+		if (!AllocFrameData(&avInfo->avinf_pRGBFrame,
 			avInfo->avinf_pCodecContext->width,
-			avInfo->avinf_pCodecContext->height);
-		d1(KPrintF("%s/%s/%ld:  BuffSize=%08lx\n", __FILE__, __FUNC__, __LINE__, BuffSize));
-
-		// Allocate buffer for avinf_pRGBFrame
-		avInfo->avinf_Buffer = malloc(BuffSize);
-		d1(KPrintF("%s/%s/%ld:  avinf_Buffer=%08lx\n", __FILE__, __FUNC__, __LINE__, avInfo->avinf_Buffer));
-		if (NULL == avInfo->avinf_Buffer)
+			avInfo->avinf_pCodecContext->height,
+			PIX_FMT_RGB24))
+			{
 			break;
+			}
 
-		// Fill image planes in avinf_pRGBFrame with appropriate parts of allocated buffer
-		avpicture_fill((AVPicture *) avInfo->avinf_pRGBFrame,
-			avInfo->avinf_Buffer,
-			PIX_FMT_RGB24,
-			avInfo->avinf_pCodecContext->width,
-			avInfo->avinf_pCodecContext->height);
-		
                 Success = TRUE;
 		} while (0);
 
@@ -821,6 +800,9 @@ static BOOL ReadVideoFrame(struct AVInfo *avInfo)
 
 				if (frameFinished && (bytesDecoded >= 0))
 					{
+					struct SwsContext *ImgConvertContext;
+					int rc;
+
 					d1(	{ \
 						char buffer[80]; \
 						sprintf(buffer, "pts=%llu  dts=%llu", packet.pts, packet.dts);
@@ -828,14 +810,35 @@ static BOOL ReadVideoFrame(struct AVInfo *avInfo)
 						} );
 
 					// Convert frame image from native format to RGB
-					img_convert((AVPicture *) avInfo->avinf_pRGBFrame,
-						PIX_FMT_RGB24,
-						(AVPicture *) avInfo->avinf_pFrame,
+					ImgConvertContext = sws_getContext(avInfo->avinf_pCodecContext->width,
+						avInfo->avinf_pCodecContext->height,
 						avInfo->avinf_pCodecContext->pix_fmt,
 						avInfo->avinf_pCodecContext->width,
-						avInfo->avinf_pCodecContext->height);
+						avInfo->avinf_pCodecContext->height,
+						PIX_FMT_RGB24,
+						SWS_BICUBIC,
+						NULL,
+						NULL,
+						NULL);
 
-					break;;
+					if (NULL == ImgConvertContext)
+						break;
+
+					rc = sws_scale(ImgConvertContext,
+						avInfo->avinf_pFrame->data,
+						avInfo->avinf_pFrame->linesize,
+						0,
+						avInfo->avinf_pCodecContext->height,
+						avInfo->avinf_pRGBFrame->data,
+						avInfo->avinf_pRGBFrame->linesize);
+
+					d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
+					sws_freeContext(ImgConvertContext);
+
+					if (-1 == rc)
+						break;	// failure
+					break;
 					}
 
 				buffer += bytesDecoded;
@@ -855,6 +858,8 @@ static BOOL ReadVideoFrame(struct AVInfo *avInfo)
 	d1(KPrintF("%s/%s/%ld: frameFinished=%ld\n", __FILE__, __FUNC__, __LINE__, frameFinished));
 
 	av_free_packet(&packet);
+
+	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
 	return (BOOL) frameFinished;
 }
@@ -941,8 +946,9 @@ static BOOL ConvertAndScaleFrame(struct AVInfo *avInfo, int pixFormat,
 
 		sws_scale(scaleContext,
 			avInfo->avinf_pFrame->data,
-			avInfo->avinf_pFrame->linesize, 0,
-	                avInfo->avinf_pCodecContext->width,
+			avInfo->avinf_pFrame->linesize,
+			0,
+			avInfo->avinf_pCodecContext->height,
 			convertedFrame->data,
 			convertedFrame->linesize);
 
