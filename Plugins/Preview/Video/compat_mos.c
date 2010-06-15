@@ -376,6 +376,7 @@ int mkstemp(char *template)
 
 //-----------------------------------------------------------------------------
 
+#if (__GNUC__ < 4) || (__GNUC_MINOR__ < 4)
 /*
     These functions shall round their argument to the nearest integer value,
     rounding according to the current rounding direction.
@@ -393,6 +394,31 @@ long long int llrint(double x)
 {
 #warning need some work here
 	return (long long) x;
+}
+#endif // (__GNUC__ < 4) || (__GNUC_MINOR__ < 4)
+
+//-----------------------------------------------------------------------------
+
+struct stat;
+
+int fstat(int fd, struct stat *stat_buf)
+{
+	return -1;
+}
+
+int please_use_av_log(void)
+{
+	return 0;
+}
+
+int please_use_av_log_instead_of_printf(void)
+{
+	return 0;
+}
+
+int usleep(int us)
+{
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
