@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8	20100605	jl	- Bugfix: window history entries are now adjusted correctly when a listed directory is renamed.
+41.8    20100629        jl	- Upgraded libpng to 1.4.3.
+	20100605	jl	- Bugfix: window history entries are now adjusted correctly when a listed directory is renamed.
 	20100604	jl	- Improvement: jpegpicture.pvplugin : now JPG pictures are read in one big chunk.
 				  This method uses more memory, but greatly speeds up reading images
 				  on some file systems (e.g. USB ptp).
