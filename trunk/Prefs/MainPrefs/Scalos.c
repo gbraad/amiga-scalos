@@ -235,8 +235,9 @@ struct Library *TTEngineBase = NULL;
 struct Library *ScalosGfxBase = NULL;
 struct Library *DiskfontBase = NULL;
 
-#ifdef __amigaos4__
 extern struct DosLibrary * DOSBase;
+
+#ifdef __amigaos4__
 extern struct Library *SysBase;
 struct IntuitionIFace *IIntuition;
 struct PreferencesIFace *IPreferences;
@@ -1011,6 +1012,12 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
+#if defined(__MORPHOS__)
+	app->Obj[WIN_ABOUT_MORPHOS] = MUI_NewObject("Pantheon.mcc",
+		MUIA_Window_ID, MAKE_ID('A','M','A','M'),
+		End; //Pantheon.mcc"
+#endif //defined(__MORPHOS__)
+
 	app->Obj[APPLICATION] = ApplicationObject,
 
 		MUIA_Application_Author,	AUTHOR,
@@ -1123,9 +1130,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		End, //Window
 
 #if defined(__MORPHOS__)
-		SubWindow, app->Obj[WIN_ABOUT_MORPHOS] = MUI_NewObject("Pantheon.mcc",
-			MUIA_Window_ID, MAKE_ID('A','M','A','M'),
-			End, //Pantheon.mcc"
+		(app->Obj[WIN_ABOUT_MORPHOS]) ? SubWindow : TAG_IGNORE, app->Obj[WIN_ABOUT_MORPHOS],
 #endif //defined(__MORPHOS__)
 
 // -----------------------------------------------------------------------------------------------
@@ -1425,6 +1430,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 #if defined(__MORPHOS__)
 				Child, app->Obj[MENU_ABOUT_MORPHOS] = MenuitemObject,
 					MUIA_Menuitem_Title, (ULONG) GetLocString(MSGID_MENU_PROJECT_ABOUTMORPHOS),
+					MUIA_Menuitem_Enabled, (NULL != app->Obj[WIN_ABOUT_MORPHOS]),
 				End,
 #endif //defined(__MORPHOS__)
 				Child, app->Obj[MENU_ABOUT_MUI] = MenuitemObject,
@@ -1948,11 +1954,14 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		MUIV_Notify_Application, 2, MUIM_CallHook, &AboutHook);
 
 #if defined(__MORPHOS__)
-	DoMethod(app->Obj[MENU_ABOUT_MORPHOS], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
-		MUIV_Notify_Application, 2, MUIM_CallHook, &AboutMorphosHook);
+	if (app->Obj[WIN_ABOUT_MORPHOS])
+		{
+		DoMethod(app->Obj[MENU_ABOUT_MORPHOS], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
+			MUIV_Notify_Application, 2, MUIM_CallHook, &AboutMorphosHook);
 
-	DoMethod(app->Obj[WIN_ABOUT_MORPHOS], MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
-		app->Obj[WIN_ABOUT_MORPHOS], 2, MUIA_Window_Open, FALSE);
+		DoMethod(app->Obj[WIN_ABOUT_MORPHOS], MUIM_Notify, MUIA_Window_CloseRequest, TRUE,
+			app->Obj[WIN_ABOUT_MORPHOS], 2, MUIA_Window_Open, FALSE);
+		}
 #endif //defined(__MORPHOS__)
 
 	DoMethod(app->Obj[MENU_ABOUT_MUI], MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime,
@@ -3225,6 +3234,11 @@ static VOID Cleanup(struct SCAModule *app)
 	ReadWritePrefsCleanup();
 	PrefsPluginsCleanup();
 
+	if (app->Obj[WIN_ABOUT_MORPHOS])
+		{
+		MUI_DisposeObject(app->Obj[WIN_ABOUT_MORPHOS]);
+		app->Obj[WIN_ABOUT_MORPHOS] = NULL;
+		}
 	if (WBScreen)
 		{
 		UnlockPubScreen(NULL, WBScreen);
