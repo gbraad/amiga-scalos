@@ -84,10 +84,8 @@ static const char * const azCompileOpt[] = {
 #ifdef SQLITE_ENABLE_FTS3_PARENTHESIS
   "ENABLE_FTS3_PARENTHESIS",
 #endif
-#if 0 /* Disabled because FTS4 is not ready for publication */
 #ifdef SQLITE_ENABLE_FTS4
   "ENABLE_FTS4",
-#endif
 #endif
 #ifdef SQLITE_ENABLE_ICU
   "ENABLE_ICU",
@@ -173,6 +171,9 @@ static const char * const azCompileOpt[] = {
 #ifdef SQLITE_OMIT_AUTOINIT
   "OMIT_AUTOINIT",
 #endif
+#ifdef SQLITE_OMIT_AUTOMATIC_INDEX
+  "OMIT_AUTOMATIC_INDEX",
+#endif
 #ifdef SQLITE_OMIT_AUTOVACUUM
   "OMIT_AUTOVACUUM",
 #endif
@@ -194,9 +195,11 @@ static const char * const azCompileOpt[] = {
 #ifdef SQLITE_OMIT_CHECK
   "OMIT_CHECK",
 #endif
-#ifdef SQLITE_OMIT_COMPILEOPTION_DIAGS
-  "OMIT_COMPILEOPTION_DIAGS",
-#endif
+/* // redundant
+** #ifdef SQLITE_OMIT_COMPILEOPTION_DIAGS
+**   "OMIT_COMPILEOPTION_DIAGS",
+** #endif
+*/
 #ifdef SQLITE_OMIT_COMPLETE
   "OMIT_COMPLETE",
 #endif
@@ -229,9 +232,6 @@ static const char * const azCompileOpt[] = {
 #endif
 #ifdef SQLITE_OMIT_GET_TABLE
   "OMIT_GET_TABLE",
-#endif
-#ifdef SQLITE_OMIT_GLOBALRECOVER
-  "OMIT_GLOBALRECOVER",
 #endif
 #ifdef SQLITE_OMIT_INCRBLOB
   "OMIT_INCRBLOB",
@@ -310,6 +310,9 @@ static const char * const azCompileOpt[] = {
 #endif
 #ifdef SQLITE_OMIT_VIRTUALTABLE
   "OMIT_VIRTUALTABLE",
+#endif
+#ifdef SQLITE_OMIT_WAL
+  "OMIT_WAL",
 #endif
 #ifdef SQLITE_OMIT_WSD
   "OMIT_WSD",

@@ -159,6 +159,7 @@ static void otherDlError(sqlite3_vfs *pVfs, int nBuf, char *zBufOut);
 static void otherDlClose(sqlite3_vfs *pVfs, void *pHandle);
 static int otherRandomness(sqlite3_vfs *pVfs, int nBuf, char *zBuf);
 static int otherSleep(sqlite3_vfs *pVfs, int microsec);
+static int otherCurrentTimeInt64(sqlite3_vfs *NotUsed, sqlite3_int64 *piNow);
 static int otherCurrentTime(sqlite3_vfs *pVfs, double *prNow);
 
 static __inline__ ULONG hashadd(ULONG h, UBYTE c);
@@ -267,7 +268,6 @@ static int otherDelete(sqlite3_vfs *pVfs, const char *zFilename, int syncDir)
 
 	d1(KPrintF(__FILE__ "/%s/%ld: zFilename=<%s>  syncDir=%ld\n", __FUNC__, __LINE__, zFilename, syncDir));
 	DeleteFile(zFilename);
-	OSTRACE2("DELETE \"%s\"\n", zFilename);
         return SQLITE_OK;
 }
 
@@ -486,7 +486,6 @@ static int otherTempFileName(sqlite3_vfs *pVfs, int nBuf, char *zBuf)
 		sqlite3OsAccess(pVfs, zBuf, SQLITE_ACCESS_EXISTS, &exists);
 		} while (exists);
 
-	OSTRACE2("TEMP FILENAME: %s\n", zBuf);
 	d1(KPrintF(__FILE__ "/%s/%ld: zBuf=<%s>\n", __FUNC__, __LINE__, zBuf));
 	return SQLITE_OK;
 }
@@ -510,7 +509,6 @@ static int otherClose(sqlite3_file *pId)
 			break;
 
 		d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
-		OSTRACE2("CLOSE %ld\n", pFile->h);
 
 		if (NULL == pFile->h)
 			break;
@@ -572,7 +570,6 @@ static int otherRead(sqlite3_file *id, void *pBuf, int amt, sqlite3_int64 offset
 
 	d1(KPrintF(__FILE__ "/%s/%ld: amt=%ld\n", __FUNC__, __LINE__, amt));
 	SimulateIOError(SQLITE_IOERR);
-	OSTRACE3("READ %08lx lock=%s\n", pFile->h, locktypeName(pFile->locktype));
 
 	rc = otherSeek(id, offset);
 	if (SQLITE_OK != rc)
@@ -612,7 +609,6 @@ static int otherWrite(sqlite3_file *id, const void *pBuf, int amt, sqlite3_int64
 	d1(KPrintF(__FILE__ "/%s/%ld: amt=%ld\n", __FUNC__, __LINE__, amt));
 	SimulateIOError(( wrote=(-1), amt=1 ));
 	SimulateDiskfullError(( wrote=0, amt=1 ));
-	OSTRACE3("WRITE %ld lock=%ld\n", pFile->h, pFile->locktype);
 	assert( amt>0 );
 
 #ifndef NDEBUG
@@ -681,7 +677,6 @@ static int otherSeek(sqlite3_file *id, sqlite3_int64 offset)
 		SimulateDiskfullError
 #endif
 	rc = Seek(pFile->h, lowerBits, OFFSET_BEGINNING);
-	OSTRACE3("SEEK %ld %lld\n", pFile->h, offset);
 	if (rc >= 0)
 		return SQLITE_OK;
 
@@ -720,7 +715,6 @@ static int otherSync(sqlite3_file *id, int dataOnly)
 	otherFile *pFile = (otherFile *) id;
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
-	OSTRACE3("SYNC %ld lock=%ld\n", pFile->h, pFile->locktype);
 	if (Flush(pFile->h) )
 		return SQLITE_OK;
 	else
@@ -750,7 +744,6 @@ static int otherTruncate(sqlite3_file *id, sqlite3_int64 nByte)
 	LONG lowerBits = nByte & 0xffffffff;
 
 	d1(KPrintF(__FILE__ "/%s/%ld: nByte=%ld\n", __FUNC__, __LINE__, lowerBits));
-	OSTRACE3("TRUNCATE %ld %lld\n", pFile->h, nByte);
 	SimulateIOError(SQLITE_IOERR);
 	if (SetFileSize(pFile->h, lowerBits, OFFSET_BEGINNING) < 0)
 		{
@@ -866,9 +859,6 @@ static int otherLock(sqlite3_file *id, int locktype)
 	struct LockInfo *pLock;
 
 	assert( NULL != pFile );
-	OSTRACE5("LOCK    %08lx %s was %s pid=%08lx\n", pFile->h,
-		locktypeName(locktype), locktypeName(pFile->locktype),
-		FindTask(NULL));
 
 	/* If there is already a lock of this type or more restrictive on the
 	** sqlite3_file, do nothing. Don't use the end_lock: exit path, as
@@ -876,7 +866,6 @@ static int otherLock(sqlite3_file *id, int locktype)
 	*/
 	if (pFile->locktype >= locktype )
 		{
-		OSTRACE3("LOCK    %08lx %s ok (already held)\n", pFile->h, locktypeName(locktype));
 		return SQLITE_OK;
 		}
 
@@ -993,8 +982,6 @@ static int otherLock(sqlite3_file *id, int locktype)
 
 end_lock:
 	otherLeaveMutex();
-	OSTRACE4("LOCK    %08lx %s %s\n", pFile->h, locktypeName(locktype),
-	    rc == SQLITE_OK ? "ok" : "failed");
 
 	return rc;
 }
@@ -1021,7 +1008,6 @@ static int otherCheckReservedLock(sqlite3_file *id, int *pResOut)
 	if (pFile->locktype >= RESERVED_LOCK )
 		{
 		rc = 1;
-		OSTRACE3("TEST WR-LOCK %ld %ld (local)\n", pFile->h, rc);
 		}
 	else
 		{
@@ -1034,7 +1020,6 @@ static int otherCheckReservedLock(sqlite3_file *id, int *pResOut)
 			}
 
 		rc = !rc;
-		OSTRACE3("TEST WR-LOCK %ld %ld (remote)\n", pFile->h, rc);
 		}
 
 	*pResOut = rc;
@@ -1061,10 +1046,6 @@ static int otherUnlock(sqlite3_file *id, int locktype)
 
 	assert( NULL != pFile );
 	assert( locktype <= SHARED_LOCK );
-
-	OSTRACE5("UNLOCK  %08lx %s was %s pid=%08lx\n", pFile->h,
-		locktypeName(locktype),
-		locktypeName(pFile->locktype), FindTask(NULL));
 
 	if (pFile->locktype <= locktype )
 		{
@@ -1254,6 +1235,38 @@ static int otherSleep(sqlite3_vfs *pVfs, int microsec)
 #ifdef SQLITE_TEST
 int sqlite3_current_time = 0;
 #endif
+
+/*
+** Find the current time (in Universal Coordinated Time).  Write into *piNow
+** the current time and date as a Julian Day number times 86_400_000.  In
+** other words, write into *piNow the number of milliseconds since the Julian
+** epoch of noon in Greenwich on November 24, 4714 B.C according to the
+** proleptic Gregorian calendar.
+**
+** On success, return 0.  Return 1 if the time and date cannot be found.
+*/
+static int otherCurrentTimeInt64(sqlite3_vfs *NotUsed, sqlite3_int64 *piNow)
+{
+  static const sqlite3_int64 unixEpoch = 24405875*(sqlite3_int64)8640000;
+
+	double now;
+	T_TIMEVAL tv;
+
+	GetSysTime(&tv);
+
+	now = ((double) tv.tv_secs) * 4294967296.0;
+	*piNow = (now + tv.tv_micro)/864000000000.0 + 2305813.5 + unixEpoch;
+
+#ifdef SQLITE_TEST
+	if (sqlite3_current_time )
+		{
+		*piNow = 1000*(sqlite3_int64)sqlite3_current_time + unixEpoch;
+		}
+#endif
+
+	UNUSED_PARAMETER(NotUsed);
+	return 0;
+}
 
 /*
 ** Find the current time (in Universal Coordinated Time).  Write the
@@ -1599,7 +1612,8 @@ int sqlite3_os_init(void)
 	otherRandomness,     	/* xRandomness */
 	otherSleep,		/* xSleep */
 	otherCurrentTime,	/* xCurrentTime */
-	otherGetLastError      	/* xGetLastError */
+	otherGetLastError,     	/* xGetLastError */
+	otherCurrentTimeInt64, 	/* xCurrentTimeInt64 */
 	};
 
 	rc = sqlite3_config(SQLITE_CONFIG_MUTEX, sqlite3OtherMutex());
