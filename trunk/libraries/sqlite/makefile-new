@@ -64,7 +64,7 @@ OBJS	+=	$(OBJDIR)/alter.o \
                 $(OBJDIR)/os_win.o \
 	 	$(OBJDIR)/pager.o \
 	 	$(OBJDIR)/pcache1.o \
-                $(OBJDIR)/parse.o \
+		$(OBJDIR)/parse.o \
 	 	$(OBJDIR)/pcache.o \
                 $(OBJDIR)/pragma.o \
          	$(OBJDIR)/prepare.o \

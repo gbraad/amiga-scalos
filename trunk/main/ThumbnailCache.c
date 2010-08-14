@@ -76,6 +76,7 @@ static BOOL ThumbnailCacheDeleteEntry(sqlite3 *db, CONST_STRPTR FileName);
 static BOOL ThumbnailCacheUpdateEndOfLife(sqlite3 *db, CONST_STRPTR FileName, const T_TIMEVAL *tv);
 static STRPTR ThumbnailCacheGetFileNameFromLock(BPTR fLock);
 static BOOL ThumbnailCacheIsSameDay(ULONG sec1, ULONG sec2);
+static int ThumbnailCacheSetMode(sqlite3 *db);
 static int ThumbnailCacheCreateTable(sqlite3 *db);
 static void ThumbnailCacheGetEndOfLife(T_TIMEVAL *tv, ULONG LifetimeDays);
 static void ThumbnailCacheFileExists(sqlite3_context *context, LONG x, sqlite3_value **pVal);
@@ -115,6 +116,14 @@ BOOL ThumbnailCacheInit(void)
 
 		// try to create our table
 		rc = ThumbnailCacheCreateTable(db);
+		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+		if (SQLITE_OK != rc )
+			{
+			d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, SQLite3Errcode(db)));
+			break;
+			}
+
+		rc = ThumbnailCacheSetMode(db);
 		d1(KPrintF("%s/%s/%ld: rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
 		if (SQLITE_OK != rc )
 			{
@@ -1152,6 +1161,37 @@ BOOL ThumbnailCacheCleanup(APTR ThumbnailCacheHandle)
 
 	return (BOOL) (SQLITE_DONE == rc || SQLITE_OK == rc);
 }
+
+//-----------------------------------------------------------------------
+
+static int ThumbnailCacheSetMode(sqlite3 *db)
+{
+	int rc;
+
+	d1(KPrintF("%s/%s/%ld: START  db=%08lx\n", __FILE__, __FUNC__, __LINE__, db));
+
+	do	{
+		rc = SQLite3Exec(db,
+			"PRAGMA journal_mode=wal;",
+			NULL,
+			NULL,
+			NULL);
+		d1(KPrintF("%s/%s/%ld: PRAGMA journal_mode=wal returns rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+		if (SQLITE_DONE != rc && SQLITE_OK != rc)
+			break;
+
+		rc = SQLite3EnableSharedCache(TRUE);
+		d1(KPrintF("%s/%s/%ld: SQLite3EnableSharedCache() returns rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+		if (SQLITE_DONE != rc && SQLITE_OK != rc)
+			break;
+
+                } while (0);
+
+	d1(KPrintF("%s/%s/%ld: END  rc=%ld\n", __FILE__, __FUNC__, __LINE__, rc));
+
+	return rc;
+}
+
 
 //-----------------------------------------------------------------------
 
