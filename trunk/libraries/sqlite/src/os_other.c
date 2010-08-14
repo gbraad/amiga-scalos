@@ -139,8 +139,7 @@ struct otherFile
 #if defined(THREADSAFE) && THREADSAFE
 # define SQLITE_OTHER_THREADS 1
 #endif
-
-#define	SHM_LOCK_MASK(ofst,n)   (1<<(((ofst)-OTHER_SHM_BASE+(n)) % LONG_BIT)) - (1<<(((ofst)-OTHER_SHM_BASE) % LONG_BIT));
+#define	SHM_LOCK_MASK(ofst,n)   (1<<((ofst)-OTHER_SHM_BASE+(n)) ) - (1<<((ofst)-OTHER_SHM_BASE) );
 
 //---------------------------------------------------------------------
 
