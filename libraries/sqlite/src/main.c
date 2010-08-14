@@ -492,6 +492,10 @@ static int setupLookaside(sqlite3 *db, void *pBuf, int sz, int cnt){
 /*
 ** Return the mutex associated with a database connection.
 */
+#ifdef AMIGA
+int sqlite3_db_configv(sqlite3 *db, int op, va_list ap){
+  int rc;
+#else /* AMIGA */
 sqlite3_mutex *sqlite3_db_mutex(sqlite3 *db){
   return db->mutex;
 }
@@ -499,10 +503,6 @@ sqlite3_mutex *sqlite3_db_mutex(sqlite3 *db){
 /*
 ** Configuration settings for an individual database connection
 */
-#ifdef AMIGA
-int sqlite3_db_configv(sqlite3 *db, int op, va_list ap){
-  int rc;
-#else /* AMIGA */
 int sqlite3_db_config(sqlite3 *db, int op, ...){
   va_list ap;
   int rc;

@@ -77,7 +77,7 @@ extern struct Library *__MathIeeeDoubBasBase;
 char ALIGNED libName[] = "sqlite3.library";
 char ALIGNED libIdString[] = "$VER: sqlite3.library "
         STR(LIB_VERSION) "." STR(LIB_REVISION)
-	" (07 Feb 2008 15:31:25) "
+	" (" __DATE__ ") "
 	COMPILER_STRING 
 	" ©2006" CURRENTYEAR " The Scalos Team";
 

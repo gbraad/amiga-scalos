@@ -901,7 +901,7 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
 
   assert( pFile );
   unixEnterMutex(); /* Because pFile->pInode is shared across threads */
-#if 0
+
   /* Check if a thread in this process holds such a lock */
   if( pFile->pInode->eFileLock>SHARED_LOCK ){
     reserved = 1;
@@ -925,7 +925,7 @@ static int unixCheckReservedLock(sqlite3_file *id, int *pResOut){
     }
   }
 #endif
-#endif
+  
   unixLeaveMutex();
   OSTRACE(("TEST WR-LOCK %d %d %d (unix)\n", pFile->h, rc, reserved));
 
@@ -1030,7 +1030,6 @@ static int unixLock(sqlite3_file *id, int eFileLock){
   /* This mutex is needed because pFile->pInode is shared across threads
   */
   unixEnterMutex();
-#if 0
   pInode = pFile->pInode;
 
   /* If some thread using this PID has a lock via a different unixFile*
@@ -1179,7 +1178,6 @@ static int unixLock(sqlite3_file *id, int eFileLock){
   }
 
 end_lock:
-#endif
   unixLeaveMutex();
   OSTRACE(("LOCK    %d %s %s (unix)\n", pFile->h, azFileLock(eFileLock), 
       rc==SQLITE_OK ? "ok" : "failed"));
@@ -1230,7 +1228,6 @@ static int _posixUnlock(sqlite3_file *id, int eFileLock, int handleNFSUnlock){
     return SQLITE_OK;
   }
   unixEnterMutex();
-#if 0
   h = pFile->h;
   pInode = pFile->pInode;
   assert( pInode->nShared!=0 );
@@ -1377,7 +1374,6 @@ static int _posixUnlock(sqlite3_file *id, int eFileLock, int handleNFSUnlock){
   }
 	
 end_unlock:
-#endif
   unixLeaveMutex();
   if( rc==SQLITE_OK ) pFile->eFileLock = eFileLock;
   return rc;
@@ -3205,7 +3201,7 @@ static int unixShmSystemLock(
 
   /* Locks are within range */
   assert( n>=1 && n<SQLITE_SHM_NLOCK );
-#if 0
+
   /* Initialize the locking parameters */
   memset(&f, 0, sizeof(f));
   f.l_type = lockType;
@@ -3250,7 +3246,7 @@ static int unixShmSystemLock(
            pShmNode->sharedMask, pShmNode->exclMask));
   }
 #endif
-#endif
+
   return rc;        
 }
 
@@ -3325,7 +3321,6 @@ static int unixOpenSharedMemory(unixFile *pDbFd){
   ** one if present. Create a new one if necessary.
   */
   unixEnterMutex();
-#if 0
   pInode = pDbFd->pInode;
   pShmNode = pInode->pShmNode;
   if( pShmNode==0 ){
@@ -3397,7 +3392,6 @@ static int unixOpenSharedMemory(unixFile *pDbFd){
 #endif
   pShmNode->nRef++;
   pDbFd->pShm = p;
-#endif
   unixLeaveMutex();
 
   /* The reference count on pShmNode has already been incremented under
@@ -3461,7 +3455,6 @@ static int unixShmMap(
   p = pDbFd->pShm;
   pShmNode = p->pShmNode;
   sqlite3_mutex_enter(pShmNode->mutex);
-#if 0
   assert( szRegion==pShmNode->szRegion || pShmNode->nRegion==0 );
 
   if( pShmNode->nRegion<=iRegion ){
@@ -3522,7 +3515,6 @@ shmpage_out:
   }else{
     *pp = 0;
   }
-#endif
   sqlite3_mutex_leave(pShmNode->mutex);
   return rc;
 }
@@ -3561,7 +3553,6 @@ static int unixShmLock(
   mask = (1<<(ofst+n)) - (1<<ofst);
   assert( n>1 || mask==(1<<ofst) );
   sqlite3_mutex_enter(pShmNode->mutex);
-#if 0
   if( flags & SQLITE_SHM_UNLOCK ){
     u16 allMask = 0; /* Mask of locks held by siblings */
 
@@ -3634,7 +3625,6 @@ static int unixShmLock(
       }
     }
   }
-#endif
   sqlite3_mutex_leave(pShmNode->mutex);
   OSTRACE(("SHM-LOCK shmid-%d, pid-%d got %03x,%03x\n",
            p->id, getpid(), p->sharedMask, p->exclMask));

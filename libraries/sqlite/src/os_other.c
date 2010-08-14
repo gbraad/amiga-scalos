@@ -17,6 +17,7 @@
 #if SQLITE_OS_OTHER               /* This file is used for AmigaDOS only */
 
 #include <ctype.h>
+#include <limits.h>
 
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
@@ -40,8 +41,11 @@
 
 #if defined(SQLITE_DEBUG)
 #undef  d2
-#define d1(x)	          x
+#define d2(x)	          x
 #endif /* SQLITE_DEBUG */
+
+//#undef d2
+//#define d2(x)	            x
 
 //---------------------------------------------------------------------
 
@@ -77,6 +81,12 @@ struct LockInfo
 ** portability layer.
 ** This is the definition for AmigaOS
 */
+#ifndef SQLITE_OMIT_WAL
+typedef struct otherInodeInfo otherInodeInfo;
+typedef struct otherShmNode otherShmNode;
+typedef struct otherShm otherShm;
+#endif // SQLITE_OMIT_WAL
+
 typedef struct otherFile otherFile;
 struct otherFile
 {
@@ -89,6 +99,11 @@ struct otherFile
 	LONG lastErrno;
 
 	ULONG FileNameHash;
+
+#ifndef SQLITE_OMIT_WAL
+	otherShmNode *pShmNode;
+	otherShm *pShm;                      /* Shared memory segment information */
+#endif	// SQLITE_OMIT_WAL
 
 #ifndef NDEBUG
   /* The next group of variables are used to track whether or not the
@@ -125,6 +140,8 @@ struct otherFile
 # define SQLITE_OTHER_THREADS 1
 #endif
 
+#define	SHM_LOCK_MASK(ofst,n)   (1<<(((ofst)-OTHER_SHM_BASE+(n)) % LONG_BIT)) - (1<<(((ofst)-OTHER_SHM_BASE) % LONG_BIT));
+
 //---------------------------------------------------------------------
 
 extern sqlite3_mutex_methods *sqlite3OtherMutex(void);
@@ -146,6 +163,17 @@ static int otherSync(sqlite3_file *id, int dataOnly);
 static int otherTruncate(sqlite3_file *id, sqlite3_int64 nByte);
 static int otherFileSize(sqlite3_file *id, sqlite3_int64 *pSize);
 static int otherDeviceCharacteristics(sqlite3_file *id);
+
+#ifndef SQLITE_OMIT_WAL
+static int otherShmSystemLock(otherShmNode *pShmNode, int lockType, int ofst, int n);
+static void otherShmPurge(otherFile *pFd);
+static int otherOpenSharedMemory(otherFile *pDbFd);
+static int otherShmMap(sqlite3_file *fd, int iRegion, int szRegion, int bExtend, void volatile **pp);
+static int otherShmLock(sqlite3_file *fd, int ofst, int n, int flags);
+static void otherShmBarrier(sqlite3_file *fd);
+static int otherShmUnmap(sqlite3_file *fd, int deleteFlag);
+#endif	// SQLITE_OMIT_WAL
+
 #if defined(SQLITE_DEBUG)
 static const char *locktypeName(int locktype);
 #endif /* SQLITE_DEBUG */
@@ -374,15 +402,16 @@ static int otherOpen(sqlite3_vfs *pVfs, const char *zPath, sqlite3_file *id, int
 	/* The main DB, main journal, and master journal are never automatically
 	** deleted
 	*/
-	assert( eType!=SQLITE_OPEN_MAIN_DB || !isDelete );
-	assert( eType!=SQLITE_OPEN_MAIN_JOURNAL || !isDelete );
-	assert( eType!=SQLITE_OPEN_MASTER_JOURNAL || !isDelete );
+	assert( (!isDelete && zName) || eType!=SQLITE_OPEN_MAIN_DB );
+	assert( (!isDelete && zName) || eType!=SQLITE_OPEN_MAIN_JOURNAL );
+	assert( (!isDelete && zName) || eType!=SQLITE_OPEN_MASTER_JOURNAL );
+	assert( (!isDelete && zName) || eType!=SQLITE_OPEN_WAL );
 
 	/* Assert that the upper layer has set one of the "file-type" flags. */
 	assert( eType==SQLITE_OPEN_MAIN_DB      || eType==SQLITE_OPEN_TEMP_DB
 	     || eType==SQLITE_OPEN_MAIN_JOURNAL || eType==SQLITE_OPEN_TEMP_JOURNAL
 	     || eType==SQLITE_OPEN_SUBJOURNAL   || eType==SQLITE_OPEN_MASTER_JOURNAL
-	     || eType==SQLITE_OPEN_TRANSIENT_DB
+	     || eType==SQLITE_OPEN_TRANSIENT_DB || eType==SQLITE_OPEN_WAL
 	);
 
 	(void) isExclusive;
@@ -390,13 +419,14 @@ static int otherOpen(sqlite3_vfs *pVfs, const char *zPath, sqlite3_file *id, int
 
 	memset(pFile, 0, sizeof(otherFile));
 
-	if( !zName )
+	if ( !zName )
 		{
+		/* If zName is NULL, the upper layer is requesting a temp file. */
 		int rc;
 
 		assert(isDelete && !isOpenDirectory);
 		rc = otherTempFileName(pVfs, sizeof(zTmpname), zTmpname);
-		if( rc != SQLITE_OK )
+		if ( rc != SQLITE_OK )
 			{
 			return rc;
 			}
@@ -413,7 +443,7 @@ static int otherOpen(sqlite3_vfs *pVfs, const char *zPath, sqlite3_file *id, int
 	pFile->ReadOnly = isReadonly;
 	pFile->DeleteOnClose = isDelete;
 
-	if(0 == pFile->h)
+	if (0 == pFile->h)
 		{
 		if (isReadWrite)
 			{
@@ -427,9 +457,9 @@ static int otherOpen(sqlite3_vfs *pVfs, const char *zPath, sqlite3_file *id, int
 			}
 		}
 
-	if( pOutFlags )
+	if ( pOutFlags )
 		{
-		if( flags & SQLITE_OPEN_READWRITE )
+		if ( flags & SQLITE_OPEN_READWRITE )
 			{
 			*pOutFlags = SQLITE_OPEN_READWRITE;
 			}
@@ -618,16 +648,16 @@ static int otherWrite(sqlite3_file *id, const void *pBuf, int amt, sqlite3_int64
 	** has changed.  If the transaction counter is modified, record that
 	** fact too.
 	*/
-	if( pFile->inNormalWrite )
+	if ( pFile->inNormalWrite )
 		{
 		pFile->dbUpdate = 1;  /* The database has been modified */
-		if( offset<=24 && offset+amt>=27 )
+		if ( offset<=24 && offset+amt>=27 )
 			{
 			char oldCntr[4];
 			SimulateIOErrorBenign(1);
 			seekAndRead(pFile, 24, oldCntr, 4);
 			SimulateIOErrorBenign(0);
-			if( memcmp(oldCntr, &((char*)pBuf)[24-offset], 4)!=0 )
+			if ( memcmp(oldCntr, &((char*)pBuf)[24-offset], 4)!=0 )
 				{
 				pFile->transCntrChng = 1;  /* The transaction counter has changed */
 				}
@@ -961,7 +991,7 @@ static int otherLock(sqlite3_file *id, int locktype)
   ** from SHARED to RESERVED marks the beginning of a normal
   ** write operation (not a hot journal rollback).
   */
-	if( SQLITE_OK == rc
+	if ( SQLITE_OK == rc
 		&& pFile->locktype <= SHARED_LOCK
 		&& locktype == RESERVED_LOCK)
                 {
@@ -1486,6 +1516,679 @@ static int otherDeviceCharacteristics(sqlite3_file *id)
 	return 0;
 }
 
+#ifndef SQLITE_OMIT_WAL
+
+
+/*
+** Object used to represent an shared memory buffer.
+**
+** When multiple threads all reference the same wal-index, each thread
+** has its own otherShm object, but they all point to a single instance
+** of this otherShmNode object.  In other words, each wal-index is opened
+** only once per process.
+**
+** Each otherShmNode object is connected to a single unixInodeInfo object.
+** We could coalesce this object into unixInodeInfo, but that would mean
+** every open file that does not use shared memory (in other words, most
+** open files) would have to carry around this extra information.  So
+** the unixInodeInfo object contains a pointer to this otherShmNode object
+** and the otherShmNode object is created only when needed.
+**
+** unixMutexHeld() must be true when creating or destroying
+** this object or while reading or writing the following fields:
+**
+**      nRef
+**
+** The following fields are read-only after the object is created:
+**
+**      fid
+**      zFilename
+**
+** Either otherShmNode.mutex must be held or otherShmNode.nRef==0 and
+** unixMutexHeld() is true when reading or writing any other field
+** in this structure.
+*/
+
+struct otherShmNode
+	{
+	struct SignalSemaphore shn_Sema;
+	otherInodeInfo *pInode;     /* unixInodeInfo that owns this SHM node */
+	size_t shn_szRegion;	/* Size of shared-memory regions */
+	int shn_nRegion;	/* Size of array apRegion */
+	char **apRegion;           /* Array of mapped shared-memory regions */
+	int shn_nRef;		/* Number of otherShm objects pointing to this */
+	otherShm *pFirst;           /* All otherShm objects pointing to this */
+	u32 exclMask;               /* Mask of exclusive locks held */
+	u32 sharedMask;             /* Mask of shared locks held */
+	u8 nextShmId;              /* Next available otherShm.id value */
+	};
+
+/*
+** An instance of the following structure is allocated for each open
+** inode.  Or, on LinuxThreads, there is one of these structures for
+** each inode opened by each thread.
+**
+** A single inode can have multiple file descriptors, so each unixFile
+** structure contains a pointer to an instance of this object and this
+** object keeps a count of the number of unixFile pointing to it.
+*/
+struct otherInodeInfo
+	{
+	otherShmNode *pShmNode;          /* Shared memory associated with this inode */
+	};
+
+/*
+** Structure used internally by this VFS to record the state of an
+** open shared memory connection.
+**
+** The following fields are initialized when this object is created and
+** are read-only thereafter:
+**
+**    otherShm.pFile
+**    otherShm.id
+**
+** All other fields are read/write.  The otherShm.pFile->mutex must be held
+** while accessing any read/write fields.
+*/
+struct otherShm
+	{
+	otherShmNode *osh_pShmNode;     /* The underlying otherShmNode object */
+	otherShm *osh_pNext;            /* Next otherShm with the same otherShmNode */
+	u8 osh_hasMutex;               	/* True if holding the otherShmNode mutex */
+	u32 osh_sharedMask;            	/* Mask of shared locks held */
+	u32 osh_exclMask;              	/* Mask of exclusive locks held */
+#ifdef SQLITE_DEBUG
+	u8 osh_id;                     	/* Id of this connection within its otherShmNode */
+#endif
+	};
+
+/*
+** Constants used for locking
+*/
+#define OTHER_SHM_BASE   ((22+SQLITE_SHM_NLOCK)*4)         	/* first lock byte */
+#define OTHER_SHM_DMS    (OTHER_SHM_BASE+SQLITE_SHM_NLOCK)	/* deadman switch */
+
+/*
+** Apply posix advisory locks for all bytes from ofst through ofst+n-1.
+**
+** Locks block if the mask is exactly UNIX_SHM_C and are non-blocking
+** otherwise.
+*/
+static int otherShmSystemLock(
+  otherShmNode *pShmNode, /* Apply locks to this open shared-memory segment */
+  int lockType,          /* SQLITE_SHM_UNLOCK, SQLITE_SHM_SHARED, or SQLITE_SHM_EXCLUSIVE */
+  int ofst,              /* First byte of the locking range */
+  int n                  /* Number of bytes to lock */
+)
+{
+//	  struct flock f;       /* The posix advisory locking structure */
+	int rc = SQLITE_OK;   /* Result code form fcntl() */
+
+	d2(KPrintF(__FILE__ "/%s/%ld: START pShmNode=%08lx\n", __FUNC__, __LINE__, pShmNode));
+	d2(KPrintF(__FILE__ "/%s/%ld: lockType=%ld\n", __FUNC__, __LINE__, lockType));
+	d2(KPrintF(__FILE__ "/%s/%ld: ofst=%ld  n=%ld\n", __FUNC__, __LINE__, ofst, n));
+
+	/* Access to the otherShmNode object is serialized by the caller */
+	assert( sqlite3_mutex_held(pShmNode->mutex) || pShmNode->shn_nRef==0 );
+
+	/* Shared locks never span more than one byte */
+	assert( n==1 || lockType!=SQLITE_SHM_SHARED );
+
+	/* Locks are within range */
+	assert( n>=1 && n<SQLITE_SHM_NLOCK );
+
+#if XXX
+	/* Initialize the locking parameters */
+	memset(&f, 0, sizeof(f));
+	f.l_type = lockType;
+	f.l_whence = SEEK_SET;
+	f.l_start = ofst;
+	f.l_len = n;
+	rc = fcntl(pShmNode->h, F_SETLK, &f);
+	rc = (rc!=(-1)) ? SQLITE_OK : SQLITE_BUSY;
+#else //XXX
+
+	/* Update the global lock state and do debug tracing */
+//#ifdef SQLITE_DEBUG
+#if 1
+	{
+	u32 mask;
+	mask = SHM_LOCK_MASK(ofst, n);
+	d2(KPrintF(__FILE__ "/%s/%ld: SHM-LOCK:  mask=%08lx\n", __FUNC__, __LINE__, mask));
+
+	d2(KPrintF(__FILE__ "/%s/%ld: before: sharedMask=%08lx  exclMask=%08lx\n", __FUNC__, __LINE__, pShmNode->sharedMask, pShmNode->exclMask));
+
+	if ( lockType==SQLITE_SHM_UNLOCK )
+		{
+		if ( (pShmNode->exclMask & mask) || (pShmNode->sharedMask & mask) )
+			{
+			d2(KPrintF(__FILE__ "/%s/%ld: unlock %ld ok\n", __FUNC__, __LINE__, ofst));
+			pShmNode->exclMask &= ~mask;
+			pShmNode->sharedMask &= ~mask;
+			}
+		else
+			{
+			d2(KPrintF(__FILE__ "/%s/%ld: unlock %ld failed\n", __FUNC__, __LINE__, ofst));
+			}
+		}
+	else if ( lockType==SQLITE_SHM_SHARED )
+		{
+		if (pShmNode->sharedMask & mask)
+			{
+			d2(KPrintF(__FILE__ "/%s/%ld: shared lock %ld failed\n", __FUNC__, __LINE__, ofst));
+			rc = SQLITE_BUSY;
+			}
+		else
+			{
+			d2(KPrintF(__FILE__ "/%s/%ld: shared lock %ld ok\n", __FUNC__, __LINE__, ofst));
+			pShmNode->exclMask &= ~mask;
+			pShmNode->sharedMask |= mask;
+			}
+		}
+	else
+		{
+		assert( lockType==SQLITE_SHM_EXCLUSIVE );
+		if (pShmNode->exclMask & mask)
+			{
+			d2(KPrintF(__FILE__ "/%s/%ld: exclusive lock %ld failed\n", __FUNC__, __LINE__, ofst));
+			rc = SQLITE_BUSY;
+			}
+		else
+			{
+			d2(KPrintF(__FILE__ "/%s/%ld: exclusive lock %ld ok\n", __FUNC__, __LINE__, ofst));
+			pShmNode->exclMask |= mask;
+			pShmNode->sharedMask &= ~mask;
+			}
+		}
+	d2(KPrintF(__FILE__ "/%s/%ld: afterwards: sharedMask=%08lx  exclMask=%08lx\n", __FUNC__, __LINE__, pShmNode->sharedMask, pShmNode->exclMask));
+	}
+#endif
+	rc = 0;
+#endif //XXX
+	d2(KPrintF(__FILE__ "/%s/%ld: ENC  rc=%ld\n", __FUNC__, __LINE__, rc));
+	return rc;
+}
+
+
+/*
+** Purge the unixShmNodeList list of all entries with otherShmNode.nRef==0.
+**
+** This is not a VFS shared-memory method; it is a utility function called
+** by VFS shared-memory methods.
+*/
+static void otherShmPurge(otherFile *pFd)
+{
+	otherShmNode *p = pFd->pShmNode;
+
+	d2(KPrintF(__FILE__ "/%s/%ld: START pFd=%08lx\n", __FUNC__, __LINE__, pFd));
+	assert( unixMutexHeld() );
+
+	if ( p && p->shn_nRef==0 )
+		{
+		int i;
+		for(i=0; i<p->shn_nRegion; i++)
+			{
+			FreeVec(p->apRegion[i]);
+			}
+		sqlite3_free(p->apRegion);
+		pFd->pShmNode = NULL;
+		sqlite3_free(p);
+		}
+	d2(KPrintF(__FILE__ "/%s/%ld: END\n", __FUNC__, __LINE__));
+}
+
+/*
+** Open a shared-memory area associated with open database file pDbFd.
+** This particular implementation uses mmapped files.
+**
+** The file used to implement shared-memory is in the same directory
+** as the open database file and has the same name as the open database
+** file with the "-shm" suffix added.  For example, if the database file
+** is "/home/user1/config.db" then the file that is created and mmapped
+** for shared memory will be called "/home/user1/config.db-shm".
+**
+** Another approach to is to use files in /dev/shm or /dev/tmp or an
+** some other tmpfs mount. But if a file in a different directory
+** from the database file is used, then differing access permissions
+** or a chroot() might cause two different processes on the same
+** database to end up using different files for shared memory -
+** meaning that their memory would not really be shared - resulting
+** in database corruption.  Nevertheless, this tmpfs file usage
+** can be enabled at compile-time using -DSQLITE_SHM_DIRECTORY="/dev/shm"
+** or the equivalent.  The use of the SQLITE_SHM_DIRECTORY compile-time
+** option results in an incompatible build of SQLite;  builds of SQLite
+** that with differing SQLITE_SHM_DIRECTORY settings attempt to use the
+** same database file at the same time, database corruption will likely
+** result. The SQLITE_SHM_DIRECTORY compile-time option is considered
+** "unsupported" and may go away in a future SQLite release.
+**
+** When opening a new shared-memory file, if no other instances of that
+** file are currently open, in this process or in other processes, then
+** the file must be truncated to zero length or have its header cleared.
+*/
+static int otherOpenSharedMemory(otherFile *pDbFd)
+{
+	struct otherShm *p = 0;          /* The connection to be opened */
+	struct otherShmNode *pShmNode;   /* The underlying mmapped file */
+	int rc;                         /* Result code */
+
+	d2(KPrintF(__FILE__ "/%s/%ld: START pDbFd=%08lx\n", __FUNC__, __LINE__, pDbFd));
+
+	/* Allocate space for the new otherShm object. */
+	p = sqlite3_malloc( sizeof(*p) );
+	if ( p==0 )
+		return SQLITE_NOMEM;
+	memset(p, 0, sizeof(*p));
+	assert( pDbFd->pShm==0 );
+
+	/* Check to see if a otherShmNode object already exists. Reuse an existing
+	** one if present. Create a new one if necessary.
+	*/
+	otherEnterMutex();
+  
+	pShmNode = pDbFd->pShmNode;
+	if ( pShmNode==0 )
+		{
+		pShmNode = sqlite3_malloc( sizeof(*pShmNode) );
+		if ( NULL == pShmNode )
+			{
+			rc = SQLITE_NOMEM;
+			goto shm_open_err;
+			}
+		memset(pShmNode, 0, sizeof(*pShmNode));
+		InitSemaphore(&pShmNode->shn_Sema);
+
+		pDbFd->pShmNode = pShmNode;
+		InitSemaphore(&pShmNode->shn_Sema);
+
+		/* Check to see if another process is holding the dead-man switch.
+		** If not, truncate the file to zero length.
+		*/
+		rc = SQLITE_OK;
+		if ( otherShmSystemLock(pShmNode, SQLITE_SHM_EXCLUSIVE, OTHER_SHM_DMS, 1)==SQLITE_OK )
+			{
+			}
+		if ( rc==SQLITE_OK )
+			{
+			rc = otherShmSystemLock(pShmNode, SQLITE_SHM_SHARED, OTHER_SHM_DMS, 1);
+			}
+		if ( rc ) goto
+			shm_open_err;
+		}
+
+	/* Make the new connection a child of the otherShmNode */
+	p->osh_pShmNode = pShmNode;
+#ifdef SQLITE_DEBUG
+	p->id = pShmNode->nextShmId++;
+#endif
+	pShmNode->shn_nRef++;
+	pDbFd->pShm = p;
+
+	otherLeaveMutex();
+
+	/* The reference count on pShmNode has already been incremented under
+	** the cover of the otherEnterMutex() mutex and the pointer from the
+	** new (struct otherShm) object to the pShmNode has been set. All that is
+	** left to do is to link the new object into the linked list starting
+	** at pShmNode->pFirst. This must be done while holding the pShmNode->mutex
+	** mutex.
+	*/
+	ObtainSemaphore(&pShmNode->shn_Sema);
+	p->osh_pNext = pShmNode->pFirst;
+	pShmNode->pFirst = p;
+	ReleaseSemaphore(&pShmNode->shn_Sema);
+	return SQLITE_OK;
+
+	/* Jump here on any error */
+shm_open_err:
+	otherShmPurge(pDbFd);       /* This call frees pShmNode if required */
+	sqlite3_free(p);
+	otherLeaveMutex();
+
+	d2(KPrintF(__FILE__ "/%s/%ld: END  rc=%ld\n", __FUNC__, __LINE__, rc));
+	return rc;
+}
+
+/*
+** This function is called to obtain a pointer to region iRegion of the
+** shared-memory associated with the database file fd. Shared-memory regions
+** are numbered starting from zero. Each shared-memory region is szRegion
+** bytes in size.
+**
+** If an error occurs, an error code is returned and *pp is set to NULL.
+**
+** Otherwise, if the bExtend parameter is 0 and the requested shared-memory
+** region has not been allocated (by any client, including one running in a
+** separate process), then *pp is set to NULL and SQLITE_OK returned. If
+** bExtend is non-zero and the requested shared-memory region has not yet
+** been allocated, it is allocated by this function.
+**
+** If the shared-memory region has already been allocated or is allocated by
+** this call as described above, then it is mapped into this processes
+** address space (if it is not already), *pp is set to point to the mapped
+** memory and SQLITE_OK returned.
+*/
+static int otherShmMap(
+  sqlite3_file *fd,               /* Handle open on database file */
+  int iRegion,                    /* Region to retrieve */
+  int szRegion,                   /* Size of regions */
+  int bExtend,                    /* True to extend file if necessary */
+  void volatile **pp              /* OUT: Mapped memory */
+)
+{
+	otherFile *pDbFd = (otherFile*)fd;
+	otherShm *p;
+	otherShmNode *pShmNode;
+	int rc = SQLITE_OK;
+
+	d2(KPrintF(__FILE__ "/%s/%ld: START fd=%08lx\n", __FUNC__, __LINE__, fd));
+	d2(KPrintF(__FILE__ "/%s/%ld: iRegion=%ld  szRegion=%ld  bExtend=%ld\n", __FUNC__, __LINE__, iRegion, szRegion, bExtend));
+
+	/* If the shared-memory file has not yet been opened, open it now. */
+	if ( pDbFd->pShm==0 )
+		{
+		rc = otherOpenSharedMemory(pDbFd);
+		if ( rc!=SQLITE_OK )
+			return rc;
+		}
+
+	p = pDbFd->pShm;
+	pShmNode = p->osh_pShmNode;
+	ObtainSemaphore(&pShmNode->shn_Sema);
+
+	assert( szRegion==pShmNode->shn_szRegion || pShmNode->shn_nRegion==0 );
+
+	if ( pShmNode->shn_nRegion <= iRegion )
+		{
+		char **apNew;                      /* New apRegion[] array */
+//		  int nByte = (iRegion+1)*szRegion;  /* Minimum required file size */
+//		  struct stat sStat;                 /* Used by fstat() */
+
+		pShmNode->shn_szRegion = szRegion;
+#if XXX
+		/* The requested region is not mapped into this processes address space.
+		** Check to see if it has been allocated (i.e. if the wal-index file is
+		** large enough to contain the requested region).
+		*/
+		if ( fstat(pShmNode->h, &sStat) )
+			{
+			rc = SQLITE_IOERR_SHMSIZE;
+			goto shmpage_out;
+			}
+
+		if ( sStat.st_size<nByte )
+		{
+			/* The requested memory region does not exist. If bExtend is set to
+			** false, exit early. *pp will be set to NULL and SQLITE_OK returned.
+			**
+			** Alternatively, if bExtend is true, use ftruncate() to allocate
+			** the requested memory region.
+			*/
+#endif //XXX
+		if ( !bExtend )
+			goto shmpage_out;
+#if XXX
+		if ( ftruncate(pShmNode->h, nByte) )
+			{
+			rc = SQLITE_IOERR_SHMSIZE;
+			goto shmpage_out;
+			}
+		}
+#endif //XXX
+
+		/* Map the requested memory region into this processes address space. */
+		apNew = (char **)sqlite3_realloc(pShmNode->apRegion, (iRegion+1)*sizeof(char *));
+		if ( !apNew )
+		{
+			rc = SQLITE_IOERR_NOMEM;
+			goto shmpage_out;
+		}
+		pShmNode->apRegion = apNew;
+		while (pShmNode->shn_nRegion<=iRegion)
+			{
+			void *pMem = AllocVec(szRegion, MEMF_PUBLIC);
+			if (NULL == pMem)
+				{
+				rc = SQLITE_IOERR;
+				goto shmpage_out;
+				}
+			pShmNode->apRegion[pShmNode->shn_nRegion] = pMem;
+			pShmNode->shn_nRegion++;
+			}
+		}
+
+shmpage_out:
+	d2(KPrintF(__FILE__ "/%s/%ld: shn_nRegion=%ld  iRegion=%ld\n", __FUNC__, __LINE__, pShmNode->shn_nRegion, iRegion));
+	if ( pShmNode->shn_nRegion>iRegion )
+		{
+		*pp = pShmNode->apRegion[iRegion];
+		}
+	else
+		{
+		*pp = 0;
+		}
+	ReleaseSemaphore(&pShmNode->shn_Sema);
+	d2(KPrintF(__FILE__ "/%s/%ld: END  *pp=%08lx  rc=%ld\n", __FUNC__, __LINE__, *pp, rc));
+	return rc;
+}
+
+/*
+** Change the lock state for a shared-memory segment.
+**
+** Note that the relationship between SHAREd and EXCLUSIVE locks is a little
+** different here than in posix.  In xShmLock(), one can go from unlocked
+** to shared and back or from unlocked to exclusive and back.  But one may
+** not go from shared to exclusive or from exclusive to shared.
+*/
+static int otherShmLock(
+  sqlite3_file *fd,          /* Database file holding the shared memory */
+  int ofst,                  /* First lock to acquire or release */
+  int n,                     /* Number of locks to acquire or release */
+  int flags                  /* What to do with the lock */
+)
+{
+	otherFile *pDbFd = (otherFile*)fd;      /* Connection holding shared memory */
+	otherShm *p = pDbFd->pShm;             /* The shared memory being locked */
+	otherShm *pX;                          /* For looping over all siblings */
+	otherShmNode *pShmNode = p->osh_pShmNode;  /* The underlying file iNode */
+	int rc = SQLITE_OK;                   /* Result code */
+	u32 mask;                             /* Mask of locks to take or release */
+
+	d2(KPrintF(__FILE__ "/%s/%ld: START fd=%08lx\n", __FUNC__, __LINE__, fd));
+	d2(KPrintF(__FILE__ "/%s/%ld: ofst=%ld  n=%ld  flags=%ld\n", __FUNC__, __LINE__, ofst, n, flags));
+
+	assert( pShmNode==pDbFd->pShmNode );
+	assert( ofst>=0 && ofst+n<=SQLITE_SHM_NLOCK );
+	assert( n>=1 );
+	assert( flags==(SQLITE_SHM_LOCK | SQLITE_SHM_SHARED)
+	     || flags==(SQLITE_SHM_LOCK | SQLITE_SHM_EXCLUSIVE)
+	     || flags==(SQLITE_SHM_UNLOCK | SQLITE_SHM_SHARED)
+	     || flags==(SQLITE_SHM_UNLOCK | SQLITE_SHM_EXCLUSIVE) );
+	assert( n==1 || (flags & SQLITE_SHM_EXCLUSIVE)!=0 );
+
+	mask = SHM_LOCK_MASK(ofst, n);
+	assert( n>1 || mask==(1<<ofst) );
+	ObtainSemaphore(&pShmNode->shn_Sema);
+
+	if ( flags & SQLITE_SHM_UNLOCK )
+		{
+		u32 allMask = 0; /* Mask of locks held by siblings */
+
+		/* See if any siblings hold this same lock */
+		for(pX=pShmNode->pFirst; pX; pX=pX->osh_pNext)
+			{
+			if ( pX==p )
+				continue;
+			assert( (pX->exclMask & (p->exclMask|p->sharedMask))==0 );
+			allMask |= pX->osh_sharedMask;
+			}
+
+		/* Unlock the system-level locks */
+		if ( (mask & allMask)==0 )
+			{
+			rc = otherShmSystemLock(pShmNode, SQLITE_SHM_UNLOCK, ofst+OTHER_SHM_BASE, n);
+			}
+		else
+			{
+			rc = SQLITE_OK;
+			}
+
+		/* Undo the local locks */
+		if ( rc==SQLITE_OK )
+			{
+			p->osh_exclMask &= ~mask;
+			p->osh_sharedMask &= ~mask;
+			}
+		}
+	else if ( flags & SQLITE_SHM_SHARED )
+		{
+		u32 allShared = 0;  /* Union of locks held by connections other than "p" */
+
+		/* Find out which shared locks are already held by sibling connections.
+		** If any sibling already holds an exclusive lock, go ahead and return
+		** SQLITE_BUSY.
+		*/
+		for(pX=pShmNode->pFirst; pX; pX=pX->osh_pNext)
+			{
+			if ( (pX->osh_exclMask & mask)!=0 )
+				{
+				rc = SQLITE_BUSY;
+				break;
+				}
+			allShared |= pX->osh_sharedMask;
+			}
+
+		/* Get shared locks at the system level, if necessary */
+		if ( rc==SQLITE_OK )
+			{
+			if ( (allShared & mask)==0 )
+				{
+				rc = otherShmSystemLock(pShmNode, SQLITE_SHM_SHARED, ofst+OTHER_SHM_BASE, n);
+				}
+			else
+				{
+				rc = SQLITE_OK;
+				}
+			}
+
+		/* Get the local shared locks */
+		if ( rc==SQLITE_OK )
+			{
+			p->osh_sharedMask |= mask;
+			}
+		}
+	else
+		{
+		/* Make sure no sibling connections hold locks that will block this
+		** lock.  If any do, return SQLITE_BUSY right away.
+		*/
+		for(pX=pShmNode->pFirst; pX; pX=pX->osh_pNext)
+			{
+			if ( (pX->osh_exclMask & mask)!=0 || (pX->osh_sharedMask & mask)!=0 )
+				{
+				rc = SQLITE_BUSY;
+				break;
+				}
+			}
+
+		/* Get the exclusive locks at the system level.  Then if successful
+		** also mark the local connection as being locked.
+		*/
+		if ( rc==SQLITE_OK )
+			{
+			rc = otherShmSystemLock(pShmNode, SQLITE_SHM_EXCLUSIVE, ofst+OTHER_SHM_BASE, n);
+			if ( rc==SQLITE_OK )
+				{
+				assert( (p->sharedMask & mask)==0 );
+				p->osh_exclMask |= mask;
+				}
+			}
+		}
+     
+	ReleaseSemaphore(&pShmNode->shn_Sema);
+	OSTRACE(("SHM-LOCK shmid-%d, pid-%d got %03x,%03x\n",
+		p->id, getpid(), p->sharedMask, p->exclMask));
+	d2(KPrintF(__FILE__ "/%s/%ld: END  rc=%ld\n", __FUNC__, __LINE__, rc));
+	return rc;
+}
+
+/*
+** Implement a memory barrier or memory fence on shared memory.
+**
+** All loads and stores begun before the barrier must complete before
+** any load or store begun after the barrier.
+*/
+static void otherShmBarrier(
+  sqlite3_file *fd                /* Database file holding the shared memory */
+)
+{
+	UNUSED_PARAMETER(fd);
+	otherEnterMutex();
+	otherLeaveMutex();
+}
+
+/*
+** Close a connection to shared-memory.  Delete the underlying
+** storage if deleteFlag is true.
+**
+** If there is no shared memory associated with the connection then this
+** routine is a harmless no-op.
+*/
+static int otherShmUnmap(
+  sqlite3_file *fd,               /* The underlying database file */
+  int deleteFlag                  /* Delete shared-memory if true */
+)
+{
+	otherShm *p;                     /* The connection to be closed */
+	otherShmNode *pShmNode;          /* The underlying shared-memory file */
+	otherShm **pp;                   /* For looping over sibling connections */
+	otherFile *pDbFd;                /* The underlying database file */
+
+	d2(KPrintF(__FILE__ "/%s/%ld: START fd=%08lx  deleteFlag=%ld\n", __FUNC__, __LINE__, fd, deleteFlag));
+
+	pDbFd = (otherFile*)fd;
+	p = pDbFd->pShm;
+	if ( p==0 )
+		return SQLITE_OK;
+	pShmNode = p->osh_pShmNode;
+
+	assert( pShmNode==pDbFd->pShmNode );
+
+	/* Remove connection p from the set of connections associated
+	** with pShmNode */
+	ObtainSemaphore(&pShmNode->shn_Sema);
+	for(pp=&pShmNode->pFirst; (*pp)!=p; pp = &(*pp)->osh_pNext)
+		{
+		}
+	*pp = p->osh_pNext;
+
+	/* Free the connection p */
+	sqlite3_free(p);
+	pDbFd->pShm = 0;
+	ReleaseSemaphore(&pShmNode->shn_Sema);
+
+	/* If pShmNode->shn_nRef has reached 0, then close the underlying
+	 ** shared-memory file, too */
+	otherEnterMutex();
+	assert( pShmNode->shn_nRef>0 );
+	pShmNode->shn_nRef--;
+	if ( pShmNode->shn_nRef==0 )
+		{
+		otherShmPurge(pDbFd);
+		}
+	otherLeaveMutex();
+	d2(KPrintF(__FILE__ "/%s/%ld: END  rc=%ld\n", __FUNC__, __LINE__, SQLITE_OK));
+
+	return SQLITE_OK;
+}
+
+
+#else /* #ifndef SQLITE_OMIT_WAL */
+# define otherShmMap    	0
+# define otherShmLock   	0
+# define otherShmBarrier	0
+# define otherShmUnmap		0
+#endif /* #ifndef SQLITE_OMIT_WAL */
 
 /*
 ** This vector defines all the methods that can operate on an sqlite3_file
@@ -1493,7 +2196,7 @@ static int otherDeviceCharacteristics(sqlite3_file *id)
 */
 static const sqlite3_io_methods sqlite3OtherIoMethod =
 {
-	1,            	// iVersion
+	2,            	// iVersion
 	otherClose,
 	otherRead,
 	otherWrite,
@@ -1506,6 +2209,13 @@ static const sqlite3_io_methods sqlite3OtherIoMethod =
 	otherFileControl,
 	otherSectorSize,
 	otherDeviceCharacteristics,
+	/* Methods above are valid for version 1 */
+	otherShmMap,
+	otherShmLock,
+	otherShmBarrier,
+	otherShmUnmap,
+	/* Methods above are valid for version 2 */
+	/* Additional methods may be added in future releases */
 };
 
 /*
@@ -1594,7 +2304,7 @@ int sqlite3_os_init(void)
 	int rc;
 	static sqlite3_vfs otherVfs =
 	{
-	1,                 	/* iVersion */
+	2,                 	/* iVersion */
 	sizeof(otherFile),	/* szOsFile */
 	512,          		/* mxPathname */
 	0,                 	/* pNext */
@@ -1613,7 +2323,16 @@ int sqlite3_os_init(void)
 	otherSleep,		/* xSleep */
 	otherCurrentTime,	/* xCurrentTime */
 	otherGetLastError,     	/* xGetLastError */
+	/*
+	 ** The methods above are in version 1 of the sqlite_vfs object
+	 ** definition.  Those that follow are added in version 2 or later
+	 */
 	otherCurrentTimeInt64, 	/* xCurrentTimeInt64 */
+	/*
+	** The methods above are in versions 1 and 2 of the sqlite_vfs object.
+	** New fields may be appended in figure versions.  The iVersion
+	** value will increment whenever this happens.
+	*/
 	};
 
 	rc = sqlite3_config(SQLITE_CONFIG_MUTEX, sqlite3OtherMutex());
