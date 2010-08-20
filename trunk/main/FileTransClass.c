@@ -418,6 +418,50 @@ static ULONG FileTransClass_Copy(Class *cl, Object *o, Msg msg)
 
 		Result = CallHookPkt(globalCopyHook, NULL, &cdm);
 
+		if (RETURN_OK == Result)
+			{
+			// Copying of object enqueued successfully
+			// Now try to copy the acompanying icon (if present)
+
+			BPTR oldDir = CurrentDir(mcp->mcp_DestDirLock);
+			STRPTR IconName = AllocPathBuffer();
+			Object *IconObj;
+
+			d1(kprintf("%s/%s/%ld: SrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, mcp->mcp_SrcName));
+
+			if (IconName)
+				{
+				CONST_STRPTR Extension = "";
+
+				GetAttr(IDTA_Extention, IconObj, (APTR) &Extension);
+
+				stccpy(IconName, mcp->mcp_SrcName, Max_PathLen);
+				SafeStrCat(IconName, Extension, Max_PathLen);
+
+				if (ExistsObject(mcp->mcp_SrcDirLock, IconName))
+					{
+					cdm.cdm_Length = sizeof(cdm);
+					cdm.cdm_Action = CPACTION_Copy;
+					cdm.cdm_SourceLock = mcp->mcp_SrcDirLock;
+					cdm.cdm_SourceName = IconName;
+					cdm.cdm_DestinationLock = mcp->mcp_DestDirLock;
+					cdm.cdm_DestinationName = IconName;
+					cdm.cdm_DestinationX = mcp->mcp_MouseX;
+					cdm.cdm_DestinationY = mcp->mcp_MouseY;
+
+					d1(kprintf("%s/%s/%ld: Src name=<%s>\n", __FILE__, __FUNC__, __LINE__, cdm.cdm_SourceName));
+					debugLock_d1(cdm.cdm_SourceLock);
+					d1(kprintf("%s/%s/%ld: Dest name=<%s>\n", __FILE__, __FUNC__, __LINE__, cdm.cdm_DestinationName));
+					debugLock_d1(cdm.cdm_DestinationLock);
+
+					Result = CallHookPkt(globalCopyHook, NULL, &cdm);
+					}
+
+				FreePathBuffer(IconName);
+				}
+
+			CurrentDir(oldDir);
+			}
 		return Result;
 		}
 	else
