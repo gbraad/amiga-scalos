@@ -27,6 +27,7 @@
 #include <proto/utility.h>
 #include <proto/locale.h>
 #include <proto/timer.h>
+#include <proto/icon.h>
 #include <proto/iconobject.h>
 #include "debug.h"
 #include <proto/scalos.h>
@@ -121,6 +122,7 @@ static BOOL FileTransClass_CreateGadgets(struct FileTransClassInstance *inst);
 static BOOL FileTransClass_CheckSufficientSpace(Class *cl, Object *o,
 	struct FileTransOp *fto, ULONG BodyTextId, ULONG GadgetTextId);
 static BOOL FileTransClass_IsRamDisk(BPTR dirLock, const struct InfoData *info);
+static BOOL FileTransClass_ExistsIcon(BPTR DirLock, CONST_STRPTR Name);
 
 //----------------------------------------------------------------------------
 
@@ -421,46 +423,47 @@ static ULONG FileTransClass_Copy(Class *cl, Object *o, Msg msg)
 		if (RETURN_OK == Result)
 			{
 			// Copying of object enqueued successfully
-			// Now try to copy the acompanying icon (if present)
+			// AsyncWB (which is the premium user of the copy hook)
+			// seems to check whether an icon is present which is recognized by icon.library
+			// this check fails for PNG icons unless a patch like PowerIcons is loaded.
 
-			BPTR oldDir = CurrentDir(mcp->mcp_DestDirLock);
-			STRPTR IconName = AllocPathBuffer();
-			Object *IconObj;
-
-			d1(kprintf("%s/%s/%ld: SrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, mcp->mcp_SrcName));
-
-			if (IconName)
+			if (!FileTransClass_ExistsIcon(mcp->mcp_SrcDirLock, mcp->mcp_SrcName))
 				{
-				CONST_STRPTR Extension = "";
+				// No icon present which is recongized by icon.library
+				BPTR oldDir = CurrentDir(mcp->mcp_DestDirLock);
+				STRPTR IconName = AllocPathBuffer();
 
-				GetAttr(IDTA_Extention, IconObj, (APTR) &Extension);
+				d1(kprintf("%s/%s/%ld: SrcName=<%s>\n", __FILE__, __FUNC__, __LINE__, mcp->mcp_SrcName));
 
-				stccpy(IconName, mcp->mcp_SrcName, Max_PathLen);
-				SafeStrCat(IconName, Extension, Max_PathLen);
-
-				if (ExistsObject(mcp->mcp_SrcDirLock, IconName))
+				if (IconName)
 					{
-					cdm.cdm_Length = sizeof(cdm);
-					cdm.cdm_Action = CPACTION_Copy;
-					cdm.cdm_SourceLock = mcp->mcp_SrcDirLock;
-					cdm.cdm_SourceName = IconName;
-					cdm.cdm_DestinationLock = mcp->mcp_DestDirLock;
-					cdm.cdm_DestinationName = IconName;
-					cdm.cdm_DestinationX = mcp->mcp_MouseX;
-					cdm.cdm_DestinationY = mcp->mcp_MouseY;
+					stccpy(IconName, mcp->mcp_SrcName, Max_PathLen);
+					SafeStrCat(IconName, ".info", Max_PathLen);
 
-					d1(kprintf("%s/%s/%ld: Src name=<%s>\n", __FILE__, __FUNC__, __LINE__, cdm.cdm_SourceName));
-					debugLock_d1(cdm.cdm_SourceLock);
-					d1(kprintf("%s/%s/%ld: Dest name=<%s>\n", __FILE__, __FUNC__, __LINE__, cdm.cdm_DestinationName));
-					debugLock_d1(cdm.cdm_DestinationLock);
+					if (ExistsObject(mcp->mcp_SrcDirLock, IconName))
+						{
+						cdm.cdm_Length = sizeof(cdm);
+						cdm.cdm_Action = CPACTION_Copy;
+						cdm.cdm_SourceLock = mcp->mcp_SrcDirLock;
+						cdm.cdm_SourceName = IconName;
+						cdm.cdm_DestinationLock = mcp->mcp_DestDirLock;
+						cdm.cdm_DestinationName = IconName;
+						cdm.cdm_DestinationX = mcp->mcp_MouseX;
+						cdm.cdm_DestinationY = mcp->mcp_MouseY;
 
-					Result = CallHookPkt(globalCopyHook, NULL, &cdm);
+						d1(kprintf("%s/%s/%ld: Src name=<%s>\n", __FILE__, __FUNC__, __LINE__, cdm.cdm_SourceName));
+						debugLock_d1(cdm.cdm_SourceLock);
+						d1(kprintf("%s/%s/%ld: Dest name=<%s>\n", __FILE__, __FUNC__, __LINE__, cdm.cdm_DestinationName));
+						debugLock_d1(cdm.cdm_DestinationLock);
+
+						Result = CallHookPkt(globalCopyHook, NULL, &cdm);	
+						}
+
+					FreePathBuffer(IconName);
 					}
 
-				FreePathBuffer(IconName);
+				CurrentDir(oldDir);	
 				}
-
-			CurrentDir(oldDir);
 			}
 		return Result;
 		}
@@ -2192,4 +2195,23 @@ static BOOL FileTransClass_IsRamDisk(BPTR dirLock, const struct InfoData *info)
 
 //----------------------------------------------------------------------------
 
+// check if named object (file/directory) exists
+static BOOL FileTransClass_ExistsIcon(BPTR DirLock, CONST_STRPTR Name)
+{
+	BOOL Exists = FALSE;
+	BPTR oldDir = CurrentDir(DirLock);
+	struct DiskObject *icon;
 
+	icon = GetDiskObject((STRPTR) Name);
+	if (icon)
+		{
+		Exists = TRUE;
+		FreeDiskObject(icon);
+		}
+
+	CurrentDir(oldDir);
+
+	return Exists;
+}
+
+//----------------------------------------------------------------------------
