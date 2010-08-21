@@ -1471,8 +1471,13 @@ static void CleanupProcessTimer(struct ProcessTimerInfo *Timer)
 static SAVEDS(int) UpdaterProcess(void)
 {
 	struct ProcessTimerInfo UpdateTimer;
+	struct Process *myProc = (struct Process *) FindTask(NULL);
+	APTR prWindowPtr;
 
 	memset(&UpdateTimer, 0, sizeof(UpdateTimer));
+
+	prWindowPtr = myProc->pr_WindowPtr;
+	myProc->pr_WindowPtr = (APTR) ~0;    // suppress error requesters
 
 	d1(KPrintF("%s/%s/%ld START\n", __FILE__, __FUNC__, __LINE__);)
 
@@ -1553,6 +1558,9 @@ static SAVEDS(int) UpdaterProcess(void)
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		} while (0);
+
+	// restore pr_WindowPtr
+	myProc->pr_WindowPtr = prWindowPtr;
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
