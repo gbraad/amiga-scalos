@@ -68,11 +68,12 @@ BOOL CollectRenameAdjustHistoryPaths(struct List *HList, BPTR fLock)
 
 		// Walk through list of WindowHistoryEntry
 		for (whe = (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_Head;
-			whe != (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_Tail;
+			whe != (struct WindowHistoryEntry *) &iwt->iwt_HistoryList.lh_Tail;
 			whe = (struct WindowHistoryEntry *) whe->whe_Node.ln_Succ)
 			{
 			BPTR pLock;
 
+			d1(kprintf("%s/%s/%ld: whe_Path=<%s>\n", __FILE__, __FUNC__, __LINE__, whe->whe_Path));
 			pLock = Lock(whe->whe_Path, ACCESS_READ);
 			debugLock_d1(pLock);
 			if (pLock)
@@ -133,7 +134,7 @@ void AdjustRenameAdjustHistoryPaths(struct List *HList, BPTR fLock)
 
 				// Walk through list of WindowHistoryEntry
 				for (whe = (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_Head;
-					whe != (struct WindowHistoryEntry *) iwt->iwt_HistoryList.lh_Tail;
+					whe != (struct WindowHistoryEntry *) &iwt->iwt_HistoryList.lh_Tail;
 					whe = (struct WindowHistoryEntry *) whe->whe_Node.ln_Succ)
 					{
 					d1(kprintf("%s/%s/%ld: rhp_OldName=<%s>  ln_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rhp->rhp_OldName, whe->whe_Node.ln_Name));
