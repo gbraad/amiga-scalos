@@ -1,4 +1,11 @@
 V41.8
+Improvement: Updated sqlite3.library to SQLite3 V3.7.2
+Bugfix: the Rename patch caused attempts to lock an invalid path containing gargabe characters
+Bugfix: with AsyncWB installed, Scalos failed to copy associated icons when copying objects
+Improvement: Updated sqlite3.library to SQLite3 V3.7.0.1
+Improvement: Added support for SQLite3 WAL
+Improvement: Updated sqlite3.library to SQLite3 V3.7.0
+Improvement: Upgraded libpng to 1.4.3
 Bugfix: window history entries are now adjusted correctly when a listed directory is renamed
 Improvement: jpegpicture.pvplugin : now JPG pictures are read in one big chunk. This method uses more memory, but greatly speeds up reading images on some file systems (e.g. MorphOS USB ptp)
 Bugfix: finally implemented complete support for backdrop icons created by MorphOS Ambient (shortcuts.prefs). Now Ambient shortcuts can be correctly added and removed.
