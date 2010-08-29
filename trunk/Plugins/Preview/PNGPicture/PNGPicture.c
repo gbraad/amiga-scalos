@@ -80,7 +80,8 @@ static struct SignalSemaphore PngMemPoolSemaphore;
 //---------------------------------------------------------------------------------------
 
 static BOOL GenerateThumbnailFromARGB(struct ScaWindowTask *wt,
-	struct ARGBHeader *argbDest,
+	struct ARGBHeader *argbDest, ULONG quality,
+	ULONG ScaledWidth, ULONG ScaledHeight,
 	ULONG SupportedColors, ULONG ReservedColors,
 	struct ScalosPreviewResult *PVResult);
 static BOOL GenerateARGBThumbnail(struct ScaWindowTask *wt,
@@ -452,7 +453,7 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 		argbh.argb_Width = width;
 		argbh.argb_Height = height;
-		argbh.argb_ImageData = MyAllocVecPooled(width * height * sizeof(struct ARGB));
+		argbh.argb_ImageData = ScalosGfxCreateARGBTags(argbh.argb_Width, argbh.argb_Height, TAG_END);
 
 		d1(KPrintF("%s/%s/%ld:  argb_ImageData=%08lx\n", __FILE__, __FUNC__, __LINE__, argbh.argb_ImageData));
 		if (NULL == argbh.argb_ImageData)
@@ -478,6 +479,9 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 			Success = GenerateThumbnailFromARGB(wt,
 				&argbh,
+				quality,
+				ThumbnailWidth,
+				ThumbnailHeight,
 				SupportedColors,
 				ReservedColors,
 				PVResult);
@@ -512,14 +516,39 @@ LIBFUNC_END
 //-----------------------------------------------------------------------------
 
 static BOOL GenerateThumbnailFromARGB(struct ScaWindowTask *wt,
-	struct ARGBHeader *argbDest,
+	struct ARGBHeader *argbSrc, ULONG quality,
+	ULONG ScaledWidth, ULONG ScaledHeight,
 	ULONG SupportedColors, ULONG ReservedColors,
         struct ScalosPreviewResult *PVResult)
 {
+	struct ARGBHeader argbDest = { 0, 0, NULL };
+	ULONG ScaleFlags = SCALEFLAGF_DOUBLESIZE;
+
+	if (quality >= (3 * SCALOSPREVIEWA_Quality_Max) / 4)
+		{
+		ScaleFlags |= SCALEFLAGF_BICUBIC;
+		}
+	else if (quality >= SCALOSPREVIEWA_Quality_Max / 2)
+		{
+		ScaleFlags |= SCALEFLAGF_BILINEAR;
+		}
+	else
+		{
+		ScaleFlags |= SCALEFLAGF_AVERAGE;
+		}
+
 	d1(KPrintF(__FILE__ "/%s/%ld:  argb_Width=%ld  argb_Height=%ld  ImageData=%08lx\n", \
-		__FUNC__, __LINE__, argbDest->argb_Width, argbDest->argb_Height,\
-		argbDest->argb_ImageData));
+		__FUNC__, __LINE__, argbSrc->argb_Width, argbSrc->argb_Height,\
+		argbSrc->argb_ImageData));
 	d1(KPrintF(__FILE__ "/%s/%ld:  SupportedColors=%lu\n", __FUNC__, __LINE__, SupportedColors));
+
+	argbDest.argb_Width = ScaledWidth;
+	argbDest.argb_Height = ScaledHeight;
+	argbDest.argb_ImageData = ScalosGfxScaleARGBArrayTags(argbSrc,
+		&argbDest.argb_Width,
+		&argbDest.argb_Height,
+		SCALOSGFX_ScaleARGBArrayFlags, ScaleFlags,
+		TAG_END);
 
 	if (SupportedColors <= 256)
 		{
@@ -537,7 +566,7 @@ static BOOL GenerateThumbnailFromARGB(struct ScaWindowTask *wt,
 		d1(KPrintF(__FILE__ "/%s/%ld:  SupportedColors=%lu  Depth=%lu  ReservedColors=%lu\n", \
 			__FUNC__, __LINE__, SupportedColors, Depth, ReservedColors));
 
-		PVResult->spvr_sac = ScalosGfxMedianCutTags(argbDest, Depth,
+		PVResult->spvr_sac = ScalosGfxMedianCutTags(&argbDest, Depth,
 			SCALOSGFX_MedianCutFlags, SCALOSGFXFLAGF_MedianCut_FloydSteinberg,
 			SCALOSGFX_MedianCutFriendBitMap, NULL,
 			SCALOSGFX_MedianCutReservedColors, ReservedColors,
@@ -549,16 +578,13 @@ static BOOL GenerateThumbnailFromARGB(struct ScaWindowTask *wt,
                 }
 	else
 		{
-		PVResult->spvr_ARGBheader = *argbDest;
-		memset(argbDest, 0, sizeof(*argbDest));
+		PVResult->spvr_ARGBheader = argbDest;
+		memset(&argbDest, 0, sizeof(argbDest));
 		}
 
 	d1(KPrintF(__FILE__ "/%s/%ld:  \n", __FUNC__, __LINE__));
 
-	if (argbDest)
-		{
-		ScalosGfxFreeARGB(&argbDest->argb_ImageData);
-		}
+	ScalosGfxFreeARGB(&argbDest.argb_ImageData);
 
 	d1(KPrintF(__FILE__ "/%s/%ld:  END\n", __FUNC__, __LINE__));
 
