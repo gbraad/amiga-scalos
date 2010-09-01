@@ -908,6 +908,7 @@ SAVEDS(void) INTERRUPT IconsMinSizeHookFunc(struct Hook *hook, Object *o, Msg ms
 	struct Rectangle SizeConstraints;
 
 	GetIconSizeConstraints(app, &SizeConstraints);
+	AdjustIconSizeSample(app, &SizeConstraints);
 
 	if (SizeConstraints.MaxX < SizeConstraints.MinX)
 		{
@@ -924,6 +925,8 @@ SAVEDS(void) INTERRUPT IconsMaxSizeHookFunc(struct Hook *hook, Object *o, Msg ms
 	struct Rectangle SizeConstraints;
 
 	GetIconSizeConstraints(app, &SizeConstraints);
+	AdjustIconSizeSample(app, &SizeConstraints);
+
 	if (SizeConstraints.MaxX < SizeConstraints.MinX)
 		{
 		// Adjust MinSize if MaxSize is smaller than MinSize
@@ -1498,6 +1501,18 @@ SAVEDS(void) INTERRUPT UpdateSelectMarkerSampleHookFunc(struct Hook *hook, Objec
 	argb.Blue  = getv(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIA_Coloradjust_Blue) >> 24;
 
 	set(app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE], TIHA_BaseColor, (ULONG) &argb);
+}
+
+//-----------------------------------------------------------------
+
+SAVEDS(void) INTERRUPT ChangeThumbnailSizeHookFunc(struct Hook *hook, Object *o, Msg msg)
+{
+	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
+	ULONG SizeIndex;
+
+	SizeIndex = getv(app->Obj[CYCLE_THUMBNAILSIZE], MUIA_Cycle_Active);
+
+	set(app->Obj[GROUP_THUMBNAILS_ICON_SAMPLE], MUIA_Group_ActivePage, SizeIndex);
 }
 
 //-----------------------------------------------------------------

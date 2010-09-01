@@ -1973,7 +1973,9 @@ Additions/changes:
 
 --------------------Scalos main Preferences---------------------------------
 
- 40.28  20100606	jl	- Improvement: added "About MorphOS" menu item (MorphOS version only).
+ 40.28  20100901	jl	- Improvement: added icon sample for thumbnail size selection and icon min/max size selection.
+				- Improvement: moved all icon size related settings to separate page.
+	20100606	jl	- Improvement: added "About MorphOS" menu item (MorphOS version only).
 	20100501	jl      - Improvement: rearranged values in minimum icon size cycle gadget.
 				- Improvement: added slider to select nominal icon size between 25% and 400%.
 	20100328	jl	- Improvement: added option to select whether drawers in text windows are

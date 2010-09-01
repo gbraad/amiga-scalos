@@ -124,6 +124,8 @@ enum ObjIndex
 	SLIDER_ICONSPAGE_NOMINALSIZE,
 	CYCLE_ICONMINSIZE,
 	CYCLE_ICONMAXSIZE,
+	GOUP_ICONSIZE_MIN_SAMPLE,
+	GOUP_ICONSIZE_MAX_SAMPLE,
 	CHECK_AUTOREMOVE,
 	CHECK_EASY_MULTISELECT,
 	CHECK_EASY_MULTIDRAG,
@@ -196,6 +198,15 @@ enum ObjIndex
 	THUMBNAILS_TOPBORDER,
 	THUMBNAILS_RIGHTBORDER,
 	THUMBNAILS_BOTTOMBORDER,
+
+	GROUP_THUMBNAILS_ICON_SAMPLE,
+	IMAGE_ICON_SAMPLE_128,
+	IMAGE_ICON_SAMPLE_96,
+	IMAGE_ICON_SAMPLE_64,
+	IMAGE_ICON_SAMPLE_48,
+	IMAGE_ICON_SAMPLE_32,
+	IMAGE_ICON_SAMPLE_24,
+	IMAGE_ICON_SAMPLE_16,
 
 	CHECK_TRIG_DISK,
 	CHECK_TRIG_DRAWER,
@@ -364,6 +375,15 @@ enum ImgIndex
 	IMAGE_RENAME,
 	IMAGE_SYSTEMINFO,
 	IMAGE_WINDOWPROPERTIES,
+
+	// misc. images
+	IMAGE_ICON128,
+	IMAGE_ICON96,
+	IMAGE_ICON64,
+	IMAGE_ICON48,
+	IMAGE_ICON32,
+	IMAGE_ICON24,
+	IMAGE_ICON16,
 };
 
 //--------------------------------------------------------------------
@@ -560,6 +580,7 @@ void SetThumbNailSize(struct SCAModule *app, UWORD ThumbnailSize);
 UWORD GetThumbNailSize(struct SCAModule *app);
 void SetIconSizeConstraints(struct SCAModule *app, const struct Rectangle *SizeConstraints);
 void GetIconSizeConstraints(struct SCAModule *app, struct Rectangle *SizeConstraints);
+void AdjustIconSizeSample(struct SCAModule *app, const struct Rectangle *SizeConstraints);
 Object *CreatePrefsPage(struct SCAModule *app, Object *Page, struct NewPageListEntry *nple);
 BOOL ExistsObject(CONST_STRPTR Name);
 

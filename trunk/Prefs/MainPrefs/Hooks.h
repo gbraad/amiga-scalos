@@ -46,4 +46,5 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetBrowserChangedHookFunc(struct Hook *hook,
 SAVEDS(APTR) INTERRUPT ControlBarGadgetNormalChangedHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT CalculateMaxRadiusHookFunc(struct Hook *hook, Object *o, Msg msg);
 SAVEDS(void) INTERRUPT UpdateSelectMarkerSampleHookFunc(struct Hook *hook, Object *o, Msg msg);
+SAVEDS(void) INTERRUPT ChangeThumbnailSizeHookFunc(struct Hook *hook, Object *o, Msg msg);
 #endif /* HOOKS_H */
