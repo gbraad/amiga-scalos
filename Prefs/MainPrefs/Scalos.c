@@ -437,6 +437,7 @@ static CONST_STRPTR cDesktopPages[] =
 static CONST_STRPTR cIconPages[] =
 {
 	(CONST_STRPTR) MSGID_ICONPAGES_ATRIBUTES,
+	(CONST_STRPTR) MSGID_ICONPAGES_SIZES,
 	(CONST_STRPTR) MSGID_ICONPAGES_LABELS,
 	(CONST_STRPTR) MSGID_ICONPAGES_BORDERS,
 	(CONST_STRPTR) MSGID_ICONPAGES_TOOLTIPS,
@@ -790,6 +791,8 @@ static struct Hook TextWindowTtfPopCloseHook = { { NULL, NULL }, HOOKFUNC_DEF(Te
 
 static struct Hook IconDragTransparencyHook = { { NULL, NULL }, HOOKFUNC_DEF(IconDragTransparencyHookFunc), NULL };
 
+static struct Hook ChangeThumbnailSizeHook = { { NULL, NULL }, HOOKFUNC_DEF(ChangeThumbnailSizeHookFunc), NULL };
+
 
 static struct Hook OpenHook = { { NULL, NULL }, HOOKFUNC_DEF(OpenHookFunc), NULL };
 static struct Hook SaveAsHook = { { NULL, NULL }, HOOKFUNC_DEF(SaveAsFunc), NULL };
@@ -908,6 +911,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	ControlBarGadgetNormalChangedHook.h_Data = app;
         AboutMUIHook.h_Data = app;
         UpdateSelectMarkerSampleHook.h_Data = app;
+	ChangeThumbnailSizeHook.h_Data = app;
 
 	TranslateStringArray(cTextWindowsColumns);
 	TranslateStringArray(cDesktopPages);
@@ -1928,6 +1932,10 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		app->Obj[STRING_CONTROLBARGADGETS_NORMAL_ACTION], 2, MUIM_CallHook, &ControlBarGadgetNormalChangedHook);
 	DoMethod(app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], MUIM_Notify, MUIA_TextEditor_HasChanged, TRUE,
 		app->Obj[TEXTEDITOR_CONTROLBARGADGETS_NORMAL_HELPTEXT], 2, MUIM_CallHook, &ControlBarGadgetNormalChangedHook);
+
+	// Update sample icon whenever thumbnail size is changed
+	DoMethod(app->Obj[CYCLE_THUMBNAILSIZE], MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime,
+		app->Obj[CYCLE_THUMBNAILSIZE], 2, MUIM_CallHook, &ChangeThumbnailSizeHook);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
@@ -4135,6 +4143,8 @@ void SetThumbNailSize(struct SCAModule *app, UWORD ThumbnailSize)
 		SizeIndex = THUMBNAILSIZE_128;
 
 	set(app->Obj[CYCLE_THUMBNAILSIZE], MUIA_Cycle_Active, SizeIndex);
+
+	CallHookPkt(&ChangeThumbnailSizeHook, app->Obj[CYCLE_THUMBNAILSIZE], NULL);
 }
 
 //----------------------------------------------------------------------------
@@ -4216,6 +4226,8 @@ void SetIconSizeConstraints(struct SCAModule *app, const struct Rectangle *SizeC
 
 	set(app->Obj[CYCLE_ICONMINSIZE], MUIA_Cycle_Active, MinSize);
 	set(app->Obj[CYCLE_ICONMAXSIZE], MUIA_Cycle_Active, MaxSize);
+
+	AdjustIconSizeSample(app, SizeConstraints);
 }
 
 //----------------------------------------------------------------------------
@@ -4284,6 +4296,52 @@ void GetIconSizeConstraints(struct SCAModule *app, struct Rectangle *SizeConstra
 		SizeConstraints->MaxX = SizeConstraints->MaxY = SHRT_MAX;
 		break;
 		}
+}
+
+//----------------------------------------------------------------------------
+
+void AdjustIconSizeSample(struct SCAModule *app, const struct Rectangle *SizeConstraints)
+{
+	ULONG MinSampleIndex, MaxSampleIndex;
+
+	if (SizeConstraints->MinX < 16)
+		MinSampleIndex = 0;
+	else if (SizeConstraints->MinX < 24)
+		MinSampleIndex = 1;
+	else if (SizeConstraints->MinX < 32)
+		MinSampleIndex = 2;
+	else if (SizeConstraints->MinX < 48)
+		MinSampleIndex = 3;
+	else if (SizeConstraints->MinX < 64)
+		MinSampleIndex = 4;
+	else if (SizeConstraints->MinX < 96)
+		MinSampleIndex = 5;
+	else if (SizeConstraints->MinX < 128)
+		MinSampleIndex = 6;
+	else
+		MinSampleIndex = 7;
+
+	if (SizeConstraints->MaxX <= 16)
+		MaxSampleIndex = 1;
+	else if (SizeConstraints->MaxX <= 24)
+		MaxSampleIndex = 2;
+	else if (SizeConstraints->MaxX <= 32)
+		MaxSampleIndex = 3;
+	else if (SizeConstraints->MaxX <= 48)
+		MaxSampleIndex = 4;
+	else if (SizeConstraints->MaxX <= 64)
+		MaxSampleIndex = 5;
+	else if (SizeConstraints->MaxX <= 96)
+		MaxSampleIndex = 6;
+	else if (SizeConstraints->MaxX <= 128)
+		MaxSampleIndex = 7;
+	else
+		MaxSampleIndex = 0;
+
+	set(app->Obj[GOUP_ICONSIZE_MIN_SAMPLE], MUIA_Group_ActivePage, MinSampleIndex);
+	set(app->Obj[GOUP_ICONSIZE_MAX_SAMPLE], MUIA_Group_ActivePage, MaxSampleIndex);
+
+	d1(KPrintF("%s/%s/%ld: MinSampleIndex=%lu  MaxSampleIndex=%lu", __FILE__, __FUNC__, __LINE__, MinSampleIndex, MaxSampleIndex);)
 }
 
 //----------------------------------------------------------------------------
@@ -5315,56 +5373,6 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 				End, //VGroup
 
 				Child, VGroup,
-					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ICONSPAGE_ICONSCALING),
-					GroupFrame,
-					MUIA_Background, MUII_GroupBack,
-
-					Child, HVSpace,
-
-					Child, HGroup,
-						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP),
-
-						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_NOMINALSIZE)),
-
-						Child, app->Obj[SLIDER_ICONSPAGE_NOMINALSIZE] = SliderObject,
-							MUIA_CycleChain, TRUE,
-							MUIA_Numeric_Min, IDTA_ScalePercentage_MIN,
-							MUIA_Numeric_Max, IDTA_ScalePercentage_MAX,
-							MUIA_Slider_Horiz, TRUE,
-							MUIA_Numeric_Value, 100,
-						End, //Slider
-
-						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_PERCENT)),
-					End, //HGroup
-
-					Child, HVSpace,
-
-					Child, HGroup,
-						Child, HVSpace,
-
-						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE)),
-						Child, app->Obj[CYCLE_ICONMINSIZE] = CycleObject,
-							MUIA_CycleChain, TRUE,
-							MUIA_Cycle_Entries, cIconSizesMin,
-							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE_SHORTHELP),
-						End, //Cycle
-
-						Child, HVSpace,
-
-						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE)),
-						Child, app->Obj[CYCLE_ICONMAXSIZE] = CycleObject,
-							MUIA_CycleChain, TRUE,
-							MUIA_Cycle_Entries, cIconSizesMax,
-							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE_SHORTHELP),
-						End, //Cycle
-
-						Child, HVSpace,
-					End, //HGroup
-
-					Child, HVSpace,
-				End, //VGroup
-
-				Child, VGroup,
 					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ICONSPAGE_NEWICONS),
 					GroupFrame,
 					MUIA_Background, MUII_GroupBack,
@@ -5442,6 +5450,97 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 			End, //VGroup
 
+			// --- Icons-Sizes
+			Child, VGroup,
+
+				Child, HVSpace,
+
+				Child, VGroup,
+					MUIA_FrameTitle, (ULONG) GetLocString(MSGID_ICONSPAGE_ICONSCALING),
+					GroupFrame,
+					MUIA_Background, MUII_GroupBack,
+
+					Child, HVSpace,
+
+					Child, HGroup,
+						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP),
+
+						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_NOMINALSIZE)),
+
+						Child, app->Obj[SLIDER_ICONSPAGE_NOMINALSIZE] = SliderObject,
+							MUIA_CycleChain, TRUE,
+							MUIA_Numeric_Min, IDTA_ScalePercentage_MIN,
+							MUIA_Numeric_Max, IDTA_ScalePercentage_MAX,
+							MUIA_Slider_Horiz, TRUE,
+							MUIA_Numeric_Value, 100,
+						End, //Slider
+
+						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_PERCENT)),
+					End, //HGroup
+
+					Child, HVSpace,
+
+					Child, ColGroup(5),
+						Child, HVSpace,
+
+						Child, HGroup,
+							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE)),
+							Child, app->Obj[CYCLE_ICONMINSIZE] = CycleObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Cycle_Entries, cIconSizesMin,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MINSIZE_SHORTHELP),
+								End, //Cycle
+							End, //HGroup
+
+						Child, HVSpace,
+
+						Child, HGroup,
+							Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE)),
+							Child, app->Obj[CYCLE_ICONMAXSIZE] = CycleObject,
+								MUIA_CycleChain, TRUE,
+								MUIA_Cycle_Entries, cIconSizesMax,
+								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_SCALING_MAXSIZE_SHORTHELP),
+								End, //Cycle
+							End, //HGroup
+
+						Child, HVSpace,
+
+						Child, HVSpace,
+
+						Child, app->Obj[GOUP_ICONSIZE_MIN_SAMPLE] = PageGroup,
+							MUIA_Frame, MUIV_Frame_Gauge,
+							Child, HVSpace, // empty
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_16] = CreatePrefsImage((void *) IMAGE_ICON16),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_24] = CreatePrefsImage((void *) IMAGE_ICON24),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_32] = CreatePrefsImage((void *) IMAGE_ICON32),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_48] = CreatePrefsImage((void *) IMAGE_ICON48),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_64] = CreatePrefsImage((void *) IMAGE_ICON64),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_96] = CreatePrefsImage((void *) IMAGE_ICON96),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_128] = CreatePrefsImage((void *) IMAGE_ICON128),
+							End, //PageGroup
+
+						Child, HVSpace,
+
+						Child, app->Obj[GOUP_ICONSIZE_MAX_SAMPLE] = PageGroup,
+							MUIA_Frame, MUIV_Frame_Gauge,
+							Child, HVSpace, // empty
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_16] = CreatePrefsImage((void *) IMAGE_ICON16),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_24] = CreatePrefsImage((void *) IMAGE_ICON24),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_32] = CreatePrefsImage((void *) IMAGE_ICON32),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_48] = CreatePrefsImage((void *) IMAGE_ICON48),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_64] = CreatePrefsImage((void *) IMAGE_ICON64),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_96] = CreatePrefsImage((void *) IMAGE_ICON96),
+							Child,  app->Obj[IMAGE_ICON_SAMPLE_128] = CreatePrefsImage((void *) IMAGE_ICON128),
+							End, //PageGroup
+
+						Child, HVSpace,
+					End, //ColGroup
+
+					Child, HVSpace,
+				End, //VGroup
+				Child, HVSpace,
+
+			End, //VGroup
 
 			// --- Icons-Labels
 			Child, VGroup,
@@ -5995,6 +6094,21 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							Child, app->Obj[CHECK_THUMBNAILS_BACKFILL] = CheckMarkHelp(FALSE, MSGID_ICONSPAGE_THUMBNAILS_BACKFILL_SHORTHELP),
 
 							End, // ColGroup
+
+						Child, HVSpace,
+
+						Child, VGroup,
+							Child, app->Obj[GROUP_THUMBNAILS_ICON_SAMPLE] = PageGroup,
+								MUIA_Frame, MUIV_Frame_Gauge,
+								Child,  app->Obj[IMAGE_ICON_SAMPLE_16] = CreatePrefsImage((void *) IMAGE_ICON16),
+								Child,  app->Obj[IMAGE_ICON_SAMPLE_24] = CreatePrefsImage((void *) IMAGE_ICON24),
+								Child,  app->Obj[IMAGE_ICON_SAMPLE_32] = CreatePrefsImage((void *) IMAGE_ICON32),
+								Child,  app->Obj[IMAGE_ICON_SAMPLE_48] = CreatePrefsImage((void *) IMAGE_ICON48),
+								Child,  app->Obj[IMAGE_ICON_SAMPLE_64] = CreatePrefsImage((void *) IMAGE_ICON64),
+								Child,  app->Obj[IMAGE_ICON_SAMPLE_96] = CreatePrefsImage((void *) IMAGE_ICON96),
+								Child,  app->Obj[IMAGE_ICON_SAMPLE_128] = CreatePrefsImage((void *) IMAGE_ICON128),
+								End, //PageGroup
+							End, //VGroup
 
 						Child, HVSpace,
 
