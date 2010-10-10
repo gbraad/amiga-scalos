@@ -2971,12 +2971,13 @@ static int pagerBeginReadTransaction(Pager *pPager){
   sqlite3WalEndReadTransaction(pPager->pWal);
 
   rc = sqlite3WalBeginReadTransaction(pPager->pWal, &changed);
-  if( rc==SQLITE_OK && changed ){
+  if( rc!=SQLITE_OK || changed ){
     pager_reset(pPager);
   }
 
   return rc;
 }
+#endif
 
 /*
 ** This function is called as part of the transition from PAGER_OPEN
@@ -3033,7 +3034,7 @@ static int pagerPagecount(Pager *pPager, Pgno *pnPage){
   return SQLITE_OK;
 }
 
-
+#ifndef SQLITE_OMIT_WAL
 /*
 ** Check if the *-wal file that corresponds to the database opened by pPager
 ** exists if the database is not empy, or verify that the *-wal file does
@@ -4226,6 +4227,13 @@ int sqlite3PagerOpen(
   /* Set the output variable to NULL in case an error occurs. */
   *ppPager = 0;
 
+#ifndef SQLITE_OMIT_MEMORYDB
+  if( flags & PAGER_MEMORY ){
+    memDb = 1;
+    zFilename = 0;
+  }
+#endif
+
   /* Compute and store the full pathname in an allocated buffer pointed
   ** to by zPathname, length nPathname. Or, if this is a temporary file,
   ** leave both nPathname and zPathname set to 0.
@@ -4236,17 +4244,8 @@ int sqlite3PagerOpen(
     if( zPathname==0 ){
       return SQLITE_NOMEM;
     }
-#ifndef SQLITE_OMIT_MEMORYDB
-    if( strcmp(zFilename,":memory:")==0 ){
-      memDb = 1;
-      zPathname[0] = 0;
-    }else
-#endif
-    {
-      zPathname[0] = 0; /* Make sure initialized even if FullPathname() fails */
-      rc = sqlite3OsFullPathname(pVfs, zFilename, nPathname, zPathname);
-    }
-
+    zPathname[0] = 0; /* Make sure initialized even if FullPathname() fails */
+    rc = sqlite3OsFullPathname(pVfs, zFilename, nPathname, zPathname);
     nPathname = sqlite3Strlen30(zPathname);
     if( rc==SQLITE_OK && nPathname+8>pVfs->mxPathname ){
       /* This branch is taken when the journal path required by
@@ -4301,19 +4300,15 @@ int sqlite3PagerOpen(
 
   /* Fill in the Pager.zFilename and Pager.zJournal buffers, if required. */
   if( zPathname ){
+    assert( nPathname>0 );
     pPager->zJournal =   (char*)(pPtr += nPathname + 1);
     memcpy(pPager->zFilename, zPathname, nPathname);
     memcpy(pPager->zJournal, zPathname, nPathname);
     memcpy(&pPager->zJournal[nPathname], "-journal", 8);
-    if( pPager->zFilename[0]==0 ){
-      pPager->zJournal[0] = 0;
-    }
 #ifndef SQLITE_OMIT_WAL
-    else{
-      pPager->zWal = &pPager->zJournal[nPathname+8+1];
-      memcpy(pPager->zWal, zPathname, nPathname);
-      memcpy(&pPager->zWal[nPathname], "-wal", 4);
-    }
+    pPager->zWal = &pPager->zJournal[nPathname+8+1];
+    memcpy(pPager->zWal, zPathname, nPathname);
+    memcpy(&pPager->zWal[nPathname], "-wal", 4);
 #endif
     sqlite3_free(zPathname);
   }
@@ -4322,9 +4317,10 @@ int sqlite3PagerOpen(
 
   /* Open the pager file.
   */
-  if( zFilename && zFilename[0] && !memDb ){
+  if( zFilename && zFilename[0] ){
     int fout = 0;                    /* VFS flags returned by xOpen() */
     rc = sqlite3OsOpen(pVfs, pPager->zFilename, pPager->fd, vfsFlags, &fout);
+    assert( !memDb );
     readOnly = (fout&SQLITE_OPEN_READONLY);
 
     /* If the file was successfully opened for read/write access,
@@ -4778,7 +4774,9 @@ int sqlite3PagerSharedLock(Pager *pPager){
     ** mode. Otherwise, the following function call is a no-op.
     */
     rc = pagerOpenWalIfPresent(pPager);
+#ifndef SQLITE_OMIT_WAL
     assert( pPager->pWal==0 || rc==SQLITE_OK );
+#endif
   }
 
   if( pagerUseWal(pPager) ){
@@ -5207,29 +5205,29 @@ static int pager_write(PgHdr *pPg){
 
   CHECK_PAGE(pPg);
 
+  /* The journal file needs to be opened. Higher level routines have already
+  ** obtained the necessary locks to begin the write-transaction, but the
+  ** rollback journal might not yet be open. Open it now if this is the case.
+  **
+  ** This is done before calling sqlite3PcacheMakeDirty() on the page. 
+  ** Otherwise, if it were done after calling sqlite3PcacheMakeDirty(), then
+  ** an error might occur and the pager would end up in WRITER_LOCKED state
+  ** with pages marked as dirty in the cache.
+  */
+  if( pPager->eState==PAGER_WRITER_LOCKED ){
+    rc = pager_open_journal(pPager);
+    if( rc!=SQLITE_OK ) return rc;
+  }
+  assert( pPager->eState>=PAGER_WRITER_CACHEMOD );
+  assert( assert_pager_state(pPager) );
+
   /* Mark the page as dirty.  If the page has already been written
   ** to the journal then we can return right away.
   */
   sqlite3PcacheMakeDirty(pPg);
   if( pageInJournal(pPg) && !subjRequiresPage(pPg) ){
     assert( !pagerUseWal(pPager) );
-    assert( pPager->eState>=PAGER_WRITER_CACHEMOD );
   }else{
-
-    /* If we get this far, it means that the page needs to be
-    ** written to the transaction journal or the checkpoint journal
-    ** or both.
-    **
-    ** Higher level routines have already obtained the necessary locks
-    ** to begin the write-transaction, but the rollback journal might not 
-    ** yet be open. Open it now if this is the case.
-    */
-    if( pPager->eState==PAGER_WRITER_LOCKED ){
-      rc = pager_open_journal(pPager);
-      if( rc!=SQLITE_OK ) return rc;
-    }
-    assert( pPager->eState>=PAGER_WRITER_CACHEMOD );
-    assert( assert_pager_state(pPager) );
   
     /* The transaction journal now exists and we have a RESERVED or an
     ** EXCLUSIVE lock on the main database file.  Write the current page to
