@@ -91,9 +91,8 @@ MSGID_MENU_PROJECT_ABOUTMUI
 A propos de MUI...
 ; About MUI...
 ;
-;+++translateme+++
 MSGID_MENU_PROJECT_ABOUTMORPHOS
-About MorphOS...
+A propos de MorphOS...
 ;About MorphOS...
 ;
 MSGID_FILEDISP_COLUMN_NAME
@@ -259,9 +258,9 @@ MSGID_ICONPAGES_THUMBNAILS
 Vignettes
 ;Thumbnails
 ;
-;+++translateme+++
 MSGID_ICONPAGES_SIZES
-Sizes
+Tailles
+;Sizes
 ;
 ;-----------------------------------------------------------
 ;
@@ -1623,7 +1622,7 @@ autour du test des cônes sélectionnées.
 ;around the text of selected icons.
 ;
 MSGID_ICONSPAGE_SCALING_NOMINALSIZE
-taille nominale :
+Taille nominale :
 ;Nominal Size:
 ;
 MSGID_ICONSPAGE_SCALING_NOMINALSIZE_SHORTHELP
@@ -1882,21 +1881,19 @@ MSGID_DRAGNDROPPAGE_TRIGGERS_SCALOS_WINDOWS
 Fenêtres de Scalos
 ;Scalos Windows
 ;
-;+++translateme+++
 MSGID_DRAGNDROPPAGE_POPOPENWINDOWS
-Pop-Open Windows
+Ouverture automatique des fenêtres
 ;Pop-Open Windows
 ;
-;+++translateme+++
 MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY
-Pop-Open Delay:
+Délai d'ouverture automatique :
 ;Pop-Open Delay:
 ;
-;+++translateme+++
 MSGID_DRAGNDROPPAGE_SLIDER_POPOPWINDOW_DELAY_SHORTHELP
-During a drag&drop operation, this is the number of seconds\n\
-you have to keep the mouse pointer steady over a drawer\n\
-or volume icon before it pops open.
+Pendant une opération de déplacement et de dépot (drag&drop),\n\
+ceci est le nombre de seconds que vous devez garder immobile\n\
+le curseur au-dessus d'un répertoire ou d'un volume\n\
+avant que ce dernier ouvre sa fenêtre.
 ;During a drag&drop operation, this is the number of seconds\n\
 ;you have to keep the mouse pointer steady over a drawer\n\
 ;or volume icon before it pops open.
@@ -2731,7 +2728,7 @@ liens, sont activées.
 ;when an object is dropped with the create-link\n\
 ;qualifier key pressed.
 ;
-;
+;----------------------------------------------------------
 ;
 MSGID_MISCPAGE_POP_WORKBENCHPREFS_SHORTHELP
 Lancement du programme standard: \033bPréférences du Workbench\033n.
@@ -2748,11 +2745,9 @@ sans tenir compte du raccourci clavier.
 ;Select this checkbox to \033balways\033n apply popup menus\n\
 ;to every selected icons, regardless of qualifier key
 ;
-;
 MSGID_MISCPAGE_COPYBUFFERSIZE
 Taille du tampon de copie des fichiers :
 ;File Copy Buffer Size:
-;
 ;
 MSGID_MISCPAGE_COPYBUFFERSIZE_SHORTHELP
 Défini la taillle du tampon des copies des fichiers.
@@ -2763,20 +2758,17 @@ MSGID_MISCPAGE_LABELS_FILEOPERATIONS
 Opérations sur les fichiers
 ;File Operations
 ;
-;+++translateme+++
 MSGID_MISCPAGE_LABELS_UNDOSTEPS
-Maximum Number of Undo Steps
+Nombre maximum de pas précédents
 ;Maximum Number of Undo Steps
 ;
-;+++translateme+++
 MSGID_MISCPAGE_UNDOSTEPS
-Max. Undo Steps:
+Max. de pas précédents :
 ;Max. Undo Steps:
 ;
-;+++translateme+++
 MSGID_MISCPAGE_UNDOSTEPS_SHORTHELP
-Here you can limit the number of\n\
-available Undo/Redo steps.
+Ici, vous pouvez limiter le nombre de\n\
+pas Précédents/Suivants disponibles.
 ;Here you can limit the number of\n\
 ;available Undo/Redo steps.
 ;
