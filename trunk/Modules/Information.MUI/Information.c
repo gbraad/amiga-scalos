@@ -75,7 +75,7 @@
 //----------------------------------------------------------------------------
 
 #define	VERSION_MAJOR	40
-#define	VERSION_MINOR	12
+#define	VERSION_MINOR	13
 
 
 #define	VERS_MAJOR	STR(VERSION_MAJOR)
@@ -3480,12 +3480,14 @@ static BOOL isDiskWritable(BPTR dLock)
 static ULONG CheckInfoData(const struct InfoData *info)
 {
 	ULONG Result = TRUE;
+	ULONG64 UsedPercent64;
 	ULONG UsedPercent;
 	char ByteCountText[16];
 
 	d1(kprintf(__FILE__ "/%s/%ld: DiskType=%ld  DiskState=%ld\n", __FUNC__, __LINE__, info->id_DiskType, info->id_DiskState));
 
-	UsedPercent = (100 * info->id_NumBlocksUsed) / info->id_NumBlocks;
+	UsedPercent64 = Div64(Mul64(MakeU64(100), MakeU64(info->id_NumBlocksUsed), NULL), MakeU64(info->id_NumBlocks), NULL);
+	UsedPercent = ULONG64_LOW(UsedPercent64);
 
 	ByteCount(ByteCountText, sizeof(ByteCountText), info->id_NumBlocksUsed, info->id_BytesPerBlock);
 	ScaFormatString(GetLocString(MSGID_DEVICE_BLOCKS_PERCENT),

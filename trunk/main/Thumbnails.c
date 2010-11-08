@@ -116,6 +116,9 @@ BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 		if (NULL == iwt->iwt_WindowTask.mt_MainObject)
 			break;
 
+		if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_DdPopupWindow)
+			break;
+
 		if (ThumbnailWidth < CurrentPrefs.pref_IconSizeConstraints.MinX)
 			ThumbnailWidth = CurrentPrefs.pref_IconSizeConstraints.MinX;
 		else if (ThumbnailWidth > CurrentPrefs.pref_IconSizeConstraints.MaxX)
