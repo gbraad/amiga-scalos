@@ -1770,6 +1770,8 @@ void AdjustRenamedWindowName(BPTR objLock)
 
 void LockWindow(struct internalScaWindowTask *iwt)
 {
+	d1(kprintf("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
 	if (iwt->iwt_WindowTask.wt_Window)
 		{
 		if (iwt->iwt_WinLockCount++ < 1)
@@ -1782,11 +1784,15 @@ void LockWindow(struct internalScaWindowTask *iwt)
 				TAG_END);
 			}
 		}
+
+	d1(kprintf("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 }
 
 
 void UnLockWindow(struct internalScaWindowTask *iwt)
 {
+	d1(kprintf("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
 	if (iwt->iwt_WinLockCount > 0
 		&& 0 == --iwt->iwt_WinLockCount)
 		{
@@ -1798,6 +1804,8 @@ void UnLockWindow(struct internalScaWindowTask *iwt)
 			ModifyIDCMP(iwt->iwt_WindowTask.wt_Window, iwt->iwt_IDCMPFlags);
 			}
 		}
+
+	d1(kprintf("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 }
 
 
@@ -2067,22 +2075,26 @@ void RemoveIconOverlay(Object *IconObj, ULONG OldOverlay)
 
 BOOL ScalosAttemptLockIconListShared(struct internalScaWindowTask *iwt)
 {
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
 	if (ScalosAttemptSemaphoreShared(iwt->iwt_WindowTask.wt_IconSemaphore))
 		{
 		if (iwt->iwt_WindowProcess == (struct Process *) FindTask(NULL))
 			{
 			iwt->iwt_IconListLockedShared++;
 			}
+		d1(KPrintF("%s/%s/%ld: END(TRUE) iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 		return TRUE;
 		}
 
+	d1(KPrintF("%s/%s/%ld: END(FALSE) iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 	return FALSE;
 }
 
 
 BOOL ScalosAttemptLockIconListExclusive(struct internalScaWindowTask *iwt)
 {
-	d1(kprintf("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	if (ScalosAttemptSemaphore(iwt->iwt_WindowTask.wt_IconSemaphore))
 		{
@@ -2102,6 +2114,8 @@ BOOL ScalosAttemptLockIconListExclusive(struct internalScaWindowTask *iwt)
 
 void ScalosLockIconListShared(struct internalScaWindowTask *iwt)
 {
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
 	// Problem addressed: if the current process already holds an exclusive
 	// lock on the semaphore, ObtainSemaphoreShared() is guaranteed to
 	// create a deadlock.
@@ -2113,6 +2127,7 @@ void ScalosLockIconListShared(struct internalScaWindowTask *iwt)
 			{
 			iwt->iwt_IconListLockedShared++;
 			}
+		d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 		return;
 		}
 	if (ScalosAttemptSemaphore(iwt->iwt_WindowTask.wt_IconSemaphore))
@@ -2121,6 +2136,7 @@ void ScalosLockIconListShared(struct internalScaWindowTask *iwt)
 			{
 			iwt->iwt_IconListLockedExclusive++;
 			}
+		d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 		return;
 		}
 
@@ -2130,11 +2146,15 @@ void ScalosLockIconListShared(struct internalScaWindowTask *iwt)
 		{
 		iwt->iwt_IconListLockedShared++;
 		}
+
+	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 }
 
 
 void ScalosLockIconListExclusive(struct internalScaWindowTask *iwt)
 {
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
 	if (iwt->iwt_WindowProcess == (struct Process *) FindTask(NULL)
 		&& iwt->iwt_IconListLockedShared)
 		{
@@ -2172,12 +2192,16 @@ void ScalosLockIconListExclusive(struct internalScaWindowTask *iwt)
 		{
 		iwt->iwt_IconListLockedExclusive++;
 		}
+
+	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 }
 
 #endif /* DEBUG_SEMAPHORES */
 
 void ScalosUnLockIconList(struct internalScaWindowTask *iwt)
 {
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
 	if (iwt->iwt_WindowProcess == (struct Process *) FindTask(NULL))
 		{
 		if (iwt->iwt_IconListLockedExclusive)
@@ -2187,6 +2211,8 @@ void ScalosUnLockIconList(struct internalScaWindowTask *iwt)
 		}
 
 	ScalosReleaseSemaphore(iwt->iwt_WindowTask.wt_IconSemaphore);
+
+	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 }
 
 

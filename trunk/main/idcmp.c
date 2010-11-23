@@ -1794,14 +1794,22 @@ static void IDCMPBeginDrag(struct internalScaWindowTask *iwt, struct IntuiMessag
 					iwt->iwt_DragFlags = 0;
 
 					InitDrag(iMsg, iwt);
+
+					// Keep icon list locked (ahared!) until EndDrag()
+					ScalosUnLockIconList(iwt);
+					ScalosLockIconListShared(iwt);
+					}
+				else
+					{
+					ScalosUnLockIconList(iwt);
 					}
 				}
 			else
 				{
 				// no icon present, leave VGADGETID_WAITFORDRAG state
 				iwt->iwt_MoveGadId = VGADGETID_IDLE;
+				ScalosUnLockIconList(iwt);
 				}
-			ScalosUnLockIconList(iwt);
 			}
 		}
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));

@@ -276,6 +276,8 @@ BOOL ScaAttemptSemaphoreListA(struct TagItem *OriginalTagList)
 void DebugScalosLockIconListShared(struct internalScaWindowTask *iwt,
 	CONST_STRPTR CallingFile, CONST_STRPTR CallingFunc, ULONG CallingLine)
 {
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle ? iwt->iwt_WinTitle : (STRPTR) ""));
+
 	// Problem addressed: if the current process already holds an exclusive
 	// lock on the semaphore, ObtainSemaphoreShared() is guaranteed to
 	// create a deadlock.
@@ -287,6 +289,7 @@ void DebugScalosLockIconListShared(struct internalScaWindowTask *iwt,
 			{
 			iwt->iwt_IconListLockedShared++;
 			}
+		d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 		return;
 		}
 	if (DebugScalosAttemptSemaphore(iwt->iwt_WindowTask.wt_IconSemaphore, CallingFile, CallingFunc, CallingLine))
@@ -295,8 +298,11 @@ void DebugScalosLockIconListShared(struct internalScaWindowTask *iwt,
 			{
 			iwt->iwt_IconListLockedExclusive++;
 			}
+		d1(kprintf("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 		return;
 		}
+
+	d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 	DebugScalosObtainSemaphoreShared(iwt->iwt_WindowTask.wt_IconSemaphore, CallingFile, CallingFunc, CallingLine);
 
@@ -304,12 +310,16 @@ void DebugScalosLockIconListShared(struct internalScaWindowTask *iwt,
 		{
 		iwt->iwt_IconListLockedShared++;
 		}
+
+	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle ? iwt->iwt_WinTitle : (STRPTR) ""));
 }
 
 
 void DebugScalosLockIconListExclusive(struct internalScaWindowTask *iwt,
 	CONST_STRPTR CallingFile, CONST_STRPTR CallingFunc, ULONG CallingLine)
 {
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle ? iwt->iwt_WinTitle : (STRPTR) ""));
+
 	if (iwt->iwt_WindowProcess == (struct Process *) FindTask(NULL)
 		&& iwt->iwt_IconListLockedShared)
 		{
@@ -347,6 +357,8 @@ void DebugScalosLockIconListExclusive(struct internalScaWindowTask *iwt,
 		{
 		iwt->iwt_IconListLockedExclusive++;
 		}
+
+	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle ? iwt->iwt_WinTitle : (STRPTR) ""));
 }
 
 
@@ -500,7 +512,7 @@ void DebugScalosReleaseSemaphore(struct ScalosSemaphore *xsema,
 	struct Process *myProc = (struct Process *) FindTask(NULL);
 	BOOL Found = FALSE;
 
-	d1(kprintf("%s/%s/%ld: Begin ReleaseSemaphore(%08lx <%s>)  Task=%08lx <%s>\n", \
+	d1(kprintf("%s/%s/%ld: Begin ReleaseSemaphore(%08lx)  Task=%08lx <%s>\n", \
 		CallingFile, CallingFunc, CallingLine, xsema, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name));
 
 	Forbid();
@@ -527,7 +539,7 @@ void DebugScalosReleaseSemaphore(struct ScalosSemaphore *xsema,
 
 	ReleaseSemaphore(&xsema->Sema);
 
-	d1(kprintf("%s/%s/%ld: End ReleaseSemaphore(%08lx <%s>)\n", \
+	d1(kprintf("%s/%s/%ld: End ReleaseSemaphore(%08lx)\n", \
 		CallingFile, CallingFunc, CallingLine, xsema));
 }
 
@@ -538,7 +550,7 @@ ULONG DebugScalosAttemptSemaphore(struct ScalosSemaphore *xsema,
 {
 	ULONG Result;
 
-	d1(kprintf("%s/%s/%ld: Begin AttemptSemaphore(%08lx <%s>)  Task=%08lx <%s>\n", \
+	d1(kprintf("%s/%s/%ld: Begin AttemptSemaphore(%08lx)  Task=%08lx <%s>\n", \
 		CallingFile, CallingFunc, CallingLine, xsema, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name));
 
 	Result = AttemptSemaphore(&xsema->Sema);
@@ -561,7 +573,7 @@ ULONG DebugScalosAttemptSemaphore(struct ScalosSemaphore *xsema,
 			}
 		}
 
-	d1(kprintf("%s/%s/%ld: End AttemptSemaphore(%08lx <%s>) = %ld\n", \
+	d1(kprintf("%s/%s/%ld: End AttemptSemaphore(%08lx) = %ld\n", \
 		CallingFile, CallingFunc, CallingLine, xsema, Result));
 
 	return Result;
@@ -574,14 +586,17 @@ ULONG DebugScalosAttemptSemaphoreShared(struct ScalosSemaphore *xsema,
 {
 	ULONG Result;
 
-	d1(kprintf("%s/%s/%ld: Begin AttemptSemaphoreShared(%08lx <%s>)  Task=%08lx <%s>\n", \
-		CallingFile, CallingFunc, CallingLine, xsema, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name));
+	d1(kprintf("%s/%s/%ld: Begin AttemptSemaphoreShared(%08lx)  Task=%08lx <%s>\n", \
+		CallingFile, CallingFunc, CallingLine, xsema, FindTask(NULL), \
+		FindTask(NULL)->tc_Node.ln_Name ? FindTask(NULL)->tc_Node.ln_Name : (char *) ""));
 
 	Result = AttemptSemaphoreShared(&xsema->Sema);
 
 	if (Result)
 		{
 		struct DebugSemaOwner *Owner;
+
+		d1(KPrintF("%s/%s/%ld: AttemptSemaphoreShared() succeeded\n", __FILE__, __FUNC__, __LINE__));
 
 		Owner = AllocVec(sizeof(struct DebugSemaOwner), MEMF_PUBLIC);
 		if (Owner)
@@ -601,7 +616,7 @@ ULONG DebugScalosAttemptSemaphoreShared(struct ScalosSemaphore *xsema,
 		Result = DebugScalosAttemptSemaphore(xsema, CallingFile, CallingFunc, CallingLine);
 		}
 
-	d1(kprintf("%s/%s/%ld: End AttemptSemaphoreShared(%08lx <%s>) = %ld\n", \
+	d1(kprintf("%s/%s/%ld: End AttemptSemaphoreShared(%08lx) = %ld\n", \
 		CallingFile, CallingFunc, CallingLine, xsema, Result));
 
 	return Result;

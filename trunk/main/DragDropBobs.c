@@ -282,6 +282,8 @@ void InitDrag(struct IntuiMessage *iMsg, struct internalScaWindowTask *iwt)
 			}
 		}
 
+	ScalosUnLockIconList(iwt);
+
 	if (CurrentPrefs.pref_ShowDDCountText)
 		AddInfoTextBob(iwt);
 
@@ -1088,7 +1090,7 @@ BOOL SuspendDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt)
 {
 	BOOL WasLocked = FALSE;
 
-	d1(kprintf("%s/%s/%ld: START dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
+	d1(kprintf("%s/%s/%ld: START dh=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, dh, iwt->iwt_WinTitle));
 
 	if (dh)
 		{
@@ -1112,7 +1114,7 @@ BOOL SuspendDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt)
 
 void ResumeDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL wasLocked)
 {
-	d1(kprintf("%s/%s/%ld: START dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
+	d1(kprintf("%s/%s/%ld: START dh=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, dh, iwt->iwt_WinTitle));
 
 	if (dh)
 		{
@@ -1124,6 +1126,12 @@ void ResumeDrag(struct DragHandle *dh, struct internalScaWindowTask *iwt, BOOL w
 			dh->drgh_flags &= ~DRGHF_LockSuspended;
 			ReLockDrag(dh, iwt, wasLocked);
 			}
+		}
+	else
+		{
+		SetWindowPointer(iwt->iwt_WindowTask.wt_Window,
+			WA_Pointer, NULL,
+			TAG_END);
 		}
 	d1(kprintf("%s/%s/%ld: END dh=%08lx\n", __FILE__, __FUNC__, __LINE__, dh));
 }
