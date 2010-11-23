@@ -170,7 +170,42 @@ BOOL IconDoubleClick(struct internalScaWindowTask *iwt, struct ScaIconNode *in, 
 			{
 			ULONG IconType;
 
-			d1(kprintf("%s/%s/%ld: ObtainSemaphore iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
+			d1(kprintf("%s/%s/%ld: ObtainSemaphore iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+#if 0
+			{
+				const SCALOSSEMAPHORE *xSema = iwt->iwt_WindowTask.wt_IconSemaphore;
+
+				if (IsListEmpty((struct List *) &xSema->OwnerList))
+					{
+					d1(KPrintF("%s/%s/%ld: wt_IconSemaphore is unlocked\n", __FILE__, __FUNC__, __LINE__));
+					}
+				else
+					{
+					const struct DebugSemaOwner *Owner;
+
+					for (Owner = (const struct DebugSemaOwner *) xSema->OwnerList.lh_Head;
+						Owner != (const struct DebugSemaOwner *) &xSema->OwnerList.lh_Tail;
+						Owner = (const struct DebugSemaOwner *) Owner->node.ln_Succ)
+						{
+						CONST_STRPTR OwnModeString;
+
+						if (OWNMODE_EXCLUSIVE == Owner->OwnMode || xSema->Sema.ss_Owner)
+							OwnModeString = "Ex";
+						else
+							OwnModeString = "Sh";
+
+						d1(KPrintF("%s/%s/%ld: wt_IconSemaphore is owned %s by %s/%s/%ld  ProcName=<%s>\n",
+							__FILE__, __FUNC__, __LINE__,
+							OwnModeString,
+							Owner->FileName,
+							Owner->Func, Owner->Line,
+							Owner->Proc->pr_Task.tc_Node.ln_Name));
+						}
+					}
+			}
+#endif
+
 			ScalosLockIconListShared(iwt);
 
 			GetAttr(IDTA_Type, in->in_Icon, &IconType);

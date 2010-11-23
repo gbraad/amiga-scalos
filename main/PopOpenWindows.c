@@ -69,7 +69,7 @@ void PopOpenWindow(struct internalScaWindowTask *iwt, struct DragHandle *dh)
 			SCCM_WindowStartComplete,
 			iwt->iwt_WindowTask.wt_IconPort,
 			1);
-		d1(KPrintF("%s/%s/%ld:  eventHandle=%08lx\n", __FILE__, __FUNC__, __LINE__, eventHandle));
+		d1(KPrintF("%s/%s/%ld:  spcw_EventHandle=%08lx\n", __FILE__, __FUNC__, __LINE__, spcw->spcw_EventHandle));
 		if (NULL == spcw->spcw_EventHandle)
 			break;
 

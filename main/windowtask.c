@@ -548,6 +548,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 		// Dispose all entries in iwt_PopChildList
 		while ((spcw = (struct ScaPopChildWindow *) RemHead(&iwt->iwt_PopChildList)))
 			{
+			d1(KPrintF("%s/%s/%ld:  spcw=%08lx\n", __FILE__, __FUNC__, __LINE__, spcw));
 			PopChildWindowDispose(iwt, spcw);
 			}
 
