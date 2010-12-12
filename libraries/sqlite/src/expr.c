@@ -484,6 +484,9 @@ Expr *sqlite3PExpr(
 ){
   Expr *p = sqlite3ExprAlloc(pParse->db, op, pToken, 1);
   sqlite3ExprAttachSubtrees(pParse->db, p, pLeft, pRight);
+  if( p ) {
+    sqlite3ExprCheckHeight(pParse, p->nHeight);
+  }
   return p;
 }
 
@@ -1597,6 +1600,16 @@ int sqlite3CodeSubselect(
     assert( testAddr>0 || pParse->db->mallocFailed );
   }
 
+#ifndef SQLITE_OMIT_EXPLAIN
+  if( pParse->explain==2 ){
+    char *zMsg = sqlite3MPrintf(
+        pParse->db, "EXECUTE %s%s SUBQUERY %d", testAddr?"":"CORRELATED ",
+        pExpr->op==TK_IN?"LIST":"SCALAR", pParse->iNextSelectId
+    );
+    sqlite3VdbeAddOp4(v, OP_Explain, pParse->iSelectId, 0, 0, zMsg, P4_DYNAMIC);
+  }
+#endif
+
   switch( pExpr->op ){
     case TK_IN: {
       char affinity;              /* Affinity of the LHS of the IN */
@@ -1642,6 +1655,7 @@ int sqlite3CodeSubselect(
         sqlite3SelectDestInit(&dest, SRT_Set, pExpr->iTable);
         dest.affinity = (u8)affinity;
         assert( (pExpr->iTable&0x0000FFFF)==pExpr->iTable );
+        pExpr->x.pSelect->iLimit = 0;
         if( sqlite3Select(pParse, pExpr->x.pSelect, &dest) ){
           return 0;
         }
@@ -1742,6 +1756,7 @@ int sqlite3CodeSubselect(
       sqlite3ExprDelete(pParse->db, pSel->pLimit);
       pSel->pLimit = sqlite3PExpr(pParse, TK_INTEGER, 0, 0,
                                   &sqlite3IntTokens[1]);
+      pSel->iLimit = 0;
       if( sqlite3Select(pParse, pSel, &dest) ){
         return 0;
       }
@@ -3025,9 +3040,22 @@ static int evalConstExpr(Walker *pWalker, Expr *pExpr){
 ** Preevaluate constant subexpressions within pExpr and store the
 ** results in registers.  Modify pExpr so that the constant subexpresions
 ** are TK_REGISTER opcodes that refer to the precomputed values.
+**
+** This routine is a no-op if the jump to the cookie-check code has
+** already occur.  Since the cookie-check jump is generated prior to
+** any other serious processing, this check ensures that there is no
+** way to accidently bypass the constant initializations.
+**
+** This routine is also a no-op if the SQLITE_FactorOutConst optimization
+** is disabled via the sqlite3_test_control(SQLITE_TESTCTRL_OPTIMIZATIONS)
+** interface.  This allows test logic to verify that the same answer is
+** obtained for queries regardless of whether or not constants are
+** precomputed into registers or if they are inserted in-line.
 */
 void sqlite3ExprCodeConstants(Parse *pParse, Expr *pExpr){
   Walker w;
+  if( pParse->cookieGoto ) return;
+  if( (pParse->db->flags & SQLITE_FactorOutConst)!=0 ) return;
   w.xExprCallback = evalConstExpr;
   w.xSelectCallback = 0;
   w.pParse = pParse;
