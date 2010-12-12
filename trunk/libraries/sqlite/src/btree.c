@@ -1711,17 +1711,13 @@ int sqlite3BtreeOpen(
   const int isTempDb = zFilename==0 || zFilename[0]==0;
 
   /* Set the variable isMemdb to true for an in-memory database, or 
-  ** false for a file-based database. This symbol is only required if
-  ** either of the shared-data or autovacuum features are compiled 
-  ** into the library.
+  ** false for a file-based database.
   */
-#if !defined(SQLITE_OMIT_SHARED_CACHE) || !defined(SQLITE_OMIT_AUTOVACUUM)
-  #ifdef SQLITE_OMIT_MEMORYDB
-    const int isMemdb = 0;
-  #else
-    const int isMemdb = (zFilename && strcmp(zFilename, ":memory:")==0)
-                         || (isTempDb && sqlite3TempInMemory(db));
-  #endif
+#ifdef SQLITE_OMIT_MEMORYDB
+  const int isMemdb = 0;
+#else
+  const int isMemdb = (zFilename && strcmp(zFilename, ":memory:")==0)
+                       || (isTempDb && sqlite3TempInMemory(db));
 #endif
 
   assert( db!=0 );
@@ -2105,11 +2101,17 @@ int sqlite3BtreeSetCacheSize(Btree *p, int mxPage){
 ** probability of damage to near zero but with a write performance reduction.
 */
 #ifndef SQLITE_OMIT_PAGER_PRAGMAS
-int sqlite3BtreeSetSafetyLevel(Btree *p, int level, int fullSync){
+int sqlite3BtreeSetSafetyLevel(
+  Btree *p,              /* The btree to set the safety level on */
+  int level,             /* PRAGMA synchronous.  1=OFF, 2=NORMAL, 3=FULL */
+  int fullSync,          /* PRAGMA fullfsync. */
+  int ckptFullSync       /* PRAGMA checkpoint_fullfync */
+){
   BtShared *pBt = p->pBt;
   assert( sqlite3_mutex_held(p->db->mutex) );
+  assert( level>=1 && level<=3 );
   sqlite3BtreeEnter(p);
-  sqlite3PagerSetSafetyLevel(pBt->pPager, level, fullSync);
+  sqlite3PagerSetSafetyLevel(pBt->pPager, level, fullSync, ckptFullSync);
   sqlite3BtreeLeave(p);
   return SQLITE_OK;
 }
@@ -3167,8 +3169,8 @@ static void btreeEndTransaction(Btree *p){
 ** are no active cursors, it also releases the read lock.
 */
 int sqlite3BtreeCommitPhaseTwo(Btree *p){
-  BtShared *pBt = p->pBt;
 
+  if( p->inTrans==TRANS_NONE ) return SQLITE_OK;
   sqlite3BtreeEnter(p);
   btreeIntegrity(p);
 
@@ -3177,6 +3179,7 @@ int sqlite3BtreeCommitPhaseTwo(Btree *p){
   */
   if( p->inTrans==TRANS_WRITE ){
     int rc;
+    BtShared *pBt = p->pBt;
     assert( pBt->inTransaction==TRANS_WRITE );
     assert( pBt->nTransaction>0 );
     rc = sqlite3PagerCommitPhaseTwo(pBt->pPager);
@@ -8095,8 +8098,7 @@ int sqlite3BtreePutData(BtCursor *pCsr, u32 offset, u32 amt, void *z){
 void sqlite3BtreeCacheOverflow(BtCursor *pCur){
   assert( cursorHoldsMutex(pCur) );
   assert( sqlite3_mutex_held(pCur->pBtree->db->mutex) );
-  assert(!pCur->isIncrblobHandle);
-  assert(!pCur->aOverflow);
+  invalidateOverflowCache(pCur);
   pCur->isIncrblobHandle = 1;
 }
 #endif

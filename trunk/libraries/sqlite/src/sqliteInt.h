@@ -914,13 +914,14 @@ struct sqlite3 {
 #define SQLITE_ReadUncommitted 0x0080000  /* For shared-cache mode */
 #define SQLITE_LegacyFileFmt  0x00100000  /* Create new databases in format 1 */
 #define SQLITE_FullFSync      0x00200000  /* Use full fsync on the backend */
-#define SQLITE_LoadExtension  0x00400000  /* Enable load_extension */
+#define SQLITE_CkptFullFSync  0x00400000  /* Use full fsync for checkpoint */
 #define SQLITE_RecoveryMode   0x00800000  /* Ignore schema errors */
 #define SQLITE_ReverseOrder   0x01000000  /* Reverse unordered SELECTs */
 #define SQLITE_RecTriggers    0x02000000  /* Enable recursive triggers */
 #define SQLITE_ForeignKeys    0x04000000  /* Enforce foreign key constraints  */
 #define SQLITE_AutoIndex      0x08000000  /* Enable automatic indexes */
 #define SQLITE_PreferBuiltin  0x10000000  /* Preference to built-in funcs */
+#define SQLITE_LoadExtension  0x20000000  /* Enable load_extension */
 
 /*
 ** Bits of the sqlite3.flags field that are used by the
@@ -933,6 +934,7 @@ struct sqlite3 {
 #define SQLITE_IndexSearch    0x08        /* Disable indexes for searching */
 #define SQLITE_IndexCover     0x10        /* Disable index covering table */
 #define SQLITE_GroupByOrder   0x20        /* Disable GROUPBY cover of ORDERBY */
+#define SQLITE_FactorOutConst 0x40        /* Disable factoring out constants */
 #define SQLITE_OptMask        0xff        /* Mask of all disablable opts */
 
 /*
@@ -1821,6 +1823,9 @@ struct SrcList {
     u8 isPopulated;   /* Temporary table associated with SELECT is populated */
     u8 jointype;      /* Type of join between this able and the previous */
     u8 notIndexed;    /* True if there is a NOT INDEXED clause */
+#ifndef SQLITE_OMIT_EXPLAIN
+    u8 iSelectId;     /* If pSelect!=0, the id of the sub-select in EQP */
+#endif
     int iCursor;      /* The VDBE cursor number used to access this table */
     Expr *pOn;        /* The ON clause of a join */
     IdList *pUsing;   /* The USING clause of a join */
@@ -1859,6 +1864,7 @@ struct SrcList {
 struct WherePlan {
   u32 wsFlags;                   /* WHERE_* flags that describe the strategy */
   u32 nEq;                       /* Number of == constraints */
+  double nRow;                   /* Estimated number of rows (for EQP) */
   union {
     Index *pIdx;                   /* Index when WHERE_INDEXED is true */
     struct WhereTerm *pTerm;       /* WHERE clause term for OR-search */
@@ -1943,6 +1949,7 @@ struct WhereInfo {
   int nLevel;                    /* Number of nested loop */
   struct WhereClause *pWC;       /* Decomposition of the WHERE clause */
   double savedNQueryLoop;        /* pParse->nQueryLoop outside the WHERE loop */
+  double nRowOut;                /* Estimated number of output rows */
   WhereLevel a[1];               /* Information about each nest loop in WHERE */
 };
 
@@ -2018,6 +2025,7 @@ struct Select {
   Expr *pOffset;         /* OFFSET expression. NULL means not used. */
   int iLimit, iOffset;   /* Memory registers holding LIMIT & OFFSET counters */
   int addrOpenEphm[3];   /* OP_OpenEphem opcodes related to this select */
+  double nSelectRow;     /* Estimated number of result rows */
 };
 
 /*
@@ -2213,6 +2221,11 @@ struct Parse {
   int nHeight;            /* Expression tree height of current sub-select */
   Table *pZombieTab;      /* List of Table objects to delete after code gen */
   TriggerPrg *pTriggerPrg;    /* Linked list of coded triggers */
+
+#ifndef SQLITE_OMIT_EXPLAIN
+  int iSelectId;
+  int iNextSelectId;
+#endif
 };
 
 #ifdef SQLITE_OMIT_VIRTUALTABLE
@@ -2828,6 +2841,7 @@ int sqlite3FixExprList(DbFixer*, ExprList*);
 int sqlite3FixTriggerStep(DbFixer*, TriggerStep*);
 int sqlite3AtoF(const char *z, double*, int, u8);
 int sqlite3GetInt32(const char *, int*);
+int sqlite3Atoi(const char*);
 int sqlite3Utf16ByteLen(const void *pData, int nChar);
 int sqlite3Utf8CharLen(const char *pData, int nByte);
 int sqlite3Utf8Read(const u8*, const u8**);

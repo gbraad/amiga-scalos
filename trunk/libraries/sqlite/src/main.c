@@ -528,6 +528,18 @@ sqlite3_mutex *sqlite3_db_mutex(sqlite3 *db){
 ** Return the mutex associated with a database connection.
 */
 #ifdef AMIGA
+int sqlite3_db_config(sqlite3 *db, int op, ...)
+{
+	va_list ap;
+	int rc;
+
+	va_start(ap, op);
+	rc = sqlite3_db_configv(db, op, ap);
+	va_end(ap);
+
+	return rc;
+}
+
 int sqlite3_db_configv(sqlite3 *db, int op, va_list ap){
   int rc;
 #else /* AMIGA */
@@ -1634,13 +1646,12 @@ static int createCollation(
   }
 
   pColl = sqlite3FindCollSeq(db, (u8)enc2, zName, 1);
-  if( pColl ){
-    pColl->xCmp = xCompare;
-    pColl->pUser = pCtx;
-    pColl->xDel = xDel;
-    pColl->enc = (u8)(enc2 | (enc & SQLITE_UTF16_ALIGNED));
-    pColl->type = collType;
-  }
+  if( pColl==0 ) return SQLITE_NOMEM;
+  pColl->xCmp = xCompare;
+  pColl->pUser = pCtx;
+  pColl->xDel = xDel;
+  pColl->enc = (u8)(enc2 | (enc & SQLITE_UTF16_ALIGNED));
+  pColl->type = collType;
   sqlite3Error(db, SQLITE_OK, 0);
   return SQLITE_OK;
 }
@@ -2389,14 +2400,17 @@ int sqlite3_file_control(sqlite3 *db, const char *zDbName, int op, void *pArg){
       assert( pPager!=0 );
       fd = sqlite3PagerFile(pPager);
       assert( fd!=0 );
-      if( fd->pMethods ){
+      if( op==SQLITE_FCNTL_FILE_POINTER ){
+        *(sqlite3_file**)pArg = fd;
+        rc = SQLITE_OK;
+      }else if( fd->pMethods ){
         rc = sqlite3OsFileControl(fd, op, pArg);
       }
       sqlite3BtreeLeave(pBtree);
     }
   }
   sqlite3_mutex_leave(db->mutex);
-  return rc;   
+  return rc;
 }
 
 /*

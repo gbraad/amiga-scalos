@@ -1022,6 +1022,8 @@ static int bindText(
       rc = sqlite3ApiExit(p->db, rc);
     }
     sqlite3_mutex_leave(p->db->mutex);
+  }else if( xDel!=SQLITE_STATIC && xDel!=SQLITE_TRANSIENT ){
+    xDel((void*)zData);
   }
   return rc;
 }
@@ -1262,6 +1264,14 @@ int sqlite3_transfer_bindings(sqlite3_stmt *pFromStmt, sqlite3_stmt *pToStmt){
 */
 sqlite3 *sqlite3_db_handle(sqlite3_stmt *pStmt){
   return pStmt ? ((Vdbe*)pStmt)->db : 0;
+}
+
+/*
+** Return true if the prepared statement is guaranteed to not modify the
+** database.
+*/
+int sqlite3_stmt_readonly(sqlite3_stmt *pStmt){
+  return pStmt ? ((Vdbe*)pStmt)->readOnly : 1;
 }
 
 /*
