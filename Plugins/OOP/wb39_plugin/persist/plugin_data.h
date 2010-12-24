@@ -11,7 +11,7 @@
 #define PLUGIN_TYPE		OOP
 
 #define	LIB_VERSION		39
-#define	LIB_REVISION		25
+#define	LIB_REVISION		26
 
 #define LIB_NAME 		"persist.plugin"
 #define LIB_VERSTRING 		"$VER: persist.plugin " \

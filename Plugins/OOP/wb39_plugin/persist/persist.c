@@ -764,6 +764,8 @@ static void RewriteNodeListFile(void)
 
 		if (Success)
 			{
+			(void) DeleteFile(FNameOld);
+
 			if (Rename(Persist_FileName, FNameOld)
 				&& Rename(FNameNew, Persist_FileName))
 				{
