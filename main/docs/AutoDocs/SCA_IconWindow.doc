@@ -1134,7 +1134,15 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 	flags - SCCV_IconWin_ReadIconList_ShowAll = show all files
 
     RESULT
-	Error - non-zero value if anything went wrong
+	SCANDIR_OK              - everything worked, continue
+	SCANDIR_FAIL_ABORT      - fatal error, abort
+	SCANDIR_FAIL_RETRY      - maybe recoverable error, continue
+	SCANDIR_EXALL_FAIL      - ExAll failed, retry with Examine
+	SCANDIR_EXALL_BADNUMBER - ExAll failed, retry with lower rilc_ExAllType
+	SCANDIR_ABORT           - externally aborted
+	SCANDIR_FINISHED        - dir scan finished, end
+	SCANDIR_VIEWMODE_CHANGE - window view mode changed
+	SCANDIR_WINDOW_CLOSING  - Window is about to be closed
 
     SEE ALSO
 IconWindow.sca/SCCM_IconWin_Redraw
@@ -1360,8 +1368,15 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 	none
 
     RESULT
-	0 if everything worked ok
-	1 if window is about to be closed
+	SCANDIR_OK              - everything worked, continue
+	SCANDIR_FAIL_ABORT      - fatal error, abort
+	SCANDIR_FAIL_RETRY      - maybe recoverable error, continue
+	SCANDIR_EXALL_FAIL      - ExAll failed, retry with Examine
+	SCANDIR_EXALL_BADNUMBER - ExAll failed, retry with lower rilc_ExAllType
+	SCANDIR_ABORT           - externally aborted
+	SCANDIR_FINISHED        - dir scan finished, end
+	SCANDIR_VIEWMODE_CHANGE - window view mode changed
+	SCANDIR_WINDOW_CLOSING  - Window is about to be closed
 
     SEE ALSO
 IconWindow.sca/SCCM_IconWin_UpdateIcon

@@ -448,6 +448,8 @@ void DebugScalosObtainSemaphore(struct ScalosSemaphore *xsema,
 		Owner->Func = CallingFunc;
 		Owner->Line = CallingLine;
 		Owner->Proc = (struct Process *) FindTask(NULL);
+		d1(if (Owner->Proc->pr_Task.tc_Node.ln_Name && 0 == strcmp(Owner->Proc->pr_Task.tc_Node.ln_Name, "input.device")) \
+			KPrintF("%s/%s/%ld: ObtainSemaphore called from input.device!\n", CallingFile, CallingFunc, CallingLine));
 		AddHead(&xsema->BidderList, &Owner->node);
 		Permit();
 		}
@@ -485,6 +487,8 @@ void DebugScalosObtainSemaphoreShared(struct ScalosSemaphore *xsema,
 		Owner->Func = CallingFunc;
 		Owner->Line = CallingLine;
 		Owner->Proc = (struct Process *) FindTask(NULL);
+		d1(if (Owner->Proc->pr_Task.tc_Node.ln_Name && 0 == strcmp(Owner->Proc->pr_Task.tc_Node.ln_Name, "input.device")) \
+			KPrintF("%s/%s/%ld: ObtainSemaphoreShared called from input.device!\n", CallingFile, CallingFunc, CallingLine));
 		AddHead(&xsema->BidderList, &Owner->node);
 		Permit();
 		}

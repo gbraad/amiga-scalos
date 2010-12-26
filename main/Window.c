@@ -2322,7 +2322,7 @@ void WindowNewPath(struct internalScaWindowTask *iwt, CONST_STRPTR path)
 			SCA_ViewModes, whe->whe_Viewmodes,
 			SCA_XOffset, whe->whe_XOffset,
 			SCA_YOffset, whe->whe_YOffset,
-			SCA_IconList, whe->whe_IconList,
+			SCA_IconList, (SCANDIR_OK == whe->whe_ScanDirResult) ? whe->whe_IconList : NULL,
 			TAG_END);
 		ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
 		}

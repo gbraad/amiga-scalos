@@ -8,7 +8,9 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20101212	jl	- Improvement: Updated sqlite3.library to SQLite3 V3.7.4.
+41.8    20101226	jl	- Improvement: abborting long directory reads via "parent", "forward", "backward",
+				  etc. buttons now works as expected.
+	20101212	jl	- Improvement: Updated sqlite3.library to SQLite3 V3.7.4.
 	20101123	jl	- Bugfix: when icon was dragged over drawer in same window, pop-open window function was broken.
 	20101108	jl	- Bugfix: information.module: corrected overflow on device usage percentage calculation.
 				- Bugfix: disabled thumbnail generation in popup windows during drag&drop.
