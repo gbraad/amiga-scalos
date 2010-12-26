@@ -275,13 +275,25 @@ static ULONG Root_CheckForMessages(Class *cl, Object *o, Msg msg)
 	struct RootClassInstance *inst = INST_DATA(cl, o);
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) inst->rci_RootList.rl_WindowTask;
 	struct Message *NewMsg;
+	struct List MsgList;
 
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>  iwt_CloseWindow=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, \
 		iwt, iwt->iwt_WinTitle ? iwt->iwt_WinTitle : (STRPTR) "", iwt->iwt_CloseWindow));
 
+	NewList(&MsgList);
+
+	// First move all currently present messages to MsgList
 	while (iwt->iwt_WindowTask.wt_IconPort
 		&& (NewMsg = GetMsg(iwt->iwt_WindowTask.wt_IconPort)))
+		{
+		AddTail(&MsgList, &NewMsg->mn_Node);
+		}
+
+	// Now handle all stored messages from MsgList
+	// and ignore any new messages at wt_IconPort
+	// (which might be added during HandleWindowTaskIconPortMessages)
+	while ((NewMsg = (struct Message *) RemHead(&MsgList)))
 		{
 		ULONG rcvdMsgType;
 

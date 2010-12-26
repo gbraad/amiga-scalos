@@ -254,6 +254,19 @@ enum WindowDropMarkTypes
 
 // ---------------------------------------------------------------------------
 
+enum ScanDirResult
+	{
+	SCANDIR_OK,				// everything worked, continue
+	SCANDIR_FAIL_ABORT,			// fatal error, abort
+	SCANDIR_FAIL_RETRY,			// maybe recoverable error, continue
+	SCANDIR_EXALL_FAIL,			// ExAll failed, retry with Examine
+	SCANDIR_EXALL_BADNUMBER,		// ExAll failed, retry with lower rilc_ExAllType
+	SCANDIR_ABORT,				// externally aborted
+	SCANDIR_FINISHED,			// dir scan finished, end
+	SCANDIR_VIEWMODE_CHANGE,		// window view mode changed
+	SCANDIR_WINDOW_CLOSING,			// Window is about to be closed
+	};
+
 enum ScalosSortOrder
 {
 	SortOrder_Default,

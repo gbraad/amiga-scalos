@@ -545,7 +545,7 @@ static ULONG DeviceWindowClass_Update(Class *cl, Object *o, Msg msg)
 
 	SetMenuOnOff(iwt);
 
-	if (ReadResult)
+	if (ScanDirIsError(ReadResult))
 		{
 		Result = 1;
 		iwt->iwt_CloseWindow = TRUE;

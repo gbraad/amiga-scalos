@@ -328,13 +328,13 @@ BOOL IsNoIconPosition(const struct ExtGadget *gg)
 // Result :
 // ==0	Success
 // !=0	Failure
-ULONG ReadIconList(struct internalScaWindowTask *iwt)
+enum ScanDirResult ReadIconList(struct internalScaWindowTask *iwt)
 {
 	struct ReadIconListControl rilc;
 	enum ScanDirResult sdResult;
 	BOOL UpdateSemaphoreLocked = FALSE;
 	BOOL ScanDirSemaphoreLocked = FALSE;
-	ULONG Result = RETURN_OK;
+	enum ScanDirResult Result = SCANDIR_OK;
 
 	d1(KPrintF("\n" "%s/%s/%ld: START  iwt=%08lx ws=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WindowTask.mt_WindowStruct));
@@ -371,7 +371,9 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 		ScanDirSemaphoreLocked = TRUE;
 
 		d1(kprintf("%s/%s/%ld: UpdateSemaphore=%08lx  NestCount=%ld\n", \
-			__FILE__, __FUNC__, __LINE__, &iwt->iwt_UpdateSemaphore, iwt->iwt_UpdateSemaphoreSema..ss_NestCount));
+			__FILE__, __FUNC__, __LINE__, &iwt->iwt_UpdateSemaphore, iwt->iwt_UpdateSemaphore.Sema.ss_NestCount));
+
+		iwt->iwt_AbortScanDir = FALSE;
 
 		ScalosLockIconListExclusive(iwt);
 		FreeIconList(iwt, &iwt->iwt_WindowTask.wt_LateIconList);
@@ -407,14 +409,13 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 		switch (sdResult)
 			{
 		case SCANDIR_VIEWMODE_CHANGE:
-			Result = RETURN_OK;	// Success
-			break;
 		case SCANDIR_FINISHED:
-			Result = RETURN_OK;	// Success
+		case SCANDIR_ABORT:
+			Result = SCANDIR_OK;	 // Success
 			break;
 		default:		// Failure
 			d1(kprintf("%s/%s/%ld: sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
-			Result = 1;
+			Result = sdResult;
 			break;
 			}
 
@@ -430,15 +431,11 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 
 			d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-			sdResult = GenerateIcons(&rilc, TRUE);
+			Result = sdResult = GenerateIcons(&rilc, TRUE);
 
 			d1(KPrintF("%s/%s/%ld: sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
 
-			if (SCANDIR_OK != sdResult)
-				{
-				Result = 1;
-				}
-			else if (iwt->iwt_WindowTask.wt_Window)
+			if (!ScanDirIsError(sdResult) && iwt->iwt_WindowTask.wt_Window)
 				{
 				d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
@@ -473,7 +470,7 @@ ULONG ReadIconList(struct internalScaWindowTask *iwt)
 
 	TIMESTAMP_d1();
 
-	if (RETURN_OK == Result && !iwt->iwt_CloseWindow && THUMBNAILS_Never != iwt->iwt_ThumbnailMode)
+	if (SCANDIR_OK == Result && !iwt->iwt_CloseWindow && !iwt->iwt_AbortScanDir && (THUMBNAILS_Never != iwt->iwt_ThumbnailMode))
 		GenerateThumbnails(iwt);
 
 	TIMESTAMP_d1();
@@ -1433,8 +1430,10 @@ static enum ScanDirResult GenerateIcons(struct ReadIconListControl *rilc, BOOL F
 		if (rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject && n++ > 5)
 			{
 			n = 0;
-			if (DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages))
+			if (rilc->rilc_WindowTask->iwt_AbortScanDir)
 				sdResult = SCANDIR_ABORT;
+			else if (DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages) )
+				sdResult = SCANDIR_WINDOW_CLOSING;
 			}
 
 		ise->ise_Flags |= ISEFLG_Used;
@@ -1522,8 +1521,10 @@ static enum ScanDirResult GenerateIcons(struct ReadIconListControl *rilc, BOOL F
 		if (rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject && n++ > 5)
 			{
 			n = 0;
-			if (DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages))
+			if (rilc->rilc_WindowTask->iwt_AbortScanDir)
 				sdResult = SCANDIR_ABORT;
+			else if ( DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages) )
+				sdResult = SCANDIR_WINDOW_CLOSING;
 			}
 
 		ise->ise_Flags |= ISEFLG_Used;
@@ -2052,8 +2053,10 @@ enum ScanDirResult LinkIconScanList(struct ReadIconListControl *rilc)
 		if (iwt->iwt_WindowTask.mt_MainObject && n++ >= 20)
 			{
 			n = 0;
-			if (DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages))
+			if (rilc->rilc_WindowTask->iwt_AbortScanDir)
 				sdResult = SCANDIR_ABORT;
+			else if ( DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages) )
+				sdResult = SCANDIR_WINDOW_CLOSING;
 			}
 		}
 
@@ -2215,8 +2218,10 @@ enum ScanDirResult GetFileList(struct ReadIconListControl *rilc,
 
 		if (iwt->iwt_WindowTask.mt_MainObject && (SCANDIR_OK == sdResult || SCANDIR_FAIL_RETRY == sdResult))
 			{
-			if (DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages))
+			if (rilc->rilc_WindowTask->iwt_AbortScanDir)
 				sdResult = SCANDIR_ABORT;
+			else if ( DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages) )
+				sdResult = SCANDIR_WINDOW_CLOSING;
 			}
 		}
 
@@ -2460,3 +2465,27 @@ static BOOL ScanDirFindIcon(struct ReadIconListControl *rilc, CONST_STRPTR IconN
 }
 
 
+BOOL ScanDirIsError(enum ScanDirResult sdResult)
+{
+	BOOL isError;
+
+	switch (sdResult)
+		{
+	case SCANDIR_OK:
+	case SCANDIR_ABORT:
+	case SCANDIR_FINISHED:
+	case SCANDIR_VIEWMODE_CHANGE:
+		isError = FALSE;
+		break;
+	case SCANDIR_WINDOW_CLOSING:
+	case SCANDIR_FAIL_ABORT:
+	case SCANDIR_FAIL_RETRY:
+	case SCANDIR_EXALL_FAIL:
+	case SCANDIR_EXALL_BADNUMBER:
+	default:
+		isError = TRUE;
+		break;
+		}
+
+	return isError;
+}

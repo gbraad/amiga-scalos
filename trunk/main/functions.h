@@ -762,7 +762,7 @@ void CleanupLocale(void);
 
 // defined in ScanDir.c
 ///
-ULONG ReadIconList(struct internalScaWindowTask *iwt);
+enum ScanDirResult ReadIconList(struct internalScaWindowTask *iwt);
 struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt, 
 	CONST_STRPTR Name, struct ScaReadIconArg *ria);
 void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable);
@@ -781,6 +781,7 @@ BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropLis
 	BPTR fLock, CONST_STRPTR FileName);
 void ScanDirFillRildFromIse(struct ReadIconListData *rild, const struct IconScanEntry *ise);
 void ScanDirUpdateStatusBarText(struct internalScaWindowTask *iwt, ULONG TotalIcons);
+BOOL ScanDirIsError(enum ScanDirResult sdResult);
 ///
 /* ------------------------------------------------- */
 
@@ -788,7 +789,7 @@ void ScanDirUpdateStatusBarText(struct internalScaWindowTask *iwt, ULONG TotalIc
 ///
 struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 	CONST_STRPTR Name, struct ScaReadIconArg *ria);
-ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt);
+enum ScanDirResult ReadTextWindowIconList(struct internalScaWindowTask *iwt);
 ///
 /* ------------------------------------------------- */
 

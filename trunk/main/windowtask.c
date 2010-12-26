@@ -86,7 +86,7 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 	do	{
 		struct ScaWindowStruct *ws;
 		BOOL Finished = FALSE;
-		ULONG ul;
+		enum ScanDirResult sdResult;
 
 		iwt = ScalosAlloc(sizeof(struct internalScaWindowTask));
 		if (NULL == iwt)
@@ -350,10 +350,10 @@ SAVEDS(void) INTERRUPT WindowTask(void)
 		d1(KPrintF("%s/%s/%ld: iwt=%08lx  ws=%08lx\n", \
 			__FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WindowTask.mt_WindowStruct));
 
-		ul = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Update);
+		sdResult = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Update);
 
-		d1(KPrintF("%s/%s/%ld: SCCM_IconWin_Update Result = %08lx\n", __FILE__, __FUNC__, __LINE__, ul));
-		if (ul != 0)
+		d1(KPrintF("%s/%s/%ld: SCCM_IconWin_Update Result = %08lx\n", __FILE__, __FUNC__, __LINE__, sdResult));
+		if (ScanDirIsError(sdResult))
 			break;	// error or user abort reading icons
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));

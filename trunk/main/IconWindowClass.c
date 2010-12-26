@@ -185,6 +185,7 @@ static void SetThumbnailView(struct internalScaWindowTask *iwt, ULONG NewThumbna
 static void SetThumbnailsGenerating(struct internalScaWindowTask *iwt, BOOL ThumbnailsGenerating);
 static void GetIconsTotalBoundingBox(struct internalScaWindowTask *iwt);
 static void IconWindowUpdateTransparency(struct internalScaWindowTask *iwt);
+static void SendNewIconPathMsg(struct internalScaWindowTask *iwt, CONST_STRPTR Path, struct TagItem *TagList);
 
 //----------------------------------------------------------------------------
 
@@ -522,7 +523,7 @@ static ULONG IconWindowClass_ReadIconList(Class *cl, Object *o, Msg msg)
 {
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct msg_ReadIconList *mrl = (struct msg_ReadIconList *) msg;
-	ULONG Result;
+	enum ScanDirResult Result;
 	UWORD PreviousViewAll;
 
 	d1(kprintf("%s/%s/%ld: iwt=%08lx  ws=%08lx  wt_Window=%08lx\n", \
@@ -544,7 +545,7 @@ static ULONG IconWindowClass_ReadIconList(Class *cl, Object *o, Msg msg)
 	if (RETURN_OK == Result && PreviousViewAll != iwt->iwt_WindowTask.mt_WindowStruct->ws_ViewAll)
 		Result = ReadIconList(iwt);
 
-	return Result;
+	return (ULONG) Result;
 }
 
 
@@ -2331,7 +2332,7 @@ static ULONG IconWindowClass_Update(Class *cl, Object *o, Msg msg)
 {
 	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct ScaWindowStruct *ws;
-	ULONG Result, ReadResult;
+	enum ScanDirResult Result, ReadResult;
 	LONG oldPatternNr, newPatternNr;
 
 	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
@@ -2342,7 +2343,7 @@ static ULONG IconWindowClass_Update(Class *cl, Object *o, Msg msg)
 	UpdateIconOverlays(iwt);
 
 	if (NULL == iwt->iwt_WindowTask.wt_Window)
-		return 0;
+		return SCANDIR_OK;
 
 	ws = iwt->iwt_WindowTask.mt_WindowStruct;
 
@@ -2413,7 +2414,7 @@ static ULONG IconWindowClass_Update(Class *cl, Object *o, Msg msg)
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
-	ReadResult = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_ReadIconList, 0L);
+	Result = ReadResult = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_ReadIconList, 0L);
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
@@ -2424,14 +2425,12 @@ static ULONG IconWindowClass_Update(Class *cl, Object *o, Msg msg)
 	SetMenuOnOff(iwt);
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
-	if (ReadResult)
+	if (ScanDirIsError(ReadResult))
 		{
-		Result = 1;
 		iwt->iwt_CloseWindow = TRUE;
 		}
 	else
 		{
-		Result = 0;
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 			SCCM_IconWin_SetVirtSize,
@@ -2961,6 +2960,7 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 	STRPTR NewWsName = NULL;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>  Path=<%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, npa->npa_Path));
+	d1(kprintf("%s/%s/%ld: Task=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, FindTask(NULL), FindTask(NULL)->tc_Node.ln_Name));
 
 	do	{
 		struct WindowHistoryEntry *whe;
@@ -2978,8 +2978,8 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 		struct ScaWindowStruct *wsIconListLocked = NULL;
 		Object *IconObj;
 		Object *allocIconObj = NULL;
-		ULONG ul;
 		struct ScaIconNode *newIconList = NULL;
+		enum ScanDirResult scanDirResult = SCANDIR_OK;
 
 		iwpNew.iwp_ThumbnailView = CurrentPrefs.pref_ShowThumbnails;
 		iwpNew.iwp_ThumbnailsLifetimeDays = CurrentPrefs.pref_ThumbnailMaxAge;
@@ -3007,10 +3007,19 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 		if (NULL == npa->npa_Path || strlen(npa->npa_Path) < 1)
 			break;	// new path invalid
 
+		iwt->iwt_AbortScanDir = TRUE;		// signal pending ScanDir to abort ASAP
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		if (!AttemptSemaphoreNoNest(&iwt->iwt_UpdateSemaphore))
+			{
+			d1(KPrintF("%s/%s/%ld: AttemptSemaphoreNoNest(&iwt->iwt_UpdateSemaphore)\n", __FILE__, __FUNC__, __LINE__));
+			SendNewIconPathMsg(iwt, npa->npa_Path, (struct TagItem *) npa->npa_TagList);
+			OldIconList = NULL;	// do not free IconList
 			break;
-
+			}
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		UpdateSemaphoreLocked = TRUE;
+
+		FlushThumbnailEntries(iwt);
 
 		oldDir = CurrentDir(ws->ws_Lock);
 		NewPathLock = Lock(npa->npa_Path, ACCESS_READ);
@@ -3039,19 +3048,27 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 			clp = CurrentPrefs.pref_MainWindowTitle;
 			}
 
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld: NewPathLock=%08lx\n", __FILE__, __FUNC__, __LINE__, NewPathLock));
 
 		if (NewPathLock)
 			{
 			whe = WindowFindHistoryEntry(iwt, NewPathLock);
 
+			d1(KPrintF("%s/%s/%ld: whe=%08lx\n", __FILE__, __FUNC__, __LINE__, whe));
 			if (whe)
 				{
 				iwpNew.iwp_Viewmodes = whe->whe_Viewmodes;
 				iwpNew.iwp_XOffset = whe->whe_XOffset;
 				iwpNew.iwp_YOffset = whe->whe_YOffset;
 				iwpNew.iwp_ShowAll = whe->whe_ViewAll;
-				newIconList = whe->whe_IconList;
+
+				d1(KPrintF("%s/%s/%ld: whe_ScanDirResult=%ld\n", __FILE__, __FUNC__, __LINE__, whe->whe_ScanDirResult));
+
+				if (SCANDIR_OK == whe->whe_ScanDirResult)
+					newIconList = whe->whe_IconList;
+				else
+					FreeIconList(iwt, &whe->whe_IconList);
+
 				memcpy(iwpNew.iwp_WidthArray, whe->whe_WidthArray, sizeof(iwpNew.iwp_WidthArray));
 
 				ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
@@ -3068,7 +3085,7 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 		if (NULL == NewWsName)
 			break;
 
-		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+		d1(KPrintF("%s/%s/%ld: NewWsName=<%s>\n", __FILE__, __FUNC__, __LINE__, NewWsName));
 
 		IconObj = FunctionsFindIconObjectForPath(npa->npa_Path, &WindowListLocked,
 			&wsIconListLocked, &allocIconObj);
@@ -3092,18 +3109,8 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 
 		if (!ScalosAttemptLockIconListExclusive(iwt))
 			{
-			struct SM_NewWindowPath *smnwp;
-
 			d1(KPrintF("%s/%s/%ld: ScalosAttemptLockIconListExclusive failed\n", __FILE__, __FUNC__, __LINE__));
-
-			smnwp = (struct SM_NewWindowPath *) SCA_AllocMessage(MTYP_NewWindowPath, 0);
-
-			if (smnwp)
-				{
-				smnwp->smnwp_Path = AllocCopyString(npa->npa_Path);
-				smnwp->smnwp_TagList = CloneTagItems((struct TagItem *) npa->npa_TagList);
-				PutMsg(ws->ws_MessagePort, &smnwp->ScalosMessage.sm_Message);
-				}
+			SendNewIconPathMsg(iwt, npa->npa_Path, (struct TagItem *) npa->npa_TagList);
 			OldIconList = NULL;	// do not free IconList
 			break;
 			}
@@ -3133,15 +3140,28 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 
 		CurrentDir(NewPathLock);
 
+		d1(KPrintF("%s/%s/%ld: mt_WindowObject=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_WindowTask.mt_WindowObject));
+		d1(KPrintF("%s/%s/%ld: npa_Path=%08lx\n", __FILE__, __FUNC__, __LINE__, npa->npa_Path));
+
+		if (NULL == iwt->iwt_WindowTask.mt_WindowObject)
+			{
+			d1(KPrintF("%s/%s/%ld: mt_WindowObject==NULL\n", __FILE__, __FUNC__, __LINE__));
+			break;
+			}
+
 		DoMethod(iwt->iwt_WindowTask.mt_WindowObject,
 			SCCM_Window_NewPath,
 			npa->npa_Path,
 			TAG_END);
 
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
+
 		// make sure ws_Lock is always valid!
 		oldWsLock = ws->ws_Lock;
 		ws->ws_Lock = NewPathLock;
 		UnLock(oldWsLock);
+
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		fLock = BADDR(ws->ws_Lock);
 		iwt->iwt_OldFileSys = SetFileSysTask(fLock->fl_Task);
@@ -3153,6 +3173,8 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 		iwt->iwt_ReadOnly = !ClassIsDiskWritable(ws->ws_Lock);
 
 		SetIconWindowReadOnly(iwt, iwt->iwt_ReadOnly);
+
+		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 		if (ws->ws_Name)
 			FreeCopyString(ws->ws_Name);
@@ -3184,6 +3206,8 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 		iwpNew.iwp_OpacityActive = GetTagData(SCA_TransparencyActive, iwpNew.iwp_OpacityActive, (struct TagItem *) npa->npa_TagList);
 		iwpNew.iwp_OpacityInactive = GetTagData(SCA_TransparencyInactive, iwpNew.iwp_OpacityInactive, (struct TagItem *) npa->npa_TagList);
 		newIconList = (struct ScaIconNode *) GetTagData(SCA_IconList, (ULONG) newIconList, (struct TagItem *) npa->npa_TagList);
+
+		d1(KPrintF("%s/%s/%ld: newIconList=%08lx\n", __FILE__, __FUNC__, __LINE__, newIconList));
 
 		ws->ws_ThumbnailsLifetimeDays = iwpNew.iwp_ThumbnailsLifetimeDays;
 
@@ -3236,11 +3260,11 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 			}
 		else
 			{
-			ul = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Update);
+			scanDirResult = DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Update);
 
-			d1(KPrintF("%s/%s/%ld: SCCM_IconWin_Update Result = %08lx\n", __FILE__, __FUNC__, __LINE__, ul));
-			if (ul != 0)
-				break;	// error or user abort reading icons
+			d1(KPrintF("%s/%s/%ld: SCCM_IconWin_Update Result = %08lx\n", __FILE__, __FUNC__, __LINE__, scanDirResult));
+			if (ScanDirIsError(scanDirResult))
+				break;	// error reading icons
 			}
 
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -3272,6 +3296,10 @@ static ULONG IconWindowClass_NewPath(Class *cl, Object *o, Msg msg)
 			whe = WindowAddHistoryEntry(iwt, ws->ws_Lock);
 			if (NULL == whe)
 				ScalosReleaseSemaphore(&iwt->iwt_WindowHistoryListSemaphore);
+			else
+				{
+				whe->whe_ScanDirResult = scanDirResult;
+				}
 			}
 
 		d1(KPrintF("%s/%s/%ld: whe=%08lx\n", __FILE__, __FUNC__, __LINE__, whe));
@@ -4395,7 +4423,7 @@ static void SetShowType(struct internalScaWindowTask *iwt, ULONG newShowType)
 		iwt->iwt_RemRegion = (struct Region *) DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_InitClipRegion);
 		d1(KPrintF("%s/%s/%ld: iwt_RemRegion=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt->iwt_RemRegion));
 
-		if (DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_ReadIconList, SCCV_IconWin_ReadIconList_ShowAll))
+		if (ScanDirIsError(DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_ReadIconList, SCCV_IconWin_ReadIconList_ShowAll)))
 			iwt->iwt_CloseWindow = TRUE;
 
 		DoMethod(iwt->iwt_WindowTask.mt_WindowObject, SCCM_Window_RemClipRegion, iwt->iwt_RemRegion);
@@ -4809,3 +4837,19 @@ static void IconWindowUpdateTransparency(struct internalScaWindowTask *iwt)
 		}
 }
 
+
+static void SendNewIconPathMsg(struct internalScaWindowTask *iwt, CONST_STRPTR Path, struct TagItem *TagList)
+{
+	struct SM_NewWindowPath *smnwp;
+
+	smnwp = (struct SM_NewWindowPath *) SCA_AllocMessage(MTYP_NewWindowPath, 0);
+
+	if (smnwp)
+		{
+		struct ScaWindowStruct *ws = iwt->iwt_WindowTask.mt_WindowStruct;
+
+		smnwp->smnwp_Path = AllocCopyString(Path);
+		smnwp->smnwp_TagList = CloneTagItems((struct TagItem *) TagList);
+		PutMsg(ws->ws_MessagePort, &smnwp->ScalosMessage.sm_Message);
+		}
+}

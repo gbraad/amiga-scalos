@@ -228,6 +228,7 @@ struct WindowHistoryEntry
 	UBYTE whe_Viewmodes;			// SCAV_ViewModes_***
 	WORD whe_XOffset;			// Inner window X offset
 	WORD whe_YOffset;			// Inner window Y offset
+	enum ScanDirResult whe_ScanDirResult;	// Result from directory scan
 	struct ScaIconNode *whe_IconList;	// Pointer to the first IconNode
 	WORD whe_WidthArray[WIDTHARRAY_MAX];	//Pixel width array for text mode columns
 	char whe_Path[1];			// variable length
@@ -355,6 +356,7 @@ struct internalScaWindowTask
 	UBYTE	iwt_HoldUpdate;				//Flag: no visible updates (text window only) +jl+ 20010320
 	UBYTE	iwt_CloseWindow;			//Flag: close window
 	UBYTE	iwt_AsyncLayoutPending;			//Flag: Async window backfill is under progress.
+	UBYTE	iwt_AbortScanDir;			//Flag: abort pending scandir
 
 	UBYTE	iwt_Typing;				//Flag: currently typing, TypeRestartTime is running +jl+ 20011005
 							// DO NOT ACCESS DIRECTLY, USE OM_SET/OM_GET SCCA_IconWin_Typing
@@ -1011,18 +1013,6 @@ struct ScaPluginPrefs
 #define	SETBACKFILLF_NOASYNC	(1L << SETBACKFILLB_NOASYNC)
 
 //---------------------------------------------------------------
-
-enum ScanDirResult
-	{
-	SCANDIR_OK,				// everything worked, continue
-	SCANDIR_FAIL_ABORT,			// fatal error, abort
-	SCANDIR_FAIL_RETRY,			// maybe recoverable error, continue
-	SCANDIR_EXALL_FAIL,			// ExAll failed, retry with Examine
-	SCANDIR_EXALL_BADNUMBER,		// ExAll failed, retry with lower rilc_ExAllType
-	SCANDIR_ABORT,				// externally aborted
-	SCANDIR_FINISHED,			// dir scan finished, end
-	SCANDIR_VIEWMODE_CHANGE,		// window view mode changed
-	};
 
 struct ReadIconListData
 	{

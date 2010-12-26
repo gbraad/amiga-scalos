@@ -502,8 +502,10 @@ static enum ScanDirResult GenerateTextIcons(struct ReadIconListControl *rilc, BO
 
 		if (iwt->iwt_WindowTask.mt_MainObject)
 			{
-			if (DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages))
+			if (rilc->rilc_WindowTask->iwt_AbortScanDir)
 				sdResult = SCANDIR_ABORT;
+			else if (DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages) )
+				sdResult = SCANDIR_WINDOW_CLOSING;
 			}
 
 		ise->ise_Flags |= ISEFLG_Used;
@@ -559,8 +561,10 @@ static enum ScanDirResult GenerateTextIcons(struct ReadIconListControl *rilc, BO
 
 		if (iwt->iwt_WindowTask.mt_MainObject)
 			{
-			if (DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages))
+			if (rilc->rilc_WindowTask->iwt_AbortScanDir)
 				sdResult = SCANDIR_ABORT;
+			else if (DoMethod(rilc->rilc_WindowTask->iwt_WindowTask.mt_MainObject, SCCM_CheckForMessages) )
+				sdResult = SCANDIR_WINDOW_CLOSING;
 			}
 
 		ise->ise_Flags |= ISEFLG_Used;
@@ -575,17 +579,17 @@ static enum ScanDirResult GenerateTextIcons(struct ReadIconListControl *rilc, BO
 // Result :
 // ==0	Success
 // !=0	Failure
-ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
+enum ScanDirResult ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 {
 	struct ReadIconListControl rilc;
 	enum ScanDirResult sdResult;
-	ULONG Result;
+	enum ScanDirResult Result;
 	ULONG Flags = REDRAWF_DontRefreshWindowFrame;
 
 	d1(KPrintF("\n" "%s/%s/%ld: START  iwt=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt));
 
 	if (!RilcInit(&rilc, iwt))
-		return 1;
+		return SCANDIR_FAIL_ABORT;
 
 	rilc.rilc_OrigViewByType = iwt->iwt_WindowTask.mt_WindowStruct->ws_Viewmodes;
 	rilc.rilc_TotalFound = 0;
@@ -599,6 +603,8 @@ ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 	FreeIconList(iwt, &iwt->iwt_WindowTask.wt_IconList);
 	FreeIconList(iwt, &iwt->iwt_WindowTask.wt_LateIconList);
 	ScalosUnLockIconList(iwt);
+
+	iwt->iwt_AbortScanDir = FALSE;
 
 	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_Redraw, Flags);
 
@@ -623,11 +629,11 @@ ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 		{
 	case SCANDIR_VIEWMODE_CHANGE:
 	case SCANDIR_FINISHED:
-		Result = 0;	// Success
+		Result = SCANDIR_OK;	 // Success
 		break;
 	default:		// Failure
 		d1(kprintf("%s/%s/%ld: sdResult=%ld\n", __FILE__, __FUNC__, __LINE__, sdResult));
-		Result = 1;
+		Result = sdResult;
 		break;
 		}
 
@@ -648,7 +654,7 @@ ULONG ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 
 		if (SCANDIR_OK != sdResult)
 			{
-			Result = 1;
+			Result = sdResult;
 			}
 		else
 			{

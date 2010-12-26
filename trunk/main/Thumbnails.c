@@ -209,7 +209,7 @@ BOOL GenerateThumbnails(struct internalScaWindowTask *iwt)
 
 		d1(KPrintF("%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
 
-		if (!iwt->iwt_CloseWindow)
+		if (!iwt->iwt_CloseWindow && !iwt->iwt_AbortScanDir)
 			{
 			Success = DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 				SCCM_RunProcess, GenerateThumbnailProcess,
