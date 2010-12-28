@@ -2776,7 +2776,9 @@ Additions/changes:
 
 --------------------persist.plugin------------------------------------------
 
- 39.26	20101224	jl	- Bugfix: updating saved window state failed if
+ 39.26  20101228	jl	- Bugfix: failed to save window state if Persistant_Windows
+				  initially wasn't present.
+	20101224	jl	- Bugfix: updating saved window state failed if
 				  file "Persistant_Windows-old" was present.
  39.25	20091229	jl	- Improvement: changed saving of current state to make it bullet
 				  proof. Now new file is written under name Persistant_Windows-new,
