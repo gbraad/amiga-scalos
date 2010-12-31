@@ -75,9 +75,9 @@ void ARGB_Draw(Class *cl, Object *o, struct iopDraw *opd, LONG x, LONG y)
 	else
 		ImgHeader = &img->iargb_ARGBimage;
 
-	d1(KPrintF(__FUNC__ "/%ld:  x=%ld  y=%ld  w=%ld  h=%ld\n", __LINE__, x, y, ImgHeader->argb_Width, ImgHeader->argb_Height));
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  ImgData=%08lx\n", __LINE__, o, ImgHeader->argb_ImageData));
-	d1(kprintf(__FUNC__ "/%ld:  ImgData[]=%08lx %08lx %08lx %08lx\n", __LINE__, \
+	d1(KPrintF("%s/%s/%ld:  x=%ld  y=%ld  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, x, y, ImgHeader->argb_Width, ImgHeader->argb_Height));
+	d1(KPrintF("%s/%s/%ld:  o=%08lx  ImgData=%08lx\n", __FILE__, __FUNC__, __LINE__, o, ImgHeader->argb_ImageData));
+	d1(kprintf("%s/%s/%ld:  ImgData[]=%08lx %08lx %08lx %08lx\n", __FILE__, __FUNC__, __LINE__, \
 		ImgHeader->argb_ImageData[0], ImgHeader->argb_ImageData[1], ImgHeader->argb_ImageData[2], ImgHeader->argb_ImageData[3]));
 
 	if (!(IODRAWF_NoImage & opd->iopd_DrawFlags))
@@ -204,8 +204,8 @@ static void DrawFrame(Object *o, struct InstanceData *inst, struct RastPort *rp,
 
 	rpCopy = *rp;
 
-	d1(kprintf(__FUNC__ "/%ld:  xMin=%ld  yMin=%ld  xMax=%ld  yMax=%ld\n", \
-		__LINE__, x, y, x + gg->Width - 1, y + gg->Height - 1));
+	d1(kprintf("%s/%s/%ld:  xMin=%ld  yMin=%ld  xMax=%ld  yMax=%ld\n", \
+		__FILE__, __FUNC__, __LINE__, x, y, x + gg->Width - 1, y + gg->Height - 1));
 
 	McpGfxDrawFrame(&rpCopy, x, y, x + gg->Width - 1, y + gg->Height - 1,
 		IA_HalfShinePen, inst->iobj_HalfShinePen,
@@ -221,7 +221,7 @@ BOOL GenMasksFromARGB(Class *cl, Object *o)
 {
 	struct InstanceData *inst = INST_DATA(cl, o);
 
-	d1(KPrintF("%s/%s/%ld:  o=%08lx  inst=%08lx\n", __FILE__, __FUNC__, __LINE__, o, inst));
+	d1(KPrintF("%s/%s/%ld:  START o=%08lx  inst=%08lx\n", __FILE__, __FUNC__, __LINE__, o, inst));
 
 	if (!GenMaskFromARGB(&inst->iobj_NormalARGB, NULL,
 		&inst->iobj_NormalMask, NULL))
@@ -295,11 +295,15 @@ static BOOL GenMaskFromARGB(const struct IconObjectARGB *img, const struct IconO
 
 	PicPtr = ImgHeader->argb_ImageData;
 
+	d1(KPrintF( "%s/%s/%ld:  PicPtr=%08lx\n", __FILE__, __FUNC__, __LINE__, PicPtr));
+
 	if (PicPtr)
 		{
 		UBYTE	*MaskPtr = Mask->iom_Mask;
 		LONG	y;
 		ULONG	Threshold = 0;
+
+		d1(KPrintF( "%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
 
 		for (y = 0; y < ImgHeader->argb_Height; y++)
 			{
@@ -322,8 +326,11 @@ static BOOL GenMaskFromARGB(const struct IconObjectARGB *img, const struct IconO
 					{
 					BitMask = 0x0080;
 					MaskPtr2++;
-					d1(if (MaskPtr2 > inst->iobj_normmask + inst->iobj_normmaskSize)\
-						kprintf(__FUNC__ "/%ld:\n  iobj_normmask overflow", __LINE__));
+					d1(if (MaskPtr2 > Mask->iom_Mask + Size)\
+						{ \
+						kprintf("%s/%s/%ld:  iobj_normmask overflow\n", __FILE__, __FUNC__, __LINE__); \
+						break; \
+						} );
 					}
 				}
 
@@ -332,6 +339,8 @@ static BOOL GenMaskFromARGB(const struct IconObjectARGB *img, const struct IconO
 		}
 	else if (CloneImage && CloneMask)
 		{
+		d1(KPrintF( "%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
+
 		Mask->iom_Width = CloneMask->iom_Width;
 		Mask->iom_Height = CloneMask->iom_Height;
 
@@ -356,30 +365,36 @@ BOOL GenAlphaFromARGB(Class *cl, Object *o, struct IconObjectARGB *img, struct A
 	size_t	Size;
 
 
-	d1(KPrintF(__FUNC__ "/%ld:  START o=%08lx  w=%lu h=%lu  bw=%lu bh=%lu\n", \
-		__LINE__, o, gg->Width, gg->Height, gg->BoundsWidth, gg->BoundsHeight));
+	d1(KPrintF("%s/%s/%ld:  START o=%08lx  w=%lu h=%lu  bw=%lu bh=%lu\n", \
+		__FILE__, __FUNC__, __LINE__, o, gg->Width, gg->Height, gg->BoundsWidth, gg->BoundsHeight));
 
 	Left = (UWORD) gg->LeftEdge;
 	BoundsLeft = (UWORD) gg->BoundsLeftEdge;
 
-	d1(KPrintF(__FUNC__ "/%ld:  Left=%lu  BoundsLeft=%lu\n", __LINE__, Left, BoundsLeft));
+	d1(KPrintF("%s/%s/%ld:  Left=%lu  BoundsLeft=%lu\n", __FILE__, __FUNC__, __LINE__, Left, BoundsLeft));
 
 	IconWidth = gg->BoundsWidth;
 	IconHeight = gg->BoundsHeight;
 
-	d1(KPrintF(__FUNC__ "/%ld:  argb_Width=%lu  BoundsWidth=%lu\n", __LINE__, ImgHeader->argb_Width, gg->BoundsWidth));
-	d1(KPrintF(__FUNC__ "/%ld:  argb_Height=%lu  BoundsHeight=%lu\n", __LINE__, ImgHeader->argb_Height, gg->BoundsHeight));
+	d1(KPrintF("%s/%s/%ld:  argb_Width=%lu  BoundsWidth=%lu\n", __FILE__, __FUNC__, __LINE__, ImgHeader->argb_Width, gg->BoundsWidth));
+	d1(KPrintF("%s/%s/%ld:  argb_Height=%lu  BoundsHeight=%lu\n", __FILE__, __FUNC__, __LINE__, ImgHeader->argb_Height, gg->BoundsHeight));
 
 	LeftOffset = inst->iobj_imgleft + (Left - BoundsLeft);
-	d1(KPrintF(__FUNC__ "/%ld:  InnerLeft=%lu  InnerTop=%lu  LeftOffset=%ld\n", \
-		__LINE__, inst->iobj_imgleft, inst->iobj_imgtop, LeftOffset));
+	d1(KPrintF("%s/%s/%ld:  iobj_imgleft=%lu  iobj_imgtop=%lu  LeftOffset=%ld\n", \
+		__FILE__, __FUNC__, __LINE__, inst->iobj_imgleft, inst->iobj_imgtop, LeftOffset));
+
+	if ((LeftOffset + ImgHeader->argb_Width) > IconWidth)
+		{
+		IconWidth = LeftOffset + ImgHeader->argb_Width;
+		d1(KPrintF("%s/%s/%ld:  Image does not fit - BoundsWidth too small or iobj_imgleft too large!!\n", __FILE__, __FUNC__, __LINE__));
+		}
 
 	Size = IconWidth * IconHeight;
 
 	MyFreeVecPooled(PubMemPool, (APTR *) &img->iargb_AlphaChannel);
 
 	img->iargb_AlphaChannel = MyAllocVecPooled(PubMemPool, Size);
-	d1(KPrintF(__FUNC__ "/%ld: iobj_AlphaChannel=%08lx Size=%lu\n", __LINE__, img->iargb_AlphaChannel, Size));
+	d1(KPrintF("%s/%s/%ld: iobj_AlphaChannel=%08lx Size=%lu\n", __FILE__, __FUNC__, __LINE__, img->iargb_AlphaChannel, Size));
 	if (NULL == img->iargb_AlphaChannel)
 		return FALSE;
 
@@ -389,6 +404,9 @@ BOOL GenAlphaFromARGB(Class *cl, Object *o, struct IconObjectARGB *img, struct A
 	PicPtr = ImgHeader->argb_ImageData;
 	AlphaPtr = img->iargb_AlphaChannel + inst->iobj_imgtop * IconWidth;
 
+	d1(KPrintF("%s/%s/%ld:  argb_Width=%lu  argb_Height=%lu\n", __FILE__, __FUNC__, __LINE__, \
+		ImgHeader->argb_Width, ImgHeader->argb_Height));
+
 	for (y = 0; y < ImgHeader->argb_Height; y++)
 		{
 		ULONG	x;
@@ -396,6 +414,11 @@ BOOL GenAlphaFromARGB(Class *cl, Object *o, struct IconObjectARGB *img, struct A
 
 		for (x = 0, XAlphaPtr = AlphaPtr + LeftOffset; x < ImgHeader->argb_Width; x++)
 			{
+			d1(if (XAlphaPtr > img->iargb_AlphaChannel + Size)\
+				{\
+				kprintf("%s/%s/%ld:  (x=%ld,y=%ld) XAlphaPtr overflow\n", __FILE__, __FUNC__, __LINE__, x, y);\
+				break; \
+				} );
 			*XAlphaPtr++ = PicPtr->Alpha;
 			PicPtr++;
 			}
@@ -403,7 +426,7 @@ BOOL GenAlphaFromARGB(Class *cl, Object *o, struct IconObjectARGB *img, struct A
 		AlphaPtr += IconWidth;
 		}
 
-	d1(KPrintF(__FUNC__ "/%ld: END o=%08lx\n", __LINE__, o));
+	d1(KPrintF("%s/%s/%ld: END o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
 
 	return TRUE;
 }

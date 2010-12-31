@@ -1298,6 +1298,13 @@ static ULONG DtClone(Class *cl, Object *o, struct iopCloneIconObject *iocio)
 			&& NrmARGBImage->argb_Width > 0
 			&& NrmARGBImage->argb_Height )
 			{
+			if ((NrmARGBImage->argb_Width > gg->Width) || (NrmARGBImage->argb_Height > gg->Height))
+				{
+				SetAttrs(oClone,
+					GA_Width, NrmARGBImage->argb_Width,
+					GA_Height, NrmARGBImage->argb_Height,
+					TAG_END);
+				}
 			// IDTA_ARGBImageData has been changed, clone it now!
 			SetAttrs(oClone,
 				IDTA_CopyARGBImageData, TRUE,
@@ -1311,6 +1318,13 @@ static ULONG DtClone(Class *cl, Object *o, struct iopCloneIconObject *iocio)
 			&& SelARGBImage->argb_Width > 0
 			&& SelARGBImage->argb_Height )
 			{
+			if ((SelARGBImage->argb_Width > gg->Width) || (SelARGBImage->argb_Height > gg->Height))
+				{
+				SetAttrs(oClone,
+					GA_Width, SelARGBImage->argb_Width,
+					GA_Height, SelARGBImage->argb_Height,
+					TAG_END);
+				}
 			// IDTA_SelARGBImageData has been changed, clone it now!
 			SetAttrs(oClone,
 				IDTA_CopySelARGBImageData, TRUE,

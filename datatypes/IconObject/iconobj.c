@@ -1462,14 +1462,19 @@ static ULONG DtFreeLayout(Class *cl, Object *o, struct iopFreeLayout *opf)
 
 static ULONG DtSet(Class *cl, Object *o, struct opSet *ops)
 {
-//	struct InstanceData *inst = INST_DATA(cl, o);
+	struct InstanceData *inst = INST_DATA(cl, o);
 	ULONG Result;
 
 	d1(KPrintF("%s/%s/%ld:  START  o=%08lx  inst=%08lx\n", __FILE__, __FUNC__, __LINE__, o, INST_DATA(cl, o)));
 
+	// Make sure we have no pending layout when settings are changed!
+	ObtainSemaphore(&inst->iobj_LayoutSemaphore);
+
 	Result = DoSuperMethodA(cl, o, (Msg) ops);
 
 	SetTags(cl, o, ops);
+
+	ReleaseSemaphore(&inst->iobj_LayoutSemaphore);
 
 	d1(KPrintF("%s/%s/%ld:  END  o=%08lx  inst=%08lx\n", __FILE__, __FUNC__, __LINE__, o, INST_DATA(cl, o)));
 
@@ -2351,6 +2356,7 @@ static void SetTags(Class *cl, Object *o, struct opSet *ops)
 	dTag = FindTagItem(GA_Width, ops->ops_AttrList);
 	if (dTag)
 		{
+		d1(KPrintF("%s/%s/%ld: o=%08lx  GA_Width=%ld\n", __FILE__, __FUNC__, __LINE__, o, dTag->ti_Data));
 		SizeSet = TRUE;
 		NeedFreeLayout = TRUE;
 		gg->Width = inst->iobj_NakedMaskWidth
@@ -3416,6 +3422,8 @@ APTR MyAllocVecPooled(void *MemPool, size_t Size)
 {
 	APTR ptr;
 
+	d1(kprintf("%s/%s/%ld:  MemPool=%08lx  Size=%lu\n", __FILE__, __FUNC__, __LINE__, MemPool, Size));
+
 	if (MemPool)
 		{
 		ObtainSemaphore(&MemPoolSemaphore);
@@ -3562,7 +3570,7 @@ static void ReplaceARGBImage(struct IconObjectARGB *img, struct ARGBHeader *argb
 	else
 		img->iargb_ARGBimage.argb_ImageData = NULL;
 
-	d1(KPrintF("%s/%s/%ld: w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, img->iargb_ARGBimage.argb_Width, img->iargb_ARGBimage.argb_Height));
+	d1(KPrintF("%s/%s/%ld: argb_Width=%ld  argb_Height=%ld\n", __FILE__, __FUNC__, __LINE__, img->iargb_ARGBimage.argb_Width, img->iargb_ARGBimage.argb_Height));
 
 	if (img->iargb_CopyARGBImageData)
 		{
@@ -3632,13 +3640,14 @@ static void FreeMask(struct IconObjectMask *Mask)
 
 static void LayoutARGB(Class *cl, Object *o, struct IconObjectARGB *img)
 {
-//	  struct InstanceData *inst = INST_DATA(cl, o);
+	struct ExtGadget *gg = (struct ExtGadget *) o;
+	struct InstanceData *inst = INST_DATA(cl, o);
 	struct ARGBHeader *ImgHeader;
 
 	d1(KPrintF("%s/%s/%ld:  START  o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
 	d1(KPrintF("%s/%s/%ld:  iargb_ARGBimage  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, \
-		inst->iobj_NormalARGB.iargb_ARGBimage.argb_Width, \
-		inst->iobj_NormalARGB.iargb_ARGBimage.argb_Height));
+		img->iargb_ARGBimage.argb_Width, \
+		img->iargb_ARGBimage.argb_Height));
 
 	if (img->iargb_ScaledARGBImage.argb_ImageData)
 		ImgHeader = &img->iargb_ScaledARGBImage;
@@ -3646,6 +3655,11 @@ static void LayoutARGB(Class *cl, Object *o, struct IconObjectARGB *img)
 		ImgHeader = &img->iargb_ARGBimage;
 
 	d1(KPrintF("%s/%s/%ld:  o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
+
+	if ((inst->iobj_imgleft + ImgHeader->argb_Width) > gg->BoundsWidth)
+		{
+		d1(KPrintF("%s/%s/%ld:  o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
+		}
 
 	// Generate iobj_normmaskbm+iobj_selmaskbm from ARGB image
 	GenMasksFromARGB(cl, o);
@@ -3655,7 +3669,7 @@ static void LayoutARGB(Class *cl, Object *o, struct IconObjectARGB *img)
 	// Extract alpha channel data from ARGB image
 	GenAlphaFromARGB(cl, o, img, ImgHeader);
 
-	d1(KPrintF("%s/%s/%ld:  o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
+	d1(KPrintF("%s/%s/%ld:  END o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
 }
 
 //-----------------------------------------------------------------------------
