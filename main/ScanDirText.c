@@ -58,7 +58,7 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 	struct Hook *ColumnChangeHook, struct IconScanEntry *ise, 
 	struct BackDropList *bdl, const struct ReadIconListData *rild);
 static void ResolveLink(struct ReadIconListData *rild);
-static LONG ReExamine(struct ReadIconListData *rild);
+// static LONG ReExamine(struct ReadIconListData *rild);
 
 //----------------------------------------------------------------------------
 
@@ -70,6 +70,7 @@ static LONG ReExamine(struct ReadIconListData *rild);
 
 //----------------------------------------------------------------------------
 
+/// TextWindowReadIcon
 // Result : Success
 struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt, 
 	CONST_STRPTR Name, struct ScaReadIconArg *ria)
@@ -209,7 +210,21 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 			break;
 			}
 
-		ReExamine(&rild);
+		//ReExamine(&rild);
+
+		d1(kprintf("%s/%s/%ld:  rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
+
+		if (0 != strcmp(rild.rild_Name, Name))
+			{
+			// Name returned by Examine doesn't match
+			// this might be a softlink?
+			if (IsSoftLink(Name))
+				{
+				stccpy(rild.rild_Name, Name, sizeof(rild.rild_Name));
+				rild.rild_Type = ST_SOFTLINK;
+				d1(kprintf("%s/%s/%ld: ST_SOFTLINK rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
+				}
+			}
 
 		pos = IsIconName(rild.rild_Name);
 
@@ -345,8 +360,9 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 
 	return in;
 }
+///
 
-
+/// IsBackDropIconTextWindow
 static BOOL IsBackDropIconTextWindow(struct internalScaWindowTask *iwt, struct BackDropList *bdl,
 	BPTR fLock, CONST_STRPTR FileName, ULONG pos)
 {
@@ -376,8 +392,9 @@ static BOOL IsBackDropIconTextWindow(struct internalScaWindowTask *iwt, struct B
 
 	return Result;
 }
+///
 
-
+/// TextCheckCleanup
 static enum ScanDirResult TextCheckCleanup(struct ReadIconListControl *rilc)
 {
 	enum ScanDirResult sdResult = SCANDIR_OK;
@@ -395,8 +412,9 @@ static enum ScanDirResult TextCheckCleanup(struct ReadIconListControl *rilc)
 
 	return sdResult;
 }
+///
 
-
+/// GenerateTextIcons
 static enum ScanDirResult GenerateTextIcons(struct ReadIconListControl *rilc, BOOL Final)
 {
 	struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
@@ -574,8 +592,9 @@ static enum ScanDirResult GenerateTextIcons(struct ReadIconListControl *rilc, BO
 
 	return sdResult;
 }
+///
 
-
+/// ReadTextWindowIconList
 // Result :
 // ==0	Success
 // !=0	Failure
@@ -688,8 +707,9 @@ enum ScanDirResult ReadTextWindowIconList(struct internalScaWindowTask *iwt)
 
 	return Result;
 }
+///
 
-
+/// GetTextIcon
 static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 	struct Hook *ColumnChangeHook, struct IconScanEntry *ise, 
 	struct BackDropList *bdl, const struct ReadIconListData *rild)
@@ -729,6 +749,7 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 
 	if (ST_SOFTLINK == rild->rild_Type)
 		{
+		rildClone = *rild;
 		rild = &rildClone;
 		ResolveLink(&rildClone);
 		}
@@ -866,8 +887,9 @@ static struct ScaIconNode *GetTextIcon(struct internalScaWindowTask *iwt,
 
 	return in;
 }
+///
 
-
+/// ResolveLink
 static void ResolveLink(struct ReadIconListData *rild)
 {
 	BPTR LinkLock;
@@ -903,8 +925,10 @@ static void ResolveLink(struct ReadIconListData *rild)
 	if (LinkLock)
 		UnLock(LinkLock);
 }
+///
 
-
+/// ReExamine
+#if 0
 static LONG ReExamine(struct ReadIconListData *rild)
 {
 	T_ExamineData *fib;
@@ -946,5 +970,6 @@ static LONG ReExamine(struct ReadIconListData *rild)
 
 	return Result;
 }
-
+#endif
+///
 

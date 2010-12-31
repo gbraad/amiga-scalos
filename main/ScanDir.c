@@ -59,7 +59,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 	struct ScaReadIconArg *ria, BOOL CheckForDuplicates);
 static struct ScaIconNode *ScanDirInitIcon(struct ReadIconListControl *rilc, const struct ReadIconListData *rild,
 	struct ScaReadIconArg *ria, BOOL isDefIcon, BOOL isLink, Object *IconObj);
-static struct ScaIconNode *CreateIcon(struct ReadIconListControl *rilc,
+static struct ScaIconNode *ScanDirCreateIcon(struct ReadIconListControl *rilc,
 	const struct ReadIconListData *rild, struct ScaReadIconArg *ria);
 static SAVEDS(LONG) CompareNameFunc(struct Hook *hook, struct ScaIconNode *in2,
 	struct ScaIconNode *in1);
@@ -67,7 +67,7 @@ static enum ScanDirResult BeginScan_ExAll(struct ReadIconListControl *rilc);
 static enum ScanDirResult ScanDir_ExAll(struct ReadIconListControl *rilc);
 static enum ScanDirResult BeginScan_Examine(struct ReadIconListControl *rilc);
 static enum ScanDirResult ScanDir_Examine(struct ReadIconListControl *rilc);
-static LONG ReExamine(struct ReadIconListData *rild);
+//static LONG ReExamine(struct ReadIconListData *rild);
 static struct IconScanEntry *NewIconScanEntry(struct internalScaWindowTask *iwt, const struct ReadIconListData *rild);
 static void DisposeIconScanEntry(struct IconScanEntry *ise);
 static void RilcDisposeData(void *data);
@@ -94,6 +94,7 @@ static struct Hook CompareNameHook =
 //----------------------------------------------------------------------------
 
 // Result : Success
+/// IconWindowReadIcon
 struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt, 
 	CONST_STRPTR Name, struct ScaReadIconArg *ria)
 {
@@ -248,13 +249,27 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 			else
 				rild.rild_Type = ScalosExamineGetDirEntryType(fib);
 			rild.rild_Size64 = ScalosExamineGetSize(fib);
+
+			d1(kprintf("%s/%s/%ld:  rild_Type=%ld\n", __FILE__, __FUNC__, __LINE__, rild.rild_Type));
 			}
 
-		ReExamine(&rild);
+//		  ReExamine(&rild);
 
-		d1(kprintf("%s/%s/%ld:  Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
+		d1(kprintf("%s/%s/%ld:  rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
 
-		in = CreateIcon(&rilc, &rild, ria);
+		if (0 != strcmp(rild.rild_Name, Name))
+			{
+			// Name returned by Examine doesn't match
+			// this might be a softlink?
+			if (IsSoftLink(Name))
+				{
+				stccpy(rild.rild_Name, Name, sizeof(rild.rild_Name));
+				rild.rild_Type = ST_SOFTLINK;
+				d1(kprintf("%s/%s/%ld: ST_SOFTLINK rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
+				}
+			}
+
+		in = ScanDirCreateIcon(&rilc, &rild, ria);
 
 		d1(KPrintF("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
@@ -295,7 +310,16 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 		ScalosReleaseSemaphore(&iwt->iwt_ScanDirSemaphore);
 
 	if (in)
+		{
+		d1({ \
+			ULONG TextStyle = 0; \
+				\
+			GetAttr(IDTA_TextStyle, in->in_Icon, &TextStyle); \
+			d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \
+		});
+
 		GenerateThumbnails(iwt);
+		}
 
 	if (IS_VALID_LOCK(oldDir))
 		CurrentDir(oldDir);
@@ -305,8 +329,9 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 
 	return in;
 }
+///
 
-
+/// SetIconName
 void SetIconName(Object *IconObj, struct ScaIconNode *in)
 {
 	STRPTR IconName;
@@ -317,14 +342,16 @@ void SetIconName(Object *IconObj, struct ScaIconNode *in)
 	if (IconName && *IconName)
 		in->in_Name = IconName;
 }
+///
 
-
+/// IsNoIconPosition
 BOOL IsNoIconPosition(const struct ExtGadget *gg)
 {
 	return (BOOL) ((UWORD) NO_ICON_POSITION_SHORT == (UWORD) gg->LeftEdge);
 }
+///
 
-
+/// ReadIconList
 // Result :
 // ==0	Success
 // !=0	Failure
@@ -481,8 +508,9 @@ enum ScanDirResult ReadIconList(struct internalScaWindowTask *iwt)
 
 	return Result;
 }
+///
 
-
+/// BeginScan_ExAll
 static enum ScanDirResult BeginScan_ExAll(struct ReadIconListControl *rilc)
 {
 	rilc->rilc_exallControl = AllocDosObject(DOS_EXALLCONTROL, NULL);
@@ -533,8 +561,9 @@ static enum ScanDirResult BeginScan_ExAll(struct ReadIconListControl *rilc)
 
 	return SCANDIR_OK;
 }
+///
 
-
+/// ScanDir_ExAll
 static enum ScanDirResult ScanDir_ExAll(struct ReadIconListControl *rilc)
 {
 	struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
@@ -685,8 +714,9 @@ static enum ScanDirResult ScanDir_ExAll(struct ReadIconListControl *rilc)
 
 	return SCANDIR_OK;
 }
+///
 
-
+/// BeginScan_Examine
 static enum ScanDirResult BeginScan_Examine(struct ReadIconListControl *rilc)
 {
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
@@ -748,8 +778,9 @@ static enum ScanDirResult BeginScan_Examine(struct ReadIconListControl *rilc)
 
 	return SCANDIR_OK;
 }
+///
 
-
+/// BeginScan_Examine
 static enum ScanDirResult ScanDir_Examine(struct ReadIconListControl *rilc)
 {
 	struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
@@ -870,8 +901,9 @@ static enum ScanDirResult ScanDir_Examine(struct ReadIconListControl *rilc)
 
 	return SCANDIR_OK;
 }
+///
 
-
+/// ScanDirIsBackDropIcon
 BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropList *bdl,
 	BPTR fLock, CONST_STRPTR FileName)
 {
@@ -901,8 +933,9 @@ BOOL ScanDirIsBackDropIcon(struct internalScaWindowTask *iwt, struct BackDropLis
 
 	return FALSE;
 }
+///
 
-
+/// ScanDirInitIcon
 static struct ScaIconNode *ScanDirInitIcon(struct ReadIconListControl *rilc, const struct ReadIconListData *rild,
 	struct ScaReadIconArg *ria, BOOL isDefIcon, BOOL isLink, Object *IconObj)
 {
@@ -1112,11 +1145,19 @@ static struct ScaIconNode *ScanDirInitIcon(struct ReadIconListControl *rilc, con
 	d1(KPrintF("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 	TIMESTAMPCOUNT_END_d1(iwt, 9);
 
+	d1({ \
+		ULONG TextStyle = 0; \
+			\
+		GetAttr(IDTA_TextStyle, in->in_Icon, &TextStyle); \
+		d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \
+	});
+
 	return in;
 }
+///
 
-
-static struct ScaIconNode *CreateIcon(struct ReadIconListControl *rilc,
+/// ScanDirCreateIcon
+static struct ScaIconNode *ScanDirCreateIcon(struct ReadIconListControl *rilc,
 	const struct ReadIconListData *rild, struct ScaReadIconArg *ria)
 {
 	struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
@@ -1193,12 +1234,20 @@ static struct ScaIconNode *CreateIcon(struct ReadIconListControl *rilc,
 		return CreateDefaultIcon(rilc, rild, ria, FALSE);
 		}
 
+	d1({ \
+		ULONG TextStyle = 0; \
+			\
+		GetAttr(IDTA_TextStyle, IconObj, &TextStyle); \
+		d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \
+	});
+
 	TIMESTAMPCOUNT_END_d1(iwt, 3);
 
 	return ScanDirInitIcon(rilc, rild, ria, FALSE, isLink, IconObj);
 }
+///
 
-
+/// CreateDefaultIcon
 static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, const struct ReadIconListData *rild,
 	struct ScaReadIconArg *ria, BOOL CheckForDuplicates)
 {
@@ -1210,6 +1259,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 		CONST_STRPTR IconName = rild->rild_Name;
 		ULONG IconViewMode;
 		ULONG ddFlags;
+		BOOL isLink;
 
 		if (NULL == iwt->iwt_WindowTask.mt_MainObject || '\0' == *rild->rild_Name)
 			break;;
@@ -1266,6 +1316,9 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 		else if (SortOrder_Descending == iwt->iwt_WindowTask.mt_WindowStruct->ws_SortOrder)
 			ddFlags |= DDFLAGS_SORTDESC;
 
+		isLink = (ST_SOFTLINK == rild->rild_Type) || (ST_LINKDIR == rild->rild_Type) ||
+			(ST_LINKFILE == rild->rild_Type) || IsSoftLink(rild->rild_Name);
+
 		TIMESTAMPCOUNT_START_d1(iwt, 6);
 
 		SetAttrs(IconObj,
@@ -1276,6 +1329,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 			IDTA_InnerTop, CurrentPrefs.pref_ImageBorders.Top,
 			IDTA_InnerLeft, CurrentPrefs.pref_ImageBorders.Left,
 			IDTA_SupportedIconTypes, CurrentPrefs.pref_SupportedIconTypes,
+			IDTA_TextStyle, isLink ? CurrentPrefs.pref_LinkTextStyle : FS_NORMAL,
 			TAG_END);
 		TIMESTAMPCOUNT_END_d1(iwt, 6);
 		} while (0);
@@ -1285,8 +1339,9 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 
 	return ScanDirInitIcon(rilc, rild, NULL, TRUE, FALSE, IconObj);
 }
+///
 
-
+/// CheckCleanup
 static enum ScanDirResult CheckCleanup(struct ReadIconListControl *rilc)
 {
 	enum ScanDirResult sdResult = SCANDIR_OK;
@@ -1314,8 +1369,9 @@ static enum ScanDirResult CheckCleanup(struct ReadIconListControl *rilc)
 
 	return sdResult;
 }
+///
 
-
+/// GenerateIcons
 static enum ScanDirResult GenerateIcons(struct ReadIconListControl *rilc, BOOL Final)
 {
 	struct IconScanEntry *ise;
@@ -1412,9 +1468,9 @@ static enum ScanDirResult GenerateIcons(struct ReadIconListControl *rilc, BOOL F
 				*ppos = '\0';
 				}
 
-			d1(KPrintF("%s/%s/%ld: CreateIcon(%s)\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
+			d1(KPrintF("%s/%s/%ld: ScanDirCreateIcon(%s)\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
 
-			in = CreateIcon(rilc, &rild, NULL);
+			in = ScanDirCreateIcon(rilc, &rild, NULL);
 
 			d1(kprintf("%s/%s/%ld: in=%08lx\n", __FILE__, __FUNC__, __LINE__, in));
 
@@ -1494,14 +1550,14 @@ static enum ScanDirResult GenerateIcons(struct ReadIconListControl *rilc, BOOL F
 			ScanDirFillRildFromIse(&rild, ise);
 			rild.rild_CheckOverlap = rilc->rilc_WindowTask->iwt_CheckOverlappingIcons;
 
-			d1(KPrintF("%s/%s/%ld: CreateIcon(%s)  ObjPtr=%08lx  IconPtr=%08lx\n", \
+			d1(KPrintF("%s/%s/%ld: ScanDirCreateIcon(%s)  ObjPtr=%08lx  IconPtr=%08lx\n", \
 				__FILE__, __FUNC__, __LINE__, rild.rild_Name, \
                                 ise->ise_ObjPtr, ise->ise_IconPtr));
 
 			TIMESTAMPCOUNT_START_d1(rilc->rilc_WindowTask, 2);
 
 			if (ise->ise_IconPtr)
-				in = CreateIcon(rilc, &rild, NULL);
+				in = ScanDirCreateIcon(rilc, &rild, NULL);
 			else
 				in = CreateDefaultIcon(rilc, &rild, NULL, TRUE);
 
@@ -1538,8 +1594,9 @@ static enum ScanDirResult GenerateIcons(struct ReadIconListControl *rilc, BOOL F
 
 	return sdResult;
 }
+///
 
-
+/// CompareNameFunc
 // compare function for icon list sorting
 // drawers are sorted first
 static SAVEDS(LONG) CompareNameFunc(
@@ -1572,8 +1629,9 @@ static SAVEDS(LONG) CompareNameFunc(
 
 	return Stricmp(in2->in_Name, in1->in_Name);
 }
+///
 
-
+/// SetIconSupportsFlags
 void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable)
 {
 	ULONG IconType;
@@ -1613,8 +1671,9 @@ void SetIconSupportsFlags(struct ScaIconNode *in, BOOL isDiskWritable)
 	d1(kprintf("%s/%s/%ld: in=%08lx  <%s>  isDiskWritable=%ld  SupportFlags=%08lx\n", \
 		__FILE__, __FUNC__, __LINE__, in, in->in_Name, isDiskWritable, in->in_SupportFlags));
 }
+///
 
-
+/// IsSoftLink
 BOOL IsSoftLink(CONST_STRPTR Name)
 {
 	BOOL isLink = FALSE;
@@ -1684,30 +1743,34 @@ BOOL IsSoftLink(CONST_STRPTR Name)
 
 	return isLink;
 }
+///
 
-
+/// RilcDisposeData
 static void RilcDisposeData(void *data)
 {
 	// No-op since data is only handed as reference to IconScanEntry node
 	// and IconScanEntry nodes are managed within rilc_NonIconScanList
 	(void) data;
 }
+///
 
-
+/// RilcDisposeKey
 static void RilcDisposeKey(void *key)
 {
 	// No-op since key is only handed as reference to IconScanEntry->ise_Fib.fib_FileName
 	// and IconScanEntry nodes are managed within rilc_NonIconScanList
 	(void) key;
 }
+///
 
+/// RilcCompare
 static int RilcCompare(const void *key1, const void *key2)
 {
 	return Stricmp((CONST_STRPTR) key2, (CONST_STRPTR) key1);
 }
+///
 
-
-
+/// RilcInit
 BOOL RilcInit(struct ReadIconListControl *rilc, struct internalScaWindowTask *iwt)
 {
 	BOOL Success = FALSE;
@@ -1751,8 +1814,9 @@ BOOL RilcInit(struct ReadIconListControl *rilc, struct internalScaWindowTask *iw
 
 	return Success;
 }
+///
 
-
+/// RilcCleanup
 void RilcCleanup(struct ReadIconListControl *rilc)
 {
 	struct IconScanEntry *ise;
@@ -1826,8 +1890,10 @@ void RilcCleanup(struct ReadIconListControl *rilc)
 		rilc->rilc_ExAllBuffer = NULL;
 		}
 }
+///
 
-
+/// ReExamine
+#if 0
 static LONG ReExamine(struct ReadIconListData *rild)
 {
 	T_ExamineData *fib;
@@ -1869,8 +1935,10 @@ static LONG ReExamine(struct ReadIconListData *rild)
 
 	return Result;
 }
+#endif
+///
 
-
+/// NewIconScanEntry
 static struct IconScanEntry *NewIconScanEntry(struct internalScaWindowTask *iwt, const struct ReadIconListData *rild)
 {
 	struct IconScanEntry *ise;
@@ -1980,8 +2048,9 @@ static struct IconScanEntry *NewIconScanEntry(struct internalScaWindowTask *iwt,
 
 	return ise;
 }
+///
 
-
+/// DisposeIconScanEntry
 static void DisposeIconScanEntry(struct IconScanEntry *ise)
 {
 	if (ise)
@@ -1995,8 +2064,9 @@ static void DisposeIconScanEntry(struct IconScanEntry *ise)
 		ScalosFree(ise);
 		}
 }
+///
 
-
+/// LinkIconScanList
 // build links between icons and objects
 enum ScanDirResult LinkIconScanList(struct ReadIconListControl *rilc)
 {
@@ -2064,8 +2134,9 @@ enum ScanDirResult LinkIconScanList(struct ReadIconListControl *rilc)
 
 	return sdResult;
 }
+///
 
-
+/// GetFileList
 enum ScanDirResult GetFileList(struct ReadIconListControl *rilc,
 	enum ScanDirResult (*CheckFunc)(struct ReadIconListControl *rilc),
 	BOOL UseExAll, BOOL FetchIconType, BOOL CheckOverlap)
@@ -2234,8 +2305,9 @@ enum ScanDirResult GetFileList(struct ReadIconListControl *rilc,
 
 	return sdResult;
 }
+///
 
-
+/// AddFileToFilesList
 // add a single file/directory to rilc->rilc_IconScanList
 LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_STRPTR Name)
 {
@@ -2315,8 +2387,9 @@ LONG AddFileToFilesList(struct ReadIconListControl *rilc, BPTR dirLock, CONST_ST
 
 	return Result;
 }
+///
 
-
+/// ScanDirFillRildFromIse
 void ScanDirFillRildFromIse(struct ReadIconListData *rild, const struct IconScanEntry *ise)
 {
 	rild->rild_Type = ise->ise_Fib.fib_DirEntryType;
@@ -2336,8 +2409,9 @@ void ScanDirFillRildFromIse(struct ReadIconListData *rild, const struct IconScan
 	d1(KPrintF("%s/%s/%ld: END <%s> comment=<%s>  IconType=%ld\n", \
 		__FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_Comment, rild->rild_IconType));
 }
+///
 
-
+/// ScanDirUpdateStatusBarText
 void ScanDirUpdateStatusBarText(struct internalScaWindowTask *iwt, ULONG TotalIcons)
 {
 	if (iwt->iwt_StatusBar && iwt->iwt_StatusBarMembers[STATUSBARGADGET_StatusText])
@@ -2355,8 +2429,9 @@ void ScanDirUpdateStatusBarText(struct internalScaWindowTask *iwt, ULONG TotalIc
 			TAG_END);
 		}
 }
+///
 
-
+/// IsFileHidden
 BOOL IsFileHidden(CONST_STRPTR Filename, ULONG Protection)
 {
 	if (CurrentPrefs.pref_HideHiddenFlag && ('.' == Filename[0]))
@@ -2367,8 +2442,9 @@ BOOL IsFileHidden(CONST_STRPTR Filename, ULONG Protection)
 
 	return FALSE;
 }
+///
 
-
+/// AdjustIconType
 static ULONG AdjustIconType(Object *IconObj, LONG DirEntryType, BOOL isLink)
 {
 	ULONG IconType;
@@ -2420,8 +2496,9 @@ static ULONG AdjustIconType(Object *IconObj, LONG DirEntryType, BOOL isLink)
 
 	return NewIconType;
 }
+///
 
-
+/// ScanDirFindIcon
 static BOOL ScanDirFindIcon(struct ReadIconListControl *rilc, CONST_STRPTR IconName)
 {
 	struct internalScaWindowTask *iwt = rilc->rilc_WindowTask;
@@ -2463,8 +2540,9 @@ static BOOL ScanDirFindIcon(struct ReadIconListControl *rilc, CONST_STRPTR IconN
 
 	return IconFound;
 }
+///
 
-
+/// ScanDirIsError
 BOOL ScanDirIsError(enum ScanDirResult sdResult)
 {
 	BOOL isError;
@@ -2489,3 +2567,5 @@ BOOL ScanDirIsError(enum ScanDirResult sdResult)
 
 	return isError;
 }
+///
+

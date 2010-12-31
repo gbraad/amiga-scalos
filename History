@@ -8,7 +8,10 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20101227        jl	- Improvement: Upgraded libpng to 1.4.5.
+41.8    20101231	jl	- Bugfix: corrected various issues with soft links, e.g. after creating a new soft link
+				  to an image, it didn't show up correctly inside icon window. Icon windows failed to
+				  display underlined soft link names if no icon was present (i.e. for default icons).
+	20101227        jl	- Improvement: Upgraded libpng to 1.4.5.
 	20101226	jl	- Improvement: abborting long directory reads via "parent", "forward", "backward",
 				  etc. buttons now works as expected.
 	20101212	jl	- Improvement: Updated sqlite3.library to SQLite3 V3.7.4.
