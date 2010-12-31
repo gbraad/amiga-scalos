@@ -94,6 +94,7 @@ static BOOL ThumbnailShouldBeCached(const struct BitMapHeader *bmhd);
 
 //-----------------------------------------------------------------------
 
+/// AddThumbnailIcon
 BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 	BPTR DirLock, CONST_STRPTR Name, ULONG Flags, APTR UndoStep)
 {
@@ -193,8 +194,9 @@ BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 
 	return Success;
 }
+///
 
-
+/// GenerateThumbnails
 BOOL GenerateThumbnails(struct internalScaWindowTask *iwt)
 {
 	BOOL Success = FALSE;
@@ -221,8 +223,9 @@ BOOL GenerateThumbnails(struct internalScaWindowTask *iwt)
 
 	return Success;
 }
+///
 
-
+/// RearrangeThumbnailList
 void RearrangeThumbnailList(struct internalScaWindowTask *iwt)
 {
 	struct ThumbnailIcon *tni;
@@ -251,8 +254,9 @@ void RearrangeThumbnailList(struct internalScaWindowTask *iwt)
 
 	ScalosReleaseSemaphore(&iwt->iwt_ThumbnailIconSemaphore);
 }
+///
 
-
+/// GenerateThumbnailProcess
 static SAVEDS(ULONG) GenerateThumbnailProcess(struct SM_StartProg *sMsg, struct SM_RunProcess *msg)
 {
 	struct internalScaWindowTask *iwt = sMsg->spr_WindowTask;
@@ -359,8 +363,9 @@ static SAVEDS(ULONG) GenerateThumbnailProcess(struct SM_StartProg *sMsg, struct 
 
 	return 0;
 }
+///
 
-
+/// GenerateThumbnail
 static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 	struct ThumbnailIcon *tni, APTR ThumbnailCacheHandle)
 {
@@ -689,8 +694,9 @@ static BOOL GenerateThumbnail(struct internalScaWindowTask *iwt,
 
 	return Success;
 }
+///
 
-
+/// AddThumbnailEntry
 static struct ThumbnailIcon *AddThumbnailEntry(struct internalScaWindowTask *iwt, Object *IconObj,
 	BPTR DirLock, CONST_STRPTR Name, ULONG Flags, APTR UndoStep)
 {
@@ -731,8 +737,9 @@ static struct ThumbnailIcon *AddThumbnailEntry(struct internalScaWindowTask *iwt
 
 	return tni;
 }
+///
 
-
+/// FlushThumbnailEntries
 void FlushThumbnailEntries(struct internalScaWindowTask *iwt)
 {
 	struct ThumbnailIcon *tni;
@@ -744,8 +751,9 @@ void FlushThumbnailEntries(struct internalScaWindowTask *iwt)
 		}
 	ScalosReleaseSemaphore(&iwt->iwt_ThumbnailIconSemaphore);
 }
+///
 
-
+/// RemoveThumbnailEntry
 void RemoveThumbnailEntry(struct internalScaWindowTask *iwt, Object *IconObj)
 {
 	struct ThumbnailIcon *tni, *tniNext;
@@ -765,8 +773,9 @@ void RemoveThumbnailEntry(struct internalScaWindowTask *iwt, Object *IconObj)
 		}
 	ScalosReleaseSemaphore(&iwt->iwt_ThumbnailIconSemaphore);
 }
+///
 
-
+/// FreeThumbnailEntry
 static void FreeThumbnailEntry(struct ThumbnailIcon *tni)
 {
 	if (tni)
@@ -780,8 +789,9 @@ static void FreeThumbnailEntry(struct ThumbnailIcon *tni)
 		ScalosFree(tni);
 		}
 }
+///
 
-
+/// FindIcon
 static struct ScaIconNode *FindIcon(struct internalScaWindowTask *iwt, const Object *IconObject)
 {
 	struct ScaIconNode *in;
@@ -803,8 +813,9 @@ static struct ScaIconNode *FindIcon(struct internalScaWindowTask *iwt, const Obj
 
 	return NULL;
 }
+///
 
-
+/// IsIconObjectValid
 static BOOL IsIconObjectValid(struct internalScaWindowTask *iwt, const Object *IconObject)
 {
 	struct ScaIconNode *in;
@@ -818,8 +829,9 @@ static BOOL IsIconObjectValid(struct internalScaWindowTask *iwt, const Object *I
 
 	return (BOOL) (NULL != in);
 }
+///
 
-
+/// GenerateThumbnailFromARGB
 static BOOL GenerateThumbnailFromARGB(struct internalScaWindowTask *iwt,
 	APTR ThumbnailCacheHandle, Object *IconObj,
         struct ARGBHeader *argbDest,
@@ -929,8 +941,9 @@ static BOOL GenerateThumbnailFromARGB(struct internalScaWindowTask *iwt,
 
 	return TRUE;
 }
+///
 
-
+/// GenerateThumbnailFromSac
 static BOOL GenerateThumbnailFromSac(struct internalScaWindowTask *iwt,
 	Object *IconObj, struct ScalosBitMapAndColor **sac)
 {
@@ -964,9 +977,10 @@ static BOOL GenerateThumbnailFromSac(struct internalScaWindowTask *iwt,
 
 	return TRUE;
 }
+///
 
 //-----------------------------------------------------------------------
-
+/// ThumbnailCleanupCacheProcess
 static SAVEDS(ULONG) ThumbnailCleanupCacheProcess(struct SM_StartProg *sMsg, struct SM_RunProcess *msg)
 {
 	(void) sMsg;
@@ -1007,9 +1021,9 @@ static SAVEDS(ULONG) ThumbnailCleanupCacheProcess(struct SM_StartProg *sMsg, str
 
 	return 0;
 }
-
+///
 //-----------------------------------------------------------------------
-
+/// ThumbnailShouldBeCached
 static BOOL ThumbnailShouldBeCached(const struct BitMapHeader *bmhd)
 {
 	ULONG MinSizeLimit = CurrentPrefs.pref_ThumbnailMinSizeLimit;
@@ -1020,9 +1034,9 @@ static BOOL ThumbnailShouldBeCached(const struct BitMapHeader *bmhd)
 
 	return TRUE;
 }
-
+///
 //-----------------------------------------------------------------------
-
+/// SetIconThumbnailARGB
 BOOL SetIconThumbnailARGB(struct internalScaWindowTask *iwt,
 	struct SM_SetThumbnailImage_ARGB *smtia)
 {
@@ -1104,6 +1118,13 @@ BOOL SetIconThumbnailARGB(struct internalScaWindowTask *iwt,
 			d1(KPrintF("%s/%s/%ld:  GWidth=%ld  GHeight=%ld  AdjustLeft=%ld  AdjustTop=%ld\n", \
 				__FILE__, __FUNC__, __LINE__, argbh.argb_Width, argbh.argb_Height, AdjustLeft, AdjustTop));
 
+			d1({ \
+				ULONG TextStyle = 0; \
+					\
+				GetAttr(IDTA_TextStyle, smtia->smtia_IconObject, &TextStyle); \
+				d1(KPrintF("%s/%s/%ld: TextStyle=%ld\n", __FILE__, __FUNC__, __LINE__, TextStyle)); \
+			});
+
 			DoMethod(smtia->smtia_IconObject, IDTM_FreeLayout, IOFREELAYOUTF_ScreenAvailable);
 
 			SetAttrs(smtia->smtia_IconObject,
@@ -1134,9 +1155,9 @@ BOOL SetIconThumbnailARGB(struct internalScaWindowTask *iwt,
 
 	return TRUE;
 }
-
+///
 //-----------------------------------------------------------------------
-
+/// SetIconThumbnailRemapped
 BOOL SetIconThumbnailRemapped(struct internalScaWindowTask *iwt,
 	struct SM_SetThumbnailImage_Remapped *smtir)
 {
@@ -1276,9 +1297,9 @@ BOOL SetIconThumbnailRemapped(struct internalScaWindowTask *iwt,
 
 	return TRUE;
 }
-
+///
 //-----------------------------------------------------------------------
-
+/// ThumbnailsStartCleanup
 void ThumbnailsStartCleanup(BOOL Force)
 {
 	static T_TIMEVAL tvLastCleanup;
@@ -1315,6 +1336,6 @@ void ThumbnailsStartCleanup(BOOL Force)
 		SCA_UnLockWindowList();
 		}
 }
-
+///
 //-----------------------------------------------------------------------
 
