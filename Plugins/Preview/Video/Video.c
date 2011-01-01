@@ -43,6 +43,31 @@
 
 //---------------------------------------------------------------------------------------
 
+// set BYTEDUMP to 1 if you need to use ByteDump()
+#define BYTEDUMP	0
+
+#if 1
+#define DUMP_ARGB_LINE(argbh, component, yy)
+#else
+#define DUMP_ARGB_LINE(argbh, component, yy)	  \
+	{ \
+	int n; \
+	const struct ARGB  *argb = &(argbh)->argb_ImageData[(yy) * (argbh)->argb_Width]; \
+	KPrintF(__FILE__ "/%s/%ld: w=%ld  h=%ld  yy=%ld  #component:\n", __FUNC__, __LINE__, \
+		(argbh)->argb_Width, (argbh)->argb_Height, yy); \
+	KPrintF(__FILE__ "/%s/%ld: ", __FUNC__, __LINE__); \
+	for (n = 0; n < (argbh)->argb_Width; n++, argb++) \
+		{ \
+		if (n > 0 && 0 == n % 16) \
+			KPrintF("\n" __FILE__ "/%s/%ld: ", __FUNC__, __LINE__); \
+		KPrintF("%02lx ", argb->component); \
+		} \
+	KPrintF("\n"); \
+	}
+#endif
+
+//---------------------------------------------------------------------------------------
+
 #define	NO_STREAM	-1
 
 struct AVInfo
@@ -119,6 +144,10 @@ static void OverlayFilmStrip(struct AVInfo *avInfo, struct VideoFrame *videoFram
 static BOOL IsInterestingFrame(const struct AVInfo *avInfo);
 static BOOL FindInterestingFrame(struct AVInfo *avInfo);
 static void av_log_dummy_callback(void* ptr, int level, const char* fmt, va_list vl);
+
+#if BYTEDUMP
+static void ByteDump(const unsigned char *Data, size_t Length);
+#endif /* BYTEDUMP */
 
 //-----------------------------------------------------------
 
@@ -320,7 +349,6 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 			struct Screen *WBScreen;
 			struct BitMapHeader *bmhdExternal;
 			struct ScalosPreviewResult *PVResult;
-			size_t BytesPerRow;
 			BOOL DoRemap;
 			ULONG quality;
 			ULONG ReservedColors;
@@ -329,6 +357,8 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 			memset(&avInfo, 0, sizeof(struct AVInfo));
 
 			av_log_set_callback(av_log_dummy_callback);
+
+			d1(KPrintF("%s/%s/%ld:  after av_log_set_callback\n", __FILE__, __FUNC__, __LINE__));
 
 			PVResult = (struct ScalosPreviewResult *) GetTagData(SCALOSPREVIEW_ResultStruct, (ULONG)NULL, tagList);
 			if (NULL == PVResult)
@@ -360,6 +390,8 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 				break;
 
 			oldDir = CurrentDir(dirLock);
+
+			d1(KPrintF("%s/%s/%ld:  before av_open_input_file\n", __FILE__, __FUNC__, __LINE__));
 
 			// Open video file
 			rc = av_open_input_file(&avInfo.avinf_pFormatContext, iconName, NULL, 0, NULL);
@@ -413,12 +445,10 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 			d1(KPrintF("%s/%s/%ld:  DoRemap=%ld\n", __FILE__, __FUNC__, __LINE__, DoRemap));
 
-			BytesPerRow = vFrame.vfr_lineSize;
-
 			if (DoRemap)
 				{
-				d1(KPrintF("%s/%s/%ld:  colormap=%08lx  actual_number_of_colors=%ld\n", \
-					__FILE__, __FUNC__, __LINE__, cinfo.colormap, cinfo.actual_number_of_colors));
+				d1(KPrintF("%s/%s/%ld:  SupportedColors=%lu  ReservedColors=%ld\n", \
+					__FILE__, __FUNC__, __LINE__, SupportedColors, ReservedColors));
 
 				Success = GenerateRemappedThumbnail(wt,
 					iconName,
@@ -532,9 +562,9 @@ static BOOL GenerateRemappedThumbnail(struct ScaWindowTask *wt,
 			;
 
 		d1(KPrintF(__FILE__ "/%s/%ld:  argb_ImageData: a=%ld  r=%ld  g=%ld  b=%ld\n", \
-			__FUNC__, __LINE__, argbDest->argb_ImageData->Alpha, \
-			argbDest->argb_ImageData->Red, argbDest->argb_ImageData->Green, \
-			argbDest->argb_ImageData->Blue));
+			__FUNC__, __LINE__, argbTemp.argb_ImageData->Alpha, \
+			argbTemp.argb_ImageData->Red, argbTemp.argb_ImageData->Green, \
+			argbTemp.argb_ImageData->Blue));
 
 		d1(KPrintF(__FILE__ "/%s/%ld:  SupportedColors=%lu  Depth=%lu  ReservedColors=%lu\n", \
 			__FUNC__, __LINE__, SupportedColors, Depth, ReservedColors));
@@ -816,7 +846,7 @@ static BOOL ReadVideoFrame(struct AVInfo *avInfo)
 						avInfo->avinf_pCodecContext->width,
 						avInfo->avinf_pCodecContext->height,
 						PIX_FMT_RGB24,
-						SWS_BICUBIC,
+						SWS_FAST_BILINEAR,
 						NULL,
 						NULL,
 						NULL);
@@ -921,6 +951,17 @@ static BOOL ConvertAndScaleFrame(struct AVInfo *avInfo, int pixFormat,
 			avInfo->avinf_pCodecContext->width, avInfo->avinf_pCodecContext->height));
 		d1(KPrintF("%s/%s/%ld: scaledWidth=%ld  scaledHeight=%ld\n", \
 			__FILE__, __FUNC__, __LINE__, *scaledWidth, *scaledHeight));
+
+		d1({								\
+		ULONG n;							\
+		const UBYTE *p = avInfo->avinf_pFrame->data[0];			\
+										\
+		for (n = 0; n < avInfo->avinf_pCodecContext->height; n++)       \
+			{                                                       \
+			ByteDump(p, avInfo->avinf_pFrame->linesize[0]);         \
+			p += avInfo->avinf_pFrame->linesize[0];                 \
+			}                                                       \
+		});
 
 		scaleContext = sws_getContext(avInfo->avinf_pCodecContext->width,
 			avInfo->avinf_pCodecContext->height,
@@ -1188,7 +1229,7 @@ static BOOL FindInterestingFrame(struct AVInfo *avInfo)
 
 static void av_log_dummy_callback(void* ptr, int level, const char* fmt, va_list vl)
 {
-#if 0
+#if 1
 	char buf[256];
 
 	d1(KPrintF("%s/%s/%ld: fmt=<%s>  level=%ld\n", __FILE__, __FUNC__, __LINE__, fmt, level));
@@ -1209,5 +1250,36 @@ void abort(void)
 	while (1)
 		;
 }
+
+//-----------------------------------------------------------------------------
+
+#if BYTEDUMP
+static void ByteDump(const unsigned char *Data, size_t Length)
+{
+	unsigned long count;
+	unsigned char Line[80], *lp;
+
+	lp = Line;
+	for (count=0; count<Length; count++)
+		{
+		*lp++ = isprint(*Data) ? *Data : '.';
+		KPrintF("%02lx ", (ULONG) *Data++);
+		if ((count+1) % 16 == 0)
+			{
+			*lp = '\0';
+			lp = Line;
+			KPrintF("\t%s\n", Line);
+			}
+		}
+
+	*lp = '\0';
+	while (count % 16 != 0)
+		{
+		KPrintF("   ");
+		count++;
+		}
+	KPrintF("\t%s\n", Line);
+}
+#endif /* BYTEDUMP */
 
 //-----------------------------------------------------------------------------

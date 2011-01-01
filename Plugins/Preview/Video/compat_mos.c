@@ -522,7 +522,7 @@ double round(double x)
 }
 
 //-----------------------------------------------------------------------------
-
+#if 1
 /*
 The memalign() function returns a block of memory of
 size bytes aligned to blocksize. The blocksize must be given
@@ -535,11 +535,12 @@ aligned to the system, the realloc() fails and returns NULL.
 void *memalign(size_t blocksize, size_t bytes)
 {
 	d1(KPrintF("%s/%s/%ld: blocksize=%lu  bytes=%lu\n", __FILE__, __FUNC__, __LINE__, blocksize, bytes));
-	(void) blocksize;
+
+	bytes = (bytes + (blocksize - 1)) & ~(blocksize - 1);
 
 	return malloc(bytes);
 }
-
+#endif
 //-----------------------------------------------------------------------------
 
  FILE **__sF;
@@ -547,4 +548,12 @@ void *memalign(size_t blocksize, size_t bytes)
 char _ProgramName[] = "xx";
 
 //-----------------------------------------------------------------------------
+
+clock_t clock(void)
+{
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+
 
