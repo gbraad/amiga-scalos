@@ -1229,7 +1229,7 @@ static BOOL FindInterestingFrame(struct AVInfo *avInfo)
 
 static void av_log_dummy_callback(void* ptr, int level, const char* fmt, va_list vl)
 {
-#if 1
+#if 0
 	char buf[256];
 
 	d1(KPrintF("%s/%s/%ld: fmt=<%s>  level=%ld\n", __FILE__, __FUNC__, __LINE__, fmt, level));
