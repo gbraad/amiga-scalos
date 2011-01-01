@@ -38,10 +38,10 @@ ifndef GCCVERSION
 	GCCVERSION := $(shell $(CC) $(CFLAGS) -dumpversion)
 endif
 
-ifneq ($(GCCVERSION), 4.4.4)
-	CC 	=	gcc4
-	GCCVERSION := $(shell $(CC) $(CFLAGS) -dumpversion)
-endif
+#ifneq ($(GCCVERSION), 4.4.4)
+#	 CC 	 =	 gcc4
+#	 GCCVERSION := $(shell $(CC) $(CFLAGS) -dumpversion)
+#endif
 
 AS 		=	ppc-morphos-as
 LD 		=	ppc-morphos-ld

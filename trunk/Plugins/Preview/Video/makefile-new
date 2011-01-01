@@ -57,6 +57,7 @@ $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 install:
 	-@$(ECHO) "Installing $(NAME)"
 	@copy $(BINDIR)/$(NAME) Scalos:Plugins/Preview/ clone
+	@touch env:scalos/FileTypes/video
 	@avail flush
 
 install: install_subdirs

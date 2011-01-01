@@ -38,8 +38,8 @@ ifeq ($(MACHINE), ppc-morphos)
 INCLUDES	+=	#
 
 LFLAGS	:=	-nostartfiles \
-		-lmempools \
 		$(LFLAGS) \
+		-lmempools \
 #		 -Wl,-Map,video.map \
 #		--verbose \
 #		-nostdlib
