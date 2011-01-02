@@ -1448,7 +1448,6 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
 ; SCCM_IconWin_UnCleanUpRegion
     STRUCTURE msg_UnCleanUpRegion,0
 	ULONG 	ucr_MethodID
-	struct Region *ucr_UnCleanUpRegion;
 	STRUCT	ucr_UnCleanUpRegion,rg_SIZEOF ; struct Region
 	LABEL	ucr_SIZEOF
 
@@ -1534,7 +1533,7 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
 	ULONG	mov_SuggestedGadgetTextId
 	LABEL	mov_SIZEOF
 
-    STRUCTURE msg_Delete
+    STRUCTURE msg_Delete,0
 	ULONG 	mmd_MethodID
 	BPTR 	mmd_DirLock
 	APTR	mmd_Name	; CONST_STRPTR
