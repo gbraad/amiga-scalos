@@ -2439,7 +2439,7 @@ static ULONG IconWindowClass_Update(Class *cl, Object *o, Msg msg)
 
 	d1(KPrintF("%s/%s/%ld: END\n", __FILE__, __FUNC__, __LINE__));
 
-	return Result;
+	return (ULONG) Result;
 }
 
 //----------------------------------------------------------------------------
