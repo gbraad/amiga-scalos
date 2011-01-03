@@ -1,4 +1,10 @@
 V41.8
+Improvement: updated libcurl (used by updater.module) to version 7.21.3
+Bugfix: on MorphOS, most WMV video thumbnails contained garbage
+Bugfix: corrected various issues with soft links, e.g. after creating a new soft link to an image, it didn't show up correctly inside icon window. Icon windows failed to display underlined soft link names if no icon was present (i.e. for default icons)
+Bugfix: under certain circumstances, glowiconobject set wrong icon size (too small) which caused iconobject.datatype to overwrite allocated memory
+Improvement: Upgraded libpng to 1.4.5
+Improvement: abborting long directory reads via &quot;parent&quot;, &quot;forward&quot;, &quot;backward&quot;, etc. buttons now works as expected
 Improvement: Updated sqlite3.library to SQLite3 V3.7.4
 Bugfix: when icon was dragged over drawer in same window, pop-open window function was broken
 Bugfix: information.module: corrected overflow on device usage percentage calculation
@@ -14,7 +20,7 @@ Improvement: Upgraded libpng to 1.4.3
 Bugfix: window history entries are now adjusted correctly when a listed directory is renamed
 Improvement: jpegpicture.pvplugin : now JPG pictures are read in one big chunk. This method uses more memory, but greatly speeds up reading images on some file systems (e.g. MorphOS USB ptp)
 Bugfix: finally implemented complete support for backdrop icons created by MorphOS Ambient (shortcuts.prefs). Now Ambient shortcuts can be correctly added and removed.
-Bugfix: enabled workbench.library WBInfo path for all systems. With this fix, AmigaOS4.x Workbenchstart "Information" button works again with Scalos
+Bugfix: enabled workbench.library WBInfo path for all systems. With this fix, AmigaOS4.x Workbenchstart &quot;Information&quot; button works again with Scalos
 Bugfix: for file copying and link creation, detection of already existing icons didn't work
 Improvement: allow individual icon size constraints and icon scale factor per window
 Bugfix: Windowproperties.module: fixed enforcer hit/crash when saving changes
