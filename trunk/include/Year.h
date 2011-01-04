@@ -6,6 +6,6 @@
 #ifndef  YEAR_H
 #define  YEAR_H
 
-#define	CURRENTYEAR	"-2010"
+#define	CURRENTYEAR	"-2011"
 
 #endif /* YEAR_H */
