@@ -943,9 +943,9 @@ static void WBLRequestFile(struct WBArg *arg)
 
 			NameFromLock(dirLock, Path, sizeof(Path));
 			sprintf(LabelText, GetLocString(MSGID_CURRENTDIR), Path);
-			stccpy(xName,fileReq->fr_File, sizeof(xName));
+			stccpy(xName, fileReq->fr_File, sizeof(xName));
 
-			if (xName && strlen(xName) > 0)
+			if (strlen(xName) > 0)
 				{
 				AddPart(Path, xName, sizeof(xName));
 				}
