@@ -214,16 +214,12 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 
 		d1(kprintf("%s/%s/%ld:  rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
 
-		if (0 != strcmp(rild.rild_Name, Name))
+		// this might be a softlink?
+		if (IsSoftLink(Name))
 			{
-			// Name returned by Examine doesn't match
-			// this might be a softlink?
-			if (IsSoftLink(Name))
-				{
-				stccpy(rild.rild_Name, Name, sizeof(rild.rild_Name));
-				rild.rild_Type = ST_SOFTLINK;
-				d1(kprintf("%s/%s/%ld: ST_SOFTLINK rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
-				}
+			stccpy(rild.rild_Name, Name, sizeof(rild.rild_Name));
+			rild.rild_Type = ST_SOFTLINK;
+			d1(kprintf("%s/%s/%ld: ST_SOFTLINK rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name));
 			}
 
 		pos = IsIconName(rild.rild_Name);
