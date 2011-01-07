@@ -1256,6 +1256,7 @@ static BOOL WaitForReply(struct Process *newProc, struct WblMessage *wblMsg,
 
 static BOOL CheckProject(Object *IconObject, struct WblInput *wbli, BOOL *cliStart, BOOL *RexxStart, BOOL *Arg0Locked)
 {
+	Object *DefaultIconObject = NULL;
 	STRPTR Path = NULL;
 	ULONG IconType;
 	ULONG ul;
@@ -1292,6 +1293,18 @@ static BOOL CheckProject(Object *IconObject, struct WblInput *wbli, BOOL *cliSta
 
 		GetAttr(IDTA_DefaultTool, IconObject, (APTR) &DefaultTool);
 
+		if (NULL == DefaultTool)
+			{
+			// If no default tool is present, try to get a default icon
+			// and if present, use default tool from the default icon
+			DefaultIconObject = ReturnDefIconObjTags(wbli->wbli_ArgList[0].wa_Lock,
+				wbli->wbli_ArgList[0].wa_Name,
+				TAG_END);
+
+			if (NULL != DefaultIconObject)
+				GetAttr(IDTA_DefaultTool, DefaultIconObject, (APTR) &DefaultTool);
+			}
+
 		d1(KPrintF("%s/%s/%ld: DefaultTool=%08lx\n", __FILE__, __FUNC__, __LINE__, DefaultTool));
 		if (NULL == DefaultTool)
 			{
@@ -1318,7 +1331,11 @@ static BOOL CheckProject(Object *IconObject, struct WblInput *wbli, BOOL *cliSta
 			}
 
 		if (NULL == DefaultTool)
+			{
+			if (DefaultIconObject)
+				DisposeIconObject(DefaultIconObject);
 			return FALSE;
+			}
 
 		d1(KPrintF("%s/%s/%ld: DefaultTool=<%s>\n", __FILE__, __FUNC__, __LINE__, DefaultTool));
 
@@ -1354,6 +1371,8 @@ static BOOL CheckProject(Object *IconObject, struct WblInput *wbli, BOOL *cliSta
 		CurrentDir(oldDir);
 		}
 
+	if (DefaultIconObject)
+		DisposeIconObject(DefaultIconObject);
 	if (Path)
 		FreePathBuffer(Path);
 
