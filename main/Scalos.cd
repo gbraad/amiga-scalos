@@ -1012,6 +1012,10 @@ Available: %s
 MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS (//)
 Proceed anyway|Abort
 ;
+;
+MSGID_OPENERRORGADGETS2 (//)
+Retry|Select different Tool|Use Standard Tool|Cancel
+;
 ; ==============================================
 ;
 MSGID_DROPMENU_DROPMENUTITLE (10000//)
