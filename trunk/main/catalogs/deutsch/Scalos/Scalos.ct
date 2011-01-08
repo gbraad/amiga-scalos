@@ -1324,6 +1324,11 @@ MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS
 Trotzdem fortsetzen|Abbrechen
 ;Proceed anyway|Abort
 ;
+;
+MSGID_OPENERRORGADGETS2
+Nochmal versuchen|Anderes Werkzeug wählen|Standardwerkzeug|Abbruch
+; Retry|Select different Tool|Use Standard Tool|Cancel
+;
 ; ==============================================
 ;
 MSGID_DROPMENU_DROPMENUTITLE

@@ -52,7 +52,7 @@
 
 // local data definitions
 
-enum WBL_REQresult	{ WBLRR_Cancel=0, WBLRR_Retry=1, WBLRR_SelectTool };
+enum WBL_REQresult	{ WBLRR_Cancel=0, WBLRR_Retry=1, WBLRR_SelectTool, WBLRR_UseDefaultTool };
 
 //----------------------------------------------------------------------------
 
@@ -332,6 +332,9 @@ SAVEDS(ULONG) INTERRUPT WblTask(void)
 			else
 				{
 				ULONG ReqResult;
+				ULONG MsgIdGadgets = MSGID_OPENERRORGADGETS;
+				Object *DefaultIconObject = NULL;
+				STRPTR DefaultTool = NULL;
 
 				if (devProc)
 					{
@@ -344,7 +347,46 @@ SAVEDS(ULONG) INTERRUPT WblTask(void)
 					newLock = (BPTR)NULL;
 					}
 
-				ReqResult = UseRequestArgs(NULL, MSGID_OPENERRORNAME, MSGID_OPENERRORGADGETS,
+				d1(kprintf("%s/%s/%ld: sm_NumArgs=%ld\n", __FILE__, __FUNC__, __LINE__, wbStart->sm_NumArgs));
+				if (wbStart->sm_NumArgs > 1)
+					{
+					Object *IconObject;
+					ULONG IconType = 0;
+					BPTR OldDir = CurrentDir(wbStart->sm_ArgList[1].wa_Lock);
+
+					IconObject = (Object *) NewIconObjectTags((STRPTR) wbStart->sm_ArgList[1].wa_Name,
+						TAG_END);
+
+					d1(kprintf("%s/%s/%ld: IconObject=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObject));
+
+					if (IconObject)
+						{
+						GetAttr(IDTA_Type, IconObject, &IconType);
+
+						DisposeIconObject(IconObject);
+
+						DefaultIconObject = ReturnDefIconObjTags(wbStart->sm_ArgList[1].wa_Lock,
+							wbStart->sm_ArgList[1].wa_Name,
+							TAG_END);
+
+						d1(kprintf("%s/%s/%ld: IconType=%ld  DefaultIconObject=%08lx\n", __FILE__, __FUNC__, __LINE__, IconType, DefaultIconObject));
+
+						if (DefaultIconObject)
+							{
+							GetAttr(IDTA_DefaultTool, DefaultIconObject, (APTR) &DefaultTool);
+
+							d1(kprintf("%s/%s/%ld: DefaultTool=<%s>\n", __FILE__, __FUNC__, __LINE__, DefaultTool ? DefaultTool : (STRPTR) ""));
+
+							if ((WBPROJECT == IconType) && DefaultTool && (strlen(DefaultTool) > 0))
+								MsgIdGadgets = MSGID_OPENERRORGADGETS2;
+							}
+
+						}
+
+					CurrentDir(OldDir);
+					}
+
+				ReqResult = UseRequestArgs(NULL, MSGID_OPENERRORNAME, MsgIdGadgets,
 						1,
 						wbStart->sm_ArgList[0].wa_Name);
 
@@ -352,6 +394,7 @@ SAVEDS(ULONG) INTERRUPT WblTask(void)
 
 				switch (ReqResult)
 					{
+				default:
 				case WBLRR_Cancel:
 					Retry = FALSE;
 					break;
@@ -364,7 +407,49 @@ SAVEDS(ULONG) INTERRUPT WblTask(void)
 					Retry = WBLRequestFile(&wbStart->sm_ArgList[0]);
 					d1(kprintf("%s/%s/%ld: AslBase=%08lx\n", __FILE__, __FUNC__, __LINE__, AslBase));
 					break;
+
+				case WBLRR_UseDefaultTool:
+					d1(kprintf("%s/%s/%ld: WBLRR_UseDefaultTool DefaultTool=<%s>\n", __FILE__, __FUNC__, __LINE__, DefaultTool ? DefaultTool : (STRPTR) ""));
+					if (DefaultTool && strlen(DefaultTool) > 0)
+						{
+						STRPTR pp;
+						char ch;
+						BPTR ToolLock;
+						BPTR oldDir = CurrentDir(wbStart->sm_ArgList[1].wa_Lock);
+
+						pp = PathPart(DefaultTool);
+						ch = *pp;
+						*pp = '\0';
+
+						d1(KPrintF("%s/%s/%ld: PathPart=<%s>\n", __FILE__, __FUNC__, __LINE__, DefaultTool));
+
+						ToolLock = Lock(DefaultTool, ACCESS_READ);
+						debugLock_d1(ToolLock);
+						if (ToolLock)
+							{
+							Retry = TRUE;
+
+							UnLock(wbStart->sm_ArgList[0].wa_Lock);
+							wbStart->sm_ArgList[0].wa_Lock = ToolLock;
+
+							*pp = ch;
+
+							FreeCopyString(wbStart->sm_ArgList[0].wa_Name);
+							wbStart->sm_ArgList[0].wa_Name = AllocCopyString(FilePart(DefaultTool));
+							}
+						else
+							{
+							Retry = FALSE;
+							*pp = ch;
+							}
+
+						CurrentDir(oldDir);
+						}
+					break;
 					}
+
+				if (DefaultIconObject)
+					DisposeIconObject(DefaultIconObject);
 				}
 			} while (msg && Retry);
 		} while (0);

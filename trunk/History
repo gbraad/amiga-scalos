@@ -8,7 +8,10 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20110107	jl	- Improvement: If no default tool is present in a project icon, try to get a
+41.8    20110108	jl	- Improvement: if project icon has invalid tool, the pop-up requester now has an option to
+				  use the "default tool", ie. the default tool of the corresponding default icon,
+				  as stored in ENV:Sys.
+	20110107	jl	- Improvement: If no default tool is present in a project icon, try to get a
 				  default icon and if present, use default tool from the default icon.
 	20110104	jl      - Improvement: updated libZ to version 1.2.5
 	20110102        jl	- Improvement: updated libcurl (used by updater.module) to version 7.21.3
