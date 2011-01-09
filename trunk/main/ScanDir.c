@@ -162,16 +162,21 @@ struct ScaIconNode *IconWindowReadIcon(struct internalScaWindowTask *iwt,
 		err = RETURN_OK;
 		iLock = Lock((STRPTR) Name, ACCESS_READ);
 		if (BNULL == iLock)
+			{
 			err = IoErr();
+			d1(kprintf("%s/%s/%ld: Lock returned %ld\n", __FILE__, __FUNC__, __LINE__, err));
+			}
 		else
 			{
 			if (!ScalosExamineLock(iLock, &fib))
 				err = IoErr();
 			UnLock(iLock);
+
+			d1(kprintf("%s/%s/%ld: ScalosExamineLock returned %ld\n", __FILE__, __FUNC__, __LINE__, err));
 			}
 
-
-		d1(kprintf("%s/%s/%ld: Lock/Examine returned %ld\n", __FILE__, __FUNC__, __LINE__, err));
+		if (ERROR_OBJECT_IN_USE == err)
+			DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_ScheduleUpdate);
 
 		rild.rild_SoloIcon = FALSE;
 

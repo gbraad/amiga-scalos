@@ -530,6 +530,8 @@ struct SM_UpdateIcon
 	struct ScalosMessage	ScalosMessage;
 	BPTR			smui_DirLock;
 	CONST_STRPTR		smui_IconName;
+	ULONG			smui_IconType;	// indication for icon type, if known
+						// like WBDRAWER, leave at 0 if unknown
 	};
 
 struct SM_AddIcon 
@@ -865,9 +867,14 @@ struct ScaDeviceIcon
 
 struct ScaUpdateIcon_IW
 {
-	BPTR			ui_iw_Lock;	    // Lock to the file's/dir's directory
-	STRPTR			ui_iw_Name;	    // Name of the file or dir, NULL for Disks
+	BPTR			ui_iw_Lock;	    	// Lock to the file's/dir's directory
+	STRPTR			ui_iw_Name;	    	// Name of the file or dir, NULL for Disks
+	// new starting with 41.8:
+	ULONG			ui_IconType;		// indication for icon type, if known
+							// like WBDRAWER, leave at UI_ICONTYPE_UNKNOWN if unknown
 };
+
+#define UI_ICONTYPE_UNKNOWN	0
 
 // ------------------------------------------------------------------
 
