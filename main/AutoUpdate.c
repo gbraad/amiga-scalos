@@ -87,9 +87,9 @@ static struct CheckUpdateData *CreateCheckUpdateData(struct internalScaWindowTas
 
 //----------------------------------------------------------------------------
 
+/// DeviceWindowCheckUpdate
 ULONG DeviceWindowCheckUpdate(struct internalScaWindowTask *iwt)
 {
-///
 	struct CudFilesList cfl;
 	struct IconScanEntry *ise;
 	struct ReadIconListControl rilc;
@@ -324,13 +324,12 @@ ULONG DeviceWindowCheckUpdate(struct internalScaWindowTask *iwt)
 	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	return Success;
-///
 }
+///
 
-
+/// IconWindowCheckUpdate
 ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 {
-///
 	struct CudFilesList cfl;
 	struct ReadIconListControl rilc;
 	enum ScanDirResult sdResult;
@@ -660,13 +659,12 @@ ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt)
 	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	return Success;
-///
 }
+///
 
-
+/// TextWindowCheckUpdate
 ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 {
-///
 	struct CudFilesList cfl;
 	struct ReadIconListControl rilc;
 	struct IconScanEntry *ise;
@@ -1105,10 +1103,10 @@ ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt)
 	d1(KPrintF("%s/%s/%ld: END iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
 	return Success;
-///
 }
+///
 
-
+/// BuildCUDIconList
 // add icons from wt_IconList and wt_LateIconList to FilesList
 static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesList *cfl, BPTR dirLock)
 {
@@ -1147,8 +1145,9 @@ static void BuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesL
 			}
 		}
 }
+///
 
-
+/// DeviceWindowBuildCUDIconList
 // add icons from wt_IconList and wt_LateIconList to cfl
 static void DeviceWindowBuildCUDIconList(struct internalScaWindowTask *iwt, struct CudFilesList *cfl, BPTR dirLock)
 {
@@ -1169,8 +1168,9 @@ static void DeviceWindowBuildCUDIconList(struct internalScaWindowTask *iwt, stru
 			}
 		}
 }
+///
 
-
+/// DeviceWindowBuildFileList
 static void DeviceWindowBuildFileList(struct ReadIconListControl *rilc)
 {
 	STRPTR IconPath = AllocPathBuffer();
@@ -1204,8 +1204,9 @@ static void DeviceWindowBuildFileList(struct ReadIconListControl *rilc)
 		FreePathBuffer(IconPath);
 		}
 }
+///
 
-
+/// CheckLeftoutIcons
 static void CheckLeftoutIcons(struct CudFilesList *cfl, BPTR dirLock)
 {
 	struct internalScaWindowTask *iwtMain = (struct internalScaWindowTask *) iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask;
@@ -1238,8 +1239,9 @@ static void CheckLeftoutIcons(struct CudFilesList *cfl, BPTR dirLock)
 		ScalosUnLockIconList(iwtMain);
 		}
 }
+///
 
-
+/// FindCudByName
 static struct CheckUpdateData *FindCudByName(struct CudFilesList *list, const char *Name)
 {
 	struct CheckUpdateData *cud;
@@ -1251,8 +1253,9 @@ static struct CheckUpdateData *FindCudByName(struct CudFilesList *list, const ch
 	d1(KPrintF("%s/%s/%ld: cud=%08lx\n", __FILE__, __FUNC__, __LINE__, cud, cud->cud_IconNode));
 	return cud;
 }
+///
 
-
+/// ImmediateUpdateIcon
 static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt, struct ScaIconNode *inUpdate)
 {
 	struct ScaIconNode *inNew = NULL;
@@ -1348,8 +1351,9 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 
 	return inNew;
 }
+///
 
-
+/// AddToCheckUpdateFilesList
 static void AddToCheckUpdateFilesList(struct internalScaWindowTask *iwt,
 	struct CudFilesList *cfl, const struct IconScanEntry *ise)
 {
@@ -1410,8 +1414,9 @@ static void AddToCheckUpdateFilesList(struct internalScaWindowTask *iwt,
 			cud, cud->cud_FileName, cud->cud_iseIcon, cud->cud_iseObject));
 		}
 }
+///
 
-
+/// DateFromDiskIcon
 static BOOL DateFromDiskIcon(struct ScaDeviceIcon *di, struct DateStamp *ds)
 {
 	BOOL Success = FALSE;
@@ -1448,8 +1453,9 @@ static BOOL DateFromDiskIcon(struct ScaDeviceIcon *di, struct DateStamp *ds)
 
 	return Success;
 }
+///
 
-
+/// IsThumbnailIcon
 static BOOL IsThumbnailIcon(struct ScaIconNode *in)
 {
 	BOOL Thumbnail = FALSE;
@@ -1465,8 +1471,9 @@ static BOOL IsThumbnailIcon(struct ScaIconNode *in)
 
 	return Thumbnail;
 }
+///
 
-
+/// InitCudFilesList
 static BOOL InitCudFilesList(struct CudFilesList *cfl)
 {
 	NewList(&cfl->cfl_FilesList);
@@ -1476,8 +1483,9 @@ static BOOL InitCudFilesList(struct CudFilesList *cfl)
 
 	return (BOOL) (NULL != cfl->cfl_FilesTree);
 }
+///
 
-
+/// CleanupCudFilesList
 static void CleanupCudFilesList(struct CudFilesList *cfl)
 {
 	if (cfl->cfl_ListInitialized)
@@ -1497,28 +1505,33 @@ static void CleanupCudFilesList(struct CudFilesList *cfl)
 		}
 
 }
+///
 
-
+/// CudDisposeData
 static void CudDisposeData(void *data)
 {
 	// No-op since data is only handed as reference to CheckUpdateData node
 	// and CheckUpdateData nodes are managed within cfl_FilesList
 	(void) data;
 }
+///
 
-
+/// CudDisposeKey
 static void CudDisposeKey(void *key)
 {
 	// No-op since only non-volatile data is handed as key
 	(void) key;
 }
+///
 
+/// CudCompare
 static int CudCompare(const void *key1, const void *key2)
 {
 	return Stricmp((CONST_STRPTR) key2, (CONST_STRPTR) key1);
 }
+///
 
-
+/// RealUpdateIcon
 void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 {
 	struct ScaReadIconArg ria;
@@ -1727,8 +1740,9 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 	if (arg->wa_Name)
 		FreeCopyString((STRPTR) arg->wa_Name);
 }
+///
 
-
+/// RefreshTextWindow
 static void RefreshTextWindow(struct internalScaWindowTask *iwt)
 {
 	if (!IsIwtViewByIcon(iwt))
@@ -1753,8 +1767,9 @@ static void RefreshTextWindow(struct internalScaWindowTask *iwt)
 		d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 		}
 }
+///
 
-
+/// CreateCheckUpdateData
 static struct CheckUpdateData *CreateCheckUpdateData(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
 {
 	struct CheckUpdateData *cud = ScalosAlloc(sizeof(struct CheckUpdateData));
@@ -1778,4 +1793,5 @@ static struct CheckUpdateData *CreateCheckUpdateData(struct internalScaWindowTas
 
 	return cud;
 }
+///
 

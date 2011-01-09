@@ -1,4 +1,7 @@
 V41.8
+Improvement: if project icon has invalid tool, the pop-up requester now has an option to use the &quot;default tool&quot;, ie. the default tool of the corresponding default icon, as stored in ENV:Sys
+Improvement: If no default tool is present in a project icon, try to get a default icon and if present, use default tool from the default icon
+Improvement: updated libZ to version 1.2.5
 Improvement: updated libcurl (used by updater.module) to version 7.21.3
 Bugfix: on MorphOS, most WMV video thumbnails contained garbage
 Bugfix: corrected various issues with soft links, e.g. after creating a new soft link to an image, it didn't show up correctly inside icon window. Icon windows failed to display underlined soft link names if no icon was present (i.e. for default icons)
