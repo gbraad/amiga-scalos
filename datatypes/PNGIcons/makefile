@@ -21,6 +21,7 @@ CC		= sc
 MKDIR   	= mkdir -p #makedir force
 LIBS		= 	//SAS-lib/png.lib \
 			//SAS-lib/z.lib \
+			//SAS-lib/snprintf.lib \
 			LIB:mempools.lib \
 			LIB:scm.lib \
 			LIB:sc.lib \
