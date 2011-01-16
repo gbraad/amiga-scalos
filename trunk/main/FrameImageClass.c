@@ -852,7 +852,7 @@ static BOOL GetPngPicture(BPTR file, struct ARGBHeader *argbh)
 			break;
 			}
 
-		png_set_read_fn(png_ptr, (voidp) file, user_read_data);
+		png_set_read_fn(png_ptr, (void *) file, user_read_data);
 
 		png_set_keep_unknown_chunks(png_ptr,
 			PNG_HANDLE_CHUNK_IF_SAFE, NULL, 0);
