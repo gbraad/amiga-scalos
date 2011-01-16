@@ -91,7 +91,7 @@ BOOL GetPngPicture(struct InstanceData *inst, BPTR file,
 
 		d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx\n", __FILE__, __FUNC__, __LINE__, png_ptr));
 
-		png_set_read_fn(png_ptr, (voidp) file, user_read_data);
+		png_set_read_fn(png_ptr, (void *) file, user_read_data);
 
 		png_set_sig_bytes(png_ptr, SigBytesRead);
 

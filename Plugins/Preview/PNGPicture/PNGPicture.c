@@ -406,7 +406,7 @@ LIBFUNC_P5(LONG, LIBSCAPreviewGenerate,
 
 		d1(KPrintF("%s/%s/%ld:  png_ptr=%08lx\n", __FILE__, __FUNC__, __LINE__, png_ptr));
 
-		png_set_read_fn(png_ptr, (voidp) fh, user_read_data);
+		png_set_read_fn(png_ptr, (void *) fh, user_read_data);
 
 		png_set_sig_bytes(png_ptr, sizeof(id));
 
