@@ -37,6 +37,7 @@ LD      	= slink
 LDFLAGS 	= quiet batch noicons sd
 LDLIBS  	= 	///SAS-lib/png.lib \
 			///SAS-lib/z.lib \
+			///SAS-lib/snprintf.lib \
 			LIB:mempools.lib \
 			LIB:scm.lib \
 			LIB:sc.lib \
