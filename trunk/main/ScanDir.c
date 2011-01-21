@@ -1170,6 +1170,7 @@ static struct ScaIconNode *ScanDirCreateIcon(struct ReadIconListControl *rilc,
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  ws=%08lx  rild_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, \
 		iwt, iwt->iwt_WindowTask.mt_WindowStruct, rild->rild_Name));
+	d1(KPrintF("%s/%s/%ld: ria=%08lx\n", __FILE__, __FUNC__, __LINE__, ria));
 
 	TIMESTAMPCOUNT_START_d1(iwt, 3);
 
@@ -1232,6 +1233,8 @@ static struct ScaIconNode *ScanDirCreateIcon(struct ReadIconListControl *rilc,
 
 	if (NULL == IconObj)
 		{
+		d1(if (ria) KPrintF("%s/%s/%ld: ria_IconType=%lu\n", __FILE__, __FUNC__, __LINE__, ria->ria_IconType));
+
 		return CreateDefaultIcon(rilc, rild, ria, FALSE);
 		}
 
@@ -1261,6 +1264,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 		ULONG IconViewMode;
 		ULONG ddFlags;
 		BOOL isLink;
+		ULONG IconType = ICONTYPE_NONE;
 
 		if (NULL == iwt->iwt_WindowTask.mt_MainObject || '\0' == *rild->rild_Name)
 			break;;
@@ -1284,8 +1288,13 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 			TIMESTAMPCOUNT_END_d1(iwt, 5);
 			}
 
+		d1(KPrintF("%s/%s/%ld: ria=%08lx\n", __FILE__, __FUNC__, __LINE__, ria));
 		if (ria)
 			{
+			IconType = ria->ria_IconType;
+
+			d1(KPrintF("%s/%s/%ld: ria_IconType=%lu\n", __FILE__, __FUNC__, __LINE__, ria->ria_IconType));
+
 			if (ria->ria_Lock && (BPTR)NULL == iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock)
 				{
 				IconName = PathBuffer = AllocPathBuffer();
@@ -1297,12 +1306,12 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 				}
 			}
 
-		d1(KPrintF("%s/%s/%ld: <%s> Type=%08lx\n", __FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_Type));
+		d1(KPrintF("%s/%s/%ld: <%s> Type=%08lx  IconType=%lu\n", __FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_Type, IconType));
 
 		// try to get default icon
 		TIMESTAMPCOUNT_START_d1(iwt, 7);
 		IconObj = (Object *) DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_GetDefIcon,
-			IconName, rild->rild_Type, rild->rild_Protection);
+			IconName, rild->rild_Type, rild->rild_Protection, IconType);
 		TIMESTAMPCOUNT_END_d1(iwt, 7);
 
 		if (NULL == IconObj)

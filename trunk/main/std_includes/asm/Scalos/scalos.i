@@ -238,6 +238,12 @@ mtyp_max = 38
 	ULONG	smrm_Flags
 	LABEL	smrm_SIZEOF
 
+    STRUCTURE SM_RealUpdateIcon,0
+	STRUCT	rui_AsyncRoutine,smar_SIZEOF	; struct SM_AsyncRoutine
+	STRUCT	rui_Args,???                       ; struct WBArg
+	ULONG 	rui_IconType
+	LABEL	rui_SIZEOF
+
     STRUCTURE SM_Requester,sm_SIZEOF
 	ULONG 	smrq_ReqResult		; \Result from easyRequest()
 	LABEL	smrq_ParentWindow	; /Parent window pointer
@@ -677,6 +683,13 @@ SCCM_IconWin_Open		EQU	SCC_Dummy+114
 ;Result: BOOL
 
 SCCM_IconWin_UpdateIcon		EQU	SCC_Dummy+115
+
+SCCM_IconWin_UpdateIconTags	EQU	SCC_Dummy+225
+; BPTR Lock
+; APTR Name
+; ULONG Tag, Tag, ... TAG_END
+
+
 SCCM_IconWin_AddIcon		EQU	SCC_Dummy+116
 SCCM_IconWin_RemIcon		EQU	SCC_Dummy+117
 SCCM_IconWin_MakeWBArg		EQU	SCC_Dummy+118
@@ -1289,6 +1302,14 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
 	BPTR	mri_Lock
 	APTR	mri_Name
 	LABEL	mri_SIZEOF
+
+; SCCM_IconWin_UpdateIconTags
+    STRUCTURE msg_UpdateIconTags,0
+	ULONG 	muit_MethodID;
+	BPTR 	muit_Lock;
+	APTR 	muit_Name;
+	ULONG	muit_TagList		 ; may contain more tags added
+	LABEL	muit_SIZEOF
 
 ; SCCM_IconWin_MakeWBArg
     STRUCTURE msg_MakeWbArg,0

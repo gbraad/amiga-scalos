@@ -1306,6 +1306,7 @@ static struct ScaIconNode *ImmediateUpdateIcon(struct internalScaWindowTask *iwt
 		ria.ria_x = gg->LeftEdge;
 		ria.ria_y = gg->TopEdge;
 		ria.ria_Lock = inUpdate->in_Lock ? DirLockCopy : BNULL;
+		ria.ria_IconType = ICONTYPE_NONE;
 
 		oldDir = CurrentDir(DirLockCopy);
 
@@ -1532,14 +1533,15 @@ static int CudCompare(const void *key1, const void *key2)
 ///
 
 /// RealUpdateIcon
-void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
+void RealUpdateIcon(struct internalScaWindowTask *iwt, struct UpdateIconData *arg)
 {
 	struct ScaReadIconArg ria;
 	BOOL IconSemaLocked;
 
 	d1(kprintf("%s/%s/%ld: arg=%08lx\n", __FILE__, __FUNC__, __LINE__, arg));
-	d1(kprintf("%s/%s/%ld: Name=<%s>\n", __FILE__, __FUNC__, __LINE__, arg->wa_Name));
-	debugLock_d1(arg->wa_Lock);
+	d1(kprintf("%s/%s/%ld: Name=<%s>\n", __FILE__, __FUNC__, __LINE__, arg->uid_WBArg.wa_Name));
+	d1(kprintf("%s/%s/%ld: IconType=%ld\n", __FILE__, __FUNC__, __LINE__, arg->uid_IconType));
+	debugLock_d1(arg->uid_WBArg.wa_Lock);
 
 	if (iwt->iwt_DragFlags & DRAGFLAGF_WindowLocked)
 		{
@@ -1560,11 +1562,15 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 
 		d1(KPrintF("%s/%s/%ld: Drawer Window\n", __FILE__, __FUNC__, __LINE__));
 
+		ria.ria_x = ria.ria_y = NO_ICON_POSITION_SHORT;
+		ria.ria_Lock = BNULL;
+		ria.ria_IconType = arg->uid_IconType;
+
 		ScalosLockIconListShared(iwt);
 
 		for (in = iwt->iwt_WindowTask.wt_IconList; in; in = (struct ScaIconNode *) in->in_Node.mln_Succ)
 			{
-			if (0 == Stricmp(arg->wa_Name, (STRPTR) GetIconName(in)))
+			if (0 == Stricmp(arg->uid_WBArg.wa_Name, (STRPTR) GetIconName(in)))
 				{
 				struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
 
@@ -1572,7 +1578,6 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 
 				ria.ria_x = gg->LeftEdge;
 				ria.ria_y = gg->TopEdge;
-				ria.ria_Lock = BNULL;
 
 				iconFound = TRUE;
 				break;
@@ -1590,13 +1595,14 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 			DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 				SCCM_IconWin_RemIcon,
 				iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
-				arg->wa_Name);
+				arg->uid_WBArg.wa_Name);
 			}
 		// Try to read icon
 		(void) DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 			SCCM_IconWin_ReadIcon,
-			arg->wa_Name,
-			iconFound ? &ria : NULL);
+			arg->uid_WBArg.wa_Name,
+			ria);
+//			  iconFound ? &ria : NULL);
 		}
 	else
 		{
@@ -1622,7 +1628,7 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 				// This is a device icon
 				BPTR diskLock;
 
-				if (arg->wa_Name && 0 != Stricmp((STRPTR) arg->wa_Name, "disk"))
+				if (arg->uid_WBArg.wa_Name && 0 != Stricmp((STRPTR) arg->uid_WBArg.wa_Name, "disk"))
 					continue;
 
 				diskLock = DiskInfoLock(in);
@@ -1630,7 +1636,7 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 					{
 					struct ScaBackdropIcon *bdi;
 					struct ScaIconNode *iny;
-					LONG SameLockResult = ScaSameLock(diskLock, arg->wa_Lock);
+					LONG SameLockResult = ScaSameLock(diskLock, arg->uid_WBArg.wa_Lock);
 
 					d1(kprintf("%s/%s/%ld: SameLock()=%ld\n", __FILE__, __FUNC__, __LINE__, SameLockResult));
 
@@ -1680,8 +1686,8 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 				d1(kprintf("%s/%s/%ld: non-disk icon\n", __FILE__, __FUNC__, __LINE__));
 				debugLock_d1(in->in_Lock);
 
-				if (LOCK_SAME == ScaSameLock(arg->wa_Lock, in->in_Lock)
-						&& 0 == Stricmp(arg->wa_Name, (STRPTR) GetIconName(in)))
+				if (LOCK_SAME == ScaSameLock(arg->uid_WBArg.wa_Lock, in->in_Lock)
+						&& 0 == Stricmp(arg->uid_WBArg.wa_Name, (STRPTR) GetIconName(in)))
 					{
 					struct ScaIconNode *iconList = NULL;
 					struct ExtGadget *gg = (struct ExtGadget *) in->in_Icon;
@@ -1696,7 +1702,8 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 
 					ria.ria_x = gg->LeftEdge;
 					ria.ria_y = gg->TopEdge;
-					ria.ria_Lock = arg->wa_Lock;
+					ria.ria_Lock = arg->uid_WBArg.wa_Lock;
+					ria.ria_IconType = arg->uid_IconType;
 
 					// (frees backdropIcon!)
 					FreeIconNode(iwt, &iconList, in);
@@ -1706,13 +1713,13 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 					ScalosUnLockIconList(iwt);
 					IconSemaLocked = FALSE;
 
-					oldDir = CurrentDir(arg->wa_Lock);
+					oldDir = CurrentDir(arg->uid_WBArg.wa_Lock);
 					debugLock_d1(oldDir);
 
 					// (generates new backdropIcon)
 					(void) DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 						SCCM_IconWin_ReadIcon,
-						arg->wa_Name, &ria);
+						arg->uid_WBArg.wa_Name, &ria);
 
 					debugLock_d1(oldDir);
 					CurrentDir(oldDir);
@@ -1735,10 +1742,10 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct WBArg *arg)
 
 	ScalosReleaseSemaphore(&iwt->iwt_UpdateSemaphore);
 
-	if (arg->wa_Lock)
-		UnLock(arg->wa_Lock);
-	if (arg->wa_Name)
-		FreeCopyString((STRPTR) arg->wa_Name);
+	if (arg->uid_WBArg.wa_Lock)
+		UnLock(arg->uid_WBArg.wa_Lock);
+	if (arg->uid_WBArg.wa_Name)
+		FreeCopyString((STRPTR) arg->uid_WBArg.wa_Name);
 }
 ///
 

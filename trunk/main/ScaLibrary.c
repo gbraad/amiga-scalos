@@ -2102,6 +2102,11 @@ LIBFUNC_P4(void, sca_UpdateIcon,
 					if ((BPTR)NULL == smui->smui_DirLock)
 						break;
 
+					if (ui_SIZE >= offsetof(struct ScaUpdateIcon_IW, ui_IconType) + sizeof(uiiw->ui_IconType))
+						smui->smui_IconType = uiiw->ui_IconType;
+					else
+						smui->smui_IconType = ICONTYPE_NONE;
+
 					smui->smui_IconName = AllocVec(1 + strlen(uiiw->ui_iw_Name), MEMF_PUBLIC);
 					if (NULL == smui->smui_IconName)
 						break;

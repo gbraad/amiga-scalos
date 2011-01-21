@@ -99,6 +99,7 @@ static ULONG IconWindowClass_New(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_Dispose(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_Open(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg);
+static ULONG IconWindowClass_UpdateIconTags(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_AddIcon(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_RemIcon(Class *cl, Object *o, Msg msg);
 static ULONG IconWindowClass_MakeWbArg(Class *cl, Object *o, Msg msg);
@@ -275,6 +276,10 @@ static SAVEDS(ULONG) IconWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 
 	case SCCM_IconWin_UpdateIcon:
 		Result = IconWindowClass_UpdateIcon(cl, o, msg);
+		break;
+
+	case SCCM_IconWin_UpdateIconTags:
+		Result = IconWindowClass_UpdateIconTags(cl, o, msg);
 		break;
 
 	case SCCM_IconWin_AddIcon:
@@ -1299,14 +1304,23 @@ static ULONG IconWindowClass_Open(Class *cl, Object *o, Msg msg)
 
 static ULONG IconWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 {
-	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct msg_RemIcon *mri = (struct msg_RemIcon *) msg;
+
+	return DoMethod(o, SCCM_IconWin_UpdateIconTags, mri->mri_Lock, mri->mri_Name, TAG_END);
+}
+
+//----------------------------------------------------------------------------
+
+static ULONG IconWindowClass_UpdateIconTags(Class *cl, Object *o, Msg msg)
+{
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
+	struct msg_UpdateIconTags *muit = (struct msg_UpdateIconTags *) msg;
 	struct DateStamp Now;
 	BOOL UpdateNow = TRUE;
 
 
-	d1(KPrintF("%s/%s/%ld: START Name=<%s>\n", __FILE__, __FUNC__, __LINE__, mri->mri_Name));
-	debugLock_d1(mri->mri_Lock);
+	d1(KPrintF("%s/%s/%ld: START Name=<%s>\n", __FILE__, __FUNC__, __LINE__, muit->muit_Name));
+	debugLock_d1(muit->muit_Lock);
 
 	DateStamp(&Now);
 	SubtractDateStamp(&Now, &iwt->iwt_LastIconUpdateTime);
@@ -1330,7 +1344,7 @@ static ULONG IconWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 	if (UpdateNow)
 		{
 		if (BNULL == iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock ||
-			LOCK_SAME == ScaSameLock(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock, mri->mri_Lock))
+			LOCK_SAME == ScaSameLock(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock, muit->muit_Lock))
 			{
 			struct SM_RealUpdateIcon *rui = (struct SM_RealUpdateIcon *) 
 				SCA_AllocMessage(MTYP_AsyncRoutine, 
@@ -1338,13 +1352,15 @@ static ULONG IconWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 
 			if (rui)
 				{
+				rui->rui_Args.uid_IconType = GetTagData(UPDATEICON_IconType, ICONTYPE_NONE, (struct TagItem *) &muit->muit_TagList);
 				rui->rui_AsyncRoutine.smar_EntryPoint = (ASYNCROUTINEFUNC) RealUpdateIcon;
-				if (mri->mri_Lock)
-					rui->rui_Args.wa_Lock = DupLock(mri->mri_Lock);
-				if (mri->mri_Name)
-					rui->rui_Args.wa_Name = AllocCopyString(mri->mri_Name);
+				if (muit->muit_Lock)
+					rui->rui_Args.uid_WBArg.wa_Lock = DupLock(muit->muit_Lock);
+				if (muit->muit_Name)
+					rui->rui_Args.uid_WBArg.wa_Name = AllocCopyString(muit->muit_Name);
 
 				d1(kprintf("%s/%s/%ld: Args=%08lx\n", __FILE__, __FUNC__, __LINE__, &rui->rui_Args));
+				d1(kprintf("%s/%s/%ld: uid_IconType=%lu\n", __FILE__, __FUNC__, __LINE__, rui->rui_Args.uid_IconType));
 				d1(kprintf("%s/%s/%ld: PutMsg iwt=%08lx  Msg=%08lx \n", __FILE__, __FUNC__, __LINE__, iwt, &rui->rui_AsyncRoutine.ScalosMessage.sm_Message));
 
 				PutMsg(iwt->iwt_WindowTask.wt_IconPort, &rui->rui_AsyncRoutine.ScalosMessage.sm_Message);
@@ -1375,6 +1391,7 @@ static ULONG IconWindowClass_AddIcon(Class *cl, Object *o, Msg msg)
 	ria.ria_x = mai->mai_x;
 	ria.ria_y = mai->mai_y;
 	ria.ria_Lock = mai->mai_Lock;
+	ria.ria_IconType = ICONTYPE_NONE;
 
 	d1(KPrintF("%s/%s/%ld: Name=<%s>  x=%ld  y=%ld\n", __FILE__, __FUNC__, __LINE__, mai->mai_Name, mai->mai_x, mai->mai_y));
 	debugLock_d1(ria.ria_Lock);
@@ -1946,14 +1963,16 @@ static ULONG IconWindowClass_GetDefIcon(Class *cl, Object *o, Msg msg)
 	Object *IconObj;
 
 	d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
-
 	d1(KPrintF("%s/%s/%ld: Name=<%s>\n", __FILE__, __FUNC__, __LINE__, mgd->mgd_Name));
+	d1(KPrintF("%s/%s/%ld: mgd_IconType=%lu\n", __FILE__, __FUNC__, __LINE__, mgd->mgd_IconType));
+
 	debugLock_d1(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock);
 
 	IconObj = SCA_GetDefIconObjectTags(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock,
 			mgd->mgd_Name,
 			IDTA_Text, (ULONG) mgd->mgd_Name,
 //			  DTA_Name, (ULONG) mgd->mgd_Name,
+			IDTA_Type, mgd->mgd_IconType,
 			IDTA_HalfShinePen, PalettePrefs.pal_PensList[PENIDX_HSHINEPEN],
 			IDTA_HalfShadowPen, PalettePrefs.pal_PensList[PENIDX_HSHADOWPEN],
 			IDTA_FrameTypeSel, CurrentPrefs.pref_FrameTypeSel,
@@ -2785,7 +2804,7 @@ static ULONG IconWindowClass_GetIconFileType(Class *cl, Object *o, Msg msg)
 
 			debugLock_d1(dLock);
 
-			mft->mft_IconNode->in_FileType = DefIconsIdentify(dLock, GetIconName(mft->mft_IconNode));
+			mft->mft_IconNode->in_FileType = DefIconsIdentify(dLock, GetIconName(mft->mft_IconNode), ICONTYPE_NONE);
 			}
 
 		if (NULL != mft->mft_IconNode->in_FileType)
@@ -2830,7 +2849,7 @@ static ULONG IconWindowClass_GetIconFileType(Class *cl, Object *o, Msg msg)
 			d1(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
 
 			if (dirLock)
-				mft->mft_IconNode->in_FileType = DefIconsIdentify(dirLock, mft->mft_IconNode->in_Name);
+				mft->mft_IconNode->in_FileType = DefIconsIdentify(dirLock, mft->mft_IconNode->in_Name, ICONTYPE_NONE);
 
 			d1(kprintf("%s/%s/%ld: FileType=%08lx\n", __FILE__, __FUNC__, __LINE__, mft->mft_IconNode->in_FileType));
 			break;

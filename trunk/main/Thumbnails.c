@@ -136,7 +136,7 @@ BOOL AddThumbnailIcon(struct internalScaWindowTask *iwt, Object *IconObj,
 			break;
 
 		TIMESTAMPCOUNT_START_d1(iwt, 13);
-		ftd = FindFileTypeForTypeNode(iwt, DefIconsIdentify(DirLock, Name));
+		ftd = FindFileTypeForTypeNode(iwt, DefIconsIdentify(DirLock, Name, ICONTYPE_NONE));
 		d1(KPrintF("%s/%s/%ld:  ftd=%08lx\n", __FILE__, __FUNC__, __LINE__, ftd));
 		TIMESTAMPCOUNT_END_d1(iwt, 13);
 		if (NULL == ftd)

@@ -230,7 +230,8 @@ struct ScaIconNode *TextWindowReadIcon(struct internalScaWindowTask *iwt,
 
 		pos = IsIconName(rild.rild_Name);
 
-		rild.rild_TypeNode = DefIconsIdentify(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock, rild.rild_Name);
+		rild.rild_TypeNode = DefIconsIdentify(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock, rild.rild_Name,
+			ria ? ria->ria_IconType : ICONTYPE_NONE);
 
 		d1(kprintf("%s/%s/%ld:  Name=<%s>  pos=%08lx\n", __FILE__, __FUNC__, __LINE__, rild.rild_Name, pos));
 

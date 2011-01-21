@@ -74,7 +74,7 @@ struct ScaWindowStruct *FindActiveScalosWindow(void);
 ULONG DeviceWindowCheckUpdate(struct internalScaWindowTask *iwt);
 ULONG IconWindowCheckUpdate(struct internalScaWindowTask *iwt);
 ULONG TextWindowCheckUpdate(struct internalScaWindowTask *iwt);
-void RealUpdateIcon(struct internalScaWindowTask *, struct WBArg *arg);
+void RealUpdateIcon(struct internalScaWindowTask *iwt, struct UpdateIconData *arg);
 ///
 /* ------------------------------------------------- */
 
@@ -199,7 +199,7 @@ LONG InitDefIcons(void);
 void CleanupDefIcons(void);
 void NewDefIconsPrefs(struct internalScaWindowTask *iwt, struct NotifyMessage *msg);
 BOOL ChangedDefIconsPrefs(void);
-struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name);
+struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name, ULONG IconType);
 Object *ReturnDefIconObjTags(BPTR dirLock, CONST_STRPTR Name, ULONG FirstTag, ...);
 Object *ReturnDefIconObj(BPTR dirLock, CONST_STRPTR Name, struct TagItem *TagList);
 ///

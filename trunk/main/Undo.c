@@ -3977,6 +3977,7 @@ static SAVEDS(LONG) RedoNewDrawerEvent(struct Hook *hook, APTR object, struct Un
 
 			upd.ui_iw_Lock = srcDirLock;
 			upd.ui_iw_Name = und->und_srcName;
+			upd.ui_IconType = ICONTYPE_NONE;
 
 			rc = PutIconObjectTags(IconObj, und->und_srcName,
 				TAG_END);
@@ -4030,6 +4031,7 @@ static SAVEDS(LONG) UndoSetProtectionEvent(struct Hook *hook, APTR object, struc
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = uspd->uspd_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		Success = SetProtection(uspd->uspd_IconName, uspd->uspd_OldProtection);
 
@@ -4073,6 +4075,7 @@ static SAVEDS(LONG) RedoSetProtectionEvent(struct Hook *hook, APTR object, struc
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = uspd->uspd_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		Success = SetProtection(uspd->uspd_IconName, uspd->uspd_OldProtection);
 
@@ -4116,6 +4119,7 @@ static SAVEDS(LONG) UndoSetCommentEvent(struct Hook *hook, APTR object, struct U
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = uscd->uscd_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		Success = SetComment(uscd->uscd_IconName, uscd->uscd_OldComment);
 
@@ -4159,6 +4163,7 @@ static SAVEDS(LONG) RedoSetCommentEvent(struct Hook *hook, APTR object, struct U
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = uscd->uscd_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		Success = SetComment(uscd->uscd_IconName, uscd->uscd_NewComment);
 
@@ -4208,6 +4213,7 @@ static SAVEDS(LONG) UndoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = ustd->ustd_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		SetAttrs(in->in_Icon,
 			IDTA_ToolTypes, (ULONG) ustd->ustd_OldToolTypes,
@@ -4273,6 +4279,7 @@ static SAVEDS(LONG) RedoSetToolTypesEvent(struct Hook *hook, APTR object, struct
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = ustd->ustd_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		SetAttrs(in->in_Icon,
 			IDTA_ToolTypes, (ULONG) ustd->ustd_OldToolTypes,
@@ -4333,6 +4340,7 @@ static SAVEDS(LONG) UndoChangeIconObjectEvent(struct Hook *hook, APTR object, st
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = uciod->uciod_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		rc = PutIconObjectTags(uciod->uciod_OldIconObject, uciod->uciod_IconName,
 			TAG_END);
@@ -4382,6 +4390,7 @@ static SAVEDS(LONG) RedoChangeIconObjectEvent(struct Hook *hook, APTR object, st
 
 		upd.ui_iw_Lock = dirLock;
 		upd.ui_iw_Name = uciod->uciod_IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		rc = PutIconObjectTags(uciod->uciod_NewIconObject, uciod->uciod_IconName,
 			TAG_END);

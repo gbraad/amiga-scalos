@@ -944,7 +944,11 @@ Object *FunctionsFindIconObjectForPath(CONST_STRPTR Path, BOOL *WindowListLocked
 				if (NULL == IconObj)
 					{
 					IconObj = (Object *) DoMethod(iInfos.xii_iinfos.ii_MainWindowStruct->ws_WindowTask->mt_MainObject,
-						SCCM_IconWin_GetDefIcon, FullPath, ST_USERDIR, 0);
+						SCCM_IconWin_GetDefIcon,
+						FullPath,
+						ST_USERDIR,
+						0,
+						WBDRAWER);
 
 					d1(KPrintF("%s/%s/%ld: IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 					}

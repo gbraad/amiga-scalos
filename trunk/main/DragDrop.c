@@ -1388,6 +1388,7 @@ static void Desktop2IconDrop(struct ScalosArg **ArgList,
 
 					upd.ui_iw_Lock = DrInfo->drin_Arg->scarg_lock;
 					upd.ui_iw_Name = DrInfo->drin_Arg->scarg_name;
+					upd.ui_IconType = ICONTYPE_NONE;
 
 					SCA_UpdateIcon(SIV_IconWin, &upd, sizeof(upd));
 					}

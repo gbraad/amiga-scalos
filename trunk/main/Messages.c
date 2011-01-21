@@ -496,8 +496,10 @@ static ULONG UpdateIconMsg(struct internalScaWindowTask *iwt, struct Message *ms
 		__FILE__, __FUNC__, __LINE__, smui->smui_DirLock, smui->smui_IconName));
 	debugLock_d1(smui->smui_DirLock);
 
-	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_UpdateIcon, 
-		smui->smui_DirLock, smui->smui_IconName);
+	DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_UpdateIconTags,
+		smui->smui_DirLock, smui->smui_IconName,
+		UPDATEICON_IconType, smui->smui_IconType,
+		TAG_END);
 
 	UnLock(smui->smui_DirLock);
 	FreeVec((STRPTR) smui->smui_IconName);
