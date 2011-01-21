@@ -371,6 +371,7 @@ static void AddWbStartupEntries(struct internalScaWindowTask *iwt)
 
 					ria.ria_Lock = dirLock;
 					ria.ria_x = ria.ria_y = NO_ICON_POSITION_SHORT;
+					ria.ria_IconType = ICONTYPE_NONE;
 
 					IconName = FilePart(cnl->cnl_Line);
 

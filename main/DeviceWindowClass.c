@@ -999,7 +999,7 @@ static struct ScaIconNode *DevIconOk2(struct internalScaWindowTask *iwt, struct 
 	in->in_Icon = di->di_Icon = iconObj;
 	in->in_DeviceIcon = di;
 //	  in->in_FileType = (struct TypeNode *) WBDISK;
-	in->in_FileType = DefIconsIdentify(BNULL, di->di_Volume);
+	in->in_FileType = DefIconsIdentify(BNULL, di->di_Volume, WBDISK);
 	in->in_Flags |= INF_Identified;
 
 	d1(KPrintF("%s/%s/%ld: <%s>  in_FileType=%08lx\n", __FILE__, __FUNC__, __LINE__, GetIconName(in), in->in_FileType));

@@ -461,7 +461,7 @@ static LONG match(CONST_STRPTR a, CONST_STRPTR b, size_t len)
 
 
 
-/* DefIconsIdentify(BPTR dirLock, CONST_STRPTR *Name):
+/* DefIconsIdentify(BPTR dirLock, CONST_STRPTR *Name, ULONG IconType):
  *
  *	Heuristically identify the type of a file.
 
@@ -470,7 +470,7 @@ static LONG match(CONST_STRPTR a, CONST_STRPTR b, size_t len)
 it returns NULL for failure
  */
 
-struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name)
+struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name, ULONG IconType)
 {
 	struct TypeNode *type = NULL;
 	T_ExamineData *fib = NULL;
@@ -530,6 +530,10 @@ struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name)
 				UnLock(lock);
 			else
 				type = (struct TypeNode *)WBDISK;
+			}
+		else if (ICONTYPE_NONE != IconType)
+			{
+			type = (struct TypeNode *) IconType;
 			}
 		}
 
@@ -1009,7 +1013,7 @@ Object *ReturnDefIconObj(BPTR dirLock, CONST_STRPTR Name, struct TagItem *TagLis
 	Object *IconObj = NULL;
 
 	if (Name && strlen(Name) > 0)
-		tn = DefIconsIdentify(dirLock, Name);
+		tn = DefIconsIdentify(dirLock, Name, GetTagData(IDTA_Type, ICONTYPE_NONE, TagList));
 	else
 		tn = DefIconsIdentifyDisk(dirLock);
 
@@ -1042,7 +1046,7 @@ Object *ReturnDefIconObj(BPTR dirLock, CONST_STRPTR Name, struct TagItem *TagLis
 		d1(KPrintF("%s/%s/%ld: WBAPPICON IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));
 		break;
 
-	case 0:
+	case ICONTYPE_NONE:
 		IconObj = ReadDefIconObjectForNameFallback(WBPROJECT,
 			"project", dirLock, Name, TagList);
 		d1(KPrintF("%s/%s/%ld: ??? IconObj=%08lx\n", __FILE__, __FUNC__, __LINE__, IconObj));

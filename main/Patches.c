@@ -100,7 +100,7 @@ static STRPTR *CloneDOToolTypes(CONST_STRPTR *origToolTypes);
 static struct DiskObject *CloneDiskObject(const struct DiskObject *origDiskObj);
 static void ScaFreeDiskObject(struct DiskObject *DiskObj);
 static SAVEDS(ULONG) AppChangeFunc(struct WBArg *ArgArray, struct SM_RunProcess *msg);
-static void PatchRefreshIcon(CONST_STRPTR IconName);
+static void PatchRefreshIcon(CONST_STRPTR IconName, UBYTE IconType);
 static BOOL IsScalosProcess(void);
 static void PatchOpenDisposeData(void *data);
 static void PatchOpenDisposeKey(void *key);
@@ -1422,6 +1422,7 @@ LIBFUNC_P4(void, sca_UpdateWorkbench,
 
 	upd.ui_iw_Lock = ParentLock;
 	upd.ui_iw_Name = (STRPTR) Name;
+	upd.ui_IconType = ICONTYPE_NONE;
 
 	SCA_UpdateIcon(SIV_IconWin, &upd, sizeof(upd));
 }
@@ -1511,7 +1512,7 @@ LIBFUNC_P3(BOOL, sca_PutDiskObject,
 	d1(KPrintF("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	if (Success)
-		PatchRefreshIcon(Name);
+		PatchRefreshIcon(Name, diskObj->do_Type);
 
 	return Success;
 }
@@ -1532,7 +1533,7 @@ LIBFUNC_P2(BOOL, sca_DeleteDiskObject,
 	d1(KPrintF("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
 	if (Success)
-		PatchRefreshIcon(Name);
+		PatchRefreshIcon(Name, ICONTYPE_NONE);
 
 	return Success;
 }
@@ -1559,7 +1560,7 @@ LIBFUNC_P4(BOOL, sca_PutIconTagList,
 	d1(KPrintF("%s/%s/%ld: Success=%ld  NotifyWB=%ld\n", __FILE__, __FUNC__, __LINE__, Success, NotifyWB));
 
 	if (Success)
-		PatchRefreshIcon(Name);
+		PatchRefreshIcon(Name, diskObj->do_Type);
 
 	return Success;
 }
@@ -1567,9 +1568,9 @@ LIBFUNC_END
 
 
 
-static void PatchRefreshIcon(CONST_STRPTR IconName)
+static void PatchRefreshIcon(CONST_STRPTR IconName, UBYTE IconType)
 {
-	d1(KPrintF("%s/%s/%ld: START Name=<%s>\n", __FILE__, __FUNC__, __LINE__, IconName));
+	d1(KPrintF("%s/%s/%ld: START Name=<%s>  IconType=%lu\n", __FILE__, __FUNC__, __LINE__, IconName, IconType));
 	if (!IsScalosProcess())
 		{
 		STRPTR Path = AllocCopyString(IconName);
@@ -1597,6 +1598,7 @@ static void PatchRefreshIcon(CONST_STRPTR IconName)
 			if (upd.ui_iw_Lock)
 				{
 				upd.ui_iw_Name = FilePart(Path);
+				upd.ui_IconType = IconType;
 				d1(KPrintF("%s/%s/%ld: ui_iw_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, upd.ui_iw_Name));
 
 				SCA_UpdateIcon(WSV_Type_IconWindow, &upd, sizeof(upd));
@@ -1628,7 +1630,7 @@ LIBFUNC_P2(ULONG, sca_DeleteFile,
 
 	if (Success)
 		{
-		PatchRefreshIcon(Name);
+		PatchRefreshIcon(Name, ICONTYPE_NONE);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
@@ -1730,6 +1732,7 @@ LIBFUNC_P3(ULONG, sca_Rename,
 
 			upd.ui_iw_Lock = parentLock;
 			upd.ui_iw_Name = fName;
+			upd.ui_IconType = ICONTYPE_NONE;
 
 			debugLock_d1(parentLock);
 			d1(KPrintF("%s/%s/%ld: fName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
@@ -1782,6 +1785,7 @@ LIBFUNC_P3(ULONG, sca_Rename,
 
 			upd.ui_iw_Lock = parentLock;
 			upd.ui_iw_Name = fName;
+			upd.ui_IconType = ICONTYPE_NONE;
 
 			debugLock_d1(parentLock);
 			d1(KPrintF("%s/%s/%ld: fName=<%s>\n", __FILE__, __FUNC__, __LINE__, fName));
@@ -1993,7 +1997,7 @@ LIBFUNC_P2(ULONG, sca_Close,
 	if (DoUpdate)
 		{
 		d1(KPrintF("%s/%s/%ld: FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, FileName));
-		PatchRefreshIcon(FileName);
+		PatchRefreshIcon(FileName, ICONTYPE_NONE);
 		}
 
 	if (FileName)
@@ -2026,7 +2030,7 @@ LIBFUNC_P2(BPTR, sca_CreateDir,
 
 	if (BNULL != lock)
 		{
-		PatchRefreshIcon(name);
+		PatchRefreshIcon(name, WBDRAWER);
 		}
 
 	d1(KPrintF("%s/%s/%ld: END lock=%ld\n", __FILE__, __FUNC__, __LINE__, lock));

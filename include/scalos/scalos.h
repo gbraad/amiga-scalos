@@ -13,7 +13,7 @@
 **  All Rights Reserved
 **
 **
-** next Tag to use :	(SCC_Dummy+225)
+** next Tag to use :	(SCC_Dummy+226)
 */
 
 #ifndef DOS_DOS_H
@@ -438,6 +438,12 @@ struct ScalosMessage
 	ULONG			sm_MessageType;		// SCA_AllocMessage() type
 	};
 
+struct UpdateIconData
+	{
+	struct WBArg uid_WBArg;
+	ULONG uid_IconType;
+	};
+
 struct SM_CloseWindow
 	{
 	struct ScalosMessage	ScalosMessage;
@@ -608,7 +614,7 @@ struct SM_RunMenuCmd
 struct SM_RealUpdateIcon
 	{
 	struct SM_AsyncRoutine rui_AsyncRoutine;
-	struct WBArg rui_Args;
+	struct UpdateIconData rui_Args;
 	};
 
 struct SM_ShowPopupMenu
@@ -1208,6 +1214,13 @@ struct ScalosNodeList
 #define SCCM_IconWin_UpdateIcon			(SCC_Dummy+115)
 // BPTR Lock
 // APTR Name
+
+// ---------------------------------------------------------------------------
+
+#define SCCM_IconWin_UpdateIconTags		(SCC_Dummy+225)
+// BPTR Lock
+// APTR Name
+// ULONG Tag, Tag, ... TAG_END
 
 // ---------------------------------------------------------------------------
 
@@ -1934,6 +1947,7 @@ struct ScaReadIconArg
 	WORD	ria_x;
 	WORD	ria_y;
 	BPTR	ria_Lock;
+	ULONG	ria_IconType;
 	};
 
 /* ----------------------- Scalos Class Hierarchy -------------------------
@@ -2009,9 +2023,8 @@ struct DragEnter
 
 
 /****************************************************************************/
-
-// +jl+ 20010623
-// Tags for ScalosControlA() library call
+/*	Tags for ScalosControlA() library call                 		    */
+/****************************************************************************/
 
 #define	SCALOSCONTROL_BASE		0x80530300
 
@@ -2203,6 +2216,14 @@ struct DragEnter
 
 
 /****************************************************************************/
+/*	Tags for SCCM_IconWin_UpdateIconTags                   		    */
+/****************************************************************************/
+#define	SCALOSUPDATEICONTAGS_BASE		0x80530301
+
+#define UPDATEICON_IconType                     (SCALOSUPDATEICONTAGS_BASE+1)
+
+
+/****************************************************************************/
 /*	Method structures for all Scalos SCCM_*** class methods		    */
 /****************************************************************************/
 
@@ -2369,6 +2390,15 @@ struct msg_RemIcon
 	CONST_STRPTR mri_Name;
 	};
 
+// SCCM_IconWin_UpdateIconTags
+struct msg_UpdateIconTags
+	{
+	ULONG muit_MethodID;
+	BPTR muit_Lock;
+	CONST_STRPTR muit_Name;
+	ULONG muit_TagList[0];
+	};
+
 // SCCM_IconWin_MakeWBArg
 struct msg_MakeWbArg
 	{
@@ -2427,6 +2457,7 @@ struct msg_GetDefIcon
 	CONST_STRPTR mgd_Name;
 	LONG mgd_Type;		// fib_DirEntryType from FileInfoBlock
 	ULONG mgd_Protection;	// fib_Protection from FileInfoBlock
+	ULONG mgd_IconType;	// WB icon type as fallback if object cannot be locked
 	};
 
 // SCCM_IconWin_MenuCommand

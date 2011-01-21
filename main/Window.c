@@ -1373,6 +1373,7 @@ LONG SaveIconObject(Object *IconObj, BPTR DirLock,
 
 		upd.ui_iw_Lock = DirLock;
 		upd.ui_iw_Name = (STRPTR) IconName;
+		upd.ui_IconType = ICONTYPE_NONE;
 
 		SCA_UpdateIcon(SIV_IconWin, &upd, sizeof(upd));
 		}

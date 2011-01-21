@@ -59,6 +59,7 @@ IconWindow.sca/SCCM_IconWin_UnCleanUp
 IconWindow.sca/SCCM_IconWin_UnCleanUpRegion
 IconWindow.sca/SCCM_IconWin_Update
 IconWindow.sca/SCCM_IconWin_UpdateIcon
+IconWindow.sca/SCCM_IconWin_UpdateIconTags
 IconWindow.sca/SCCM_IconWin_UpdateControlBar
 IconWindow.sca/SCCM_IconWin_UpdateStatusBar
 IconWindow.sca/SCCM_IconWin_WakeUp
@@ -1398,6 +1399,31 @@ IconWindow.sca/SCCM_IconWin_WBStartupFinished
 	none
 
     SEE ALSO
+        SCCM_IconWin_UpdateIconTags
+IconWindow.sca/SCCM_IconWin_UpdateIconTags
+
+    NAME
+	SCCM_IconWin_UpdateIconTags
+
+    SYNOPSIS
+	DoMethod(obj,SCCM_IconWin_UpdateIconTags,BPTR Lock,CONST_STRPTR Name,ULONG Tags,...);
+
+    FUNCTION
+	Update and redisplay icon.
+
+    INPUTS
+	Lock - Lock to icon directory
+	Name - name of icon
+	tags - Taglist
+		UPDATEICON_IconType - (ULONG) suggested icon type (e.g. "WBDRAWER")
+			which is used if automatik type detection failed (e.g. if
+			object cannot be locked).
+
+    RESULT
+	none
+
+    SEE ALSO
+        SCCM_IconWin_UpdateIcon
 IconWindow.sca/SCCM_IconWin_UpdateControlBar
 
     NAME

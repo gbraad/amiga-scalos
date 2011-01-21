@@ -847,7 +847,7 @@ Object *ClassGetWindowIconObject(struct internalScaWindowTask *iwt, Object **all
 					break;
 
 				IconObj = *allocIconObj = (Object *) DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_GetDefIcon,
-					IconPath, DirEntryType, Protection);
+					IconPath, DirEntryType, Protection, ICONTYPE_NONE);
 				} while (0);
 
 			if (IconPath)

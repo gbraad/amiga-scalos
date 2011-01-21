@@ -543,6 +543,7 @@ ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in)
 
 		siw.ui_iw_Lock = NewParentDir;
 		siw.ui_iw_Name = FilePart(NewPath);
+		siw.ui_IconType = ICONTYPE_NONE;
 
 		d1(KPrintF("%s/%s/%ld: Lock=%08lx  Name=<%s>\n", __FILE__, __FUNC__, __LINE__, siw.ui_iw_Lock, siw.ui_iw_Name));
 
@@ -1188,7 +1189,7 @@ void PutAwayIcon(struct internalScaWindowTask *iwt,
 	BPTR rootLock = (BPTR)NULL;
 	struct BackDropList bdl;
 	STRPTR Path = NULL;
-	struct ScaUpdateIcon_IW UpdateIcon = { (BPTR)NULL, NULL };
+	struct ScaUpdateIcon_IW UpdateIcon = { (BPTR)NULL, NULL, ICONTYPE_NONE };
 
 	BackDropInitList(&bdl);
 

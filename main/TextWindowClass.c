@@ -99,12 +99,13 @@ static ULONG TextWindowClass_InsertIcon(Class *cl, Object *o, Msg msg);
 static ULONG TextWindowClass_ImmediateCheckUpdate(Class *cl, Object *o, Msg msg);
 static ULONG TextWindowClass_DrawIcon(Class *cl, Object *o, Msg msg);
 static ULONG TextWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg);
+static ULONG TextWindowClass_UpdateIconTags(Class *cl, Object *o, Msg msg);
 static ULONG TextWindowClass_DrawColumnHeaders(Class *cl, Object *o, Msg msg);
 static void ReplaceTextIcon(struct internalScaWindowTask *iwt, 
 	struct ScaIconNode *inOld, struct ScaIconNode *inNew);
 static SAVEDS(ULONG) INTERRUPT ColWidthChangeFunc(struct Hook *hook, Object *o, Msg msg);
 static void UpdateObjectForIcon(struct internalScaWindowTask *iwt, CONST_STRPTR IconName);
-static void ScheduleRealUpdateIcon(struct internalScaWindowTask *iwt, BPTR DirLock, CONST_STRPTR IconName);
+static void ScheduleRealUpdateIcon(struct internalScaWindowTask *iwt, BPTR DirLock, CONST_STRPTR IconName, ULONG IconType);
 static void InitTextWindowWidthArray(struct internalScaWindowTask *iwt,
 	struct TextWindowClassInstance *inst);
 static void TextWindowDrawSortMark(struct internalScaWindowTask *iwt,
@@ -228,7 +229,6 @@ static const enum ScalosSortOrder DefaultSortOrders[] =
 
 //----------------------------------------------------------------------------
 
-
 struct ScalosClass *initTextWindowClass(const struct PluginClass *plug)
 {
 	struct ScalosClass *TextWindowClass;
@@ -247,6 +247,7 @@ struct ScalosClass *initTextWindowClass(const struct PluginClass *plug)
 	return TextWindowClass;
 }
 
+//----------------------------------------------------------------------------
 
 static SAVEDS(ULONG) TextWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 {
@@ -318,6 +319,10 @@ static SAVEDS(ULONG) TextWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 		Result = TextWindowClass_UpdateIcon(cl, o, msg);
 		break;
 
+	case SCCM_IconWin_UpdateIconTags:
+		Result = TextWindowClass_UpdateIconTags(cl, o, msg);
+		break;
+
 	case SCCM_TextWin_DrawColumnHeaders:
 		Result = TextWindowClass_DrawColumnHeaders(cl, o, msg);
 		break;
@@ -330,6 +335,7 @@ static SAVEDS(ULONG) TextWindowClass_Dispatcher(Class *cl, Object *o, Msg msg)
 	return Result;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_ReadIconList(Class *cl, Object *o, Msg msg)
 {
@@ -355,6 +361,7 @@ static ULONG TextWindowClass_ReadIconList(Class *cl, Object *o, Msg msg)
 	return Result;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_ReadIcon(Class *cl, Object *o, Msg msg)
 {
@@ -387,6 +394,7 @@ static ULONG TextWindowClass_ReadIcon(Class *cl, Object *o, Msg msg)
 	return Result;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_RemIcon(Class *cl, Object *o, Msg msg)
 {
@@ -516,6 +524,7 @@ static ULONG TextWindowClass_RemIcon(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_DeltaMove(Class *cl, Object *o, Msg msg)
 {
@@ -576,6 +585,7 @@ static ULONG TextWindowClass_DeltaMove(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_SetVirtSize(Class *cl, Object *o, Msg msg)
 {
@@ -595,6 +605,7 @@ static ULONG TextWindowClass_SetVirtSize(Class *cl, Object *o, Msg msg)
 	return DoSuperMethodA(cl, o, msg);
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_Message(Class *cl, Object *o, Msg msg)
 {
@@ -668,6 +679,7 @@ static ULONG TextWindowClass_Message(Class *cl, Object *o, Msg msg)
 	return DoSuperMethodA(cl, o, msg);
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_New(Class *cl, Object *o, Msg msg)
 {
@@ -723,6 +735,7 @@ static ULONG TextWindowClass_New(Class *cl, Object *o, Msg msg)
 	return (ULONG) o;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_Dispose(Class *cl, Object *o, Msg msg)
 {
@@ -734,6 +747,7 @@ static ULONG TextWindowClass_Dispose(Class *cl, Object *o, Msg msg)
 	return DoSuperMethodA(cl, o, msg);
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_ReAdjust(Class *cl, Object *o, Msg msg)
 {
@@ -761,6 +775,7 @@ static ULONG TextWindowClass_ReAdjust(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_Cleanup(Class *cl, Object *o, Msg msg)
 {
@@ -804,6 +819,7 @@ static ULONG TextWindowClass_Cleanup(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_BeginUpdate(Class *cl, Object *o, Msg msg)
 {
@@ -816,6 +832,7 @@ static ULONG TextWindowClass_BeginUpdate(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_EndUpdate(Class *cl, Object *o, Msg msg)
 {
@@ -834,6 +851,7 @@ static ULONG TextWindowClass_EndUpdate(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_InsertIcon(Class *cl, Object *o, Msg msg)
 {
@@ -943,6 +961,7 @@ static ULONG TextWindowClass_InsertIcon(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_ImmediateCheckUpdate(Class *cl, Object *o, Msg msg)
 {
@@ -971,6 +990,7 @@ static ULONG TextWindowClass_ImmediateCheckUpdate(Class *cl, Object *o, Msg msg)
 	return Success;
 }
 
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_DrawIcon(Class *cl, Object *o, Msg msg)
 {
@@ -1035,19 +1055,27 @@ static ULONG TextWindowClass_DrawIcon(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
-
-
+//----------------------------------------------------------------------------
 
 static ULONG TextWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 {
-	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 	struct msg_RemIcon *mri = (struct msg_RemIcon *) msg;
+
+	return DoMethod(o, SCCM_IconWin_UpdateIconTags, mri->mri_Lock, mri->mri_Name, TAG_END);
+}
+
+//----------------------------------------------------------------------------
+
+static ULONG TextWindowClass_UpdateIconTags(Class *cl, Object *o, Msg msg)
+{
+	struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
+	struct msg_UpdateIconTags *muit = (struct msg_UpdateIconTags *) msg;
 	struct DateStamp Now;
 	BOOL UpdateNow = TRUE;
 
 
-	d1(KPrintF("%s/%s/%ld: START Name=<%s>\n", __FILE__, __FUNC__, __LINE__, mri->mri_Name));
-	debugLock_d1(mri->mri_Lock);
+	d1(KPrintF("%s/%s/%ld: START Name=<%s>\n", __FILE__, __FUNC__, __LINE__, muit->muit_Name));
+	debugLock_d1(muit->muit_Lock);
 
 	DateStamp(&Now);
 	SubtractDateStamp(&Now, &iwt->iwt_LastIconUpdateTime);
@@ -1071,20 +1099,24 @@ static ULONG TextWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 	if (UpdateNow)
 		{
 		if (BNULL == iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock ||
-			LOCK_SAME == ScaSameLock(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock, mri->mri_Lock))
+			LOCK_SAME == ScaSameLock(iwt->iwt_WindowTask.mt_WindowStruct->ws_Lock, muit->muit_Lock))
 			{
-			ScheduleRealUpdateIcon(iwt, mri->mri_Lock, mri->mri_Name);
+			ULONG IconType;
+
+			IconType = GetTagData(UPDATEICON_IconType, ICONTYPE_NONE, (struct TagItem *) &muit->muit_TagList);
+
+			ScheduleRealUpdateIcon(iwt, muit->muit_Lock, muit->muit_Name, IconType);
 
 			if (IsShowAll(iwt->iwt_WindowTask.mt_WindowStruct))
 				{
-				STRPTR IconName = ScalosAlloc(1 + strlen(mri->mri_Name) + strlen(".info"));
+				STRPTR IconName = ScalosAlloc(1 + strlen(muit->muit_Name) + strlen(".info"));
 
 				if (IconName)
 					{
-					strcpy(IconName, mri->mri_Name);
+					strcpy(IconName, muit->muit_Name);
 					strcat(IconName, ".info");
 
-					ScheduleRealUpdateIcon(iwt, mri->mri_Lock, IconName);
+					ScheduleRealUpdateIcon(iwt, muit->muit_Lock, IconName, IconType);
 					ScalosFree(IconName);
 					}
 				}
@@ -1094,6 +1126,7 @@ static ULONG TextWindowClass_UpdateIcon(Class *cl, Object *o, Msg msg)
 	return 1;
 }
 
+//----------------------------------------------------------------------------
 
 static void ReplaceTextIcon(struct internalScaWindowTask *iwt, 
 	struct ScaIconNode *inOld, struct ScaIconNode *inNew)
@@ -1145,6 +1178,7 @@ static void ReplaceTextIcon(struct internalScaWindowTask *iwt,
 	FreeIconList(iwt, &dummyIconList);
 }
 
+//----------------------------------------------------------------------------
 
 static SAVEDS(ULONG) INTERRUPT ColWidthChangeFunc(struct Hook *hook, Object *o, Msg msg)
 {
@@ -1160,6 +1194,7 @@ static SAVEDS(ULONG) INTERRUPT ColWidthChangeFunc(struct Hook *hook, Object *o, 
 	return 0;
 }
 
+//----------------------------------------------------------------------------
 
 static void UpdateObjectForIcon(struct internalScaWindowTask *iwt, CONST_STRPTR IconName)
 {
@@ -1184,19 +1219,21 @@ static void UpdateObjectForIcon(struct internalScaWindowTask *iwt, CONST_STRPTR 
 		}
 }
 
+//----------------------------------------------------------------------------
 
-static void ScheduleRealUpdateIcon(struct internalScaWindowTask *iwt, BPTR DirLock, CONST_STRPTR IconName)
+static void ScheduleRealUpdateIcon(struct internalScaWindowTask *iwt, BPTR DirLock, CONST_STRPTR IconName, ULONG IconType)
 {
 	struct SM_RealUpdateIcon *rui = (struct SM_RealUpdateIcon *) 
 		SCA_AllocMessage(MTYP_AsyncRoutine, sizeof(struct SM_RealUpdateIcon) - sizeof(struct ScalosMessage));
 
 	if (rui)
 		{
+		rui->rui_Args.uid_IconType = IconType;
 		rui->rui_AsyncRoutine.smar_EntryPoint = (ASYNCROUTINEFUNC) RealUpdateIcon;
 		if (DirLock)
-			rui->rui_Args.wa_Lock = DupLock(DirLock);
+			rui->rui_Args.uid_WBArg.wa_Lock = DupLock(DirLock);
 		if (IconName)
-			rui->rui_Args.wa_Name = AllocCopyString(IconName);
+			rui->rui_Args.uid_WBArg.wa_Name = AllocCopyString(IconName);
 
 		d1(kprintf("%s/%s/%ld: Args=%08lx\n", __FILE__, __FUNC__, __LINE__, &rui->rui_Args));
 
@@ -1206,6 +1243,7 @@ static void ScheduleRealUpdateIcon(struct internalScaWindowTask *iwt, BPTR DirLo
 		}
 }
 
+//----------------------------------------------------------------------------
 
 // draw TextWindow column headers
 static ULONG TextWindowClass_DrawColumnHeaders(Class *cl, Object *o, Msg msg)
@@ -1354,6 +1392,7 @@ static ULONG TextWindowClass_DrawColumnHeaders(Class *cl, Object *o, Msg msg)
 	return 0;
 }
 
+//----------------------------------------------------------------------------
 
 // adjust text icons to have same width
 void ReposTextIcons2(struct internalScaWindowTask *iwt)
@@ -1408,6 +1447,7 @@ void ReposTextIcons2(struct internalScaWindowTask *iwt)
 	d1(KPrintF("%s/%s/%ld: Left=%ld  Width=%ld  BoundsWidth=%ld\n", __FILE__, __FUNC__, __LINE__, Left, Width, BoundsWidth));
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1425,6 +1465,7 @@ static LONG TextIconCompareNameAscFunc(struct Hook *hook,
 	return Stricmp(in2->in_Name, in1->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1442,6 +1483,7 @@ static LONG TextIconCompareNameDescFunc(struct Hook *hook,
 	return Stricmp(in1->in_Name, in2->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1463,6 +1505,7 @@ static LONG TextIconCompareSizeAscFunc(struct Hook *hook,
 	return ((LONG) Size2 - (LONG) Size1);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1484,6 +1527,7 @@ static LONG TextIconCompareSizeDescFunc(struct Hook *hook,
 	return ((LONG) Size1 - (LONG) Size2);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1509,6 +1553,7 @@ static LONG TextIconCompareDateAscFunc(struct Hook *hook,
 	return CompareDates(&ds2, &ds1);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1534,6 +1579,7 @@ static LONG TextIconCompareDateDescFunc(struct Hook *hook,
 	return CompareDates(&ds1, &ds2);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1558,6 +1604,7 @@ static LONG TextIconCompareTimeAscFunc(struct Hook *hook,
 	return CompareDates(&ds2, &ds1);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1582,6 +1629,7 @@ static LONG TextIconCompareTimeDescFunc(struct Hook *hook,
 	return CompareDates(&ds1, &ds2);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1605,6 +1653,7 @@ static LONG TextIconCompareCommentAscFunc(struct Hook *hook,
 	return Stricmp(Comment2, Comment1);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1628,6 +1677,7 @@ static LONG TextIconCompareCommentDescFunc(struct Hook *hook,
 	return Stricmp(Comment1, Comment2);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1649,6 +1699,7 @@ static LONG TextIconCompareProtAscFunc(struct Hook *hook,
 	return ((LONG) Prot2 - (LONG) Prot1);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1670,6 +1721,7 @@ static LONG TextIconCompareProtDescFunc(struct Hook *hook,
 	return ((LONG) Prot1 - (LONG) Prot2);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1696,6 +1748,7 @@ static LONG TextIconCompareOwnerAscFunc(struct Hook *hook,
 	return Stricmp(in2->in_Name, in1->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1722,6 +1775,7 @@ static LONG TextIconCompareOwnerDescFunc(struct Hook *hook,
 	return Stricmp(in1->in_Name, in2->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1748,6 +1802,7 @@ static LONG TextIconCompareGroupAscFunc(struct Hook *hook,
 	return Stricmp(in2->in_Name, in1->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1774,6 +1829,7 @@ static LONG TextIconCompareGroupDescFunc(struct Hook *hook,
 	return Stricmp(in1->in_Name, in2->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1814,6 +1870,7 @@ static LONG TextIconCompareFileTypeAscFunc(struct Hook *hook,
 	return Stricmp(in2->in_Name, in1->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 // compare function for text icon list sorting
 // drawers are sorted first
@@ -1854,6 +1911,7 @@ static LONG TextIconCompareFileTypeDescFunc(struct Hook *hook,
 	return Stricmp(in1->in_Name, in2->in_Name);
 }
 
+//----------------------------------------------------------------------------
 
 static LONG TextIconCompareIsDrawer(const struct ScaIconNode *in2, const struct ScaIconNode *in1)
 {
@@ -1880,6 +1938,7 @@ static LONG TextIconCompareIsDrawer(const struct ScaIconNode *in2, const struct 
 	return 0;
 }
 
+//----------------------------------------------------------------------------
 
 HOOKFUNC GetTextIconSortFunction(struct internalScaWindowTask *iwt)
 {
@@ -1905,6 +1964,7 @@ HOOKFUNC GetTextIconSortFunction(struct internalScaWindowTask *iwt)
 	return SortFunc;
 }
 
+//----------------------------------------------------------------------------
 
 static void InitTextWindowWidthArray(struct internalScaWindowTask *iwt,
 	struct TextWindowClassInstance *inst)
@@ -1958,7 +2018,7 @@ static void InitTextWindowWidthArray(struct internalScaWindowTask *iwt,
 		}
 }
 
-
+//----------------------------------------------------------------------------
 
 static void TextWindowDrawSortMark(struct internalScaWindowTask *iwt,
 	struct TextWindowClassInstance *inst,
@@ -2019,4 +2079,7 @@ static void TextWindowDrawSortMark(struct internalScaWindowTask *iwt,
 			}
 		}
 }
+
+//----------------------------------------------------------------------------
+
 

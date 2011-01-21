@@ -29,6 +29,8 @@
 
 #define	BNULL		((BPTR) NULL)
 
+#define	ICONTYPE_NONE		0
+
 #define	MAX_ICON_UPDATE_COUNT	3		// maximum number of icons that will be updated immediately within 0.5s
 
 #define FIBF_HIDDEN		(1<<7)		// 25.11.2004 Define Hidden protection bit

@@ -447,7 +447,10 @@ static ULONG TextIcon_Get(Class *cl, Object *o, Msg msg)
 
 	case TIDTA_TypeNode:
 		if (!IS_TYPENODE(inst->txicl_TypeNode))
-			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock, (STRPTR)inst->txicl_rild.rild_Name);
+			{
+			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock,
+				(STRPTR)inst->txicl_rild.rild_Name, ICONTYPE_NONE);
+			}
 
 		*(opg->opg_Storage) = inst->txicl_TypeNode ? (ULONG) inst->txicl_TypeNode : inst->txicl_rild.rild_IconType;
 		break;
@@ -935,7 +938,10 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 	if (IsColumnEnabled(TXICOL_FileType))
 		{
 		if (!IS_TYPENODE(inst->txicl_TypeNode))
-			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock, (STRPTR)inst->txicl_rild.rild_Name);
+			{
+			inst->txicl_TypeNode = DefIconsIdentify(inst->txicl_WindowTask->iwt_WindowTask.mt_WindowStruct->ws_Lock,
+				(STRPTR)inst->txicl_rild.rild_Name, ICONTYPE_NONE);
+			}
 
 		switch ((ULONG) inst->txicl_TypeNode)
 			{
