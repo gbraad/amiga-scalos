@@ -1,7 +1,7 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.5.0 - January 6, 2011
+ * libpng version 1.5.1rc01 - (PENDING RELEASE)
  *
  * Copyright (c) 1998-2011 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
@@ -21,6 +21,20 @@
 
 #ifndef PNGCONF_H
 #define PNGCONF_H
+
+// AMIGA BEGIN -------------------------
+#undef  PNG_CONSOLE_IO_SUPPORTED
+#undef 	PNG_MNG_FEATURES_SUPPORTED
+#undef  PNG_FLOATING_POINT_SUPPORTED
+#undef  PNG_FLOATING_ARITHMETIC_SUPPORTED
+#undef  PNG_PROGRESSIVE_READ_SUPPORTED
+#undef  PNG_STDIO_SUPPORTED
+#define PNG_NO_MNG_FEATURES
+#define PNG_NO_FLOATING_POINT_SUPPORTED
+#define PNG_NO_CONSOLE_IO
+#define PNG_NO_STDIO
+#define PNG_NO_PROGRESSIVE_READ
+// AMIGA END -------------------------
 
 /* PNG_NO_LIMITS_H may be used to turn off the use of the standard C
  * definition file for  machine specific limits, this may impact the
@@ -46,13 +60,6 @@
 #ifdef PNG_STDIO_SUPPORTED
 #  include <stdio.h>
 #endif
-
-// AMIGA
-#define PNG_NO_MNG_FEATURES
-#define PNG_NO_FLOATING_POINT_SUPPORTED
-#define PNG_NO_CONSOLE_IO
-#define PNG_NO_STDIO
-#define PNG_NO_PROGRESSIVE_READ
 
 /* This controls optimization of the reading of 16 and 32 bit values
  * from PNG files.  It can be set on a per-app-file basis - it
