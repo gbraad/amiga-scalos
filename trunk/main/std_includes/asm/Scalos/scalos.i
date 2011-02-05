@@ -1,7 +1,7 @@
 	IFND	SCALOS_I
 SCALOS_I	SET	1
 **
-**  $VER: scalos.h 41.9 (13. Mai 2010 15:47:59)
+**  $VER: scalos.h 41.9 (05 Feb 2011 20:24:29)
 **
 ** $Date$
 ** $Revision$
@@ -15,6 +15,7 @@ SCALOS_I	SET	1
 
 	include	scalos/iconobject.i
 	include	graphics/regions.i
+	include	workbench/startup.i
 
 ;---------------------------------------------------------------------------
 
@@ -156,33 +157,33 @@ mtyp_max = 38
     STRUCTURE ScalosMessage,MN_SIZE
 	ULONG	Signature	;("IMSG")
 	ULONG	MessageType	;AllocMsg() type
-	LABEL	sm_SIZEOF
+	LABEL	scm_SIZEOF
 
-    STRUCTURE SM_StartWindow,sm_SIZEOF
+    STRUCTURE SM_StartWindow,scm_SIZEOF
 	APTR	smsw_WindowStruct	; struct ScaWindowStruct *
 	LABEL	smsw_SIZEOF
 
 
-    STRUCTURE SM_CloseWindow,sm_SIZEOF
+    STRUCTURE SM_CloseWindow,scm_SIZEOF
 	LABEL	smmc_SIZEOF
 
-    STRUCTURE SM_Timer,sm_SIZEOF
+    STRUCTURE SM_Timer,scm_SIZEOF
 	APTR	smtm_WindowStruct
 	STRUCT	smtm_Time,TV_SIZE	; struct timeval
 	LABEL	smtm_SIZEOF
 
-    STRUCTURE SM_NewPattern,sm_SIZEOF
+    STRUCTURE SM_NewPattern,scm_SIZEOF
 	APTR	sm_np_PatternNode		;PatternNode or NULL
 	LABEL	smnp_SIZEOF
 
-    STRUCTURE SM_Sleep,sm_SIZEOF
+    STRUCTURE SM_Sleep,scm_SIZEOF
 	LABEL	smms_SIZEOF
 
-    STRUCTURE SM_Wakeup,sm_SIZEOF
+    STRUCTURE SM_Wakeup,scm_SIZEOF
 	ULONG	sm_mw_ReLayout			;BOOL
 	LABEL	smmw_SIZEOF
 
-    STRUCTURE SM_AsyncRoutine,sm_SIZEOF
+    STRUCTURE SM_AsyncRoutine,scm_SIZEOF
 	APTR	smar_EntryPoint			; address of start of code to execute
 						; code will be executed with pointer to ScaWindowTask in A5
 						; and pointer to memory AFTER EntryPoint in A0
@@ -190,49 +191,49 @@ mtyp_max = 38
 						; Result from routine will be placed in EntryPoint
 	LABEL	smar_SIZEOF
 
-    STRUCTURE SM_RunProcess,sm_SIZEOF
+    STRUCTURE SM_RunProcess,scm_SIZEOF
 	APTR	smrp_EntryPoint			; address of start of code to execute
 	ULONG	smrp_Flags			; ???
 	LABEL	smrp_SIZEOF
 
-    STRUCTURE SM_AppSleep,sm_SIZEOF
+    STRUCTURE SM_AppSleep,scm_SIZEOF
 	LABEL	smap_SIZEOF
 
-    STRUCTURE SM_AppWakeup,sm_SIZEOF
+    STRUCTURE SM_AppWakeup,scm_SIZEOF
 	ULONG	sm_aw_ReLayout			;BOOL
 	LABEL	smaw_SIZEOF
 
-    STRUCTURE SM_Redraw,sm_SIZEOF
+    STRUCTURE SM_Redraw,scm_SIZEOF
 	ULONG	smmr_Flags			;see below
 	LABEL	smmr_SIZEOF
 
-    STRUCTURE SM_Update,sm_SIZEOF
+    STRUCTURE SM_Update,scm_SIZEOF
 	LABEL	smmu_SIZEOF
 
-    STRUCTURE SM_UpdateIcon,sm_SIZEOF
+    STRUCTURE SM_UpdateIcon,scm_SIZEOF
     	BPTR	smui_DirLock
     	APTR	smui_IconName
 	LABEL	smui_SIZEOF
 
-    STRUCTURE SM_AddIcon,sm_SIZEOF
+    STRUCTURE SM_AddIcon,scm_SIZEOF
 	UWORD	smai_x
 	UWORD	smai_y
 	BPTR	smai_DirLock
 	APTR	smai_IconName
 	LABEL	smai_SIZEOF
 
-    STRUCTURE SM_RemIcon,sm_SIZEOF
+    STRUCTURE SM_RemIcon,scm_SIZEOF
 	BPTR	smri_DirLock
 	APTR	smri_IconName
 	LABEL	smri_SIZEOF
 
-    STRUCTURE SM_Iconify,sm_SIZEOF
+    STRUCTURE SM_Iconify,scm_SIZEOF
 	LABEL	smic_SIZEOF
 
-    STRUCTURE SM_UnIconify,sm_SIZEOF
+    STRUCTURE SM_UnIconify,scm_SIZEOF
 	LABEL	smun_SIZEOF
 
-    STRUCTURE SM_RunMenuCmd,sm_SIZEOF
+    STRUCTURE SM_RunMenuCmd,scm_SIZEOF
 	APTR	smrm_MenuItem
 	APTR	smrm_IconNode
 	ULONG	smrm_Flags
@@ -240,11 +241,11 @@ mtyp_max = 38
 
     STRUCTURE SM_RealUpdateIcon,0
 	STRUCT	rui_AsyncRoutine,smar_SIZEOF	; struct SM_AsyncRoutine
-	STRUCT	rui_Args,???                       ; struct WBArg
+	STRUCT	rui_Args,wa_SIZEOF		; struct WBArg
 	ULONG 	rui_IconType
 	LABEL	rui_SIZEOF
 
-    STRUCTURE SM_Requester,sm_SIZEOF
+    STRUCTURE SM_Requester,scm_SIZEOF
 	ULONG 	smrq_ReqResult		; \Result from easyRequest()
 	LABEL	smrq_ParentWindow	; /Parent window pointer
 	APTR	smrq_ArgList		; pointer to ArgList
@@ -252,7 +253,7 @@ mtyp_max = 38
 	ULONG	smrq_ArgListBuffer	; buffer for ArgList - allocated as large as needed
 	LABEL	smrq_SIZEOF
 
-    STRUCTURE SM_AsyncBackFill,sm_SIZEOF
+    STRUCTURE SM_AsyncBackFill,scm_SIZEOF
 	APTR	smab_BackfillFunc	; Backfill function entry point
 	APTR	smab_PatternNode	; struct PatternNode *
 	APTR	smab_PatternInfo	; struct PatternInfo *
@@ -260,16 +261,16 @@ mtyp_max = 38
 	LABEL	smab_PatternInfoCopy
 	LABEL	smab_SIZEOF
 
-    STRUCTURE SM_ShowTitle,sm_SIZEOF
+    STRUCTURE SM_ShowTitle,scm_SIZEOF
 	ULONG	smst_showTitle		;    ; BOOL
 	LABEL	smst_SIZEOF
 
-    STRUCTURE SM_ARexxRoutine,sm_SIZEOF
+    STRUCTURE SM_ARexxRoutine,scm_SIZEOF
 	APTR	smrx_EntryPoint
 	APTR	smrx_RexxMsg		; struct RexxMsg *
 	LABEL	smrx_SIZEOF
 
-    STRUCTURE SM_ShowPopupMenu,sm_SIZEOF
+    STRUCTURE SM_ShowPopupMenu,scm_SIZEOF
 	APTR	smpm_PopupMenu;		; struct PopupMenu *
 	APTR	smpm_IconNode;		; struct ScaIconNode *
 	ULONG	smpm_Flags;
@@ -277,23 +278,23 @@ mtyp_max = 38
 
 ; values in smpm_Flags - same as in mpm_Flags
 
-    STRUCTURE SM_ShowStatusBar,sm_SIZEOF
+    STRUCTURE SM_ShowStatusBar,scm_SIZEOF
 	ULONG	smsb_Visible;
 	LABEL	smsb_SIZEOF
 
-   STRUCTURE SM_ShowControlBar,sm_SIZEOF
+   STRUCTURE SM_ShowControlBar,scm_SIZEOF
 	ULONG	smcb_Visible;
 	LABEL	smcb_SIZEOF
 
-    STRUCTURE SM_RedrawIcon,sm_SIZEOF
+    STRUCTURE SM_RedrawIcon,scm_SIZEOF
 	APTR	smrdi_Icon;	       ; struct ScaIconNode *
 	LABEL	smrdi_SIZEOF
 
-    STRUCTURE SM_DoPopupMenu,sm_SIZEOF
+    STRUCTURE SM_DoPopupMenu,scm_SIZEOF
 	STRUCT	smdpm_InputEvent,ie_SIZEOF	; struct InputEvent
 	LABEL	smdpm_SIZEOF
 
-    STRUCTURE SM_RedrawIconObj,sm_SIZEOF
+    STRUCTURE SM_RedrawIconObj,scm_SIZEOF
 	APTR	smrio_IconObject;	; Object *
 	ULONG	smrio_Flags;
 	LABEL	smrio_SIZEOF
@@ -306,7 +307,7 @@ mtyp_max = 38
 	BITDEF	SMRIOFLAG,HighlightOn,4
 	BITDEF	SMRIOFLAG,HighlightOff,5
 
-    STRUCTURE SM_NewPreferences,sm_SIZEOF
+    STRUCTURE SM_NewPreferences,scm_SIZEOF
 	ULONG	smnprf_PrefsFlags
 	LABEL	smnprf_SIZEOF
 
@@ -321,36 +322,36 @@ mtyp_max = 38
 	BITDEF	SMNPFLAG,LOCALEPREFS,6
 	BITDEF	SMNPFLAG,FILETYPESPREFS,7
 
-    STRUCTURE SM_DeltaMove,sm_SIZEOF
+    STRUCTURE SM_DeltaMove,scm_SIZEOF
 	;struct ScalosMessage    ScalosMessage;
 	LONG 	smdm_DeltaX
 	LONG 	smdm_DeltaY
 	ULONG 	smdm_AdjustSlider
 	LABEL	smdm_SIZEOF
 
-    STRUCTURE SM_SetThumbnailImage_Remapped,sm_SIZEOF
+    STRUCTURE SM_SetThumbnailImage_Remapped,scm_SIZEOF
 	;struct ScalosMessage    ScalosMessage;
 	APTR	mtir_IconObject			; Object * - the icon to attach the new image to
 	APTR	smtir_NewImage			; struct ScalosBitMapAndColor * - the new image. ScalosBitMapAndColor contents is freed by message handler
 	LABEL	smtir_SIZEOF
 
-    STRUCTURE SM_SetThumbnailImage_ARGB,sm_SIZEOF
+    STRUCTURE SM_SetThumbnailImage_ARGB,scm_SIZEOF
 	;struct ScalosMessage    ScalosMessage;
 	APTR	smtia_IconObject		; Object * -- the icon to attach the new image to
 	STRUCT	smtia_NewImage,ARGBHeader_SIZEOF;	; the new image. ARGBHeader contents is freed by message handler
 	LABEL	smtia_SIZEOF
 
-    STRUCTURE SM_NewWindowPath,sm_SIZEOF
+    STRUCTURE SM_NewWindowPath,scm_SIZEOF
 	;struct ScalosMessage    ScalosMessage;
 	APTR 	smnwp_Path;			; STRPTR -- Path of the new drawer to display in the window
 	LABEL	smnwp_SIZEOF
 
-   STRUCTURE SM_PrefsChanged,sm_SIZEOF
+   STRUCTURE SM_PrefsChanged,scm_SIZEOF
 	;struct ScalosMessage    ScalosMessage;
 	ULONG	smpc_Flags;			; ULONG
 	LABEL	smpc_SIZEOF
 
-   STRUCTURE SM_StartChildProcess,sm_SIZEOF
+   STRUCTURE SM_StartChildProcess,scm_SIZEOF
 	;struct ScalosMessage    ScalosMessage;
 	APTR	smscp_WindowTask
 	LABEL	smscp_SIZEOF
@@ -1208,7 +1209,7 @@ TIDTA_Owner_Width       	equ DTA_Dummy+1166      ; (ISG)
     STRUCTURE msg_Message,0
 	ULONG	msm_MethodID
 	APTR	msm_iMsg
-	LABEL	msm_SIZEOF
+	LABEL	mscm_SIZEOF
 
 ; SCCM_AddToClipboard
     STRUCTURE msg_AddToClipboard,0
