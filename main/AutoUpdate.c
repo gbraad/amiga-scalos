@@ -1601,8 +1601,7 @@ void RealUpdateIcon(struct internalScaWindowTask *iwt, struct UpdateIconData *ar
 		(void) DoMethod(iwt->iwt_WindowTask.mt_MainObject,
 			SCCM_IconWin_ReadIcon,
 			arg->uid_WBArg.wa_Name,
-			ria);
-//			  iconFound ? &ria : NULL);
+			&ria);
 		}
 	else
 		{
