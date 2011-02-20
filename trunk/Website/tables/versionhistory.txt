@@ -1,4 +1,8 @@
 V41.8
+Improvement: added new menu command to open disks or drawers in a new browser window
+Improvement: Upgraded libpng to 1.5.1
+Improvement: Updated sqlite3.library to SQLite3 V3.7.5
+Bugfix: if new directory couldn't be locked upon creation (&quot;Object in use&quot;), Scalos failed to show drawer icon
 Improvement: if project icon has invalid tool, the pop-up requester now has an option to use the &quot;default tool&quot;, ie. the default tool of the corresponding default icon, as stored in ENV:Sys
 Improvement: If no default tool is present in a project icon, try to get a default icon and if present, use default tool from the default icon
 Improvement: updated libZ to version 1.2.5

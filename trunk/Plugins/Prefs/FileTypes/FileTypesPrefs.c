@@ -4418,6 +4418,7 @@ static SAVEDS(APTR) INTERRUPT PasteAttrHookFunc(struct Hook *hook, Object *o, Ms
 						ftaNew, MUIV_NList_Insert_Bottom);
 					}
 
+				UpdateMenuImage(inst, OBJNDX_MainListTree, fte);
 				EntryHasChanged(inst, tn);
 				}
 
