@@ -1280,7 +1280,7 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 				{
 				if (ScanDirFindIcon(rilc, rild->rild_Name))
 					{
-					d1(KPrintF("%s/%s/%ld: Icon found\n", __FILE__, __FUNC__, __LINE__));
+					d1(KPrintF("%s/%s/%ld: Duplicate Icon found\n", __FILE__, __FUNC__, __LINE__));
 					TIMESTAMPCOUNT_END_d1(iwt, 5);
 					break;
 					}
@@ -1307,11 +1307,15 @@ static struct ScaIconNode *CreateDefaultIcon(struct ReadIconListControl *rilc, c
 			}
 
 		d1(KPrintF("%s/%s/%ld: <%s> Type=%08lx  IconType=%lu\n", __FILE__, __FUNC__, __LINE__, rild->rild_Name, rild->rild_Type, IconType));
+		d1(KPrintF("%s/%s/%ld: IconName=<%s>\n", __FILE__, __FUNC__, __LINE__, IconName));
 
 		// try to get default icon
 		TIMESTAMPCOUNT_START_d1(iwt, 7);
 		IconObj = (Object *) DoMethod(iwt->iwt_WindowTask.mt_MainObject, SCCM_IconWin_GetDefIcon,
-			IconName, rild->rild_Type, rild->rild_Protection, IconType);
+			IconName,
+			rild->rild_Type,
+			rild->rild_Protection,
+			IconType);
 		TIMESTAMPCOUNT_END_d1(iwt, 7);
 
 		if (NULL == IconObj)
