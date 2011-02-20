@@ -1131,6 +1131,7 @@ static struct AttrDefaultValue AttrDefPopupMenuInternalCmds[] =
 	{ ATTRDEFTYPE_String2, MSGID_COM7NAME, 			"makedir",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM50NAME, 		"moveto",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM19NAME, 		"open",		       },
+	{ ATTRDEFTYPE_String2, MSGID_COM_OPENBROWSERWINDOW, 	"openinbrowserwindow", },
 	{ ATTRDEFTYPE_String2, MSGID_COM_OPENNEWWINDOW, 	"openinnewwindow",     },
 	{ ATTRDEFTYPE_String2, MSGID_COM8NAME, 			"parent",	       },
 	{ ATTRDEFTYPE_String2, MSGID_COM41NAME, 		"paste",	       },

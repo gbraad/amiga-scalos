@@ -1426,5 +1426,10 @@ MSGID_FIND_HITCOUNT_FMT
 %ld Treffer
 ;%ld Hits
 ;
+;
+MSGID_COM_OPENBROWSERWINDOW
+In Browserfenster öffnen
+;Open in Browser Window
+;
 ;-----------------------------------------------------------
 ;

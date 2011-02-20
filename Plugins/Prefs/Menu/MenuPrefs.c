@@ -461,6 +461,7 @@ struct CommandTableEntry CommandsTable[] =
 	{ "makedir",			MSGID_COM7NAME },
 	{ "moveto",			MSGID_COM50NAME },
 	{ "open",			MSGID_COM19NAME },
+	{ "openinbrowserwindow",        MSGID_COM_OPENBROWSERWINDOW },
 	{ "openinnewwindow",    	MSGID_COM_OPENNEWWINDOW },
 	{ "parent",			MSGID_COM8NAME },
 	{ "paste",			MSGID_COM41NAME },

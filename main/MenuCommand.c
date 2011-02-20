@@ -123,6 +123,7 @@ static void CleanupBySizeProg(struct internalScaWindowTask *iwt, const struct Me
 static void CleanupByTypeProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void MenuOpenProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void MenuOpenNewProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
+static void MenuOpenBrowserWindowProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void OpenParentProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void ExecuteCmdProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
 static void LastMessageProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg);
@@ -201,6 +202,7 @@ static BOOL MustHaveLockMenuEnable(struct internalScaWindowTask *iwt, struct Sca
 static BOOL IconsSelectedAndWriteableMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL IconsSelectedMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL IconsSelectedBrowserModeMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
+static BOOL IconsSelectedNotBrowserModeMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL EmptyTrashMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL FormatDiskMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
 static BOOL LeaveOutMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in);
@@ -277,6 +279,7 @@ struct ScalosMenuCommand MenuCommandTable[] =
 	{ "makedir",		0,				MITYPE_NOTHING,		NewDrawerProg,			MustHaveLockMenuEnable			},
 	{ "moveto",		0,				MITYPE_NOTHING,		MoveToProg,			IconsSelectedNoDiskMenuEnable		}, // IconsSelectedAndWriteableMenuEnable
 	{ "open",		0,				MITYPE_NOTHING,		MenuOpenProg,			IconsSelectedMenuEnable			},
+	{ "openinbrowserwindow",0,				MITYPE_NOTHING,		MenuOpenBrowserWindowProg,	IconsSelectedNotBrowserModeMenuEnable	},
 	{ "openinnewwindow",	0,				MITYPE_NOTHING,		MenuOpenNewProg,		IconsSelectedBrowserModeMenuEnable	},
 	{ "parent",		0,				MITYPE_NOTHING,		OpenParentProg,			NotRootWindowMenuEnable			},
 	{ "paste",		0,				MITYPE_NOTHING,		MenuPasteProg,			PasteMenuEnable				},
@@ -2371,6 +2374,18 @@ static void MenuOpenNewProg(struct internalScaWindowTask *iwt, const struct Menu
 
 //---------------------------------------------------------------------------------------
 
+static void MenuOpenBrowserWindowProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
+{
+	d1(KPrintF("%s/%s/%ld: START iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+
+	DoMethod(iwt->iwt_WindowTask.mt_MainObject,
+		SCCM_IconWin_Open,
+		mcArg->mca_IconNode,
+		ICONWINOPENF_IgnoreFileTypes | ICONWINOPENF_BrowserWindow);
+}
+
+//---------------------------------------------------------------------------------------
+
 static void OpenParentProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg *mcArg)
 {
 	struct ScaWindowStruct *ws = iwt->iwt_WindowTask.mt_WindowStruct;
@@ -3772,6 +3787,16 @@ static BOOL IconsSelectedBrowserModeMenuEnable(struct internalScaWindowTask *iwt
 {
 	if (!(iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_BrowserMode))
 		return FALSE;		// only enabled if browser mode
+
+	return IconsSelectedMenuEnable(iwt, in);
+}
+
+//---------------------------------------------------------------------------------------
+
+static BOOL IconsSelectedNotBrowserModeMenuEnable(struct internalScaWindowTask *iwt, struct ScaIconNode *in)
+{
+	if (iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_BrowserMode)
+		return FALSE;		// only enabled if not browser mode
 
 	return IconsSelectedMenuEnable(iwt, in);
 }

@@ -1204,10 +1204,12 @@ struct ScalosNodeList
 #define ICONWINOPENB_NewWindow			1
 #define ICONWINOPENB_DoNotActivateWindow	2
 #define ICONWINOPENB_DdPopupWindow		3
+#define ICONWINOPENB_BrowserWindow		4
 #define	ICONWINOPENF_IgnoreFileTypes		(1 << ICONWINOPENB_IgnoreFileTypes)
 #define ICONWINOPENF_NewWindow			(1 << ICONWINOPENB_NewWindow)
 #define ICONWINOPENF_DoNotActivateWindow	(1 << ICONWINOPENB_DoNotActivateWindow)
 #define ICONWINOPENF_DdPopupWindow		(1 << ICONWINOPENB_DdPopupWindow)
+#define ICONWINOPENF_BrowserWindow		(1 << ICONWINOPENB_BrowserWindow)
 
 // ---------------------------------------------------------------------------
 
