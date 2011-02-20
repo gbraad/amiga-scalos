@@ -519,6 +519,8 @@ struct TypeNode *DefIconsIdentify(BPTR dirLock, CONST_STRPTR Name, ULONG IconTyp
 		}
 	else
 		{
+		d1(KPrintF("%s/%s/%ld: Name=<%s>\n", __FILE__, __FUNC__, __LINE__, Name));
+
 		if (!stricmp(Name, "disk"))
 			{
 			BPTR curdir;
@@ -1094,7 +1096,12 @@ Object *ReturnDefIconObj(BPTR dirLock, CONST_STRPTR Name, struct TagItem *TagLis
 				}
 			}
 		if (NULL == IconObj)
-			IconObj = GetDefIconObject(WBPROJECT, NULL);
+			{
+			IconObj = GetDefIconObjectTags(WBPROJECT,
+				IDTA_Text, (ULONG) Name,
+				TAG_MORE, (ULONG) TagList,
+				TAG_END);
+			}
 		break;
 		}
 
@@ -1203,7 +1210,10 @@ static Object *ReadDefIconObjectForNameFallback(ULONG IconType, CONST_STRPTR Typ
 			}
 		else
 			{
-			IconObj = GetDefIconObject(IconType, NULL);
+			IconObj = GetDefIconObjectTags(IconType,
+				IDTA_Text, (ULONG) OriginalName,
+				TAG_MORE, (ULONG) TagList,
+				TAG_END);
 			}
 		}
 
