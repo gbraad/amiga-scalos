@@ -506,6 +506,10 @@ Undo
 MSGID_COM_REDO  (//)
 Redo
 ;
+;
+MSGID_COM_OPENBROWSERWINDOW (//)
+Open in Browser Window
+;
 ;---------------------------------------------
 ;
 MSGID_ABOUTREQOK (6000//)

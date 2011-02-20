@@ -541,6 +541,11 @@ MSGID_COM_REDO
 Wiederholen
 ;Redo
 ;
+;
+MSGID_COM_OPENBROWSERWINDOW
+Öffnen in Browserfenster
+;Open in Browser Window
+;
 ;---------------------------------------------
 ;
 MSGID_SHORTHELP_NEWMENUBUTTON

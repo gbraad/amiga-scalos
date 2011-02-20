@@ -764,9 +764,11 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 		struct MsgPort *ReplyPort;
 		ULONG noActivate;
 		ULONG isDdPopup;
+		ULONG BrowserMode;
 
 		noActivate = (Flags & ICONWINOPENF_DoNotActivateWindow) ? 1 : 0;
 		isDdPopup = (Flags & ICONWINOPENF_DdPopupWindow) ? 1 : 0;
+		BrowserMode = (Flags & ICONWINOPENF_BrowserWindow) ? 1 : 0;
 
 		OpenNewWindow = (Flags & ICONWINOPENF_NewWindow)
 			|| !(iwt->iwt_WindowTask.mt_WindowStruct->ws_Flags & WSV_FlagF_BrowserMode);
@@ -822,6 +824,7 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 					SCA_NoActivateWindow, noActivate,
 					SCA_DdPopupWindow, isDdPopup,
 					SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
+					SCA_BrowserMode, BrowserMode,
 					TAG_END);
 				}
 			else
@@ -834,6 +837,7 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 					SCA_DdPopupWindow, isDdPopup,
 					SCA_NoActivateWindow, noActivate,
 					SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
+					SCA_BrowserMode, BrowserMode,
 					TAG_END);
 				Success = TRUE;
 				}
@@ -861,6 +865,7 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 						SCA_DdPopupWindow, isDdPopup,
 						SCA_NoActivateWindow, noActivate,
 						SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
+						SCA_BrowserMode, BrowserMode,
 						TAG_END);
 					}
 				else
@@ -872,6 +877,7 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 						SCA_DdPopupWindow, isDdPopup,
 						SCA_NoActivateWindow, noActivate,
 						SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
+						SCA_BrowserMode, BrowserMode,
 						TAG_END);
 					Success = TRUE;
 					}
@@ -890,6 +896,7 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 						SCA_NoActivateWindow, noActivate,
 						SCA_MessagePort, (ULONG) ReplyPort,
 						SCA_CheckOverlappingIcons, CurrentPrefs.pref_CheckOverlappingIcons,
+						SCA_BrowserMode, BrowserMode,
 						TAG_END);
 					}
 				else

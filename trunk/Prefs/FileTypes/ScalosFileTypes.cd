@@ -1156,5 +1156,9 @@ Redo
 MSGID_FIND_HITCOUNT_FMT (//)
 %ld Hits
 ;
+;
+MSGID_COM_OPENBROWSERWINDOW (//)
+Open in Browser Window
+;
 ;---------------------------------------------
 ;

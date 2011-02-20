@@ -1414,5 +1414,10 @@ MSGID_FIND_HITCOUNT_FMT
 %ld Hits
 ;%ld Hits
 ;
+;+++translateme+++
+MSGID_COM_OPENBROWSERWINDOW
+Open in Browser Window
+;Open in Browser Window
+;
 ;-----------------------------------------------------------
 ;

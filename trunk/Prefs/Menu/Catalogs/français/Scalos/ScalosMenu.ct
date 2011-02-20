@@ -620,6 +620,11 @@ MSGID_COM_REDO
 Suivant
 ;Redo
 ;
+;+++translateme+++
+MSGID_COM_OPENBROWSERWINDOW
+Open in Browser Window
+;Open in Browser Window
+;
 ;---------------------------------------------
 ;
 MSGID_SHORTHELP_NEWMENUBUTTON
