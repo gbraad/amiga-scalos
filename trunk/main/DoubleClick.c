@@ -4,6 +4,7 @@
 
 
 #include <exec/types.h>
+#include <exec/execbase.h>
 #include <graphics/gels.h>
 #include <graphics/rastport.h>
 #include <intuition/classes.h>
@@ -90,6 +91,7 @@ static BOOL OpenIcon(struct internalScaWindowTask *iwt,
 	struct internalScaWindowTask *iwtIcon, struct ScaIconNode *in, ULONG Flags);
 static SAVEDS(ULONG) AsyncArexxToolStart(struct ARexxToolStartArg *arg, struct SM_RunProcess *msg);
 static BOOL TestIsDrawer(CONST_STRPTR Name);
+static BOOL CheckTaskState(struct Task *testTask);
 
 //----------------------------------------------------------------------------
 
@@ -693,6 +695,14 @@ static BOOL AppIconStart(struct internalScaWindowTask *iwt, struct ScaIconNode *
 		if (APPTYPE_AppIcon == appo->appo_type
 			&& in->in_Icon == appo->appo_object.appoo_IconObject)
 			{
+			d2(kprintf("%s/%s/%ld: mp_SigTask=%08lx\n", __FILE__, __FUNC__, __LINE__, appo->appo_msgport->mp_SigTask));
+			if (!CheckTaskState(appo->appo_msgport->mp_SigTask))
+				{
+				ScalosReleaseSemaphore(iwt->iwt_AppListSemaphore);
+				SCA_RemoveAppObject(appo);
+				return FALSE;
+				}
+
 			SendAppMessage(appo, AMCLASSICON_Open, iwt->iwt_WindowTask.wt_Window->MouseX, iwt->iwt_WindowTask.wt_Window->MouseY);
 			Success = TRUE;
 			break;
@@ -1068,5 +1078,63 @@ static BOOL TestIsDrawer(CONST_STRPTR Name)
 	d1(KPrintF("%s/%s/%ld: END  isDrawer=%ld\n", __FILE__, __FUNC__, __LINE__, isDrawer));
 
 	return isDrawer;
+}
+
+
+// Test if task <testTask> is present and has a valid state
+static BOOL CheckTaskState(struct Task *testTask)
+{
+	BOOL TaskOK = TRUE;
+
+	if (testTask)
+		{
+		// check whether the owner is still alive
+		extern struct ExecBase *SysBase;
+		struct Task *theTask;
+		BOOL TaskFound = FALSE;
+
+		d2(kprintf("%s/%s/%ld: checking if task is still alife\n", __FILE__, __FUNC__, __LINE__));
+
+		Disable();
+		for (theTask = (struct Task *) SysBase->TaskReady.lh_Head;
+			theTask != (struct Task *) &SysBase->TaskReady.lh_Tail;
+			theTask = (struct Task *) theTask->tc_Node.ln_Succ )
+			{
+			if (theTask == testTask)
+				{
+				TaskFound = TRUE;
+				break;
+				}
+			}
+		for (theTask = (struct Task *) SysBase->TaskWait.lh_Head;
+			!TaskFound && (theTask != (struct Task *) &SysBase->TaskWait.lh_Tail);
+			theTask = (struct Task *) theTask->tc_Node.ln_Succ )
+			{
+			if (theTask == testTask)
+				{
+				if ((0 == theTask->tc_SigWait)
+					|| (TS_INVALID == theTask->tc_State)
+					|| (TS_REMOVED == theTask->tc_State) )
+					{
+					TaskFound = FALSE;
+					}
+				else
+					{
+					TaskFound = TRUE;
+					}
+				break;
+				}
+			}
+		Enable();
+
+		d2(kprintf("%s/%s/%ld: TaskFound=%ld\n", __FILE__, __FUNC__, __LINE__, TaskFound));
+
+		if (!TaskFound)
+			{
+			TaskOK = FALSE;
+			}
+		}
+
+	return TaskOK;
 }
 
