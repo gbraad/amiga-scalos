@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20110220	jl	- Improvement: added new menu command to open disks or drawers in a new browser window.
+41.8    20110511	jl	- Improvement: Updated sqlite3.library to SQLite3 V3.7.6.2.
+	20110220	jl	- Improvement: added new menu command to open disks or drawers in a new browser window.
 				- Bugfix: corrected multiple issues with default icons for unreadable files.
 	20110205        jl	- Improvement: Upgraded libpng to 1.5.1.
 	20110202	jl	- Improvement: Updated sqlite3.library to SQLite3 V3.7.5.
