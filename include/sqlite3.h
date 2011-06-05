@@ -107,9 +107,9 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.7.6.2"
+#define SQLITE_VERSION        "3.7.6.3"
 #define SQLITE_VERSION_NUMBER 3007006
-#define SQLITE_SOURCE_ID      "2011-04-17 17:25:17 154ddbc17120be2915eb03edc52af1225eb7cb5e"
+#define SQLITE_SOURCE_ID      "2011-05-19 13:26:54 ed1da510a239ea767a01dc332b667119fa3c908e"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -248,7 +248,7 @@ typedef struct sqlite3 sqlite3;
 #elif defined(_MSC_VER) || defined(__BORLANDC__)
   typedef __int64 sqlite_int64;
   typedef unsigned __int64 sqlite_uint64;
-#elif defined(__SASC) /* AMIGA */
+elif defined(__SASC) /* AMIGA */
   typedef struct { LONG hi; ULONG lo; } sqlite_int64;
   typedef struct { ULONG hi; ULONG lo; } sqlite_uint64;
 #else
