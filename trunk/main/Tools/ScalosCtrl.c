@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 		"QUIET/S,"
 		"Q=QUERY/S";
 	CONST_STRPTR WdmNames[] = { "never", "on non-backdrop windows", "always" };
-	LONG ArgOpts[13];
+	IPTR ArgOpts[13];
 	struct RDArgs *Args;
 	ULONG Result;
 	BOOL fQuiet = FALSE;

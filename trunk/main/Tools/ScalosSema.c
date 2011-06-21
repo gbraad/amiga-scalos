@@ -87,7 +87,7 @@ static BOOL fListAll = FALSE;
 int main(int argc, char *argv[])
 {
 	CONST_STRPTR ArgTemplate = "ALL/S";
-	LONG ArgOpts[2];
+	IPTR ArgOpts[2];
 	struct RDArgs *Args;
 	struct ScaWindowList *WinList;
 	struct ScalosSemaphoreList *sspl;

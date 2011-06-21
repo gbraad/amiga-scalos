@@ -40,6 +40,16 @@ INCLUDES	+=
 
 LFLAGS	+=	#
 
+else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+INCLUDES	+=
+
+LFLAGS	+=	#
+
 
 else
 
@@ -57,4 +67,4 @@ LFLAGS	+=	-lstack \
 
 endif
 endif
-
+endif
