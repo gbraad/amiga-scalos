@@ -966,7 +966,7 @@ static struct ScaBob *sca_AddBobCustom(struct DragHandle *dh,
 	d1(KPrintF("%s/%s/%ld: x=%ld  y=%ld  w=%ld  h=%ld\n", __FILE__, __FUNC__, __LINE__, XOffset, YOffset, Width, Height));
 
 	do	{
-		static USHORT Pattern[] = { 0xaaaa, 0x5555 };
+		static UWORD Pattern[] = { 0xaaaa, 0x5555 };
 		struct RastPort rpMask;
 
 		bob = AllocBob2(dh, (struct ScalosNodeList *) BobList,

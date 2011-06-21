@@ -259,7 +259,7 @@ static void DrawIconImage(struct IconImageINST *inst, struct impDraw *Msg, struc
 	case IDS_DISABLED:
 		{
 		// jetzt "DISABLED" Markierung zu Fuﬂ nachholen!
-		static USHORT myPattern[] =
+		static UWORD myPattern[] =
 			{ 0x8888, 0x2222 };
 
 		SetABPenDrMd(rp, 1, 0, JAM1);

@@ -1340,7 +1340,7 @@ static void HistoryGadgetPopupDrawWindowShadow(struct HistoryGadgetInstance *ins
 	else
 		{
 		struct RastPort *rp = inst->hgi_PopupWindow->RPort;
-		static USHORT Pattern[] = { 0x5555, 0xaaaa };
+		static UWORD Pattern[] = { 0x5555, 0xaaaa };
 
 		d1(KPrintF("%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
 

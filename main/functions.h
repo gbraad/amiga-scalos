@@ -10,7 +10,7 @@
 #include <dos/datetime.h>
 #include <intuition/intuition.h>
 #include <datatypes/iconobject.h>
-#include <Scalos/menu.h>
+#include <scalos/menu.h>
 #include <scalos/scalos.h>
 
 #include "defs.h"
@@ -43,7 +43,9 @@
 
 // defined in amiga.lib
 
+#ifndef __AROS__
 extern ULONG HookEntry();
+#endif
 
 //----------------------------------------------------------------------------
 

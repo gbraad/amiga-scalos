@@ -27,7 +27,9 @@
 #include "BTree.h"
 #include "int64.h"
 
+#ifndef __AROS__
 #define	BNULL		((BPTR) NULL)
+#endif
 
 #define	ICONTYPE_NONE		0
 

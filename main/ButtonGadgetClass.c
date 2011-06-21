@@ -14,6 +14,7 @@
 #include <intuition/intuitionbase.h>
 #include <intuition/gadgetclass.h>
 #include <intuition/screens.h>
+#include <intuition/cghooks.h>
 
 #define	__USE_SYSBASE
 
@@ -287,7 +288,7 @@ static ULONG ButtonGadget_Render(Class *cl, Object *o, Msg msg)
 				}
 			else
 				{
-				static USHORT Pattern[] =
+				static UWORD Pattern[] =
 					{ 0x8888, 0x2222 };
 
 				DrawImageState(gpr->gpr_RPort,

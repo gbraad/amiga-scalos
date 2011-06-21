@@ -361,7 +361,7 @@ void DrawIconObjectTransparent(struct internalScaWindowTask *iwt, Object *IconOb
 		if (DrawGhosted)
 			{
 			// ghost icon image
-			static USHORT Pattern[] = { 0x5555, 0xaaaa };
+			static UWORD Pattern[] = { 0x5555, 0xaaaa };
 
 			d1(kprintf("%s/%s/%ld: DrawGhosted\n", __FILE__, __FUNC__, __LINE__));
 
@@ -552,7 +552,7 @@ void DrawIconObjectK(struct internalScaWindowTask *iwt, Object *IconObj,
 		if (DrawGhosted)
 			{
 			// ghost icon image
-			static USHORT Pattern[] = { 0x5555, 0xaaaa };
+			static UWORD Pattern[] = { 0x5555, 0xaaaa };
 
 			d1(kprintf("%s/%s/%ld: DrawGhosted\n", __FILE__, __FUNC__, __LINE__));
 

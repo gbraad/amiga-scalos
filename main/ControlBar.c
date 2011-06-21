@@ -1022,7 +1022,7 @@ void SetControlBarOnOff(struct internalScaWindowTask *iwt)
 						{
 						SetGadgetAttrs(gg,
 							iwt->iwt_WindowTask.wt_Window, NULL,
-							GA_DISABLED, FALSE,
+							GA_Disabled, FALSE,
 							TAG_END);
 						}
 					}
@@ -1032,7 +1032,7 @@ void SetControlBarOnOff(struct internalScaWindowTask *iwt)
 						{
 						SetGadgetAttrs(gg,
 							iwt->iwt_WindowTask.wt_Window, NULL,
-							GA_DISABLED, TRUE,
+							GA_Disabled, TRUE,
 							TAG_END);
 						}
 					}
