@@ -165,7 +165,7 @@ WARNINGS	=	-Wall -Wno-parentheses -Wunused -Wuninitialized -Wno-pointer-sign
 
 CPU		=
 
-OPTIONS		=
+OPTIONS		=	-D__USE_BASETYPE__
 
 OPTIMIZE	=	-O2 -fomit-frame-pointer -fschedule-insns2 -fbranch-count-reg -fno-strict-aliasing
 
