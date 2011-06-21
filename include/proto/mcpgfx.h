@@ -10,7 +10,11 @@ extern struct Library	*MCPGfxBase;
 #include <clib/mcpgfx_protos.h>
 
 #if defined(__GNUC__)
-	#include <inline/mcpgfx.h>
+	#ifdef __AROS__
+		#include <defines/mcpgfx.h>
+	#else
+		#include <inline/mcpgfx.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/mcpgfx_protos.h>
 #else

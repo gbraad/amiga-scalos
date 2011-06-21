@@ -17,7 +17,11 @@ extern struct ScalosIFace *IScalos;
 		#include <inline4/scalos.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/scalos.h>
+	#ifdef __AROS__
+		#include <defines/scalos.h>
+	#else
+		#include <inline/scalos.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/scalos_protos.h>
 #else

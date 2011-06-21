@@ -15,7 +15,11 @@ extern struct ScalosMenuPluginIFace *IScalosMenuPlugin;
 		#include <inline4/scalosmenuplugin.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/scalosmenuplugin.h>
+	#ifdef __AROS__
+		#include <defines/scalosmenuplugin.h>
+	#else
+		#include <inline/scalosmenuplugin.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/scalosmenuplugin_protos.h>
 #else

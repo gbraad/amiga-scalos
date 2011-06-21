@@ -16,7 +16,11 @@ extern struct NewIconBase *NewIconBase ;
 #endif
 
 #if defined(__GNUC__)
-	#include <inline/newicon.h>
+	#ifdef __AROS__
+		#include <defines/newicon.h>
+	#else
+		#include <inline/newicon.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/dtlib_protos.h>
 #else

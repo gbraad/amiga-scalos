@@ -7,7 +7,11 @@ extern struct Library *DtLibBase ;
 #include <clib/dtlib_protos.h>
 
 #if defined(__GNUC__)
-	#include <inline/dtlib.h>
+	#ifdef __AROS__
+		#include <defines/dtlib.h>
+	#else
+		#include <inline/dtlib.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/dtlib_protos.h>
 #else

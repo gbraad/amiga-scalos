@@ -16,7 +16,11 @@ extern struct IconobjectIFace *IIconobject;
 		#include <inline4/iconobject.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/iconobject.h>
+	#ifdef __AROS__
+		#include <defines/iconobject.h>
+	#else
+		#include <inline/iconobject.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/iconobject_protos.h>
 #else

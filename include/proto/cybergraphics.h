@@ -14,7 +14,11 @@ extern struct CyberGfxIFace *ICyberGfx;
 		#include <inline4/cybergraphics.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/cybergraphics.h>
+	#ifdef __AROS__
+		#include <defines/cybergraphics.h>
+	#else
+		#include <inline/cybergraphics.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/cybergraphics_protos.h>
 #else

@@ -15,7 +15,11 @@ extern struct ScalosPreviewPluginIFace *IScalosPreviewPlugin;
 		#include <inline4/scalospreviewplugin.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/scalospreviewplugin.h>
+	#ifdef __AROS__
+		#include <defines/scalospreviewplugin.h>
+	#else
+		#include <inline/scalospreviewplugin.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/scalospreviewplugin_protos.h>
 #else

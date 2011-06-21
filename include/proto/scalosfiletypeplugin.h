@@ -15,7 +15,11 @@ extern struct ScalosFileTypePluginIFace *IScalosFileTypePlugin;
 		#include <inline4/scalosfiletypeplugin.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/scalosfiletypeplugin.h>
+	#ifdef __AROS__
+		#include <defines/scalosfiletypeplugin.h>
+	#else
+		#include <inline/scalosfiletypeplugin.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/scalosfiletypeplugin_protos.h>
 #else
