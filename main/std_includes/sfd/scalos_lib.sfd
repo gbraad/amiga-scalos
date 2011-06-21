@@ -10,7 +10,7 @@
 ==include <scalos/scalos.h>
 BOOL SCA_WBStart( APTR argArray , CONST struct TagItem *tagList, ULONG numArgs ) (a0,a1,d0)
 ==varargs
-BOOL SCA_WBStartTags( APTR argArray , ULONG numArgs, ULONG firstTag, ... ) (a0,d0,a1)
+BOOL SCA_WBStartTags( APTR argArray , ULONG numArgs, ULONG firstTag, ...) (a0,d0,a1)
 VOID SCA_SortNodes( struct ScalosNodeList *nodelist, struct Hook *sortHook, ULONG sortType ) (a0,a1,d0)
 struct AppObject *SCA_NewAddAppIcon( ULONG iD, ULONG userData, 
 	Object *iconObj, struct MsgPort *msgPort, 
@@ -18,18 +18,18 @@ struct AppObject *SCA_NewAddAppIcon( ULONG iD, ULONG userData,
 ==varargs
 struct AppObject *SCA_NewAddAppIconTags( ULONG iD, ULONG userData, 
 	Object *iconObj, struct MsgPort *msgPort, 
-	ULONG firstTag, ... ) (d0,d1,a0,a1,a2)
+	ULONG firstTag, ...) (d0,d1,a0,a1,a2)
 BOOL SCA_RemoveAppObject( struct AppObject * appObj) (a0)
 struct AppObject *SCA_NewAddAppWindow( ULONG iD, ULONG userData, struct Window *win, 
 	struct MsgPort *msgPort, CONST struct TagItem *tagList ) (d0,d1,a0,a1,a2)
 ==varargs
 struct AppObject *SCA_NewAddAppWindowTags( ULONG iD, ULONG userData, struct Window *win, 
-	struct MsgPort *msgPort, ULONG firstTag, ... ) (d0,d1,a0,a1,a2)
+	struct MsgPort *msgPort, ULONG firstTag, ...) (d0,d1,a0,a1,a2)
 struct AppObject *SCA_NewAddAppMenuItem( ULONG iD, ULONG userData, CONST_STRPTR text, 
 	struct MsgPort *msgPort, CONST struct TagItem *tagList ) (d0,d1,a0,a1,a2)
 ==varargs
 struct AppObject *SCA_NewAddAppMenuItemTags( ULONG iD, ULONG userData, 
-	CONST_STRPTR text, struct MsgPort *msgPort, ULONG firstTag, ... ) (d0,d1,a0,a1,a2)
+	CONST_STRPTR text, struct MsgPort *msgPort, ULONG firstTag, ...) (d0,d1,a0,a1,a2)
 struct MinNode *SCA_AllocStdNode( struct ScalosNodeList *nodeList, ULONG nodeType ) (a0,d0)
 struct MinNode *SCA_AllocNode( struct ScalosNodeList *nodeList, ULONG size ) (a0,d0)
 VOID SCA_FreeNode( struct ScalosNodeList *nodeList, struct MinNode *minNode ) (a0,a1)

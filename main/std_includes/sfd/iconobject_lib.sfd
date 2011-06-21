@@ -9,15 +9,15 @@
 ==include <workbench/workbench.h>
 Object *NewIconObject( CONST_STRPTR name, CONST struct TagItem *tagList ) (a0,a1)
 ==varargs
-Object *NewIconObjectTags( CONST_STRPTR name, ULONG firstTag, ... ) (a0,a1)
+Object *NewIconObjectTags( CONST_STRPTR name, ULONG firstTag, ...) (a0,a1)
 VOID	DisposeIconObject( Object *iconObject ) (a0)
 Object *GetDefIconObject( ULONG iconType, CONST struct TagItem *tagList ) (d0,a0)
 ==varargs
-Object *GetDefIconObjectTags( ULONG iconType, ULONG firstTag, ... ) (d0,a0)
+Object *GetDefIconObjectTags( ULONG iconType, ULONG firstTag, ...) (d0,a0)
 LONG	PutIconObject( Object *iconObject, CONST_STRPTR path,
 	CONST struct TagItem *tagList ) (a0,a1,a2)
 ==varargs
-LONG	PutIconObjectTags( Object *iconObject, CONST_STRPTR path, ULONG firstTag, ... ) (a0,a1,a2)
+LONG	PutIconObjectTags( Object *iconObject, CONST_STRPTR path, ULONG firstTag, ...) (a0,a1,a2)
 ULONG	IsIconName( CONST_STRPTR fileName ) (a0)
 Object *Convert2IconObject( struct DiskObject *diskObject) (a0)
 Object *Convert2IconObjectA( struct DiskObject *diskObject, 
