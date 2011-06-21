@@ -24,7 +24,11 @@
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 #include <proto/utility.h>
+#ifdef __AROS__
+#include <proto/popupmenu.h>
+#else
 #include <proto/pm.h>
+#endif
 #include <proto/icon.h>
 #include <proto/iconobject.h>
 #include <proto/rexxsyslib.h>
@@ -37,7 +41,7 @@
 #include <defs.h>
 #include <datatypes/iconobject.h>
 #include <scalos/scalos.h>
-#include <Scalos/menu.h>
+#include <scalos/menu.h>
 #include <scalos/GadgetBar.h>
 
 #include <stdlib.h>

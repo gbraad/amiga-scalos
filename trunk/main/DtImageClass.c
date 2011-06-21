@@ -257,7 +257,7 @@ static ULONG DtImage_Draw(Class *cl, Object *o, Msg msg)
 
 	if ((IDS_DISABLED == imp->imp_State) && NULL == inst->bmicl_DisabledDtImage)
 		{
-		static USHORT myPattern[] =
+		static UWORD myPattern[] =
 			{ 0x8888, 0x2222 };
 		LONG x, y;
 

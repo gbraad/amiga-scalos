@@ -138,8 +138,8 @@ about.c Scalos.c windowtask.c locale.h : $(OBJDIR)/Scalos_Locale.h
 filetypes.c : MsgIdNames.h
 
 $(OBJDIR)/Scalos_Locale.h : Scalos.cd
-	@printf 'Compile CatComp header from $<\n'
-	@catcomp vb=1 $< cfile=$@
+	@printf 'Compile FlexCat header from $<\n'
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/C_h_orig.sd
 
 MsgIdNames.h : $(OBJDIR)/Scalos_Locale.h
 	@printf 'Generate $<\n'

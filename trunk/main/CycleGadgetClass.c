@@ -17,6 +17,7 @@
 #include <intuition/screens.h>
 #include <intuition/newmouse.h>
 #include <datatypes/pictureclass.h>
+#include <intuition/cghooks.h>
 
 #define	__USE_SYSBASE
 
@@ -1576,7 +1577,7 @@ static void CycleGadgetPopupDrawWindowShadow(struct CycleGadgetInstance *inst,
 	else
 		{
 		struct RastPort *rp = inst->cgi_PopupWindow->RPort;
-		static USHORT Pattern[] = { 0x5555, 0xaaaa };
+		static UWORD Pattern[] = { 0x5555, 0xaaaa };
 
 		d1(KPrintF("%s/%s/%ld:  \n", __FILE__, __FUNC__, __LINE__));
 
