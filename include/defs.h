@@ -87,6 +87,10 @@
 #ifdef __amigaos4__
 	#include <amiga_compiler.h>
 	#undef SAVEDS
+#elif defined(__AROS__)
+	#undef SAVEDS
+	#define	INLINE
+	#define REG(x, arg) arg
 #else
 	#define REG(x, arg) arg __asm(#x)
 	#define	INLINE		__inline
@@ -108,7 +112,7 @@
 	#define	T_ITEXT		UBYTE *
 #endif // __amigaos4__
 
-#if defined(__MORPHOS__) || defined(__amigaos4__)
+#if defined(__MORPHOS__) || defined(__amigaos4__) || defined(__AROS__)
 	#define	LIB_REG(x, arg)	arg
 	#define	LIB_ASM
 	#define	LIB_INTERRUPT
@@ -130,6 +134,8 @@
 
 #ifdef __amigaos4__
 	#define GCC_PLATFORM	"AmigaOS4/PPC"
+#elif defined(__AROS__)
+	#define GCC_PLATFORM	"AROS/?"
 #else // __amigaos4__
 	#define GCC_PLATFORM	"MorphOS/PPC"
 #endif // __amigaos4__
@@ -2279,5 +2285,9 @@
 
 // ==============================================================
 
-#endif /* DEFS_H */
+#if !defined(__AROS__) && !defined(__MORPHOS__)
+// IPTR is an integer type which is large enough to store a pointer
+typedef ULONG IPTR;
+#endif
 
+#endif /* DEFS_H */
