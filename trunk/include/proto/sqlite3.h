@@ -16,7 +16,11 @@ extern struct SQLite3IFace *ISQLite3;
 		#include <inline4/sqlite3.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/sqlite3.h>
+	#ifdef __AROS__
+		#include <defines/sqlite3.h>
+	#else
+		#include <inline/sqlite3.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/sqlite3_protos.h>
 #else

@@ -13,7 +13,11 @@ extern struct PopupMenuIFace *IPopupMenu;
 		#include <inline4/pm.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/pm.h>
+	#ifdef __AROS__
+		#include <defines/pm.h>
+	#else
+		#include <inline/pm.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/pm_protos.h>
 #else

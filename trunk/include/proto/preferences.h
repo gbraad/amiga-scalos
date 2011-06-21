@@ -15,7 +15,11 @@ extern struct PreferencesIFace *IPreferences;
 		#include <inline4/preferences.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/preferences.h>
+	#ifdef __AROS__
+		#include <defines/preferences.h>
+	#else
+		#include <inline/preferences.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/preferences_protos.h>
 #else

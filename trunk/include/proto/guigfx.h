@@ -15,7 +15,11 @@ extern struct GuiGFXIFace *IGuiGFX;
 		#include <inline4/guigfx.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/guigfx.h>
+	#ifdef __AROS__
+		#include <defines/guigfx.h>
+	#else
+		#include <inline/guigfx.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/guigfx_protos.h>
 #else

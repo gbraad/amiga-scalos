@@ -15,7 +15,11 @@ extern struct ScalosPrefsPluginIFace *IScalosPrefsPlugin;
 		#include <inline4/scalosprefsplugin.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/scalosprefsplugin.h>
+	#ifdef __AROS__
+		#include <defines/scalosprefsplugin.h>
+	#else
+		#include <inline/scalosprefsplugin.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/scalosprefsplugin_protos.h>
 #else

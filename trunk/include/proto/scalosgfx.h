@@ -16,7 +16,11 @@ extern struct ScalosGfxIFace *IScalosGfx;
 		#include <inline4/scalosgfx.h>
 	#endif
 #elif defined(__GNUC__)
-	#include <inline/scalosgfx.h>
+	#ifdef __AROS__
+		#include <defines/scalosgfx.h>
+	#else
+		#include <inline/scalosgfx.h>
+	#endif
 #elif defined(VBCC)
 	#include <inline/scalosgfx_protos.h>
 #else
