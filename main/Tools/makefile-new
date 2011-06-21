@@ -59,26 +59,26 @@ all:	$(BINDIR)/$(CTRL) \
 $(BINDIR)/$(CTRL): $(OBJS_CTRL)
 	@$(ECHO) "Link $(CTRL)"
 	@$(CC) $(STARTUP) $(OBJS_CTRL) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(CTRL).debug
-	@$(STRIP) $(BINDIR)/$(CTRL).debug -o $(BINDIR)/$(CTRL)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(CTRL).debug -o $(BINDIR)/$(CTRL)
+	@chmod u+x $@
 
 $(BINDIR)/$(SEMA): $(OBJS_SEMA)
 	@$(ECHO) "Link $(SEMA)"
 	@$(CC) $(STARTUP) $(OBJS_SEMA) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(SEMA).debug
-	@$(STRIP) $(BINDIR)/$(SEMA).debug -o $(BINDIR)/$(SEMA)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(SEMA).debug -o $(BINDIR)/$(SEMA)
+	@chmod u+x $@
 
 $(BINDIR)/$(LOADWB): $(OBJS_LOADWB)
 	@$(ECHO) "Link $(LOADWB)"
 	@$(CC) $(STARTUP) $(OBJS_LOADWB) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(LOADWB).debug
-	@$(STRIP) $(BINDIR)/$(LOADWB).debug -o $(BINDIR)/$(LOADWB)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(LOADWB).debug -o $(BINDIR)/$(LOADWB)
+	@chmod u+x $@
 
 $(BINDIR)/$(GETMSG): $(OBJS_GETMSG)
 	@$(ECHO) "Link $(GETMSG)"
 	@$(CC) $(STARTUP) $(OBJS_GETMSG) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(GETMSG).debug
-	@$(STRIP) $(BINDIR)/$(GETMSG).debug -o $(BINDIR)/$(GETMSG)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(GETMSG).debug -o $(BINDIR)/$(GETMSG)
+	@chmod u+x $@
 
 ##############################################################################
 

@@ -63,7 +63,7 @@ static ULONG NumberOfWindowsOpen(void);
 int main(int argc, char *argv[])
 {
 	struct RDArgs *rdargs = NULL;
-	LONG result[OPT_COUNT];
+	IPTR result[OPT_COUNT];
 	char scalospath[300] = DEFPATH;
 	static const char *scalosexename = "Scalos";
 	int Result = RETURN_OK;
