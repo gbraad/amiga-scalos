@@ -120,14 +120,16 @@
 
 	#define	ALIGNED
 
-	#define	T_LOCALEBASE	struct Library *
 #ifndef __USE_BASETYPE__
 	#define	T_UTILITYBASE	struct Library *
+	#define	T_LOCALEBASE	struct Library *
+	#define T_REXXSYSBASE   struct Library *
 #else // __USE_BASETYPE__
 	#define T_UTILITYBASE	struct UtilityBase *
+	#define	T_LOCALEBASE	struct LocaleBase *
+	#define T_REXXSYSBASE   struct RxsLib *
 #endif // __USE_BASETYPE__
 	#define	T_INPUTBASE	struct Library *
-	#define T_REXXSYSBASE   struct Library *
 	#define T_TIMERBASE	struct Library *
 	#define T_CONSOLEDEVICE	struct Library *
 	#define T_INPUTDEVICE	struct Library *
