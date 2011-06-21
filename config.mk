@@ -145,6 +145,54 @@ DEFINES		=	-D$(CODETYPE) -D__USE_INLINE__ $(OS4LIBBASE) -Dstccpy=strlcpy \
 ##############################################################################
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+##############################################################################
+# i386-AROS
+##############################################################################
+
+CC 		=	i386-aros-gcc
+AS 		=	i386-aros-as
+LD 		=	i386-aros-ld
+AR		=	i386-aros-ar
+RANLIB		=	i386-aros-ranlib
+STRIP		=	i386-aros-strip
+DUMP		=	i386-aros-objdump
+
+CODETYPE	=
+
+WARNINGS	=	-Wall -Wno-parentheses -Wunused -Wuninitialized -Wno-pointer-sign
+
+CPU		=
+
+OPTIONS		=
+
+OPTIMIZE	=	-O2 -fomit-frame-pointer -fschedule-insns2 -fbranch-count-reg -fno-strict-aliasing
+
+INCLUDES	=	-I$(TOPLEVEL)/include
+
+DEBUG		=	-g -gstabs
+
+LFLAGS		=   -lm
+
+CFLAGS		=	$(WARNINGS) $(OPTIMIZE) $(DEBUG) $(CPU) $(OPTIONS) $(INCLUDES) -I.
+
+SFLAGS		=	--remove-section .comment --strip-unneeded
+
+DFLAGS		=	--syms --reloc --disassemble-all
+
+OBJDIR		=	.obj_i386-aros
+BINDIR		=	.bin_i386-aros
+
+############################################################################
+
+DEFINES		=	-DSVN_VERSION="$(SVNVERSION)"
+
+##############################################################################
+# End of i386-aros
+##############################################################################
+
+else
 
 ##############################################################################
 # AmigaOS GCC
@@ -203,6 +251,8 @@ DEFINES		=	-D$(CODETYPE) -DSVN_VERSION=$(SVNVERSION)
 
 endif
 endif
+endif
+
 ##############################################################################
 
 #MAKE		 =	 make
@@ -214,6 +264,7 @@ MKDIR		=	mkdir
 LN		=	ln
 SED		=	sed
 CATCOMP		=	CatComp
+FLEXCAT		=	FlexCat
 
 ##############################################################################
 
