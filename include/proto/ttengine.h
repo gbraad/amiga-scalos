@@ -16,6 +16,8 @@
 # if defined(__GNUC__)
 #  ifdef __AROS__
 #   include <defines/ttengine.h>
+#  elif defined(__PPC__)
+#   include <ppcinline/ttengine.h>
 #  else
 #   include <inline/ttengine.h>
 #  endif
