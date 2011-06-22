@@ -1,10 +1,10 @@
 #ifndef LIBRARIES_TTENGINE_H
 #define LIBRARIES_TTENGINE_H
 
-/* $VER: ttengine.h 6.7 (10.1.2005) (c) by Grzegorz Kraszewski 2002 - 2005. */
+/* $VER: ttengine.h 7.2 (5.4.2005) (c) by Grzegorz Kraszewski 2002 - 2005. */
 
 #define TTENGINENAME "ttengine.library"
-#define TTENGINEVERSION 6
+#define TTENGINEVERSION 7
 #define TTENGINEMINVERSION 6
 
 /* Tags */
@@ -102,22 +102,23 @@
 #define TT_FontRealDescender    0x6EDA0022    /* .G.. */
 #define TT_FontAccentedAscender 0x6EDA0023    /* .G.. */
 #define TT_CustomEncoding       0x6EDA0024    /* ..SP */
-#define TT_Gamma                0x6EDA0025    /* ..S. */
+#define TT_Gamma                0x6EDA0025    /* .GS. */  /* gettable from V7.2 */
 #define TT_FontBaseline         TT_FontMaxTop             /* V6.7 */
 #define TT_FontFixedWidth       0x6EDA0026    /* OG.. */  /* V6.7 */
 #define TT_FontHeight           0x6EDA0027    /* .G.. */  /* V6.7 */
 #define TT_FontWidth            0x6EDA0028    /* .G.. */  /* V6.7 */
 #define TT_DiskFontMetrics      0x6EDA0029    /* ..SP */  /* V6.7 */
+#define TT_ForceFixedWidth      0x6EDA0030    /* ..SP */  /* V7.2 */
 
 /* Structure returned by TT_GetPixmap() (V5)*/
 
 struct TT_Pixmap
-  {
-    ULONG     ttp_Size;       /* size of the structure inculdung this field */
-    ULONG     ttp_Width;      /* also equal to bytes per row */
-    ULONG     ttp_Height;     /* number of rows */
-    UBYTE    *ttp_Data;       /* grayscale pixmap data */
-  };
+{
+	ULONG     ttp_Size;       /* size of the structure inculdung this field */
+	ULONG     ttp_Width;      /* also equal to bytes per row */
+	ULONG     ttp_Height;     /* number of rows */
+	UBYTE    *ttp_Data;       /* grayscale pixmap data */
+};
 
 /* font requester attributes (V6) */
 
