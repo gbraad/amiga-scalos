@@ -63,10 +63,10 @@ struct GadgetBarTextClassInst
 	STRPTR gbtcl_Text;
 	struct TextFont *gbtcl_Font;
 	struct TTFontFamily *gbtcl_TTFont;	// TTengine font
-	SHORT gbtcl_TextPen;
-	SHORT gbtcl_BGPen;
-	SHORT gbtcl_DrawMode;
-	SHORT gbtcl_Justification;	// GACT_STRINGLEFT, GACT_STRINGRIGHT, GACT_STRINGCENTER
+	WORD gbtcl_TextPen;
+	WORD gbtcl_BGPen;
+	WORD gbtcl_DrawMode;
+	WORD gbtcl_Justification;	// GACT_STRINGLEFT, GACT_STRINGRIGHT, GACT_STRINGCENTER
 	ULONG gbtcl_SoftStyle;		// FSF_BOLD, FSF_ITALIC, FSF_UNDERLINED, ...
 	struct TextExtent gbtcl_Extent;
 	ULONG gbtcl_Chars;		// number of chars that fit within the gadget
@@ -407,7 +407,7 @@ static ULONG GadgetBarText_Render(Class *cl, Object *o, Msg msg)
 	struct gpRender *gpr = (struct gpRender *) msg;
 	struct GadgetBarTextClassInst *inst = INST_DATA(cl, o);
 	struct ExtGadget *gg = (struct ExtGadget *) o;
-	SHORT x, y;
+	WORD x, y;
 
 	d1(KPrintF("%s/%s/%ld: o=%08lx  Left=%ld  Top=%ld\n", __FILE__, __FUNC__, __LINE__, o, gg->LeftEdge, gg->TopEdge));
 	d1(kprintf("%s/%s/%ld: gg=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, gg, gg->Width, gg->Height));

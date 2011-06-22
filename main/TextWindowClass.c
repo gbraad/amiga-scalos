@@ -693,7 +693,7 @@ static ULONG TextWindowClass_New(Class *cl, Object *o, Msg msg)
 		struct internalScaWindowTask *iwt = (struct internalScaWindowTask *) ((struct ScaRootList *) o)->rl_WindowTask;
 		struct TextWindowClassInstance *inst = INST_DATA(cl, o);
 		struct TextExtent textExtent;
-		SHORT Height, FontHeight;
+		WORD Height, FontHeight;
 
 		d1(KPrintF("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
 
@@ -1260,7 +1260,7 @@ static ULONG TextWindowClass_DrawColumnHeaders(Class *cl, Object *o, Msg msg)
 		LONG x0;
 		struct RastPort *rp;
 		BYTE *pColumn;
-		SHORT Height, FontHeight;
+		WORD Height, FontHeight;
 
 		if (!iwt->iwt_TextGadFlag)
 			break;
@@ -2024,8 +2024,8 @@ static void TextWindowDrawSortMark(struct internalScaWindowTask *iwt,
 	struct TextWindowClassInstance *inst,
 	struct RastPort *rp, const struct Rectangle *TextRect)
 {
-	SHORT x = TextRect->MinX + SORTMARK_MARGIN_X;
-	SHORT y = TextRect->MinY + SORTMARK_MARGIN_Y;
+	WORD x = TextRect->MinX + SORTMARK_MARGIN_X;
+	WORD y = TextRect->MinY + SORTMARK_MARGIN_Y;
 
 	if (SortOrder_Descending == iwt->iwt_WindowTask.mt_WindowStruct->ws_SortOrder)
 		{

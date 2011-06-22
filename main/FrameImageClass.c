@@ -75,7 +75,7 @@ struct FrameImageClassInst
 	struct BitMap *bmicl_MaskBitMap;
 	};
 
-typedef LONG (*GetPenFunc_t)(struct RastPort *, SHORT, SHORT );
+typedef LONG (*GetPenFunc_t)(struct RastPort *, WORD, WORD );
 
 //----------------------------------------------------------------------------
 

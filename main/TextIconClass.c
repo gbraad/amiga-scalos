@@ -129,7 +129,7 @@ static ULONG TextIcon_HitTest(Class *cl, Object *o, Msg msg);
 static void SetAttributes(struct TextIClassInst *inst, struct opSet *msg);
 static void DimRect(struct RastPort *rp,
 	struct ARGB Numerator, struct ARGB Denominator,
-	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax);
+	WORD xMin, WORD yMin, WORD xMax, WORD yMax);
 static Object *CreateIconObject(struct TextIClassInst *inst, struct TagItem *tagList);
 static BOOL GetTextColumnX(Class *cl, Object *o, struct Rectangle *TextColumnRect);
 static void DrawMiniIcon(struct TextIClassInst *inst,
@@ -1010,7 +1010,7 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 
 static void DimRect(struct RastPort *rp,
 	struct ARGB Numerator, struct ARGB Denominator,
-	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax)
+	WORD xMin, WORD yMin, WORD xMax, WORD yMax)
 {
 	ULONG Depth;
 

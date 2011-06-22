@@ -10,6 +10,7 @@
 #include <intuition/classusr.h>
 #include <intuition/gadgetclass.h>
 #include <intuition/newmouse.h>
+#include <intuition/cghooks.h>
 #include <utility/hooks.h>
 #include <libraries/gadtools.h>
 #include <datatypes/pictureclass.h>

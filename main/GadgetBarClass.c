@@ -19,6 +19,7 @@
 #include <cybergraphx/cybergraphics.h>
 #include <dos/dostags.h>
 #include <dos/datetime.h>
+#include <intuition/cghooks.h>
 
 #define	__USE_SYSBASE
 
