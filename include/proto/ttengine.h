@@ -5,6 +5,13 @@
 
 #include <clib/ttengine_protos.h>
 
+#ifdef __amigaos4__
+# include <interfaces/ttengine.h>
+# ifndef __NOGLOBALIFACE__
+   extern struct TTEngineIFace *ITTEngine;
+# endif /* __NOGLOBALIFACE__*/
+#else /* !__amigaos4__ */
+
 #ifndef _NO_INLINE
 # if defined(__GNUC__)
 #  ifdef __AROS__
@@ -17,12 +24,6 @@
 # endif
 #endif /* _NO_INLINE */
 
-#ifdef __amigaos4__
-# include <interfaces/ttengine.h>
-# ifndef __NOGLOBALIFACE__
-   extern struct TTEngineIFace *ITTEngine;
-# endif /* __NOGLOBALIFACE__*/
-#else /* !__amigaos4__ */
 # ifndef __NOLIBBASE__
    extern struct Library*
 #  ifdef __CONSTLIBBASEDECL__
