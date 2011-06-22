@@ -91,31 +91,31 @@ static BOOL RemovePatches(const struct PatchEntry *PatchList);
 
 //----------------------------------------------------------------------------
 
-#define LVOCloseWorkBench 	-78
-#define LVOOpenWorkBench 	-210
-#define LVOOpenScreenTagList 	-612
-#define LVOOpenWindowTagList	-606
+#define LVOCloseWorkBench 	-13  * LIB_VECTSIZE
+#define LVOOpenWorkBench 	-35  * LIB_VECTSIZE
+#define LVOOpenScreenTagList 	-102 * LIB_VECTSIZE
+#define LVOOpenWindowTagList	-101 * LIB_VECTSIZE
 
-#define LVOUpdateWorkbench	-30		/* private1 */
-#define	LVOwbPrivate2 	        -36
-#define LVOAddAppWindowA 	-48
-#define LVORemoveAppWindow 	-54
-#define LVOAddAppIconA 		-60
-#define LVORemoveAppIcon 	-66
-#define LVOAddAppMenuItemA 	-72
-#define LVORemoveAppMenuItem 	-78
-#define LVOSetBackFill		-84
-#define LVOWBInfo		-90
+#define LVOUpdateWorkbench	-5   * LIB_VECTSIZE	/* private1 */
+#define LVOwbPrivate2 	        -6   * LIB_VECTSIZE
+#define LVOAddAppWindowA 	-8   * LIB_VECTSIZE
+#define LVORemoveAppWindow 	-9   * LIB_VECTSIZE
+#define LVOAddAppIconA 		-10  * LIB_VECTSIZE
+#define LVORemoveAppIcon 	-11  * LIB_VECTSIZE
+#define LVOAddAppMenuItemA 	-12  * LIB_VECTSIZE
+#define LVORemoveAppMenuItem 	-13  * LIB_VECTSIZE
+#define LVOSetBackFill		-14  * LIB_VECTSIZE
+#define LVOWBInfo		-15  * LIB_VECTSIZE
 
-#define LVOPutDiskObject 	-84
-#define LVODeleteDiskObject 	-138
-#define	LVOPutIconTagList	-186
+#define LVOPutDiskObject 	-14  * LIB_VECTSIZE
+#define LVODeleteDiskObject 	-23  * LIB_VECTSIZE
+#define LVOPutIconTagList	-31  * LIB_VECTSIZE
 
-#define LVODeleteFile		-72
-#define LVORename 		-78
-#define LVOOpen			-30
-#define	LVOClose		-36
-#define	LVOCreateDir		-120
+#define LVODeleteFile		-12  * LIB_VECTSIZE
+#define LVORename 		-13  * LIB_VECTSIZE
+#define LVOOpen			-5   * LIB_VECTSIZE
+#define LVOClose		-6   * LIB_VECTSIZE
+#define LVOCreateDir		-20  * LIB_VECTSIZE
 
 //----------------------------------------------------------------------------
 
