@@ -124,14 +124,15 @@
 	#define	T_UTILITYBASE	struct Library *
 	#define	T_LOCALEBASE	struct Library *
 	#define T_REXXSYSBASE   struct Library *
+	#define T_CONSOLEDEVICE	struct Library *
 #else // __USE_BASETYPE__
 	#define T_UTILITYBASE	struct UtilityBase *
 	#define	T_LOCALEBASE	struct LocaleBase *
 	#define T_REXXSYSBASE   struct RxsLib *
+	#define T_CONSOLEDEVICE	struct Device *
 #endif // __USE_BASETYPE__
 	#define	T_INPUTBASE	struct Library *
 	#define T_TIMERBASE	struct Library *
-	#define T_CONSOLEDEVICE	struct Library *
 	#define T_INPUTDEVICE	struct Library *
 
 #ifdef __amigaos4__
