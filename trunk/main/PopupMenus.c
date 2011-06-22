@@ -24,7 +24,11 @@
 #include <proto/utility.h>
 #include <proto/icon.h>
 #include <proto/iconobject.h>
+#ifdef __AROS__
+#include <proto/popupmenu.h>
+#else
 #include <proto/pm.h>
+#endif
 #include "debug.h"
 #include <proto/scalos.h>
 #include <proto/scalosmenuplugin.h>
@@ -33,7 +37,7 @@
 
 #include <defs.h>
 #include <datatypes/iconobject.h>
-#include <Scalos/menu.h>
+#include <scalos/menu.h>
 #include <scalos/scalos.h>
 
 #include <stdlib.h>

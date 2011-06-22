@@ -29,6 +29,13 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+#ifdef __AROS__
+// FIXME: temporary fix until we have figured out
+// how to deal with these deprecated defines.
+#define IA_ShadowPen    (IA_Dummy + 0x09)
+#define IA_HighlightPen (IA_Dummy + 0x0A)
+#endif
+
 //----------------------------------------------------------------------------
 
 extern struct TagItem *ScalosVTagList(ULONG FirstTag, va_list args);

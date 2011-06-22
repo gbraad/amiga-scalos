@@ -63,6 +63,19 @@ LFLAGS	+=      -lpng \
 		#
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+INCLUDES	+=
+
+LFLAGS	+=      -lpng \
+		-lz \
+		-lm \
+		#
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -77,5 +90,6 @@ LFLAGS	+=	-lpng \
 		-lamiga \
 		-lstubs
 
+endif
 endif
 endif
