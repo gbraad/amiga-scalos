@@ -1,0 +1,35 @@
+/* Automatically generated header! Do not edit! */
+
+#ifndef PROTO_TTENGINE_H
+#define PROTO_TTENGINE_H
+
+#include <clib/ttengine_protos.h>
+
+#ifndef _NO_INLINE
+# if defined(__GNUC__)
+#  ifdef __AROS__
+#   include <defines/ttengine.h>
+#  else
+#   include <inline/ttengine.h>
+#  endif
+# else
+#  include <pragmas/ttengine_pragmas.h>
+# endif
+#endif /* _NO_INLINE */
+
+#ifdef __amigaos4__
+# include <interfaces/ttengine.h>
+# ifndef __NOGLOBALIFACE__
+   extern struct TTEngineIFace *ITTEngine;
+# endif /* __NOGLOBALIFACE__*/
+#else /* !__amigaos4__ */
+# ifndef __NOLIBBASE__
+   extern struct Library*
+#  ifdef __CONSTLIBBASEDECL__
+    __CONSTLIBBASEDECL__
+#  endif /* __CONSTLIBBASEDECL__ */
+   TTEngineBase;
+# endif /* !__NOLIBBASE__ */
+#endif /* !__amigaos4__ */
+
+#endif /* !PROTO_TTENGINE_H */
