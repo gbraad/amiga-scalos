@@ -109,7 +109,7 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/windowtask.o              	\
 
 ifeq ($(MACHINE), ppc-amigaos)
-	OBJS += $(OBJDIR)/Patches-aos4.o
+	OBJS += $(OBJDIR)/Patches-aos4.o		\
 		$(OBJDIR)/malloc.o			\
 		$(OBJDIR)/ScaLibrary-aos4.o 		\
 		$(OBJDIR)/scalos-aos4-68kstubs.o
