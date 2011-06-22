@@ -14,6 +14,7 @@
 #include <workbench/workbench.h>
 #include <workbench/startup.h>
 #include <dos/dostags.h>
+#include <rexx/rxslib.h>
 
 #define	__USE_SYSBASE
 
@@ -36,7 +37,7 @@
 #include <defs.h>
 #include <datatypes/iconobject.h>
 #include <scalos/scalos.h>
-#include <Scalos/menu.h>
+#include <scalos/menu.h>
 #include <scalos/GadgetBar.h>
 
 #include <stdlib.h>

@@ -28,7 +28,11 @@
 #include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/utility.h>
+#ifdef __AROS__
+#include <proto/popupmenu.h>
+#else
 #include <proto/pm.h>
+#endif
 #include <proto/iffparse.h>
 #include <proto/preferences.h>
 #include <proto/gadtools.h>

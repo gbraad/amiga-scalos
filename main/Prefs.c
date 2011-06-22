@@ -33,7 +33,11 @@
 #include <proto/utility.h>
 #include <proto/icon.h>
 #include <proto/iconobject.h>
+#ifdef __AROS__
+#include <proto/popupmenu.h>
+#else
 #include <proto/pm.h>
+#endif
 #include <proto/iffparse.h>
 #include <proto/preferences.h>
 #include <proto/datatypes.h>

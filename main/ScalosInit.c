@@ -148,7 +148,7 @@ static void ScalosMain(LONG *ArgArray);
 
 T_CONSOLEDEVICE	ConsoleDevice;
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 #include <dos.h>
 
 // No options for newlib.library on OS4
@@ -1109,7 +1109,7 @@ int main(int argc, char **argv)
 	// set new task name
 	MyTask->tc_Node.ln_Name = (char *) WbProcName;
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 	__exitstdio();
 #endif
 

@@ -62,7 +62,6 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/Lasso.o                   	\
 		$(OBJDIR)/LocaleStrings.o           	\
 		$(OBJDIR)/MainWait.o                	\
-		$(OBJDIR)/malloc.o               	\
 		$(OBJDIR)/Memory.o		    	\
 		$(OBJDIR)/Menu.o                    	\
 		$(OBJDIR)/MenuCommand.o             	\
@@ -109,13 +108,20 @@ OBJS	=	$(OBJDIR)/about.o                   	\
 		$(OBJDIR)/WindowClass.o             	\
 		$(OBJDIR)/windowtask.o              	\
 
-ifneq ($(MACHINE), ppc-amigaos)
-	OBJS += $(OBJDIR)/Patches-classic.o 		\
-		$(OBJDIR)/ScaLibrary-classic.o
-else
-	OBJS += $(OBJDIR)/Patches-aos4.o 		\
+ifeq ($(MACHINE), ppc-amigaos)
+	OBJS += $(OBJDIR)/Patches-aos4.o
+		$(OBJDIR)/malloc.o			\
 		$(OBJDIR)/ScaLibrary-aos4.o 		\
 		$(OBJDIR)/scalos-aos4-68kstubs.o
+else
+ifeq ($(MACHINE), i386-aros)
+	OBJS += $(OBJDIR)/Patches-classic.o		\
+		$(OBJDIR)/ScaLibrary-classic.o
+else
+	OBJS += $(OBJDIR)/Patches-classic.o		\
+		$(OBJDIR)/malloc.o			\
+		$(OBJDIR)/ScaLibrary-classic.o
+endif
 endif
 
 ##############################################################################

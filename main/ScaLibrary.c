@@ -40,7 +40,7 @@
 
 #include <defs.h>
 #include <datatypes/iconobject.h>
-#include <Scalos/menu.h>
+#include <scalos/menu.h>
 #include <scalos/scalos.h>
 
 #include <stdlib.h>

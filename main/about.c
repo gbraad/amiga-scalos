@@ -49,13 +49,6 @@
 #include "TTLayout.h"
 #include "DtImageClass.h"
 
-#ifdef __AROS__
-// FIXME: temporary fix until we have figured out
-// how to deal with these deprecated defines.
-#define IA_ShadowPen    (IA_Dummy + 0x09)
-#define IA_HighlightPen (IA_Dummy + 0x0A)
-#endif
-
 //----------------------------------------------------------------------------
 
 #define ABOUT_BITMAP_HEIGHT	150
