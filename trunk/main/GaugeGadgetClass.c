@@ -14,6 +14,7 @@
 #include <intuition/intuitionbase.h>
 #include <intuition/gadgetclass.h>
 #include <intuition/imageclass.h>
+#include <intuition/cghooks.h>
 
 #define	__USE_SYSBASE
 

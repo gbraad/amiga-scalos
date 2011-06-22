@@ -8,7 +8,7 @@
 #include <utility/hooks.h>
 #include <devices/input.h>
 #include <devices/inputevent.h>
-#include <intuition/IntuitionBase.h>
+#include <intuition/intuitionbase.h>
 
 #define	__USE_SYSBASE
 

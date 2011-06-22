@@ -16,6 +16,7 @@
 #include <intuition/icclass.h>
 #include <intuition/screens.h>
 #include <intuition/newmouse.h>
+#include <intuition/cghooks.h>
 
 #define	__USE_SYSBASE
 

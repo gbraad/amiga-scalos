@@ -138,12 +138,12 @@ about.c Scalos.c windowtask.c locale.h : $(OBJDIR)/Scalos_Locale.h
 filetypes.c : MsgIdNames.h
 
 $(OBJDIR)/Scalos_Locale.h : Scalos.cd
-	@printf 'Compile FlexCat header from $<\n'
+	@printf 'Compile $@ from $<\n'
 	@$(FLEXCAT) $< $@=$(TOPLEVEL)/C_h_orig.sd
 
-MsgIdNames.h : $(OBJDIR)/Scalos_Locale.h
-	@printf 'Generate $<\n'
-	@$(GENMSGIDNAMES) $(OBJDIR)/Scalos_Locale.h MsgIdNames.h
+MsgIdNames.h : Scalos.cd
+	@printf 'Generate $@\n'
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/msgidnames.sd
 
 $(OBJDIR)/ScalosVersion.o : FORCE
 
@@ -179,8 +179,8 @@ all:	$(BINDIR)/$(NAME) \
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(STARTUP) $(OBJS) $(LFLAGS) $(DEFINES) -o $(BINDIR)/$(NAME_DB)
-	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@chmod u+x $@
 
 ##############################################################################
 # 
