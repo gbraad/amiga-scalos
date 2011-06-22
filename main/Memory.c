@@ -46,7 +46,9 @@
 #define	THRESHOLD_NODES		256
 
 // define DLMALLOC to use Doug Lea's memory allocator instead of OS's memory pools
+#if !defined(__AROS__)
 #define DLMALLOC	        1
+#endif
 
 // DLMALLOC_CLEAR to clear all allocated memory - ATM still required
 #define DLMALLOC_CLEAR		1
