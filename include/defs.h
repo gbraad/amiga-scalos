@@ -91,6 +91,9 @@
 	#undef SAVEDS
 	#define	INLINE
 	#define REG(x, arg) arg
+
+	#define DoPkt2(port, action, arg1, arg2)       DoPkt(port, action, arg1, arg2, 0, 0, 0)
+	#define DoPkt3(port, action, arg1, arg2, arg3) DoPkt(port, action, arg1, arg2, arg3, 0, 0)
 #else
 	#define REG(x, arg) arg __asm(#x)
 	#define	INLINE		__inline
