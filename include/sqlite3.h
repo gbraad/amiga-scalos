@@ -248,7 +248,7 @@ typedef struct sqlite3 sqlite3;
 #elif defined(_MSC_VER) || defined(__BORLANDC__)
   typedef __int64 sqlite_int64;
   typedef unsigned __int64 sqlite_uint64;
-elif defined(__SASC) /* AMIGA */
+#elif defined(__SASC) /* AMIGA */
   typedef struct { LONG hi; ULONG lo; } sqlite_int64;
   typedef struct { ULONG hi; ULONG lo; } sqlite_uint64;
 #else
