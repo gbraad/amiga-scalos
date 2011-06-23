@@ -67,7 +67,7 @@ struct DOSIFace *IDOS;
 struct TimerIFace *ITimer;
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__AROS__)
 extern T_UTILITYBASE __UtilityBase;
 extern struct Library *__MathIeeeDoubBasBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) */
@@ -88,7 +88,7 @@ BOOL SQLite3Init(struct SQLite3Base *SQLite3Base)
 	d1(kprintf("%s/%ld:   START SQLite3Base=%08lx  procName=<%s>\n",__FUNC__ , __LINE__, \
 		SQLite3Base, FindTask(NULL)->tc_Node.ln_Name));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	if (_STI_240_InitMemFunctions())
 		return FALSE;
 #endif
@@ -133,7 +133,7 @@ BOOL SQLite3Open(struct SQLite3Base *SQLite3Base)
 			break;
 #endif /* __amigaos4__ */
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 		__UtilityBase = UtilityBase;
 
 		__MathIeeeDoubBasBase = OpenLibrary("mathieeedoubbas.library", 0);
@@ -177,11 +177,11 @@ void SQLite3Cleanup(struct SQLite3Base *SQLite3Base)
 {
 	d1(kprintf("%s/%ld:  START\n", __FUNC__, __LINE__));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 	if (__MathIeeeDoubBasBase)
 		{
 		CloseLibrary(__MathIeeeDoubBasBase);
@@ -1911,7 +1911,7 @@ LIBFUNC_END
 #if !defined(__SASC)
 // Replacement for SAS/C library functions
 
-#if !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 
 struct WBStartup *_WBenchMsg;
 
