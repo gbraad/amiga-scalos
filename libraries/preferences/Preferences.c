@@ -1261,7 +1261,7 @@ void exit(int x)
 		;
 }
 
-#if !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 
 static size_t stccpy(char *dest, const char *src, size_t MaxLen)
 {

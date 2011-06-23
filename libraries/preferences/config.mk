@@ -34,10 +34,20 @@ LFLAGS	+=	-nostartfiles \
 
 else
 
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+LFLAGS	+=	-nostartfiles -lrom
+
+else
+
 ###############################################################################
 # AmigaOS
 
 LFLAGS	+=	-liconobject -lstack -lnix -lnixmain -lamiga -lstubs
 
+endif
 endif
 endif
