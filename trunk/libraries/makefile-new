@@ -14,19 +14,23 @@ include		config.mk
 
 SUBDIRS	=	preferences	\
 		sqlite		\
-                scalosgfx	\
-                iconobject	\
-			
-ifneq ($(MACHINE), ppc-amigaos)
-SUBDIRS	+=      popupmenu
+		scalosgfx	\
+		iconobject
+
+ifeq ($(MACHINE), ppc-amigaos)
+else
+ifeq ($(MACHINE), i386-aros)
+else
+SUBDIRS	+=	popupmenu
+endif
 endif
 
 ##############################################################################
 
 .PHONY: all install clean bump dump
 
-all:	all_subdirs \
-	
+all:	all_subdirs
+
 install: install_subdirs
 
 clean: clean_subdirs
