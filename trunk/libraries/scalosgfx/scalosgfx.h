@@ -397,7 +397,7 @@ void DrawARGBEllipseRastPort(struct RastPort *rp,
 ///
 void ARGBRectMult(struct RastPort *rp,
 	struct ARGB Numerator, struct ARGB Denominator,
-	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax,
+	WORD xMin, WORD yMin, WORD xMax, WORD yMax,
 	struct ScalosGfxBase *ScalosGfxBase);
 void BlitARGBAlpha(struct RastPort *rp, const struct ARGBHeader *SrcH,
 	ULONG DestLeft, ULONG DestTop,
@@ -435,7 +435,9 @@ void BlitTransparentAlphaK(struct RastPort *rpBackground, struct RastPort *rpIco
 ///
 //----------------------------------------------------------------------------
 
+#ifndef __AROS__
 extern ULONG HookEntry();
+#endif
 
 //----------------------------------------------------------------------------
 
