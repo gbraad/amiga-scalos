@@ -22,10 +22,14 @@ OBJS	=	$(OBJDIR)/scalosgfx.o \
 		$(OBJDIR)/Dither.o \
 		$(OBJDIR)/Render.o \
 
-ifneq ($(MACHINE),ppc-amigaos)
-OBJS	:=	 $(OBJDIR)/scalosgfx-classic.o $(OBJS)
-else
+ifeq ($(MACHINE),ppc-amigaos)
 OBJS	:=	 $(OBJDIR)/scalosgfx-aos4.o $(OBJDIR)/scalosgfx-aos4-68kstubs.o $(OBJS)
+else
+ifeq ($(MACHINE),i386-aros)
+OBJS	:=	 $(OBJDIR)/scalosgfx-aros.o $(OBJS)
+else
+OBJS	:=	 $(OBJDIR)/scalosgfx-classic.o $(OBJS)
+endif
 endif
 
 ##############################################################################
@@ -56,8 +60,8 @@ all:	$(BINDIR)/$(NAME) \
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
-	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@chmod u+x $@
 
 ##############################################################################
 

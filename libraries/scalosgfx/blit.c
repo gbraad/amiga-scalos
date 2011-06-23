@@ -113,7 +113,7 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentAlphaKHookFunc(struct Hook *hook, 
 
 void ARGBRectMult(struct RastPort *rp,
 	struct ARGB Numerator, struct ARGB Denominator,
-	SHORT xMin, SHORT yMin, SHORT xMax, SHORT yMax,
+	WORD xMin, WORD yMin, WORD xMax, WORD yMax,
 	struct ScalosGfxBase *ScalosGfxBase)
 {
 #ifdef __amigaos4__
