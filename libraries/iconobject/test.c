@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		iobj = NewIconObjectTags(IconName,
 				TAG_END);
 
-		printf("IconObject = %08lx\n", iobj);
+		printf("IconObject = %p\n", iobj);
 
 		if (iobj)
 			{
@@ -39,5 +39,7 @@ int main(int argc, char *argv[])
 
 		CloseLibrary( IconobjectBase );
 		}
+
+	return 0;
 }
 

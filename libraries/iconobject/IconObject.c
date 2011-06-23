@@ -373,7 +373,11 @@ static void AddDtLib( CONST_STRPTR LibFileName, struct IconObjectBase *IconObjec
 		d1(kprintf("%s/%ld:  OpenLib(%s) OK\n", __FUNC__, __LINE__, LibFileName));
 		d1(kprintf("%s/%ld:  lib_IdString=<%s>  ln_Pri=%ld\n", __FUNC__, __LINE__, node->in_LibBase->lib_IdString, node->in_LibBase->lib_Node.ln_Pri));
 
+#ifdef __AROS__
+		node->in_Class = AROS_LVO_CALL0(Class *, struct Library *, DTClassBase, 5,);
+#else
 		node->in_Class = ObtainEngine();
+#endif
 		d1(kprintf("%s/%ld:  in_Class=%08lx\n", __FUNC__, __LINE__, node->in_Class));
 		if (NULL == node->in_Class)
 			break;
