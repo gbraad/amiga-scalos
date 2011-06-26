@@ -154,6 +154,34 @@ LIBFUNC_P2_PROTO(BPTR, sca_CreateDir,
 
 // public data items
 
+#ifdef __AROS__
+
+#ifdef TEST_OPENWINDOWTAGLIST
+extern struct Window * (*OldOpenWindowTagList) ();
+#endif /* TEST_OPENWINDOWTAGLIST */
+extern ULONG (*OldCloseWB) ();
+extern ULONG (*OldOpenWB) ();
+extern ULONG (*OldRemoveAppIcon) ();
+extern BOOL (*OldRemoveAppWindow) ();
+extern BOOL (*OldRemoveAppMenuItem) ();
+extern struct Screen * (*OldOpenScreenTagList) ();
+extern void (*OldUpdateWorkbench) ();
+extern APTR OldAddAppIconA;
+extern APTR OldAddAppWindowA;
+extern APTR OldAppAppMenuItemA;
+extern APTR OldSetBackFill;
+extern APTR OldWBInfo;
+extern BOOL (*OldPutDiskObject) ();
+extern BOOL (*OldDeleteDiskObject) ();
+extern BOOL (*OldPutIconTagList) ();
+extern ULONG (*OldDeleteFile) ();
+extern ULONG (*OldRename) ();
+extern BPTR (*OldOpen) ();
+extern ULONG (*OldClose) ();
+extern BPTR (*OldCreateDir) ();
+
+#else
+
 #ifdef TEST_OPENWINDOWTAGLIST
 extern LIBFUNC_P3_DPROTO(struct Window *, (*OldOpenWindowTagList),
 	A0, struct NewWindow *, newWin,
@@ -166,7 +194,7 @@ extern LIBFUNC_P1_DPROTO(ULONG, (*OldOpenWB),
 	A6, struct IntuitionBase *, iBase);
 extern LIBFUNC_P2_DPROTO(ULONG, (*OldRemoveAppIcon),
 	A0, struct AppIcon *, appIcon,
-	A6, struct Library *, wbBase);
+	A6, struct Library *, qq);
 extern LIBFUNC_P2_DPROTO(BOOL, (*OldRemoveAppWindow),
 	A0, struct AppWindow *, aw,
 	A6, struct Library *, wbBase);
@@ -220,6 +248,8 @@ extern LIBFUNC_P2_DPROTO(BPTR, (*OldCreateDir),
 
 //extern LIBFUNC_P1_DPROTO(CONST_STRPTR, (*OldwbPrivate2),
 //	D0, ULONG, StringID);
+
+#endif
 
 //----------------------------------------------------------------------------
 

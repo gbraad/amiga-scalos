@@ -115,6 +115,34 @@ static void PatchAsyncWBUndoCreateDir(CONST_STRPTR name);
 
 // public data items
 
+#ifdef __AROS__
+
+#ifdef TEST_OPENWINDOWTAGLIST
+struct Window * (*OldOpenWindowTagList) ();
+#endif /* TEST_OPENWINDOWTAGLIST */
+ULONG (*OldCloseWB) ();
+ULONG (*OldOpenWB) ();
+ULONG (*OldRemoveAppIcon) ();
+BOOL (*OldRemoveAppWindow) ();
+BOOL (*OldRemoveAppMenuItem) ();
+struct Screen * (*OldOpenScreenTagList) ();
+void (*OldUpdateWorkbench) ();
+APTR OldAddAppIconA;
+APTR OldAddAppWindowA;
+APTR OldAppAppMenuItemA;
+APTR OldSetBackFill;
+APTR OldWBInfo;
+BOOL (*OldPutDiskObject) ();
+BOOL (*OldDeleteDiskObject) ();
+BOOL (*OldPutIconTagList) ();
+ULONG (*OldDeleteFile) ();
+ULONG (*OldRename) ();
+BPTR (*OldOpen) ();
+ULONG (*OldClose) ();
+BPTR (*OldCreateDir) ();
+
+#else
+
 #ifdef TEST_OPENWINDOWTAGLIST
 LIBFUNC_P3_DPROTO(struct Window *, (*OldOpenWindowTagList),
 	A0, struct NewWindow *, newWin,
@@ -182,6 +210,8 @@ LIBFUNC_P2_DPROTO(BPTR, (*OldCreateDir),
 
 //LIBFUNC_P1_DPROTO(CONST_STRPTR, (*OldwbPrivate2),
 //	D0, ULONG, StringID);
+
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -284,7 +314,12 @@ LIBFUNC_P1(LONG, sca_CloseWorkBench,
 
 		d1(KPrintF("%s/%s/%ld: OldCloseWB=%08lx\n", __FILE__, __FUNC__, __LINE__, OldCloseWB));
 
+#ifdef __AROS__
+		Success = AROS_CALL0(LONG, (*OldCloseWB),
+				     struct IntuitionBase *, iBase);
+#else
 		Success = CALLLIBFUNC_P1((*OldCloseWB), A6, iBase);
+#endif
 		} while (0);
 
 	d1(KPrintF("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
@@ -315,7 +350,12 @@ LIBFUNC_P1(LONG, sca_OpenWorkBench,
 			break;
 			}
 
+#ifdef __AROS__
+		Success = AROS_CALL0(IPTR, (*OldOpenWB),
+				     struct IntuitionBase *, iBase);
+#else
 		Success = CALLLIBFUNC_P1((*OldOpenWB), A6, iBase);
+#endif
 		if (!Success)
 			break;
 
@@ -854,7 +894,13 @@ LIBFUNC_P2(ULONG, sca_RemoveAppIcon,
 
 	if (NULL == AppObj || 0 == TypeOfMem(appIcon) || ID_SC != AppObj->appo_Kennung)
 		{
+#ifdef __AROS__
+		return AROS_CALL1(BOOL, (*OldRemoveAppIcon),
+				  AROS_LDA(struct AppIcon *, appIcon, A0),
+				  struct Library *, wbBase);
+#else
 		return CALLLIBFUNC_P2((*OldRemoveAppIcon), A0, appIcon, A6, wbBase);
+#endif
 		}
 
 	TagList = AppObj->appo_TagList;
@@ -914,7 +960,13 @@ LIBFUNC_P2(BOOL, sca_RemoveAppWindow,
 	d1(KPrintF("%s/%s/%ld: aw=%08lx\n", __FILE__, __FUNC__, __LINE__, aw));
 
 	if (NULL == aw || 0 == TypeOfMem(aw) || ID_SC != appo->appo_Kennung)
+#ifdef __AROS__
+		return AROS_CALL1(BOOL, (*OldRemoveAppWindow),
+				  AROS_LDA(struct AppWindow *, aw, A0),
+				  struct Library *, wbBase);
+#else
 		return (BOOL) CALLLIBFUNC_P2((*OldRemoveAppWindow), A0, aw, A6, wbBase);
+#endif
 
 	CloseLibrary(&ScalosBase->scb_LibNode);
 
@@ -955,7 +1007,13 @@ LIBFUNC_P2(BOOL, sca_RemoveAppMenuItem,
 	d1(KPrintF("%s/%s/%ld: ami=%08lx\n", __FILE__, __FUNC__, __LINE__, ami));
 
 	if (NULL == ami || 0 == TypeOfMem(ami) || ID_SC != appo->appo_Kennung)
+#if __AROS__
+		return AROS_CALL1(BOOL, (*OldRemoveAppMenuItem),
+				  AROS_LDA(struct AppMenuItem *, ami, A0),
+				  struct Library *, wbBase);
+#else
 		return (BOOL) CALLLIBFUNC_P2((*OldRemoveAppMenuItem), A0, ami, A6, wbBase);
+#endif
 
 	CloseLibrary(&ScalosBase->scb_LibNode);
 
@@ -1259,10 +1317,18 @@ LIBFUNC_P3(struct Window *, sca_OpenWindowTagList,
 			}
 		}
 */
+
+#ifdef __AROS__
+	Win = AROS_CALL2(struct Window *, (*OldOpenWindowTagList),
+			 AROS_LDA(struct NewWindow *, newWin, A0),
+			 AROS_LDA(struct TagItem   *, TagList, A1),
+			 struct IntuitionBase *, iBase);
+#else
 	Win = (struct Window *) CALLLIBFUNC_P3((*OldOpenWindowTagList),
 		A0, newWin,
 		A1, TagList,
                 A6, iBase);
+#endif
 
 	d1(KPrintF("%s/%s/%ld: >>> Window=%08lx\n", __FILE__, __FUNC__, __LINE__, Win));
 	if (Win)
@@ -1364,10 +1430,17 @@ LIBFUNC_P3(struct Screen *, sca_OpenScreenTagList,
 
 			ti[nTag].ti_Tag = TAG_END;
 
+#ifdef __AROS__
+			Scr = AROS_CALL2(struct Screen *, (*OldOpenScreenTagList),
+					 AROS_LDA(struct NewScreen *, newScr, A0),
+					 AROS_LDA(struct TagItem   *, ti, A1),
+					 struct IntuitionBase *, iBase);
+#else
 			Scr = (struct Screen *) CALLLIBFUNC_P3((*OldOpenScreenTagList),
 				A0, newScr,
 				A1, ti,
 	                        A6, iBase);
+#endif
 
 			if (Scr && PalettePrefs.pal_ScreenColorList)
 				{
@@ -1389,10 +1462,17 @@ LIBFUNC_P3(struct Screen *, sca_OpenScreenTagList,
 		}
 	else
 		{
+#ifdef __AROS__
+		Scr = AROS_CALL2(struct Screen *, (*OldOpenScreenTagList),
+				 AROS_LDA(struct NewScreen *, newScr, A0),
+				 AROS_LDA(struct TagItem   *, TagList, A1),
+				 struct IntuitionBase *, iBase);
+#else
 		Scr = (struct Screen *) CALLLIBFUNC_P3((*OldOpenScreenTagList),
 			A0, newScr,
 			A1, TagList,
                         A6, iBase);
+#endif
 		}
 
 	d1(KPrintF("%s/%s/%ld: Scr=%08lx\n", __FILE__, __FUNC__, __LINE__, Scr));
@@ -1506,8 +1586,15 @@ LIBFUNC_P3(BOOL, sca_PutDiskObject,
 	A1, const struct DiskObject *, diskObj,
 	A6, struct Library *, IconBase)
 {
+#ifdef __AROS__
+	BOOL Success = AROS_CALL2(BOOL, (*OldPutDiskObject),
+				  AROS_LDA(CONST_STRPTR,        Name, A0),
+				  AROS_LDA(struct DiskObject *, diskObj, A1),
+				  struct Library *, IconBase);
+#else
 	BOOL Success = CALLLIBFUNC_P3((*OldPutDiskObject),
 		A0, Name, A1, diskObj, A6, IconBase);
+#endif
 
 	d1(KPrintF("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
@@ -1527,8 +1614,14 @@ LIBFUNC_P2(BOOL, sca_DeleteDiskObject,
 	A0, CONST_STRPTR, Name,
 	A6, struct Library *, IconBase)
 {
+#ifdef __AROS__
+	BOOL Success = AROS_CALL1(BOOL, (*OldDeleteDiskObject),
+				  AROS_LDA(UBYTE *, Name, A0),
+				  struct Library *, IconBase);
+#else
 	BOOL Success = CALLLIBFUNC_P2((*OldDeleteDiskObject),
 		A0, Name, A6, IconBase);
+#endif
 
 	d1(KPrintF("%s/%s/%ld: Success=%ld\n", __FILE__, __FUNC__, __LINE__, Success));
 
@@ -1552,8 +1645,16 @@ LIBFUNC_P4(BOOL, sca_PutIconTagList,
 	A6, struct Library *, IconBase)
 {
 	//ULONG NotifyWB;
+#ifdef __AROS__
+	BOOL Success = AROS_CALL3(BOOL, (*OldPutIconTagList),
+				  AROS_LDA(CONST_STRPTR,        Name, A0),
+				  AROS_LDA(struct DiskObject *, diskObj, A1),
+				  AROS_LDA(struct TagItem *,    tags, A2),
+				  struct Library *, IconBase);
+#else
 	BOOL Success = CALLLIBFUNC_P4((*OldPutIconTagList),
 		A0, Name, A1, diskObj, A2, tags, A6, IconBase);
+#endif
 
 	//NotifyWB = GetTagData(ICONPUTA_NotifyWorkbench, FALSE, tags);
 
@@ -1625,8 +1726,14 @@ LIBFUNC_P2(ULONG, sca_DeleteFile,
 
 	d1(KPrintF("%s/%s/%ld: START Name=<%s>  Task=<%s>\n", __FILE__, __FUNC__, __LINE__, Name, FindTask(NULL)->tc_Node.ln_Name));
 
+#ifdef __AROS__
+	Success = AROS_CALL1(BOOL, (*OldDeleteFile),
+			     AROS_LDA(CONST_STRPTR, Name, D1),
+			     struct DosLibrary *, DOSBase);
+#else
 	Success = CALLLIBFUNC_P2((*OldDeleteFile),
 		D1, Name, A6, DOSBase);
+#endif
 
 	if (Success)
 		{
@@ -1698,8 +1805,15 @@ LIBFUNC_P3(ULONG, sca_Rename,
 
 	d1(kprintf("%s/%s/%ld: in=%08lx  fLock=%08lx\n", __FILE__, __FUNC__, __LINE__, in, fLock));
 
+#ifdef __AROS__
+	Success = AROS_CALL2(LONG, (*OldRename),
+			     AROS_LDA(CONST_STRPTR, oldName, D1),
+			     AROS_LDA(CONST_STRPTR, newName, D2),
+			     struct DosLibrary *, DOSBase);
+#else
 	Success = CALLLIBFUNC_P3((*OldRename),
 		D1, oldName, D2, newName, A6, DOSBase);
+#endif
 
 	if (Success)
 		{
@@ -1827,9 +1941,16 @@ LIBFUNC_P3(BPTR, sca_Open,
 	T_ExamineData *fib = NULL;
 	struct DosOpenInfo *doi;
 
+#ifdef __AROS__
+	file = AROS_CALL2(BPTR, (*OldOpen),
+			  AROS_LDA(CONST_STRPTR, name,       D1),
+			  AROS_LDA(LONG,         accessMode, D2),
+			  struct DosLibrary *, DOSBase);
+#else
 	file = CALLLIBFUNC_P3((*OldOpen),
 		D1, name, D2, accessMode,
                 A6, DOSBase);
+#endif
 
 	d1(KPrintF("%s/%s/%ld: file=%08lx  name=<%s>  accessMode=%ld\n", __FILE__, __FUNC__, __LINE__, file, name, accessMode));
 #if 1
@@ -1988,8 +2109,14 @@ LIBFUNC_P2(ULONG, sca_Close,
 		}
 #endif
 
+#ifdef __AROS__
+	Success = AROS_CALL1(BOOL, (*OldClose),
+			     AROS_LDA(BPTR, file, D1),
+			     struct DosLibrary *, DOSBase);
+#else
 	Success = CALLLIBFUNC_P2((*OldClose),
 		D1, file, A6, DOSBase);
+#endif
 
 #if 1
 	ScalosExamineEnd(&fib);
@@ -2025,8 +2152,14 @@ LIBFUNC_P2(BPTR, sca_CreateDir,
 
 	PatchAsyncWBUndoCreateDir(name);
 
+#ifdef __AROS__
+	lock = AROS_CALL1(BPTR, (*OldCreateDir),
+			  AROS_LDA(CONST_STRPTR, name, D1),
+			  struct DosLibrary *, DOSBase);
+#else
 	lock = CALLLIBFUNC_P2((*OldCreateDir),
 		D1, name, A6, DOSBase);
+#endif
 
 	if (BNULL != lock)
 		{
