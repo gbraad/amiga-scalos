@@ -33,7 +33,7 @@ LANG	=       polish
 else
 
 ###############################################################################
-# AmigaOS
+# AmigaOS (and AROS)
 
 LANG	=       polski
 

@@ -169,7 +169,7 @@ NAME_DB =	Scalos.debug
 #
 
 SUBDIRS	=	Tools				\
-		$(foreach cat,$(CATS),Catalogs/$(cat)/Scalos) \
+		$(filter-out catalogs/sample/Scalos, $(wildcard catalogs/*/Scalos)) \
 #		std_includes/sfd		\
 
 ##############################################################################
@@ -187,18 +187,6 @@ $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	@$(CC) $(STARTUP) $(OBJS) $(LFLAGS) $(DEFINES) -o $(BINDIR)/$(NAME_DB)
 	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
 	@chmod u+x $@
-
-##############################################################################
-# 
-# Catalogs
-#
-
-CATS	= 	dansk \
-	  	deutsch \
-	  	español \
-	  	français \
-	  	Polski \
-	  	ÃeÓtina
 
 ##############################################################################
 
@@ -221,5 +209,3 @@ clean:
 		$(OBJDIR)/Scalos_Locale.h MsgIdNames.h
 
 ##############################################################################
-
-

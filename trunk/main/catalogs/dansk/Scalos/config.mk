@@ -33,7 +33,7 @@ LANG	=       danish
 else
 
 ###############################################################################
-# AmigaOS
+# AmigaOS (and AROS)
 
 LANG	=       dansk
 
