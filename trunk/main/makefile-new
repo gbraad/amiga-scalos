@@ -115,8 +115,8 @@ ifeq ($(MACHINE), ppc-amigaos)
 		$(OBJDIR)/scalos-aos4-68kstubs.o
 else
 ifeq ($(MACHINE), i386-aros)
-	OBJS += $(OBJDIR)/Patches-classic.o		\
-		$(OBJDIR)/ScaLibrary-classic.o
+	OBJS += $(OBJDIR)/Patches-aros.o		\
+		$(OBJDIR)/ScaLibrary-aros.o
 else
 	OBJS += $(OBJDIR)/Patches-classic.o		\
 		$(OBJDIR)/malloc.o			\
