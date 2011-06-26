@@ -89,7 +89,7 @@
 	#undef SAVEDS
 #elif defined(__AROS__)
 	#undef SAVEDS
-	#define	INLINE
+	#define	INLINE inline
 	#define REG(x, arg) arg
 
 	#define DoPkt2(port, action, arg1, arg2)       DoPkt(port, action, arg1, arg2, 0, 0, 0)
@@ -1759,12 +1759,265 @@
 #elif defined(__AROS__)
 
 	#include <aros/libcall.h>
+	#include <aros/asmcall.h>
 
 	//======================================================
 
 	#define	PATCHFUNC(x)
 	#define	STATIC_PATCHFUNC(x)
 	#define	PATCH_NEWFUNC(x)	(APTR) (x)
+
+	//======================================================
+
+	#define	M68KFUNC_P1_PROTO(returntype, funcname, 	\
+			register1, type1, name1) 		\
+		returntype funcname( 				\
+			type1 name1)
+
+	#define	M68KFUNC_P2_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2)
+
+	#define	M68KFUNC_P3_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2,				\
+			type3 name3)
+
+	#define	M68KFUNC_P4_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3, 		\
+			register4, type4, name4) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2,				\
+			type3 name3,				\
+			type4 name4)
+
+	#define	M68KFUNC_P5_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3, 		\
+			register4, type4, name4, 		\
+			register5, type5, name5) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2,				\
+			type3 name3,				\
+			type4 name4,				\
+			type5 name5)
+
+	#define	M68KFUNC_P6_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3, 		\
+			register4, type4, name4, 		\
+			register5, type5, name5, 		\
+			register6, type6, name6) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2,				\
+			type3 name3,				\
+			type4 name4,				\
+			type5 name5,				\
+			type6 name6)
+
+	#define	M68KFUNC_P7_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3, 		\
+			register4, type4, name4, 		\
+			register5, type5, name5, 		\
+			register6, type6, name6, 		\
+			register7, type7, name7) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2,				\
+			type3 name3,				\
+			type4 name4,				\
+			type5 name5,				\
+			type6 name6,				\
+			type7 name7)
+
+	#define	M68KFUNC_P8_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3, 		\
+			register4, type4, name4, 		\
+			register5, type5, name5, 		\
+			register6, type6, name6, 		\
+			register7, type7, name7, 		\
+			register8, type8, name8) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2,				\
+			type3 name3,				\
+			type4 name4,				\
+			type5 name5,				\
+			type6 name6,				\
+			type7 name7,				\
+			type8 name8)
+
+	#define	M68KFUNC_P9_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3, 		\
+			register4, type4, name4, 		\
+			register5, type5, name5, 		\
+			register6, type6, name6, 		\
+			register7, type7, name7, 		\
+			register8, type8, name8, 		\
+			register9, type9, name9) 		\
+		returntype funcname( 				\
+			type1 name1,				\
+			type2 name2,				\
+			type3 name3,				\
+			type4 name4,				\
+			type5 name5,				\
+			type6 name6,				\
+			type7 name7,				\
+			type8 name8,				\
+			type9 name9)
+
+//======================================================
+
+	#define	M68KFUNC_P1(returntype, funcname, 		\
+			register1, type1, name1) 		\
+		M68KFUNC_P1_PROTO(returntype, funcname, 	\
+			register1, type1, name1) 		\
+			{
+
+	#define	M68KFUNC_P2(returntype, funcname, 		\
+			register1, type1, name1, 		\
+			register2, type2, name2) 		\
+		M68KFUNC_P2_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2) 		\
+			{
+
+	#define	M68KFUNC_P3(returntype, funcname, 		\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3) 		\
+		M68KFUNC_P3_PROTO(returntype, funcname, 	\
+			register1, type1, name1, 		\
+			register2, type2, name2, 		\
+			register3, type3, name3) 		\
+			{
+
+	#define	M68KFUNC_P4(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4)		\
+		M68KFUNC_P4_PROTO(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4)		\
+			{
+
+	#define	M68KFUNC_P5(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5)		\
+		M68KFUNC_P5_PROTO(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5)		\
+			{
+
+	#define	M68KFUNC_P6(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6)		\
+		M68KFUNC_P6_PROTO(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6)		\
+			{
+
+	#define	M68KFUNC_P7(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6,		\
+			register7, type7, name7)		\
+		M68KFUNC_P7_PROTO(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6,		\
+			register7, type7, name7)		\
+			{
+
+	#define	M68KFUNC_P8(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6,		\
+			register7, type7, name7,		\
+			register8, type8, name8)		\
+		M68KFUNC_P8_PROTO(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6,		\
+			register7, type7, name7,		\
+			register8, type8, name8)		\
+			{
+
+	#define	M68KFUNC_P9(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6,		\
+			register7, type7, name7,		\
+			register8, type8, name8,		\
+			register9, type9, name9)		\
+		M68KFUNC_P9_PROTO(returntype, funcname,		\
+			register1, type1, name1,		\
+			register2, type2, name2,		\
+			register3, type3, name3,		\
+			register4, type4, name4,		\
+			register5, type5, name5,		\
+			register6, type6, name6,		\
+			register7, type7, name7,		\
+			register8, type8, name8,		\
+			register9, type9, name9)		\
+			{
+
+	//=======================================================
+
+	#define	M68KFUNC_END 					\
+			}
 
 	//======================================================
 
@@ -2021,6 +2274,8 @@
 			type9, name9, 0, name9) 		\
 		{						\
 			AROS_LIBFUNC_INIT
+
+	//======================================================
 
 	#define LIBFUNC_END					\
 				AROS_LIBFUNC_EXIT		\
