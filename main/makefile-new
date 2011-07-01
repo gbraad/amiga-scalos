@@ -145,7 +145,7 @@ filetypes.c : MsgIdNames.h
 
 $(OBJDIR)/Scalos_Locale.h : Scalos.cd
 	@printf 'Compile $@ from $<\n'
-	@$(FLEXCAT) $< $@=$(TOPLEVEL)/C_h_orig.sd
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 MsgIdNames.h : Scalos.cd
 	@printf 'Generate $@\n'

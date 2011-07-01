@@ -20,7 +20,8 @@
 #include "functions.h"
 #include "Variables.h"
 
-#define	CATCOMP_ARRAY
+#define	Scalos_CODE
+#define	Scalos_BLOCK
 #include "locale.h"
 
 //----------------------------------------------------------------------------
@@ -43,12 +44,16 @@
 
 CONST_STRPTR GetLocString(LONG StringID)
 {
-	if (LocaleBase != NULL && ScalosCatalog != NULL)
-	{
-		return GetCatalogStr(ScalosCatalog, StringID, CatCompArray[StringID].cca_Str);
-	} 
-	else 
-	{
-		return CatCompArray[StringID].cca_Str;
-	}
+	struct Scalos_LocaleInfo li;
+
+#ifndef __amigaos4__
+	li.li_LocaleBase = LocaleBase;
+#else
+	li.li_ILocale = ILocale;
+#endif
+
+	li.li_Catalog = ScalosCatalog;
+
+	return (CONST_STRPTR) GetScalosString(&li, StringID);
 }
+
