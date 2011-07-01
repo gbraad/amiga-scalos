@@ -73,6 +73,7 @@ INCLUDES	+=
 LFLAGS	+=      -lpng \
 		-lz \
 		-lm \
+		-larossupport \
 		#
 
 else
