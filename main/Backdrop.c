@@ -75,6 +75,7 @@ void BackDropInitList(struct BackDropList *bdl)
 	bdl->bdl_Changed = FALSE;
 	bdl->bdl_Filtered = FALSE;
 	bdl->bdl_NotPresent = FALSE;
+	bdl->bdl_Initialized = TRUE;
 }
 
 
@@ -137,6 +138,9 @@ LONG BackdropLoadList(struct BackDropList *bdl)
 void BackdropFreeList(struct BackDropList *bdl)
 {
 	struct ChainedLine *cnl;
+
+	if (! bdl->bdl_Initialized)
+		return;
 
 	while ((cnl = (struct ChainedLine *) RemHead(&bdl->bdl_LinesList)))
 		{

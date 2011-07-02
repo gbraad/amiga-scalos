@@ -986,6 +986,7 @@ struct BackDropList
 	ULONG bdl_Loaded;
 	ULONG bdl_Filtered;
 	ULONG bdl_NotPresent;
+	BOOL bdl_Initialized;
 	};
 
 // +jl+ 20010807
