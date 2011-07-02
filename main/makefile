@@ -15,6 +15,7 @@ SUBDIRMAKE  = $(MAKE) -s -C
 
 SVNVERSION	= $(shell svnversion -n)
 CATCOMP 	= CatComp
+FLEXCAT		= FlexCat
 CHEADERS 	= scalos_structures.h variables.h functions.h debug.h Semaphores.h wrappers.h \
 		  $(INT64_DIR)/int64.h ../include/scalos/scalos.h ../include/scalosdebug.h
 LOCALE_HEADERS 	= locale.h $(CATHEADER) # Scalos_Locale.h 
@@ -360,12 +361,12 @@ FORCE:
 # generate locale include files
 $(CATHEADER) : Scalos.cd
 	@printf '\033[32mCatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< vb=1 cfile=$@
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 
-$(MSG_NAMES) : $(CATHEADER)
+$(MSG_NAMES) : Scalos.cd
 	@printf '\033[32mGenMsgIdNames: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@GenMsgIdNames $< $@
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/msgidnames.sd
 
 #############################################################
 
