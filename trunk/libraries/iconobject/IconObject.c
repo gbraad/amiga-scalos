@@ -203,7 +203,6 @@ void IconObjectCleanup(struct IconObjectBase *IconObjectBase)
 	if (IconObjectBase->iob_dtPathLock)
 		{
 		RemAssignList("LIBS", IconObjectBase->iob_dtPathLock);
-		UnLock(IconObjectBase->iob_dtPathLock);
 		IconObjectBase->iob_dtPathLock = 0;
 		}
 #ifdef __amigaos4__
@@ -269,8 +268,8 @@ static struct IconNode *IconNode_New( CONST_STRPTR base_name, struct IconObjectB
 
 	struct IconNode *node;
 
-	d1(kprintf(__FILE__ "/%s/%ld:  name=<%s>  id=%08lx  pri=%ld\n",
-		__FUNC__, __LINE__, base_name, id, (ULONG) priority));
+	d1(kprintf(__FILE__ "/%s/%ld:  name=<%s>\n",
+		__FUNC__, __LINE__, base_name));
 
 	if( node = (struct IconNode *) MyAllocVecPooled(sizeof(struct IconNode)))
 		{
