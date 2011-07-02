@@ -114,18 +114,24 @@ static const char %b_Block[] =
 
  STRPTR Get%bString(struct %b_LocaleInfo *li, LONG stringNum)
  {
- LONG   *l;
- UWORD  *w;
+ ULONG  *idp;
+ ULONG   id;
+ UWORD  *lenp;
+ UWORD   len;
  STRPTR  builtIn;
 
-     l = (LONG *)%b_Block;
+     idp = (ULONG *)%b_Block;
+     id = SCA_BE2LONG(*idp);
 
-     while (*l != stringNum)
+     while (id != stringNum)
        {
-       w = (UWORD *)((ULONG)l + 4);
-       l = (LONG *)((ULONG)l + (ULONG)*w + 6);
+       lenp = (UWORD *)((IPTR)idp + 4);
+       len = SCA_BE2WORD(*lenp);
+       
+       idp = (ULONG *)((IPTR)idp + (IPTR)len + 6);
+       id = SCA_BE2LONG(*idp);
        }
-     builtIn = (STRPTR)((ULONG)l + 6);
+     builtIn = (STRPTR)((IPTR)idp + 6);
 
 // #define %b_XLocaleBase LocaleBase
 // #define LocaleBase li->li_LocaleBase
