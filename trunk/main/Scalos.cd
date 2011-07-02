@@ -170,7 +170,7 @@ Used libraries:
 ;
 ;
 MSGID_SCARUNNINGNAME (//)
-Scalos is running in 
+Scalos is running in\x20
 ;
 ;
 MSGID_PREVIEWNAME (//)
@@ -600,7 +600,7 @@ Counting Objects to Move...
 ;
 ; File transfer dialog window
 MSGID_FILETRANSFER_REMAININGTIME (//30)
-Remaining Time 
+Remaining Time\x20
 ;
 ;
 ; File transfer dialog window
@@ -781,7 +781,7 @@ Files:
 ;
 ;
 MSGID_TOOLTIP_LINKTO (//)
-Link to: 
+Link to:\x20
 ;
 ;
 MSGID_TOOLTIP_KICKSTART (//)

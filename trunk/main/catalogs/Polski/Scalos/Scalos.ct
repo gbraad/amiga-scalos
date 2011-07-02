@@ -56,7 +56,7 @@ Powtórz|Poniechaj
 ;
 ;
 MSGID_WBLOADNAME
-Wczytujë program '%s'...
+Wczytujë program '%s'.
 ; Attempt to load program '%s'.
 ;
 ;
@@ -549,17 +549,17 @@ MSGID_TOOLTIP_UNKNOWNTYPE
 ;
 ;
 MSGID_TOOLTIP_LASTCHANGE
-Ostatnia zmiana:
+Ostatnia zmiana: 
 ; Last Change: 
 ;
 ;
 MSGID_TOOLTIP_SIZE
-Wielkoôê:
+Wielkoôê: 
 ; Size: 
 ;
 ;
 MSGID_TOOLTIP_PROTECTION
-Atrybuty:
+Atrybuty: 
 ; Protection: 
 ;
 ;
@@ -609,17 +609,17 @@ MSGID_TOOLTIP_USEDCOUNTFMT_INUSE
 ;
 ;
 MSGID_TOOLTIP_CREATED
-Stworzony:
+Stworzony: 
 ; Created: 
 ;
 ;
 MSGID_TOOLTIP_STATE
-Stan:
+Stan: 
 ; State: 
 ;
 ;
 MSGID_TOOLTIP_USED
-Wykorzystanie:
+Wykorzystanie: 
 ; Used: 
 ;
 ;
@@ -778,8 +778,8 @@ Liczë obiekty do przeniesienia...
 ;
 ; File transfer dialog window
 MSGID_FILETRANSFER_REMAININGTIME
-Pozostaîy czas 
-; Remaining Time 
+Pozostaîy czas
+; Remaining Time
 ;
 ;
 ; File transfer dialog window
@@ -1004,8 +1004,8 @@ Pliki:
 ;
 ;
 MSGID_TOOLTIP_LINKTO
-Skrót do: 
-; Link to: 
+Skrót do:
+; Link to:
 ;
 ; === added as of Scalos 40.28 ===
 ;

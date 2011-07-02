@@ -630,7 +630,7 @@ Counting Objects to Move...
 ;
 ; File transfer dialog window
 MSGID_FILETRANSFER_REMAININGTIME
-Remaining Time 
+Remaining Time
 ;
 ;
 ; File transfer dialog window
@@ -802,7 +802,7 @@ Files:
 ;
 ;
 MSGID_TOOLTIP_LINKTO
-Link to: 
+Link to:
 ;
 ;
 MSGID_TOOLTIP_KICKSTART
