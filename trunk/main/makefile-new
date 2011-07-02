@@ -150,11 +150,11 @@ $(OBJDIR)/%.o: $(MCPGFX_DIR)/%.c
 about.c Scalos.c windowtask.c locale.h : $(OBJDIR)/Scalos_Locale.h
 filetypes.c : MsgIdNames.h
 
-$(OBJDIR)/Scalos_Locale.h : Scalos.cd
+$(OBJDIR)/Scalos_Locale.h : Scalos.cd $(TOPLEVEL)/CatComp_h.sd
 	@printf 'Compile $@ from $<\n'
 	@$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
 
-MsgIdNames.h : Scalos.cd
+MsgIdNames.h : Scalos.cd $(TOPLEVEL)/msgidnames.sd
 	@printf 'Generate $@\n'
 	@$(FLEXCAT) $< $@=$(SDPATH)/msgidnames.sd
 

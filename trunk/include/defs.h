@@ -2823,4 +2823,19 @@
 typedef LONG IPTR;
 #endif
 
+// ==============================================================
+
+#if defined(__AROS__) 
+	#include <aros/macros.h>
+	#define SCA_WORD2BE(x) AROS_WORD2BE(x)
+	#define SCA_LONG2BE(x) AROS_LONG2BE(x)
+	#define SCA_BE2WORD(x) AROS_BE2WORD(x)
+	#define SCA_BE2LONG(x) AROS_BE2LONG(x)
+#else
+	#define SCA_WORD2BE(x) (x)
+	#define SCA_LONG2BE(x) (x)
+	#define SCA_BE2WORD(x) (x)
+	#define SCA_BE2LONG(x) (x)
+#endif
+
 #endif /* DEFS_H */
