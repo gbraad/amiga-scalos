@@ -102,7 +102,7 @@ Workbench. Veuillez fermer toutes les fenêtres,\n\
 ; except drawers.
 ;
 MSGID_ABOUTNAME
-A propos de Scalos... 
+A propos de Scalos...
 ; About Scalos...
 ;
 MSGID_OKNAME
@@ -180,8 +180,8 @@ Bibliothèques utilisées :
 ; Used libraries:
 ;
 MSGID_SCARUNNINGNAME
-Scalos tourne en 
-; Scalos is running in 
+Scalos tourne en
+; Scalos is running in
 ;
 MSGID_PREVIEWNAME
 Mode démo !
@@ -520,7 +520,7 @@ MSGID_TOOLTIP_USEDCOUNTFMT
 ; %s %% full, %s free, %s in use
 ;
 MSGID_TOOLTIP_USEDCOUNTFMT_FULL
-%s %% plein 
+%s %% plein
 ; %s %% full
 ;
 MSGID_TOOLTIP_USEDCOUNTFMT_FREE
@@ -669,8 +669,8 @@ Enumération des éléments à déplacer...
 ;
 ; File transfer dialog window
 MSGID_FILETRANSFER_REMAININGTIME
-Temps restant : 
-; Remaining Time 
+Temps restant :
+; Remaining Time
 ;
 ; File transfer dialog window
 MSGID_FILETRANSFER_MINUTES
@@ -869,8 +869,8 @@ Fichiers :
 ; Files: 
 ;
 MSGID_TOOLTIP_LINKTO
-Lien vers : 
-; Link to: 
+Lien vers :
+; Link to:
 ;
 MSGID_TOOLTIP_KICKSTART
 [Disque Kickstart]
