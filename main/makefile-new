@@ -6,6 +6,13 @@ ifndef TOPLEVEL
 	TOPLEVEL=$(shell pwd)/..
 endif
 
+# Native FlexCat doesn't like Linux paths
+ifeq ($(CROSS), )
+	SDPATH=
+else
+	SDPATH=..
+endif
+
 ###############################################################################
 
 include		config.mk
@@ -145,11 +152,11 @@ filetypes.c : MsgIdNames.h
 
 $(OBJDIR)/Scalos_Locale.h : Scalos.cd
 	@printf 'Compile $@ from $<\n'
-	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
+	@$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
 
 MsgIdNames.h : Scalos.cd
 	@printf 'Generate $@\n'
-	@$(FLEXCAT) $< $@=$(TOPLEVEL)/msgidnames.sd
+	@$(FLEXCAT) $< $@=$(SDPATH)/msgidnames.sd
 
 $(OBJDIR)/ScalosVersion.o : FORCE
 
