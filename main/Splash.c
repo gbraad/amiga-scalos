@@ -756,11 +756,14 @@ static SAVEDS(ULONG) BackFillFunc(struct Hook *bfHook, struct RastPort *rp, stru
 		}
 	else
 		{
-		WindowBackFill(&rpCopy, msg, NULL,
-			0, 0,
-			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
-			0, 0,
-			NULL);
+		if (iInfos.xii_iinfos.ii_DrawInfo)
+			{
+			WindowBackFill(&rpCopy, msg, NULL,
+				0, 0,
+				iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+				0, 0,
+				NULL);
+			}
 		}
 
 	return 0;

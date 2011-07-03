@@ -488,6 +488,9 @@ static ULONG NewAbout(APTR dummy, struct SM_RunProcess *msg)
 
 				im_Msg = ScrollUp(abi, ttBox.Height, ScrollXOffset, ScrollWidth, ttBox.Height);
 
+				if (! im_Msg)
+					continue;
+
 				/* This is an IDCMP message, so we find out the information we want
 				 * from it, reply to it and then call a function depending on what
 				 * gadget had been pressed.
