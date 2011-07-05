@@ -518,10 +518,8 @@ ULONG ReadPalettePrefs(void)
 
 					if (ReadChunkBytes(iff, &sPen, sizeof(sPen)) >= 0)
 						{
-						sPen.sp_pentype = SCA_BE2WORD(sPen.sp_pentype);
+						WORD Index = sPen.sp_pentype = SCA_BE2WORD(sPen.sp_pentype);
 						sPen.sp_pen = SCA_BE2WORD(sPen.sp_pen);
-
-						WORD Index = sPen.sp_pentype;
 
 						d1(KPrintF("%s/%s/%ld: Pen=%ld  Index=%ld  PenNr=%ld\n", __FILE__, __FUNC__, __LINE__, Pen, Index, sPen.sp_pen));
 
