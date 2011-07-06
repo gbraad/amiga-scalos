@@ -1502,6 +1502,12 @@ static void ScalosMain(LONG *ArgArray)
 
 		d1(KPrintF("%s/%s/%ld: ii_Screen=%08lx\n", __FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_Screen));
 
+		iInfos.xii_iinfos.ii_DrawInfo = GetScreenDrawInfo(iInfos.xii_iinfos.ii_Screen);
+		UnAllocatedPens = LockScalosPens();
+
+		d1(kprintf("%s/%s/%ld: DrawInfo=%08lx  dri_Pens=%08lx\n", \
+			__FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_DrawInfo, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens));
+
 		LINE_TRACE;
 
 		if (CurrentPrefs.pref_UseScreenTTFont)
@@ -1541,13 +1547,6 @@ static void ScalosMain(LONG *ArgArray)
 			break;
 
 		TRACE_AMITHLON(__LINE__);
-
-		iInfos.xii_iinfos.ii_DrawInfo = GetScreenDrawInfo(iInfos.xii_iinfos.ii_Screen);
-
-		UnAllocatedPens = LockScalosPens();
-
-		d1(kprintf("%s/%s/%ld: DrawInfo=%08lx  dri_Pens=%08lx\n", \
-			__FILE__, __FUNC__, __LINE__, iInfos.xii_iinfos.ii_DrawInfo, iInfos.xii_iinfos.ii_DrawInfo->dri_Pens));
 
 		d1({ short n;\
 			for (n=0; n < NUMDRIPENS; n++)\

@@ -50,6 +50,7 @@
 #include "locale.h"
 #include "Variables.h"
 
+
 //----------------------------------------------------------------------------
 
 // select relatively high priority for splash process to ensure
@@ -756,14 +757,11 @@ static SAVEDS(ULONG) BackFillFunc(struct Hook *bfHook, struct RastPort *rp, stru
 		}
 	else
 		{
-		if (iInfos.xii_iinfos.ii_DrawInfo)
-			{
-			WindowBackFill(&rpCopy, msg, NULL,
-				0, 0,
-				iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
-				0, 0,
-				NULL);
-			}
+		WindowBackFill(&rpCopy, msg, NULL,
+			0, 0,
+			iInfos.xii_iinfos.ii_DrawInfo->dri_Pens[BACKGROUNDPEN],
+			0, 0,
+			NULL);
 		}
 
 	return 0;
@@ -927,7 +925,7 @@ static struct Gadget *SplashCreateGadgets(struct SplashInstance *inst, WORD iWid
 
 		ng.ng_TopEdge += (3 * tAttr.ta_YSize) / 2;
 
-		d1(kprintf("%s/%s/%ld: Line2Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, inst->ftci_Line2Buffer));
+		d1(kprintf("%s/%s/%ld: gad=%08lx\n", __FILE__, __FUNC__, __LINE__, gad));
 
 		gad = inst->spli_CompilerGadget = (struct Gadget *) SCA_NewScalosObjectTags("GadgetBarText.sca",
 			GA_Left, ng.ng_LeftEdge,
