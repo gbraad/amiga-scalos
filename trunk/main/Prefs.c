@@ -985,35 +985,53 @@ BOOL ReadScalosPrefs(void)
 
 		ReadPrefsHandle(NewPrefs->pref_Handle, (STRPTR) MainPrefsFileName);
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconOffsets, &NewPrefs->pref_ImageBorders, sizeof(NewPrefs->pref_ImageBorders));
-		NewPrefs->pref_ImageBorders.Left = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Left);
-		NewPrefs->pref_ImageBorders.Top = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Top);
-		NewPrefs->pref_ImageBorders.Right = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Right);
-		NewPrefs->pref_ImageBorders.Bottom = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Bottom);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconOffsets, &NewPrefs->pref_ImageBorders, sizeof(NewPrefs->pref_ImageBorders)))
+			{
+			NewPrefs->pref_ImageBorders.Left = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Left);
+			NewPrefs->pref_ImageBorders.Top = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Top);
+			NewPrefs->pref_ImageBorders.Right = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Right);
+			NewPrefs->pref_ImageBorders.Bottom = SCA_BE2WORD(NewPrefs->pref_ImageBorders.Bottom);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNormFrame, &NewPrefs->pref_FrameType, sizeof(NewPrefs->pref_FrameType));
-		NewPrefs->pref_FrameType = SCA_BE2WORD(NewPrefs->pref_FrameType);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNormFrame, &NewPrefs->pref_FrameType, sizeof(NewPrefs->pref_FrameType)))
+			{
+			NewPrefs->pref_FrameType = SCA_BE2WORD(NewPrefs->pref_FrameType);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSelFrame, &NewPrefs->pref_FrameTypeSel, sizeof(NewPrefs->pref_FrameTypeSel));
-		NewPrefs->pref_FrameTypeSel = SCA_BE2WORD(NewPrefs->pref_FrameTypeSel);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSelFrame, &NewPrefs->pref_FrameTypeSel, sizeof(NewPrefs->pref_FrameTypeSel)))
+			{
+			NewPrefs->pref_FrameTypeSel = SCA_BE2WORD(NewPrefs->pref_FrameTypeSel);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNormThumbnailFrame, &NewPrefs->pref_ThumbnailFrameType, sizeof(NewPrefs->pref_ThumbnailFrameType));
-		NewPrefs->pref_ThumbnailFrameType = SCA_BE2WORD(NewPrefs->pref_ThumbnailFrameType);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNormThumbnailFrame, &NewPrefs->pref_ThumbnailFrameType, sizeof(NewPrefs->pref_ThumbnailFrameType)))
+			{
+			NewPrefs->pref_ThumbnailFrameType = SCA_BE2WORD(NewPrefs->pref_ThumbnailFrameType);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSelThumbnailFrame, &NewPrefs->pref_ThumbnailFrameTypeSel, sizeof(NewPrefs->pref_ThumbnailFrameTypeSel));
-		NewPrefs->pref_ThumbnailFrameTypeSel = SCA_BE2WORD(NewPrefs->pref_ThumbnailFrameTypeSel);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSelThumbnailFrame, &NewPrefs->pref_ThumbnailFrameTypeSel, sizeof(NewPrefs->pref_ThumbnailFrameTypeSel)))
+			{
+			NewPrefs->pref_ThumbnailFrameTypeSel = SCA_BE2WORD(NewPrefs->pref_ThumbnailFrameTypeSel);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconTextSkip, &NewPrefs->pref_TextSkip, sizeof(NewPrefs->pref_TextSkip));
-		NewPrefs->pref_TextSkip = SCA_BE2WORD(NewPrefs->pref_TextSkip);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconTextSkip, &NewPrefs->pref_TextSkip, sizeof(NewPrefs->pref_TextSkip)))
+			{
+			NewPrefs->pref_TextSkip = SCA_BE2WORD(NewPrefs->pref_TextSkip);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelTextRectBorderX, &NewPrefs->pref_SelTextRectBorderX, sizeof(NewPrefs->pref_SelTextRectBorderX));
-		NewPrefs->pref_SelTextRectBorderX = SCA_BE2WORD(NewPrefs->pref_SelTextRectBorderX);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelTextRectBorderX, &NewPrefs->pref_SelTextRectBorderX, sizeof(NewPrefs->pref_SelTextRectBorderX)))
+			{
+			NewPrefs->pref_SelTextRectBorderX = SCA_BE2WORD(NewPrefs->pref_SelTextRectBorderX);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelTextRectBorderY, &NewPrefs->pref_SelTextRectBorderY, sizeof(NewPrefs->pref_SelTextRectBorderY));
-		NewPrefs->pref_SelTextRectBorderY = SCA_BE2WORD(NewPrefs->pref_SelTextRectBorderY);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelTextRectBorderY, &NewPrefs->pref_SelTextRectBorderY, sizeof(NewPrefs->pref_SelTextRectBorderY)))
+			{
+			NewPrefs->pref_SelTextRectBorderY = SCA_BE2WORD(NewPrefs->pref_SelTextRectBorderY);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelTextRectRadius, &NewPrefs->pref_SelTextRectRadius, sizeof(NewPrefs->pref_SelTextRectRadius));
-		NewPrefs->pref_SelTextRectRadius = SCA_BE2WORD(NewPrefs->pref_SelTextRectRadius);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelTextRectRadius, &NewPrefs->pref_SelTextRectRadius, sizeof(NewPrefs->pref_SelTextRectRadius)))
+			{
+			NewPrefs->pref_SelTextRectRadius = SCA_BE2WORD(NewPrefs->pref_SelTextRectRadius);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSecLine, &NewPrefs->pref_IconTextMuliLine, sizeof(NewPrefs->pref_IconTextMuliLine));
 		// UBYTE
@@ -1024,8 +1042,10 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectedTextRectangle, &NewPrefs->pref_SelectedTextRectangle, sizeof(NewPrefs->pref_SelectedTextRectangle));
 		// UBYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconTextMode, &uw, sizeof(uw));
-		NewPrefs->pref_TextMode = SCA_BE2WORD(uw);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconTextMode, &uw, sizeof(uw)))
+			{
+			NewPrefs->pref_TextMode = SCA_BE2WORD(uw);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_CleanupOnResize, &NewPrefs->pref_AutoCleanupOnResize, sizeof(NewPrefs->pref_AutoCleanupOnResize));
 		// UBYTE
@@ -1048,79 +1068,113 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_BobsTranspType, &NewPrefs->pref_RealTransFlag, sizeof(NewPrefs->pref_RealTransFlag));
 		// UBYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_BobsTransp, &NewPrefs->pref_DragTranspObjects, sizeof(NewPrefs->pref_DragTranspObjects));
-		NewPrefs->pref_DragTranspObjects = SCA_BE2LONG(NewPrefs->pref_DragTranspObjects);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_BobsTransp, &NewPrefs->pref_DragTranspObjects, sizeof(NewPrefs->pref_DragTranspObjects)))
+			{
+			NewPrefs->pref_DragTranspObjects = SCA_BE2LONG(NewPrefs->pref_DragTranspObjects);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ShowThumbnails, &NewPrefs->pref_ShowThumbnails, sizeof(NewPrefs->pref_ShowThumbnails));
 		// UBYTE
 		d1(KPrintF("%s/%s/%ld: pref_ShowThumbnails=%ld\n", __FILE__, __FUNC__, __LINE__, NewPrefs->pref_ShowThumbnails));
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailSize, &NewPrefs->pref_ThumbNailWidth, sizeof(NewPrefs->pref_ThumbNailWidth));
-		NewPrefs->pref_ThumbNailWidth = SCA_BE2WORD(NewPrefs->pref_ThumbNailWidth);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailSize, &NewPrefs->pref_ThumbNailWidth, sizeof(NewPrefs->pref_ThumbNailWidth)))
+			{
+			NewPrefs->pref_ThumbNailWidth = SCA_BE2WORD(NewPrefs->pref_ThumbNailWidth);
+			}
 
 		NewPrefs->pref_ThumbNailHeight = NewPrefs->pref_ThumbNailWidth;	      // Thumbnails are square by default
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailMaxAge, &NewPrefs->pref_ThumbnailMaxAge, sizeof(NewPrefs->pref_ThumbnailMaxAge));
-		NewPrefs->pref_ThumbnailMaxAge = SCA_BE2WORD(NewPrefs->pref_ThumbnailMaxAge);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailMaxAge, &NewPrefs->pref_ThumbnailMaxAge, sizeof(NewPrefs->pref_ThumbnailMaxAge)))
+			{
+			NewPrefs->pref_ThumbnailMaxAge = SCA_BE2WORD(NewPrefs->pref_ThumbnailMaxAge);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailMinSizeLimit, &NewPrefs->pref_ThumbnailMinSizeLimit, sizeof(NewPrefs->pref_ThumbnailMinSizeLimit));
-		NewPrefs->pref_ThumbnailMinSizeLimit = SCA_BE2WORD(NewPrefs->pref_ThumbnailMinSizeLimit);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailMinSizeLimit, &NewPrefs->pref_ThumbnailMinSizeLimit, sizeof(NewPrefs->pref_ThumbnailMinSizeLimit)))
+			{
+			NewPrefs->pref_ThumbnailMinSizeLimit = SCA_BE2WORD(NewPrefs->pref_ThumbnailMinSizeLimit);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ShowThumbnailsAsDefault, &NewPrefs->pref_ShowThumbnailsAsDefault, sizeof(NewPrefs->pref_ShowThumbnailsAsDefault)); // +jmc+
 		// BYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailQuality, &NewPrefs->pref_ThumbnailQuality, sizeof(NewPrefs->pref_ThumbnailQuality));
-		NewPrefs->pref_ThumbnailQuality = SCA_BE2LONG(NewPrefs->pref_ThumbnailQuality);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailQuality, &NewPrefs->pref_ThumbnailQuality, sizeof(NewPrefs->pref_ThumbnailQuality)))
+			{
+			NewPrefs->pref_ThumbnailQuality = SCA_BE2LONG(NewPrefs->pref_ThumbnailQuality);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailsSquare, &NewPrefs->pref_ThumbnailsSquare, sizeof(NewPrefs->pref_ThumbnailsSquare));
 		// BYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailOffsets, &NewPrefs->pref_ThumbnailImageBorders, sizeof(NewPrefs->pref_ThumbnailImageBorders));
-		NewPrefs->pref_ThumbnailImageBorders.Left = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Left);
-		NewPrefs->pref_ThumbnailImageBorders.Top = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Top);
-		NewPrefs->pref_ThumbnailImageBorders.Right = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Right);
-		NewPrefs->pref_ThumbnailImageBorders.Bottom = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Bottom);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailOffsets, &NewPrefs->pref_ThumbnailImageBorders, sizeof(NewPrefs->pref_ThumbnailImageBorders)))
+			{
+			NewPrefs->pref_ThumbnailImageBorders.Left = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Left);
+			NewPrefs->pref_ThumbnailImageBorders.Top = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Top);
+			NewPrefs->pref_ThumbnailImageBorders.Right = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Right);
+			NewPrefs->pref_ThumbnailImageBorders.Bottom = SCA_BE2WORD(NewPrefs->pref_ThumbnailImageBorders.Bottom);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ThumbnailsFillBackground, &NewPrefs->pref_ThumbnailFillBackground, sizeof(NewPrefs->pref_ThumbnailFillBackground));
 		// UBYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyThumbnailsBack, &NewPrefs->pref_ThumbnailBackgroundTransparency, sizeof(NewPrefs->pref_ThumbnailBackgroundTransparency));
-		NewPrefs->pref_ThumbnailBackgroundTransparency = SCA_BE2WORD(NewPrefs->pref_ThumbnailBackgroundTransparency);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyThumbnailsBack, &NewPrefs->pref_ThumbnailBackgroundTransparency, sizeof(NewPrefs->pref_ThumbnailBackgroundTransparency)))
+			{
+			NewPrefs->pref_ThumbnailBackgroundTransparency = SCA_BE2WORD(NewPrefs->pref_ThumbnailBackgroundTransparency);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNormFrame, &NewPrefs->pref_FrameType, sizeof(NewPrefs->pref_FrameType));
-		NewPrefs->pref_FrameType = SCA_BE2WORD(NewPrefs->pref_FrameType);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNormFrame, &NewPrefs->pref_FrameType, sizeof(NewPrefs->pref_FrameType)))
+			{
+			NewPrefs->pref_FrameType = SCA_BE2WORD(NewPrefs->pref_FrameType);
+			}
 
-		// GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNormFrame, &NewPrefs->pref_FrameType, sizeof(NewPrefs->pref_FrameType)); // FIXME: duplication?
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DragDropCopyQualifier, &NewPrefs->pref_CopyQualifier, sizeof(NewPrefs->pref_CopyQualifier)))
+			{
+			NewPrefs->pref_CopyQualifier = SCA_BE2LONG(NewPrefs->pref_CopyQualifier);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DragDropCopyQualifier, &NewPrefs->pref_CopyQualifier, sizeof(NewPrefs->pref_CopyQualifier));
-		NewPrefs->pref_CopyQualifier = SCA_BE2LONG(NewPrefs->pref_CopyQualifier);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupApplySelectedQualifier, &NewPrefs->pref_PopupApplySelectedQualifier, sizeof(NewPrefs->pref_PopupApplySelectedQualifier)))
+			{
+			NewPrefs->pref_PopupApplySelectedQualifier = SCA_BE2LONG(NewPrefs->pref_PopupApplySelectedQualifier);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupApplySelectedQualifier, &NewPrefs->pref_PopupApplySelectedQualifier, sizeof(NewPrefs->pref_PopupApplySelectedQualifier));
-		NewPrefs->pref_PopupApplySelectedQualifier = SCA_BE2LONG(NewPrefs->pref_PopupApplySelectedQualifier);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DragDropMakeLinkQualifier, &NewPrefs->pref_MakeLinkQualifier, sizeof(NewPrefs->pref_MakeLinkQualifier)))
+			{
+			NewPrefs->pref_MakeLinkQualifier = SCA_BE2LONG(NewPrefs->pref_MakeLinkQualifier);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DragDropMakeLinkQualifier, &NewPrefs->pref_MakeLinkQualifier, sizeof(NewPrefs->pref_MakeLinkQualifier));
-		NewPrefs->pref_MakeLinkQualifier = SCA_BE2LONG(NewPrefs->pref_MakeLinkQualifier);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DragDropMoveQualifier, &NewPrefs->pref_ForceMoveQualifier, sizeof(NewPrefs->pref_ForceMoveQualifier)))
+			{
+			NewPrefs->pref_ForceMoveQualifier = SCA_BE2LONG(NewPrefs->pref_ForceMoveQualifier);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DragDropMoveQualifier, &NewPrefs->pref_ForceMoveQualifier, sizeof(NewPrefs->pref_ForceMoveQualifier));
-		NewPrefs->pref_ForceMoveQualifier = SCA_BE2LONG(NewPrefs->pref_ForceMoveQualifier);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SingleWindowLassoQualifier, &NewPrefs->pref_SingleWindowLassoQualifier, sizeof(NewPrefs->pref_SingleWindowLassoQualifier)))
+			{
+			NewPrefs->pref_SingleWindowLassoQualifier = SCA_BE2LONG(NewPrefs->pref_SingleWindowLassoQualifier);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SingleWindowLassoQualifier, &NewPrefs->pref_SingleWindowLassoQualifier, sizeof(NewPrefs->pref_SingleWindowLassoQualifier));
-		NewPrefs->pref_SingleWindowLassoQualifier = SCA_BE2LONG(NewPrefs->pref_SingleWindowLassoQualifier);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyIconDrag, &NewPrefs->pref_DragTransparency, sizeof(NewPrefs->pref_DragTransparency)))
+			{
+			NewPrefs->pref_DragTransparency = SCA_BE2WORD(NewPrefs->pref_DragTransparency);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyIconDrag, &NewPrefs->pref_DragTransparency, sizeof(NewPrefs->pref_DragTransparency));
-		NewPrefs->pref_DragTransparency = SCA_BE2WORD(NewPrefs->pref_DragTransparency);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyIconShadow, &NewPrefs->pref_IconShadowTransparency, sizeof(NewPrefs->pref_IconShadowTransparency)))
+			{
+			NewPrefs->pref_IconShadowTransparency = SCA_BE2WORD(NewPrefs->pref_IconShadowTransparency);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyIconShadow, &NewPrefs->pref_IconShadowTransparency, sizeof(NewPrefs->pref_IconShadowTransparency));
-		NewPrefs->pref_IconShadowTransparency = SCA_BE2WORD(NewPrefs->pref_IconShadowTransparency);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyDefaultIcon, &NewPrefs->pref_DefaultIconTransparency, sizeof(NewPrefs->pref_DefaultIconTransparency)))
+			{
+			NewPrefs->pref_DefaultIconTransparency = SCA_BE2WORD(NewPrefs->pref_DefaultIconTransparency);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TransparencyDefaultIcon, &NewPrefs->pref_DefaultIconTransparency, sizeof(NewPrefs->pref_DefaultIconTransparency));
-		NewPrefs->pref_DefaultIconTransparency = SCA_BE2WORD(NewPrefs->pref_DefaultIconTransparency);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ToolTipTransparency, &NewPrefs->pref_TooltipsTransparency, sizeof(NewPrefs->pref_TooltipsTransparency)))
+			{
+			NewPrefs->pref_TooltipsTransparency = SCA_BE2WORD(NewPrefs->pref_TooltipsTransparency);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ToolTipTransparency, &NewPrefs->pref_TooltipsTransparency, sizeof(NewPrefs->pref_TooltipsTransparency));
-		NewPrefs->pref_TooltipsTransparency = SCA_BE2WORD(NewPrefs->pref_TooltipsTransparency);
-
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DefaultStackSize, &NewPrefs->pref_DefaultStackSize, sizeof(NewPrefs->pref_DefaultStackSize));
-		NewPrefs->pref_DefaultStackSize = SCA_BE2LONG(NewPrefs->pref_DefaultStackSize);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DefaultStackSize, &NewPrefs->pref_DefaultStackSize, sizeof(NewPrefs->pref_DefaultStackSize)))
+			{
+			NewPrefs->pref_DefaultStackSize = SCA_BE2LONG(NewPrefs->pref_DefaultStackSize);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ConsoleName, &NewPrefs->pref_ConsoleName, sizeof(NewPrefs->pref_ConsoleName));
 		// BYTE[256]
@@ -1146,11 +1200,15 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TTfAntialiasing, &NewPrefs->pref_TTFontAntialias, sizeof(NewPrefs->pref_TTFontAntialias) );
 		// UBYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TTfGamma, &NewPrefs->pref_TTFontGamma, sizeof(NewPrefs->pref_TTFontGamma) );
-		NewPrefs->pref_TTFontGamma = SCA_BE2WORD(NewPrefs->pref_TTFontGamma);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_TTfGamma, &NewPrefs->pref_TTFontGamma, sizeof(NewPrefs->pref_TTFontGamma) ))
+			{
+			NewPrefs->pref_TTFontGamma = SCA_BE2WORD(NewPrefs->pref_TTFontGamma);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_CopyBuffLen, &NewPrefs->pref_CopyBuffLen, sizeof(NewPrefs->pref_CopyBuffLen) );
-		NewPrefs->pref_CopyBuffLen = SCA_BE2LONG(NewPrefs->pref_CopyBuffLen);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_CopyBuffLen, &NewPrefs->pref_CopyBuffLen, sizeof(NewPrefs->pref_CopyBuffLen) ))
+			{
+			NewPrefs->pref_CopyBuffLen = SCA_BE2LONG(NewPrefs->pref_CopyBuffLen);
+			}
 
 		NewPrefs->pref_ScreenTitle = GetPrefsConfigString(NewPrefs->pref_Handle, SCP_ScreenTitle, DefaultScreenTitle);
 
@@ -1236,17 +1294,21 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopScreenTitle, &NewPrefs->pref_PopTitleFlag, sizeof(NewPrefs->pref_PopTitleFlag));
 		// UBYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DefaultWindowSize, &NewPrefs->pref_DefWindowBox, sizeof(NewPrefs->pref_DefWindowBox));
-		NewPrefs->pref_DefWindowBox.Left = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Left);
-		NewPrefs->pref_DefWindowBox.Top = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Top);
-		NewPrefs->pref_DefWindowBox.Width = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Width);
-		NewPrefs->pref_DefWindowBox.Height = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Height);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DefaultWindowSize, &NewPrefs->pref_DefWindowBox, sizeof(NewPrefs->pref_DefWindowBox)))
+			{
+			NewPrefs->pref_DefWindowBox.Left = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Left);
+			NewPrefs->pref_DefWindowBox.Top = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Top);
+			NewPrefs->pref_DefWindowBox.Width = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Width);
+			NewPrefs->pref_DefWindowBox.Height = SCA_BE2WORD(NewPrefs->pref_DefWindowBox.Height);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconCleanupSpace, &NewPrefs->pref_CleanupSpace, sizeof(NewPrefs->pref_CleanupSpace));
-		NewPrefs->pref_CleanupSpace.Left = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.Left);
-		NewPrefs->pref_CleanupSpace.Top = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.Top);
-		NewPrefs->pref_CleanupSpace.XSkip = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.XSkip);
-		NewPrefs->pref_CleanupSpace.XSkip = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.YSkip);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconCleanupSpace, &NewPrefs->pref_CleanupSpace, sizeof(NewPrefs->pref_CleanupSpace)))
+			{
+			NewPrefs->pref_CleanupSpace.Left = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.Left);
+			NewPrefs->pref_CleanupSpace.Top = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.Top);
+			NewPrefs->pref_CleanupSpace.XSkip = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.XSkip);
+			NewPrefs->pref_CleanupSpace.XSkip = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.YSkip);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SplashWindowEnable, &NewPrefs->pref_EnableSplash, sizeof(NewPrefs->pref_EnableSplash));
 		// BYTE
@@ -1254,8 +1316,10 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupWindowsEnable, &NewPrefs->pref_EnablePopupWindows, sizeof(NewPrefs->pref_EnablePopupWindows));
 		// BYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SplashWindowHoldTime, &NewPrefs->pref_SplashHoldTime, sizeof(NewPrefs->pref_SplashHoldTime));
-		NewPrefs->pref_SplashHoldTime = SCA_BE2WORD(NewPrefs->pref_SplashHoldTime);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SplashWindowHoldTime, &NewPrefs->pref_SplashHoldTime, sizeof(NewPrefs->pref_SplashHoldTime)))
+			{
+			NewPrefs->pref_SplashHoldTime = SCA_BE2WORD(NewPrefs->pref_SplashHoldTime);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_StatusBarEnable, &NewPrefs->pref_DisplayStatusBar, sizeof(NewPrefs->pref_DisplayStatusBar));
 		// BYTE
@@ -1263,11 +1327,15 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ToolTipsEnable, &NewPrefs->pref_EnableTooltips, sizeof(NewPrefs->pref_EnableTooltips));
 		// BYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ToolTipPopupDelay, &NewPrefs->pref_ToolTipDelaySeconds, sizeof(NewPrefs->pref_ToolTipDelaySeconds));
-		NewPrefs->pref_ToolTipDelaySeconds = SCA_BE2LONG(NewPrefs->pref_ToolTipDelaySeconds);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ToolTipPopupDelay, &NewPrefs->pref_ToolTipDelaySeconds, sizeof(NewPrefs->pref_ToolTipDelaySeconds)))
+			{
+			NewPrefs->pref_ToolTipDelaySeconds = SCA_BE2LONG(NewPrefs->pref_ToolTipDelaySeconds);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupWindowsDelay, &NewPrefs->pref_PopupWindowDelaySeconds, sizeof(NewPrefs->pref_PopupWindowDelaySeconds));
-		NewPrefs->pref_PopupWindowDelaySeconds = SCA_BE2WORD(NewPrefs->pref_PopupWindowDelaySeconds);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupWindowsDelay, &NewPrefs->pref_PopupWindowDelaySeconds, sizeof(NewPrefs->pref_PopupWindowDelaySeconds)))
+			{
+			NewPrefs->pref_PopupWindowDelaySeconds = SCA_BE2WORD(NewPrefs->pref_PopupWindowDelaySeconds);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ShowDragDropObjCount, &NewPrefs->pref_ShowDDCountText, sizeof(NewPrefs->pref_ShowDDCountText));
 		// UBYTE
@@ -1290,14 +1358,18 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectTextIconName, &NewPrefs->pref_SelectTextIconName, sizeof(NewPrefs->pref_SelectTextIconName));
 		// UBYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSizeConstraints, &NewPrefs->pref_IconSizeConstraints, sizeof(NewPrefs->pref_IconSizeConstraints));
-		NewPrefs->pref_IconSizeConstraints.MinX = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MinX);
-		NewPrefs->pref_IconSizeConstraints.MinY = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MinY);
-		NewPrefs->pref_IconSizeConstraints.MaxX = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MaxX);
-		NewPrefs->pref_IconSizeConstraints.MaxY = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MaxY);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconSizeConstraints, &NewPrefs->pref_IconSizeConstraints, sizeof(NewPrefs->pref_IconSizeConstraints)))
+			{
+			NewPrefs->pref_IconSizeConstraints.MinX = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MinX);
+			NewPrefs->pref_IconSizeConstraints.MinY = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MinY);
+			NewPrefs->pref_IconSizeConstraints.MaxX = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MaxX);
+			NewPrefs->pref_IconSizeConstraints.MaxY = SCA_BE2WORD(NewPrefs->pref_IconSizeConstraints.MaxY);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNominalSize, &NewPrefs->pref_IconScaleFactor, sizeof(NewPrefs->pref_IconScaleFactor));
-		NewPrefs->pref_IconScaleFactor = SCA_BE2WORD(NewPrefs->pref_IconScaleFactor);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_IconNominalSize, &NewPrefs->pref_IconScaleFactor, sizeof(NewPrefs->pref_IconScaleFactor)))
+			{
+			NewPrefs->pref_IconScaleFactor = SCA_BE2WORD(NewPrefs->pref_IconScaleFactor);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DeviceWinIconLayout, &NewPrefs->pref_DeviceWindowLayoutModes, sizeof(NewPrefs->pref_DeviceWindowLayoutModes));
 		// UBYTE[]
@@ -1308,11 +1380,15 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_PopupApplySelectedAlways, &NewPrefs->pref_PopupApplySelectedAlways, sizeof(NewPrefs->pref_PopupApplySelectedAlways));
 		// BYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ActiveWindowTransparency, &NewPrefs->pref_ActiveWindowTransparency, sizeof(NewPrefs->pref_ActiveWindowTransparency));
-		NewPrefs->pref_ActiveWindowTransparency = SCA_BE2WORD(NewPrefs->pref_ActiveWindowTransparency);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_ActiveWindowTransparency, &NewPrefs->pref_ActiveWindowTransparency, sizeof(NewPrefs->pref_ActiveWindowTransparency)))
+			{
+			NewPrefs->pref_ActiveWindowTransparency = SCA_BE2WORD(NewPrefs->pref_ActiveWindowTransparency);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_InactiveWindowTransparency, &NewPrefs->pref_InactiveWindowTransparency, sizeof(NewPrefs->pref_InactiveWindowTransparency));
-		NewPrefs->pref_InactiveWindowTransparency = SCA_BE2WORD(NewPrefs->pref_InactiveWindowTransparency);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_InactiveWindowTransparency, &NewPrefs->pref_InactiveWindowTransparency, sizeof(NewPrefs->pref_InactiveWindowTransparency)))
+			{
+			NewPrefs->pref_InactiveWindowTransparency = SCA_BE2WORD(NewPrefs->pref_InactiveWindowTransparency);
+			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectMarkerBaseColor, &NewPrefs->pref_SelectMarkerBaseColor, sizeof(NewPrefs->pref_SelectMarkerBaseColor));
 		// struct ARGB
@@ -1320,11 +1396,15 @@ BOOL ReadScalosPrefs(void)
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SelectMarkerTransparency, &NewPrefs->pref_SelectMarkerTransparency, sizeof(NewPrefs->pref_SelectMarkerTransparency));
 		// UBYTE
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_MaxUndoSteps, &NewPrefs->pref_MaxUndoSteps, sizeof(NewPrefs->pref_MaxUndoSteps));
-		NewPrefs->pref_MaxUndoSteps = SCA_BE2LONG(NewPrefs->pref_MaxUndoSteps);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_MaxUndoSteps, &NewPrefs->pref_MaxUndoSteps, sizeof(NewPrefs->pref_MaxUndoSteps)))
+			{
+			NewPrefs->pref_MaxUndoSteps = SCA_BE2LONG(NewPrefs->pref_MaxUndoSteps);
+			}
 
-		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DrawerSortMode, &NewPrefs->pref_DrawerSortMode, sizeof(NewPrefs->pref_DrawerSortMode));
-		NewPrefs->pref_DrawerSortMode = SCA_BE2LONG(NewPrefs->pref_DrawerSortMode);
+		if (GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_DrawerSortMode, &NewPrefs->pref_DrawerSortMode, sizeof(NewPrefs->pref_DrawerSortMode)))
+			{
+			NewPrefs->pref_DrawerSortMode = SCA_BE2LONG(NewPrefs->pref_DrawerSortMode);
+			}
 
 		// Plausibility check for icon size constraints
 		// make sure that max never smaller than min
