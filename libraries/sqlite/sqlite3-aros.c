@@ -18,6 +18,8 @@
 #include "LibSQLite3.h"
 #include "sqlite3.h"
 
+struct Library *aroscbase;
+
 //----------------------------------------------------------------------------
 // Standard library functions
 
@@ -215,7 +217,9 @@ struct Resident ALIGNED romtag =
 
 	SQLite3LibBase->sql3_Initialized = FALSE;
 
-	if (!SQLite3Init(SQLite3LibBase))
+	aroscbase = OpenLibrary("arosc.library", 0);
+
+	if (!aroscbase && !SQLite3Init(SQLite3LibBase))
 		{
 		SQLite3_Expungelib(NULL, &SQLite3LibBase->sql3_LibNode);
 		SQLite3LibBase = NULL;
@@ -298,6 +302,8 @@ static AROS_LH1(struct SegList *, Expungelib,
 		Remove((struct Node *) SQLite3LibBase);
 		SQLite3Cleanup(SQLite3LibBase);
 		FreeMem(ptr,size);
+
+		CloseLibrary(aroscbase);
 
 		return libseglist;
 		}
