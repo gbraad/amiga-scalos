@@ -15,8 +15,6 @@
 
 #include "iconobj.h"
 
-#include <aros/debug.h>
-
 //----------------------------------------------------------------------------
 
 extern struct ExecBase *SysBase;
@@ -99,11 +97,8 @@ static AROS_UFH3(struct Library *, Initlib,
 	dtLib->nib_ClassLibrary.cl_Lib.lib_Node.ln_Pri = SCHAR_MIN;
 	dtLib->nib_SegList = seglist;
 
-bug("libinit\n");
-AvailMem(MEMF_CLEAR);
 	if (!InitDatatype(dtLib))
 		{
-		bug("initlib failed\n");
 		IconObj_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
 		}
@@ -120,7 +115,7 @@ static AROS_LH1(struct Library *, Openlib,
 )
 {
 	AROS_LIBFUNC_INIT
-bug("openlib\n");
+
 	struct IconObjectDtLibBase *dtLib = (struct IconObjectDtLibBase *) libbase;
 
 	dtLib->nib_ClassLibrary.cl_Lib.lib_OpenCnt++;
@@ -128,7 +123,6 @@ bug("openlib\n");
 
 	if (!OpenDatatype(dtLib))
 		{
-		bug("opendatatype failed\n");
 		IconObj_Closelib(&dtLib->nib_ClassLibrary.cl_Lib);
 		return NULL;
 		}
@@ -144,7 +138,7 @@ static AROS_LH0(struct SegList *, Closelib,
 )
 {
 	AROS_LIBFUNC_INIT
-bug("closelib\n");
+
 	struct IconObjectDtLibBase *dtLib = (struct IconObjectDtLibBase *) libbase;
 
 	dtLib->nib_ClassLibrary.cl_Lib.lib_OpenCnt--;
@@ -169,7 +163,7 @@ static AROS_LH1(struct SegList *, Expungelib,
 )
 {
 	AROS_LIBFUNC_INIT
-bug("Expungelib\n");
+
 	struct IconObjectDtLibBase *dtLib = (struct IconObjectDtLibBase *) libbase;
 
 	if (0 == dtLib->nib_ClassLibrary.cl_Lib.lib_OpenCnt)
