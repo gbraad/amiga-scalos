@@ -9,6 +9,7 @@
 #include <graphics/gfxmacros.h>
 #include <intuition/classes.h>
 #include <intuition/classusr.h>
+#include <intuition/cghooks.h>
 #include <intuition/gadgetclass.h>
 #include <workbench/workbench.h>
 #include <cybergraphx/cybergraphics.h>
@@ -39,6 +40,13 @@
 #include <ScalosMcpGfx.h>
 
 #include "iconobj.h"
+
+#ifdef __AROS__
+// FIXME: temporary fix until we have figured out
+// how to deal with these deprecated defines.
+#define IA_ShadowPen    (IA_Dummy + 0x09)
+#define IA_HighlightPen (IA_Dummy + 0x0A)
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -2809,7 +2817,7 @@ static struct BitMap *GenMask(Class *cl, Object *o,
 			{
 			struct ExtGadget *gg = (struct ExtGadget *) o;
 			struct RastPort rp;
-			SHORT Right, Bottom;
+			WORD Right, Bottom;
 
 			InitRastPort(&rp);
 			rp.BitMap = DestBitMap;

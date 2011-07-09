@@ -80,7 +80,7 @@ struct WriteData
 
 /* ------------------------------------------------- */
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 VOID UpdateWorkbench(CONST_STRPTR name, BPTR parentlock, LONG action);
 
 #if defined(__MORPHOS__)

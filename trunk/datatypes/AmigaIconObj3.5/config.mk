@@ -32,6 +32,14 @@ ifeq ($(MACHINE), ppc-amigaos)
 LFLAGS	+=	-nostartfiles \
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+LFLAGS	+=	-nostartfiles -lrom \
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -40,4 +48,4 @@ LFLAGS	+=	-lamiga21 -ldebug -lmcpgfx -lnix -lamiga -lstubs
 
 endif
 endif
-
+endif
