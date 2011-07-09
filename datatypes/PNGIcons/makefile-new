@@ -23,7 +23,11 @@ OBJS	=	$(OBJDIR)/PNGIconDt.o 		\
 ifeq ($(MACHINE), ppc-amigaos)
 OBJS	+=	$(OBJDIR)/PNGIconDt-aos4.o
 else
+ifeq ($(MACHINE), i386-aros)
+OBJS	+=	$(OBJDIR)/PNGIconDt-aros.o
+else
 OBJS	+=	$(OBJDIR)/PNGIconDt-classic.o
+endif
 endif
 
 ##############################################################################
@@ -54,8 +58,8 @@ all:	$(BINDIR)/$(NAME) \
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
-	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@chmod u+x $@
 
 ##############################################################################
 

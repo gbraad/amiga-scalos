@@ -2021,6 +2021,10 @@
 
 	//======================================================
 
+	#define LIBFUNC_PROTO(funcname, libbase, returntype) 	\
+		AROS_LD0(returntype, funcname, 			\
+			struct Library *, libbase, 0, Dummy)
+
 	#define LIBFUNC_P1_PROTO(returntype, funcname, 		\
 			register1, type1, name1) 		\
 		AROS_LD0(returntype, funcname, 			\
@@ -2139,6 +2143,12 @@
 			type9, name9, 0, name9)
 
 	//======================================================
+
+	#define LIBFUNC(funcname, libbase, returntype)		\
+		AROS_LH0(returntype, funcname, 			\
+			struct Library *, libbase, 0, Dummy) 	\
+		{						\
+			AROS_LIBFUNC_INIT
 
 	#define LIBFUNC_P1(returntype, funcname, 		\
 			register1, type1, name1) 		\

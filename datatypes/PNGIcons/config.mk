@@ -39,6 +39,18 @@ LFLAGS	+=      -nostartfiles \
 		-lm
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+LFLAGS	+=      -nostartfiles \
+		-lrom \
+		-lpng \
+		-lz \
+		-lm
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -49,4 +61,4 @@ LFLAGS	+=	-ldebug -liconobject -lcybergraphics \
 
 endif
 endif
-
+endif

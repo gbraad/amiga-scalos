@@ -18,7 +18,9 @@ SUBDIRS	=	AmigaIconObj3.5	\
                 GlowIconObject
 
 ifneq ($(MACHINE), ppc-amigaos)
+ifneq ($(MACHINE), i386-aros)
 SUBDIRS	+=   NewIcons
+endif
 endif
 
 ###############################################################################

@@ -37,7 +37,16 @@ INCLUDES	+=	-I$(MCPGFX_DIR)/
 LFLAGS	+=	-nostartfiles \
 
 else
+ifeq ($(MACHINE), i386-aros)
 
+###############################################################################
+# i386-aros
+
+INCLUDES	+=	-I$(MCPGFX_DIR)/
+
+LFLAGS	+=	-nostartfiles -lrom \
+
+else
 ###############################################################################
 # AmigaOS
 
@@ -47,4 +56,4 @@ LFLAGS	+=	-ldebug -lmcpgfx -lnix -lamiga -lstubs
 
 endif
 endif
-
+endif

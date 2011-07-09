@@ -781,7 +781,7 @@ ULONG OpenDatatype(struct PngIconObjectDtLibBase *dtLib)
 		if (NULL == UtilityBase)
 			return 0;
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 		__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) */
 
@@ -898,7 +898,7 @@ ULONG OpenDatatype(struct PngIconObjectDtLibBase *dtLib)
 		}
 #endif /* TIMESTAMPS */
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		if (_STI_240_InitMemFunctions())
 			return 0;
 #endif /* __amigaos4__ */
@@ -939,7 +939,7 @@ void CloseDatatype(struct PngIconObjectDtLibBase *dtLib)
 			PngIconClass = dtLib->nib_ClassLibrary.cl_Class = NULL;
 			}
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		_STD_240_TerminateMemFunctions();
 #endif /* __amigaos4__ */
 

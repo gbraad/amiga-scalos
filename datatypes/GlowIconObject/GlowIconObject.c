@@ -297,7 +297,7 @@ ULONG OpenDatatype(struct GlowIconObjectDtLibBase *dtLib)
 		}
 #endif /* TIMESTAMPS */
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		if (_STI_240_InitMemFunctions())
 			return 0;
 #endif /* __amigaos4__ */
@@ -409,7 +409,7 @@ void CloseDatatype(struct GlowIconObjectDtLibBase *dtLib)
 			CloseLibrary(CyberGfxBase);
 			CyberGfxBase = NULL;
 			}
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		_STD_240_TerminateMemFunctions();
 #endif /* __amigaos4__ */
 		if (NULL != MemPool)

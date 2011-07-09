@@ -259,8 +259,10 @@ struct InstanceData
 /* ------------------------------------------------- */
 
 // from debug.lib
+#if !defined(__AROS__)
 extern int kprintf(const char *fmt, ...);
 extern int KPrintF(const char *fmt, ...);
+#endif
 
 //#define	TIMESTAMPS
 #define	TIMESTAMP_d1()		;

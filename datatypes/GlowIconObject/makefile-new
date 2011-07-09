@@ -18,9 +18,12 @@ include		config.mk
 ifeq ($(MACHINE), ppc-amigaos)
 OBJS	=       $(OBJDIR)/GlowIconObject-aos4.o $(OBJDIR)/GlowIconObject.o
 else
+ifeq ($(MACHINE), i386-aros)
+OBJS	=       $(OBJDIR)/GlowIconObject-aros.o $(OBJDIR)/GlowIconObject.o
+else
 OBJS	=       $(OBJDIR)/GlowIconObject-classic.o $(OBJDIR)/GlowIconObject.o
 endif
-
+endif
 
 ##############################################################################
 #
@@ -50,8 +53,8 @@ all:	$(BINDIR)/$(NAME) \
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
-	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@chmod u+x $@
 
 ##############################################################################
 

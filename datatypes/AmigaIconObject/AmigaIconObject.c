@@ -717,7 +717,7 @@ static ULONG DtLayout(Class *cl, Object *o, struct iopLayout *iopl)
 				struct TmpRas TempRas;
 				UWORD *MaskPtr;
 				UWORD *ImgSrcPtr;
-				SHORT ByteCount;
+				WORD ByteCount;
 				ULONG ImgSize;
 				ULONG d, y;
 

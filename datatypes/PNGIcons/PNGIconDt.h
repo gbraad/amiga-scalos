@@ -24,7 +24,9 @@
 
 //-----------------------------------------------------------------------------
 
+#if !defined(__AROS__)
 #define	BNULL			((BPTR) NULL)
+#endif
 
 #define	MAKE_ARGB(r,g,b)	( ((r) << 16) + ((g) << 8) + (b) )
 
@@ -198,7 +200,7 @@ struct TTNode
 
 //-----------------------------------------------------------------------------
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 VOID UpdateWorkbench(CONST_STRPTR name, BPTR parentlock, LONG action);
 
 #if defined(__MORPHOS__)
