@@ -37,9 +37,9 @@
 
 #include "Empty_Trashcan.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	Empty_Trashcan_NUMBERS
+#define	Empty_Trashcan_BLOCK
+#define	Empty_Trashcan_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -1276,7 +1276,7 @@ static LONG ReportError(LONG IoResult, CONST_STRPTR Filename, ULONG GadgetMsgId)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Empty_Trashcan_LocaleInfo li;
 
 	li.li_Catalog = Cat;
 #ifndef __amigaos4__
@@ -1285,7 +1285,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetEmpty_TrashcanString(&li, MsgId);
 }
 
 /*
