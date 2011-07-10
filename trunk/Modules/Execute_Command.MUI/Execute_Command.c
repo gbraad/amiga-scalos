@@ -43,9 +43,9 @@
 
 #include "Execute_Command.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	Execute_Command_NUMBERS
+#define	Execute_Command_BLOCK
+#define	Execute_Command_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -690,7 +690,7 @@ static void InitCurrent(struct WBArg *arg)
 		}
 	else
 		{
-		get(StringName,	MUIA_String_Contents, (APTR) &LastContent);
+		get(StringName,	MUIA_String_Contents, &LastContent);
 		// stccpy(SpaceName, LastContent, sizeof(SpaceName));
 		// if(strlen(SpaceName) == 0)
 		if(strlen(LastContent) == 0)
@@ -712,7 +712,7 @@ static LONG ExecuteCommand(struct WBArg *arg)
 
 	GetDefStack();
 
-	get(StringStack, MUIA_Disabled, (APTR) &StackDisabled);
+	get(StringStack, MUIA_Disabled, &StackDisabled);
 	if (!StackDisabled)
 		set(StringStack, MUIA_String_Acknowledge, TRUE);
 	else
@@ -724,7 +724,7 @@ static LONG ExecuteCommand(struct WBArg *arg)
 	if(oldstackNum>stackNum)
 			stackNum = oldstackNum;
 			
-	get(StringName, MUIA_String_Contents, (APTR) &CommandString);
+	get(StringName, MUIA_String_Contents, &CommandString);
 
 	if ( GetUrl = FindURL(CommandString) )
 		{
@@ -863,7 +863,7 @@ static STRPTR BuildConsole(STRPTR wtitle, struct Screen *scr)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Execute_Command_LocaleInfo li;
 
 	li.li_Catalog = gb_Catalog;
 #ifndef __amigaos4__
@@ -872,7 +872,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetExecute_CommandString(&li, MsgId);
 }
 
 /*
@@ -1079,7 +1079,7 @@ static SAVEDS(void) INTERRUPT StringMUIHookFunc(struct Hook *hook, Object *o, Ms
 {
 	STRPTR	defstring;
 
-	get(StringName, MUIA_String_Contents, (APTR) &defstring);
+	get(StringName, MUIA_String_Contents, &defstring);
 	if(defstring && strlen(defstring) > 0)
 		set(OkButton, MUIA_Disabled, FALSE);
 	else

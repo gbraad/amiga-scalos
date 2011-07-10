@@ -35,6 +35,16 @@ INCLUDES	+= 	#
 LFLAGS	+=	-lauto
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+INCLUDES	+= 	-DMUI_OBSOLETE
+
+LFLAGS	+=	-lmui -larossupport
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -45,4 +55,4 @@ LFLAGS	+=	#
 
 endif
 endif
-
+endif
