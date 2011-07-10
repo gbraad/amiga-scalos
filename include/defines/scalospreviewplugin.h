@@ -18,7 +18,7 @@
 	AROS_LCA(BPTR, (___dirLock), A1), \
 	AROS_LCA(CONST_STRPTR, (___iconName), A2), \
 	AROS_LCA(struct TagItem *, (___tagList), A3), \
-	*struct Library *, (___base), 5, Scalospreviewplugin_lib_sfd)
+	struct Library *, (___base), 5, Scalospreviewplugin_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define SCAPreviewGenerateTags(___wt, ___dirLock, ___iconName, ___firstTag, ...) __SCAPreviewGenerateTags_WB(SCALOSPREVIEWPLUGIN_LIB_SFD_BASE_NAME, ___wt, ___dirLock, ___iconName, ___firstTag, ## __VA_ARGS__)

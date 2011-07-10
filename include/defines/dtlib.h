@@ -15,6 +15,6 @@
 #define __ObtainInfoEngine_WB(___base, ___libBase) \
 	AROS_LC1(Class *, ObtainInfoEngine, \
 	AROS_LCA(struct Library *, (___libBase), A0), \
-	*struct Library *, (___base), 5, Dtlib_lib_sfd)
+	struct Library *, (___base), 5, Dtlib_lib_sfd)
 
 #endif /* !_INLINE_DTLIB_LIB_SFD_H */

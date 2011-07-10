@@ -14,6 +14,6 @@
 #define SCAGetClassInfo() __SCAGetClassInfo_WB(SCALOSPLUGIN_LIB_SFD_BASE_NAME)
 #define __SCAGetClassInfo_WB(___base) \
 	AROS_LC0(const struct ScaClassInfo *, SCAGetClassInfo, \
-	*struct Library *, (___base), 5, Scalosplugin_lib_sfd)
+	struct Library *, (___base), 5, Scalosplugin_lib_sfd)
 
 #endif /* !_INLINE_SCALOSPLUGIN_LIB_SFD_H */

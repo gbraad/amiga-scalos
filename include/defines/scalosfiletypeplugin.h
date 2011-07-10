@@ -16,6 +16,6 @@
 	AROS_LC2(STRPTR, SCAToolTipInfoString, \
 	AROS_LCA(struct ScaToolTipInfoHookData *, (___ttshd), A0), \
 	AROS_LCA(CONST_STRPTR, (___args), A1), \
-	*struct Library *, (___base), 5, Scalosfiletypeplugin_lib_sfd)
+	struct Library *, (___base), 5, Scalosfiletypeplugin_lib_sfd)
 
 #endif /* !_INLINE_SCALOSFILETYPEPLUGIN_LIB_SFD_H */
