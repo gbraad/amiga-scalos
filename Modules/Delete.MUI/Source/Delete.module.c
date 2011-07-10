@@ -50,8 +50,8 @@
 //  Start: /*GFS*/
 //    End: /*GFE*/
 
-#define CATCOMP_CODE
-#define CATCOMP_BLOCK
+#define Delete_CODE
+#define Delete_BLOCK
 #include"Delete.module.h"
 
 //----------------------------------------------------------------------------
@@ -692,7 +692,7 @@ static struct Hook EnableTrashcanHook = { { NULL, NULL }, HOOKFUNC_DEF(EnableTra
 
 CONST_STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Delete_LocaleInfo li;
 
 	li.li_Catalog = WordsCat;
 #ifndef __amigaos4__
@@ -704,7 +704,7 @@ CONST_STRPTR GetLocString(ULONG MsgId)
 //	KPrintF(__FILE__ "%s/%ld: Catalog=%08lx  LocaleBase=%08lx\n",
 //		__FUNC__, __LINE__, li.li_Catalog, li.li_LocaleBase);
 
-	return (CONST_STRPTR) GetString(&li, MsgId);
+	return (CONST_STRPTR) GetDeleteString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------

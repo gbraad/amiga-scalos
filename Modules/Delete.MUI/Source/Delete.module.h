@@ -24,9 +24,9 @@
 
 
 // MUI
-#include<libraries/mui.h>
-#include<mui/NList_mcc.h>
-#include<mui/NListview_mcc.h>
+#include <libraries/mui.h>
+#include <mui/NList_mcc.h>
+#include <mui/NListview_mcc.h>
 #include <mui/Lamp_mcc.h>
 
 // System
@@ -64,9 +64,16 @@
 #include <defs.h>
 
 // Revision stuff
-#include"Delete.module_rev.h"
+#include "Delete.module_rev.h"
 
-#define	CATCOMP_NUMBERS
+
+struct Delete_LocaleInfo
+{
+    APTR li_LocaleBase;
+    APTR li_Catalog;
+};
+
+#define	Delete_NUMBERS
 #include STR(SCALOSLOCALE)
 
 
@@ -77,7 +84,9 @@
 #define MAKE_ID(a,b,c,d)     ((ULONG) (a)<<24 | (ULONG) (b)<<16 | (ULONG) (c)<<8 | (ULONG) (d))
 #endif
 
+#ifndef __AROS__
 #define	BNULL		((BPTR) NULL)
+#endif
 
 // Some macros to make the MUI code a bit easier to read.
 #define KeyCheckMarkHelpID(selected, control, cyclechain, ident, help)\
@@ -186,6 +195,10 @@ extern void KillFiles (struct WBStartup *);
 // Make debugging a bit easier to activate/ deactivate....
 extern void kprintf(UBYTE *fmt, ...);
 extern void KPrintF(UBYTE *fmt, ...);
+
+#ifdef __AROS__
+#define KPrintF kprintf
+#endif
 
 #define d1(x)	;
 #define d2(x)	x;

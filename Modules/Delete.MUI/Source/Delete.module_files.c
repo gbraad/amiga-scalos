@@ -169,7 +169,7 @@ SAVEDS(LONG) DisplayList(struct Hook *hook, char **Array, struct FileInfoBlock *
 		if(ShowFib->fib_DirEntryType < 0)
 			{
 			stccpy(NameBuffer, ShowFib->fib_FileName, sizeof(NameBuffer));
-			snprintf(SizeBuffer, sizeof(SizeBuffer), "\33r%lu", (ULONG) ShowFib->fib_Size);
+			snprintf(SizeBuffer, sizeof(SizeBuffer), "\33r%lu", (unsigned long) ShowFib->fib_Size);
 			}
 		else
 			{
@@ -559,7 +559,7 @@ LONG FileDelete(STRPTR FileName, BOOL Trash, APTR UndoStep)
 {
 ///
 	LONG  CurrentPos = 0;
-	BOOL *Confirm    = NULL;
+	IPTR  Confirm    = 0;
 	BPTR  FileLk     = (BPTR)NULL;
 
 	LONG  Result     = 0;
@@ -572,7 +572,7 @@ LONG FileDelete(STRPTR FileName, BOOL Trash, APTR UndoStep)
 	set(TX_Progress, MUIA_Text_Contents, TextBuffer);
 
 	// Ask the user to confirm?
-	get(CM_FileConf, MUIA_Selected, (APTR)&Confirm);
+	get(CM_FileConf, MUIA_Selected, &Confirm);
 	if(Confirm)
 		{
 		if(!MUI_Request(MUI_App, WI_Delete, 0,
@@ -749,7 +749,7 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 	BPTR              TrashLock = (BPTR)NULL;
 	BPTR              DirLock   = (BPTR)NULL;
 	BPTR              OldDir    = (BPTR)NULL;
-	BOOL             *Confirm   = NULL;
+	IPTR              Confirm   = 0;
 
 	d1(kprintf("DirDelete(): Trying to delete %s\n", DirName);)
 
@@ -757,7 +757,7 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 		GetLocString(MSG_BODY_REMOVE), FilePart(DirName));
 	set(TX_Progress, MUIA_Text_Contents, TextBuffer);
 
-	get(CM_DirConf, MUIA_Selected, (APTR)&Confirm);
+	get(CM_DirConf, MUIA_Selected, &Confirm);
 	if(Confirm)
 		{
 		if(!MUI_Request(MUI_App, WI_Delete, 0,
@@ -944,7 +944,7 @@ void KillFiles(struct WBStartup *WBStart)
 	BPTR              kf_Old    = (BPTR)NULL;
 	BPTR              kf_File   = (BPTR)NULL;
 	LONG              kf_Result = 0;
-	BOOL              Trash     = FALSE;
+	IPTR              Trash     = FALSE;
 	STRPTR            TrashDir  = NULL;
 	APTR 		  UndoStep = NULL;
 	struct ScaWindowStruct *ws = NULL;
@@ -952,7 +952,7 @@ void KillFiles(struct WBStartup *WBStart)
 
 	d1(KPrintF("%s/%s/%ld: START\n", __FILE__, __FUNC__, __LINE__));
 
-	get(CM_TrashCan, MUIA_Selected, (APTR)&Trash);
+	get(CM_TrashCan, MUIA_Selected, &Trash);
 
 	wl = SCA_LockWindowList(SCA_LockWindowList_Shared);
 	if (wl)
@@ -967,7 +967,7 @@ void KillFiles(struct WBStartup *WBStart)
 
 	if(Trash)
 		{
-		get(ST_TrashDir, MUIA_String_Contents, (APTR)&TrashDir);
+		get(ST_TrashDir, MUIA_String_Contents, &TrashDir);
 		}
 
 	if(!(kf_Fib = AllocDosObject(DOS_FIB, NULL)))
