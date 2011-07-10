@@ -208,7 +208,7 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 
 		while (Length >= 2 * sizeof(ULONG))
 			{
-			ULONG tag = *dataptr;
+			ULONG tag = SCA_BE2LONG(*dataptr);
 
 			d1(KPrintF("%s/%s/%ld:  dataptr=%08lx  Length=%ld\n", __FILE__, __FUNC__, __LINE__, dataptr, Length));
 			dataptr++;
@@ -217,13 +217,13 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 			switch (tag)
 				{
 			case PNGICONA_XPOS:
-				inst->id_CurrentX = (LONG) *dataptr;
+				inst->id_CurrentX = SCA_BE2LONG(*dataptr);
 				d1(kprintf("%s/%s/%ld:  CurrentX=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_CurrentX));
 				dataptr++;
 				Length -= sizeof(ULONG);
 				break;
 			case PNGICONA_YPOS:
-				inst->id_CurrentY = (LONG) *dataptr;
+				inst->id_CurrentY = SCA_BE2LONG(*dataptr);
 				d1(kprintf("%s/%s/%ld:  CurrentY=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_CurrentY));
 				dataptr++;
 				Length -= sizeof(ULONG);
@@ -231,28 +231,28 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 
 			// One of the following five tags identifies a WBDISK or WBDRAWER icon
 			case PNGICONA_DRAWERXPOS:
-				inst->id_DrawerData.dd_NewWindow.LeftEdge = (WORD) (*dataptr);
+				inst->id_DrawerData.dd_NewWindow.LeftEdge = SCA_BE2WORD(*dataptr);
 				d1(KPrintF("%s/%s/%ld:  LeftEdge=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_DrawerData.dd_NewWindow.LeftEdge));
 				dataptr++;
 				Length -= sizeof(ULONG);
 				GuessWbDrawer(inst);
 				break;
 			case PNGICONA_DRAWERYPOS:
-				inst->id_DrawerData.dd_NewWindow.TopEdge = (WORD) (*dataptr);
+				inst->id_DrawerData.dd_NewWindow.TopEdge = SCA_BE2LONG(*dataptr);
 				d1(KPrintF("%s/%s/%ld:  TopEdge=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_DrawerData.dd_NewWindow.TopEdge));
 				dataptr++;
 				Length -= sizeof(ULONG);
 				GuessWbDrawer(inst);
 				break;
 			case PNGICONA_DRAWERWIDTH:
-				inst->id_DrawerData.dd_NewWindow.Width = (WORD)(*dataptr);
+				inst->id_DrawerData.dd_NewWindow.Width = SCA_BE2LONG(*dataptr);
 				d1(KPrintF("%s/%s/%ld:  Width=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_DrawerData.dd_NewWindow.Width));
 				dataptr++;
 				Length -= sizeof(ULONG);
 				GuessWbDrawer(inst);
 				break;
 			case PNGICONA_DRAWERHEIGHT:
-				inst->id_DrawerData.dd_NewWindow.Height = (WORD)(*dataptr);
+				inst->id_DrawerData.dd_NewWindow.Height = SCA_BE2LONG(*dataptr);
 				d1(KPrintF("%s/%s/%ld:  Height=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_DrawerData.dd_NewWindow.Height));
 				dataptr++;
 				Length -= sizeof(ULONG);
@@ -260,7 +260,7 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 				break;
 			case PNGICONA_DRAWERVIEWMODE:
 				{
-				ULONG vm = *dataptr;
+				ULONG vm = SCA_BE2LONG(*dataptr);
 
 				d1(KPrintF("%s/%s/%ld: PNGICONA_DRAWERVIEWMODE  ViewModes=%08lx\n", __FILE__, __FUNC__, __LINE__, vm));
 
@@ -276,7 +276,7 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 				break;
 
 			case PNGICONA_STACKSIZE:
-				inst->id_StackSize = (LONG)(*dataptr);
+				inst->id_StackSize = SCA_BE2LONG(*dataptr);
 				if (inst->id_StackSize < MINSTACKSIZE)
 					inst->id_StackSize = MINSTACKSIZE;
 				d1(kprintf("%s/%s/%ld:  StackSize=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_StackSize));
@@ -346,7 +346,7 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 				break;
 
 			case PNGICONA_TYPE:
-				inst->id_Type = (LONG)(*dataptr);
+				inst->id_Type = SCA_BE2LONG(*dataptr);
 				inst->id_TypeSet = TRUE;
 				d1(KPrintF("%s/%s/%ld:  Icon type=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_Type));
 				dataptr++;
@@ -357,7 +357,7 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 				// only change dd_ViewMode if not set by PNGICONA_DRAWERVIEWMODE
 				d1(KPrintF("%s/%s/%ld:  PNGICONA_SORTMODE=%08lx\n", __FILE__, __FUNC__, __LINE__, *dataptr));
 				if (DDVM_BYDEFAULT == inst->id_DrawerData.dd_ViewModes)
-					inst->id_DrawerData.dd_ViewModes = DDVM_BYNAME + (ULONG) (*dataptr);
+					inst->id_DrawerData.dd_ViewModes = DDVM_BYNAME + SCA_BE2LONG(*dataptr);
 				d1(KPrintF("%s/%s/%ld:  dd_ViewModes=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->id_DrawerData.dd_ViewModes));
 				dataptr++;
 				Length -= sizeof(ULONG);
@@ -365,7 +365,7 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 				break;
 
 			case PNGICONA_OFFSETX:
-				inst->id_DrawerData.dd_CurrentX = (LONG) (*dataptr);
+				inst->id_DrawerData.dd_CurrentX = SCA_BE2LONG(*dataptr);
 				d1(KPrintF("%s/%s/%ld:  dd_CurrentX=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_DrawerData.dd_CurrentX));
 				dataptr++;
 				Length -= sizeof(ULONG);
@@ -373,7 +373,7 @@ void HandleIconHunk(struct InstanceData *inst, const UBYTE *Data, size_t Length)
 				break;
 
 			case PNGICONA_OFFSETY:
-				inst->id_DrawerData.dd_CurrentY = (LONG) (*dataptr);
+				inst->id_DrawerData.dd_CurrentY = SCA_BE2LONG(*dataptr);
 				d1(KPrintF("%s/%s/%ld:  dd_CurrentY=%ld\n", __FILE__, __FUNC__, __LINE__, inst->id_DrawerData.dd_CurrentY));
 				dataptr++;
 				Length -= sizeof(ULONG);

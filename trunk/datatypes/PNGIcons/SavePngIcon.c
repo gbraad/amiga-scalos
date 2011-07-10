@@ -395,7 +395,8 @@ static BOOL GenerateIconHunk(struct InstanceData *inst, struct PngChunk *chunk)
 		d1(KPrintF("%s/%s/%ld:  id_Type=%lu\n", __FILE__, __FUNC__, __LINE__, inst->id_Type));
 
 		// write icon type
-		IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_TYPE, &inst->id_Type, sizeof(ULONG));
+		tag = SCA_LONG2BE(inst->id_Type);
+		IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_TYPE, &tag, sizeof(ULONG));
 
 		// Write out ToolTypes
 		if (inst->id_ToolTypes)
@@ -413,7 +414,8 @@ static BOOL GenerateIconHunk(struct InstanceData *inst, struct PngChunk *chunk)
 		// Write out Stack Size
 		if ((inst->id_Type == WBPROJECT) || (inst->id_Type == WBTOOL))
 			{
-			IconHunkPtr = AddItem(IconHunkPtr, &Length,PNGICONA_STACKSIZE, &inst->id_StackSize, sizeof(inst->id_StackSize));
+			tag = SCA_LONG2BE(inst->id_StackSize);
+			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_STACKSIZE, &tag, sizeof(inst->id_StackSize));
 			}
 
 		d1(KPrintF("%s/%s/%ld:  IconHunkPtr=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, IconHunkPtr, Length));
@@ -445,10 +447,12 @@ static BOOL GenerateIconHunk(struct InstanceData *inst, struct PngChunk *chunk)
 
 		if ((inst->id_CurrentX != NO_ICON_POSITION) && (inst->id_CurrentY != NO_ICON_POSITION))
 			{
+			tag = SCA_LONG2BE(inst->id_CurrentX);
 			d1(KPrintF("%s/%s/%ld:  IconHunkPtr=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, IconHunkPtr, Length));
-			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_XPOS, &inst->id_CurrentX, sizeof(inst->id_CurrentX));
+			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_XPOS, &tag, sizeof(inst->id_CurrentX));
 			d1(KPrintF("%s/%s/%ld:  IconHunkPtr=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, IconHunkPtr, Length));
-			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_YPOS, &inst->id_CurrentY, sizeof(inst->id_CurrentY));
+			tag = SCA_LONG2BE(inst->id_CurrentY);
+			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_YPOS, &tag, sizeof(inst->id_CurrentY));
 			d1(KPrintF("%s/%s/%ld:  IconHunkPtr=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, IconHunkPtr, Length));
 			}
 
@@ -478,12 +482,13 @@ static BOOL GenerateIconHunk(struct InstanceData *inst, struct PngChunk *chunk)
 				else
 					tag |=((viewmodes-DDVM_BYNAME)<<2);
 
+				tag = SCA_LONG2BE(tag);
 				IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_DRAWERVIEWMODE, &tag, sizeof(tag));
 
 				// Write out sort mode
 				if (inst->id_DrawerData.dd_ViewModes >= DDVM_BYNAME)
 					{
-					tag = inst->id_DrawerData.dd_ViewModes - DDVM_BYNAME;
+					tag = SCA_LONG2BE(inst->id_DrawerData.dd_ViewModes - DDVM_BYNAME);
 					IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_SORTMODE, &tag, sizeof(tag));
 					}
 
@@ -493,25 +498,25 @@ static BOOL GenerateIconHunk(struct InstanceData *inst, struct PngChunk *chunk)
 			d1(KPrintF("%s/%s/%ld:  IconHunkPtr=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, IconHunkPtr, Length));
 
 			// Write out drawer size and position
-			tag = inst->id_DrawerData.dd_NewWindow.LeftEdge;
+			tag = SCA_LONG2BE(inst->id_DrawerData.dd_NewWindow.LeftEdge);
 			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_DRAWERXPOS, &tag, sizeof(tag));
 
-			tag = inst->id_DrawerData.dd_NewWindow.TopEdge;
+			tag = SCA_LONG2BE(inst->id_DrawerData.dd_NewWindow.TopEdge);
 			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_DRAWERYPOS, &tag, sizeof(tag));
 
-			tag = inst->id_DrawerData.dd_NewWindow.Width;
+			tag = SCA_LONG2BE(inst->id_DrawerData.dd_NewWindow.Width);
 			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_DRAWERWIDTH, &tag, sizeof(tag));
 
-			tag = inst->id_DrawerData.dd_NewWindow.Height;
+			tag = SCA_LONG2BE(inst->id_DrawerData.dd_NewWindow.Height);
 			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_DRAWERHEIGHT, &tag, sizeof(tag));
 
 			d1(KPrintF("%s/%s/%ld:  IconHunkPtr=%08lx  Length=%lu\n", __FILE__, __FUNC__, __LINE__, IconHunkPtr, Length));
 
 			// Write out dd_CurrentX and dd_CurrentY
-			tag = (ULONG) inst->id_DrawerData.dd_CurrentX;
+			tag = SCA_LONG2BE(inst->id_DrawerData.dd_CurrentX);
 			IconHunkPtr = AddItem(IconHunkPtr, &Length, PNGICONA_OFFSETX, &tag, sizeof(tag));
 
-			tag = (ULONG) inst->id_DrawerData.dd_CurrentY;
+			tag = SCA_LONG2BE(inst->id_DrawerData.dd_CurrentY);
 			/* IconHunkPtr = */ AddItem(IconHunkPtr, &Length, PNGICONA_OFFSETY, &tag, sizeof(tag));
 			}
 
@@ -529,7 +534,7 @@ static ULONG *AddItem(ULONG *IconHunkPtr, size_t *Length,
 {
 	if (*Length >= sizeof(tag) + ValueLength)
 		{
-		*IconHunkPtr++ = tag;
+		*IconHunkPtr++ = SCA_LONG2BE(tag);
 
 		if (ValueLength)
 			{
