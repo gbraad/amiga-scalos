@@ -40,6 +40,7 @@ struct PrivateCxObj
 // Special Value in pco_Flags
 #define COF_ACTIVE	0x02
 
+#if !defined(__AROS__)
 
 #ifdef __PPC__
 #pragma pack(2)
@@ -61,6 +62,8 @@ struct BrokerCopy
 #pragma pack()
 #endif
 
+#endif // !__AROS__
+
 //----------------------------------------------------------------------------
 
 #if defined(__SASC)
@@ -69,5 +72,11 @@ int vsnprintf(char *, size_t, const char *, va_list ap);
 #endif /* __SASC */
 
 //----------------------------------------------------------------------------
+
+struct Exchange_LocaleInfo
+{
+    APTR li_LocaleBase;
+    APTR li_Catalog;
+};
 
 #endif	/* EXCHANGE_MODULE_H */

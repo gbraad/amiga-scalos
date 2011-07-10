@@ -7,7 +7,7 @@
 
 #include <proto/commodities.h>
 
-#if defined(__amigaos4__)
+#if defined(__amigaos4__) || defined(__AROS__)
 
 #define	CxCopyBrokerList	CopyBrokerList
 #define	CxFreeBrokerList	FreeBrokerList

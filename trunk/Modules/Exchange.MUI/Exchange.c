@@ -42,9 +42,9 @@
 #include "cx_private.h"
 #include "debug.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	Exchange_NUMBERS
+#define	Exchange_BLOCK
+#define	Exchange_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -529,7 +529,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Exchange_LocaleInfo li;
 
 	li.li_Catalog = ExchangeCatalog;
 #ifndef __amigaos4__
@@ -538,7 +538,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetExchangeString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------
@@ -631,7 +631,11 @@ static SAVEDS(APTR) INTERRUPT CxListConstructHookFunc(struct Hook *hook, APTR un
 		xle->xle_Task  = bc->bc_Task;
 		xle->xle_Pri   = bc->bc_Node.ln_Pri;
 		xle->xle_Flags = bc->bc_Flags;
+#ifdef __AROS__
+		xle->xle_Addr  = bc->bc_Port;
+#else
 		xle->xle_Addr  = bc->bc_Addr;
+#endif
 
 		Success = TRUE;
 		} while (0);
@@ -695,7 +699,7 @@ static SAVEDS(ULONG) INTERRUPT CxListDisplayHookFunc(struct Hook *hook, APTR unu
 		d1(KPrintF("%s/%s/%ld: xle=%08lx\n", __FILE__, __FUNC__, __LINE__, xle));
 		d1(KPrintF("%s/%s/%ld: xle_Name=<%s>\n", __FILE__, __FUNC__, __LINE__, xle->xle_Name));
 
-		sprintf(xle->xle_PriString, "%ld", xle->xle_Pri);
+		sprintf(xle->xle_PriString, "%ld", (long int)xle->xle_Pri);
 
 		nldm->strings[0] = xle->xle_Name;
 		nldm->strings[1] = xle->xle_Title;
