@@ -15,6 +15,6 @@
 #define __SCAGetPrefsInfo_WB(___base, ___which) \
 	AROS_LC1(ULONG, SCAGetPrefsInfo, \
 	AROS_LCA(LONG, (___which), D0), \
-	*struct Library *, (___base), 5, Scalosprefsplugin_lib_sfd)
+	struct Library *, (___base), 5, Scalosprefsplugin_lib_sfd)
 
 #endif /* !_INLINE_SCALOSPREFSPLUGIN_LIB_SFD_H */

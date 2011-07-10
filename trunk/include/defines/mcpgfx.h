@@ -19,7 +19,7 @@
 	AROS_LCA(WORD, (___gadgetNumber), D0), \
 	AROS_LCA(WORD, (___width), D1), \
 	AROS_LCA(WORD, (___height), D2), \
-	*struct Library *, (___base), 5, Mcpgfx_lib_sfd)
+	struct Library *, (___base), 5, Mcpgfx_lib_sfd)
 
 #define mcpRectFillA(___rp, ___x1, ___y1, ___x2, ___y2, ___tagList) __mcpRectFillA_WB(MCPGFX_LIB_SFD_BASE_NAME, ___rp, ___x1, ___y1, ___x2, ___y2, ___tagList)
 #define __mcpRectFillA_WB(___base, ___rp, ___x1, ___y1, ___x2, ___y2, ___tagList) \
@@ -30,7 +30,7 @@
 	AROS_LCA(WORD, (___x2), D2), \
 	AROS_LCA(WORD, (___y2), D3), \
 	AROS_LCA(CONST struct TagItem *, (___tagList), A1), \
-	*struct Library *, (___base), 6, Mcpgfx_lib_sfd)
+	struct Library *, (___base), 6, Mcpgfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define mcpRectFill(___rp, ___x1, ___y1, ___x2, ___y2, ___tagList, ...) __mcpRectFill_WB(MCPGFX_LIB_SFD_BASE_NAME, ___rp, ___x1, ___y1, ___x2, ___y2, ___tagList, ## __VA_ARGS__)
@@ -47,7 +47,7 @@
 	AROS_LCA(WORD, (___x2), D2), \
 	AROS_LCA(WORD, (___y2), D3), \
 	AROS_LCA(struct TagItem *, (___tagList), A1), \
-	*struct Library *, (___base), 7, Mcpgfx_lib_sfd)
+	struct Library *, (___base), 7, Mcpgfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define mcpDrawFrame(___rp, ___x1, ___y1, ___x2, ___y2, ___tagList, ...) __mcpDrawFrame_WB(MCPGFX_LIB_SFD_BASE_NAME, ___rp, ___x1, ___y1, ___x2, ___y2, ___tagList, ## __VA_ARGS__)
@@ -60,20 +60,20 @@
 	AROS_LC2(struct ExtDrawInfo	*, mcpGetExtDrawInfo, \
 	AROS_LCA(struct Screen *, (___screen), A0), \
 	AROS_LCA(struct DrawInfo *, (___drawInfo), A1), \
-	*struct Library *, (___base), 8, Mcpgfx_lib_sfd)
+	struct Library *, (___base), 8, Mcpgfx_lib_sfd)
 
 #define mcpGetFrameSize(___drawInfo, ___frameType) __mcpGetFrameSize_WB(MCPGFX_LIB_SFD_BASE_NAME, ___drawInfo, ___frameType)
 #define __mcpGetFrameSize_WB(___base, ___drawInfo, ___frameType) \
 	AROS_LC2(struct FrameSize	*, mcpGetFrameSize, \
 	AROS_LCA(struct DrawInfo *, (___drawInfo), A0), \
 	AROS_LCA(WORD, (___frameType), D0), \
-	*struct Library *, (___base), 9, Mcpgfx_lib_sfd)
+	struct Library *, (___base), 9, Mcpgfx_lib_sfd)
 
 #define mcpSetGFXAttrsA(___tagList) __mcpSetGFXAttrsA_WB(MCPGFX_LIB_SFD_BASE_NAME, ___tagList)
 #define __mcpSetGFXAttrsA_WB(___base, ___tagList) \
 	AROS_LC1NR(VOID, mcpSetGFXAttrsA, \
 	AROS_LCA(struct TagItem *, (___tagList), A0), \
-	*struct Library *, (___base), 10, Mcpgfx_lib_sfd)
+	struct Library *, (___base), 10, Mcpgfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define mcpSetGFXAttrs(___tagList, ...) __mcpSetGFXAttrs_WB(MCPGFX_LIB_SFD_BASE_NAME, ___tagList, ## __VA_ARGS__)

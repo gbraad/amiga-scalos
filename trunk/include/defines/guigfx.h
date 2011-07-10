@@ -18,7 +18,7 @@
 	AROS_LCA(UWORD, (___width), D0), \
 	AROS_LCA(UWORD, (___height), D1), \
 	AROS_LCA(struct TagItem *, (___tags), A1), \
-	*struct Library *, (___base), 5, Guigfx_lib_sfd)
+	struct Library *, (___base), 5, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define MakePicture(___array, ___width, ___height, ___firstTag, ...) __MakePicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___array, ___width, ___height, ___firstTag, ## __VA_ARGS__)
@@ -31,7 +31,7 @@
 	AROS_LC2(APTR, LoadPictureA, \
 	AROS_LCA(STRPTR, (___filename), A0), \
 	AROS_LCA(struct TagItem *, (___tags), A1), \
-	*struct Library *, (___base), 6, Guigfx_lib_sfd)
+	struct Library *, (___base), 6, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define LoadPicture(___filename, ___firstTag, ...) __LoadPicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___filename, ___firstTag, ## __VA_ARGS__)
@@ -49,7 +49,7 @@
 	AROS_LCA(UWORD, (___width), D2), \
 	AROS_LCA(UWORD, (___height), D3), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 7, Guigfx_lib_sfd)
+	struct Library *, (___base), 7, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define ReadPicture(___rp, ___colormap, ___x, ___y, ___width, ___height, ___firstTag, ...) __ReadPicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___rp, ___colormap, ___x, ___y, ___width, ___height, ___firstTag, ## __VA_ARGS__)
@@ -62,7 +62,7 @@
 	AROS_LC2(APTR, ClonePictureA, \
 	AROS_LCA(APTR, (___pic), A0), \
 	AROS_LCA(struct TagItem *, (___tags), A1), \
-	*struct Library *, (___base), 8, Guigfx_lib_sfd)
+	struct Library *, (___base), 8, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define ClonePicture(___pic, ___firstTag, ...) __ClonePicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___pic, ___firstTag, ## __VA_ARGS__)
@@ -74,7 +74,7 @@
 #define __DeletePicture_WB(___base, ___pic) \
 	AROS_LC1NR(VOID, DeletePicture, \
 	AROS_LCA(APTR, (___pic), A0), \
-	*struct Library *, (___base), 9, Guigfx_lib_sfd)
+	struct Library *, (___base), 9, Guigfx_lib_sfd)
 
 #define AddPictureA(___psm, ___pic, ___tags) __AddPictureA_WB(GUIGFX_LIB_SFD_BASE_NAME, ___psm, ___pic, ___tags)
 #define __AddPictureA_WB(___base, ___psm, ___pic, ___tags) \
@@ -82,7 +82,7 @@
 	AROS_LCA(APTR, (___psm), A0), \
 	AROS_LCA(APTR, (___pic), A1), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 11, Guigfx_lib_sfd)
+	struct Library *, (___base), 11, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define AddPicture(___psm, ___pic, ___firstTag, ...) __AddPicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___psm, ___pic, ___firstTag, ## __VA_ARGS__)
@@ -96,7 +96,7 @@
 	AROS_LCA(APTR, (___psm), A0), \
 	AROS_LCA(APTR, (___palette), A1), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 12, Guigfx_lib_sfd)
+	struct Library *, (___base), 12, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define AddPalette(___psm, ___palette, ___firstTag, ...) __AddPalette_WB(GUIGFX_LIB_SFD_BASE_NAME, ___psm, ___palette, ___firstTag, ## __VA_ARGS__)
@@ -112,7 +112,7 @@
 	AROS_LCA(UWORD, (___width), D0), \
 	AROS_LCA(UWORD, (___height), D1), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 13, Guigfx_lib_sfd)
+	struct Library *, (___base), 13, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define AddPixelArray(___psm, ___array, ___width, ___height, ___firstTag, ...) __AddPixelArray_WB(GUIGFX_LIB_SFD_BASE_NAME, ___psm, ___array, ___width, ___height, ___firstTag, ## __VA_ARGS__)
@@ -124,13 +124,13 @@
 #define __RemColorHandle_WB(___base, ___colorhandle) \
 	AROS_LC1NR(VOID, RemColorHandle, \
 	AROS_LCA(APTR, (___colorhandle), A0), \
-	*struct Library *, (___base), 14, Guigfx_lib_sfd)
+	struct Library *, (___base), 14, Guigfx_lib_sfd)
 
 #define CreatePenShareMapA(___tags) __CreatePenShareMapA_WB(GUIGFX_LIB_SFD_BASE_NAME, ___tags)
 #define __CreatePenShareMapA_WB(___base, ___tags) \
 	AROS_LC1(APTR, CreatePenShareMapA, \
 	AROS_LCA(struct TagItem *, (___tags), A0), \
-	*struct Library *, (___base), 15, Guigfx_lib_sfd)
+	struct Library *, (___base), 15, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define CreatePenShareMap(___tags, ...) __CreatePenShareMap_WB(GUIGFX_LIB_SFD_BASE_NAME, ___tags, ## __VA_ARGS__)
@@ -142,7 +142,7 @@
 #define __DeletePenShareMap_WB(___base, ___psm) \
 	AROS_LC1NR(VOID, DeletePenShareMap, \
 	AROS_LCA(APTR, (___psm), A0), \
-	*struct Library *, (___base), 16, Guigfx_lib_sfd)
+	struct Library *, (___base), 16, Guigfx_lib_sfd)
 
 #define ObtainDrawHandleA(___psm, ___rp, ___cm, ___tags) __ObtainDrawHandleA_WB(GUIGFX_LIB_SFD_BASE_NAME, ___psm, ___rp, ___cm, ___tags)
 #define __ObtainDrawHandleA_WB(___base, ___psm, ___rp, ___cm, ___tags) \
@@ -151,7 +151,7 @@
 	AROS_LCA(struct RastPort *, (___rp), A1), \
 	AROS_LCA(struct ColorMap *, (___cm), A2), \
 	AROS_LCA(struct TagItem *, (___tags), A3), \
-	*struct Library *, (___base), 17, Guigfx_lib_sfd)
+	struct Library *, (___base), 17, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define ObtainDrawHandle(___psm, ___rp, ___cm, ___firstTag, ...) __ObtainDrawHandle_WB(GUIGFX_LIB_SFD_BASE_NAME, ___psm, ___rp, ___cm, ___firstTag, ## __VA_ARGS__)
@@ -163,7 +163,7 @@
 #define __ReleaseDrawHandle_WB(___base, ___drawhandle) \
 	AROS_LC1NR(VOID, ReleaseDrawHandle, \
 	AROS_LCA(APTR, (___drawhandle), A0), \
-	*struct Library *, (___base), 18, Guigfx_lib_sfd)
+	struct Library *, (___base), 18, Guigfx_lib_sfd)
 
 #define DrawPictureA(___drawhandle, ___pic, ___x, ___y, ___tags) __DrawPictureA_WB(GUIGFX_LIB_SFD_BASE_NAME, ___drawhandle, ___pic, ___x, ___y, ___tags)
 #define __DrawPictureA_WB(___base, ___drawhandle, ___pic, ___x, ___y, ___tags) \
@@ -173,7 +173,7 @@
 	AROS_LCA(UWORD, (___x), D0), \
 	AROS_LCA(UWORD, (___y), D1), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 19, Guigfx_lib_sfd)
+	struct Library *, (___base), 19, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define DrawPicture(___drawhandle, ___pic, ___x, ___y, ___firstTag, ...) __DrawPicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___drawhandle, ___pic, ___x, ___y, ___firstTag, ## __VA_ARGS__)
@@ -188,7 +188,7 @@
 	AROS_LCA(APTR, (___palette), A1), \
 	AROS_LCA(UBYTE *, (___pentab), A2), \
 	AROS_LCA(struct TagItem *, (___tags), A3), \
-	*struct Library *, (___base), 20, Guigfx_lib_sfd)
+	struct Library *, (___base), 20, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define MapPalette(___drawhandle, ___palette, ___pentab, ___firstTag, ...) __MapPalette_WB(GUIGFX_LIB_SFD_BASE_NAME, ___drawhandle, ___palette, ___pentab, ___firstTag, ## __VA_ARGS__)
@@ -202,7 +202,7 @@
 	AROS_LCA(APTR, (___drawhandle), A0), \
 	AROS_LCA(ULONG, (___rgb), A1), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 21, Guigfx_lib_sfd)
+	struct Library *, (___base), 21, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define MapPen(___drawhandle, ___rgb, ___firstTag, ...) __MapPen_WB(GUIGFX_LIB_SFD_BASE_NAME, ___drawhandle, ___rgb, ___firstTag, ## __VA_ARGS__)
@@ -216,7 +216,7 @@
 	AROS_LCA(APTR, (___drawhandle), A0), \
 	AROS_LCA(APTR, (___pic), A1), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 22, Guigfx_lib_sfd)
+	struct Library *, (___base), 22, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define CreatePictureBitMap(___drawhandle, ___pic, ___firstTag, ...) __CreatePictureBitMap_WB(GUIGFX_LIB_SFD_BASE_NAME, ___drawhandle, ___pic, ___firstTag, ## __VA_ARGS__)
@@ -230,7 +230,7 @@
 	AROS_LCA(APTR, (___pic), A0), \
 	AROS_LCA(ULONG, (___method), D0), \
 	AROS_LCA(ULONG *, (___arguments), A1), \
-	*struct Library *, (___base), 23, Guigfx_lib_sfd)
+	struct Library *, (___base), 23, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_VARARGS
 #define DoPictureMethod(___pic, ___method, ___firstTag, ...) __DoPictureMethod_WB(GUIGFX_LIB_SFD_BASE_NAME, ___pic, ___method, ___firstTag, ## __VA_ARGS__)
@@ -243,7 +243,7 @@
 	AROS_LC2(ULONG, GetPictureAttrsA, \
 	AROS_LCA(APTR, (___pic), A0), \
 	AROS_LCA(struct TagItem *, (___tags), A1), \
-	*struct Library *, (___base), 24, Guigfx_lib_sfd)
+	struct Library *, (___base), 24, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define GetPictureAttrs(___pic, ___firstTag, ...) __GetPictureAttrs_WB(GUIGFX_LIB_SFD_BASE_NAME, ___pic, ___firstTag, ## __VA_ARGS__)
@@ -257,7 +257,7 @@
 	AROS_LCA(APTR, (___pic), A0), \
 	AROS_LCA(ULONG, (___mode), D0), \
 	AROS_LCA(ULONG *, (___args), A1), \
-	*struct Library *, (___base), 25, Guigfx_lib_sfd)
+	struct Library *, (___base), 25, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_VARARGS
 #define LockPicture(___pic, ___mode, ___firstTag, ...) __LockPicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___pic, ___mode, ___firstTag, ## __VA_ARGS__)
@@ -270,14 +270,14 @@
 	AROS_LC2NR(VOID, UnLockPicture, \
 	AROS_LCA(APTR, (___pic), A0), \
 	AROS_LCA(ULONG, (___mode), D0), \
-	*struct Library *, (___base), 26, Guigfx_lib_sfd)
+	struct Library *, (___base), 26, Guigfx_lib_sfd)
 
 #define IsPictureA(___filename, ___tags) __IsPictureA_WB(GUIGFX_LIB_SFD_BASE_NAME, ___filename, ___tags)
 #define __IsPictureA_WB(___base, ___filename, ___tags) \
 	AROS_LC2(BOOL, IsPictureA, \
 	AROS_LCA(STRPTR, (___filename), A0), \
 	AROS_LCA(struct TagItem *, (___tags), A1), \
-	*struct Library *, (___base), 27, Guigfx_lib_sfd)
+	struct Library *, (___base), 27, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define IsPicture(___filename, ___firstTag, ...) __IsPicture_WB(GUIGFX_LIB_SFD_BASE_NAME, ___filename, ___firstTag, ## __VA_ARGS__)
@@ -294,7 +294,7 @@
 	AROS_LCA(UWORD, (___dw), D2), \
 	AROS_LCA(UWORD, (___dh), D3), \
 	AROS_LCA(struct TagItem *, (___tags), A1), \
-	*struct Library *, (___base), 28, Guigfx_lib_sfd)
+	struct Library *, (___base), 28, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define CreateDirectDrawHandle(___drawhandle, ___sw, ___sh, ___dw, ___dh, ___firstTag, ...) __CreateDirectDrawHandle_WB(GUIGFX_LIB_SFD_BASE_NAME, ___drawhandle, ___sw, ___sh, ___dw, ___dh, ___firstTag, ## __VA_ARGS__)
@@ -306,7 +306,7 @@
 #define __DeleteDirectDrawHandle_WB(___base, ___ddh) \
 	AROS_LC1NR(VOID, DeleteDirectDrawHandle, \
 	AROS_LCA(APTR, (___ddh), A0), \
-	*struct Library *, (___base), 29, Guigfx_lib_sfd)
+	struct Library *, (___base), 29, Guigfx_lib_sfd)
 
 #define DirectDrawTrueColorA(___ddh, ___array, ___x, ___y, ___tags) __DirectDrawTrueColorA_WB(GUIGFX_LIB_SFD_BASE_NAME, ___ddh, ___array, ___x, ___y, ___tags)
 #define __DirectDrawTrueColorA_WB(___base, ___ddh, ___array, ___x, ___y, ___tags) \
@@ -316,7 +316,7 @@
 	AROS_LCA(UWORD, (___x), D0), \
 	AROS_LCA(UWORD, (___y), D1), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 30, Guigfx_lib_sfd)
+	struct Library *, (___base), 30, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define DirectDrawTrueColor(___ddh, ___array, ___x, ___y, ___firstTag, ...) __DirectDrawTrueColor_WB(GUIGFX_LIB_SFD_BASE_NAME, ___ddh, ___array, ___x, ___y, ___firstTag, ## __VA_ARGS__)
@@ -331,7 +331,7 @@
 	AROS_LCA(UBYTE *, (___mask), A1), \
 	AROS_LCA(UWORD, (___maskwidth), D0), \
 	AROS_LCA(struct TagItem *, (___tags), A2), \
-	*struct Library *, (___base), 31, Guigfx_lib_sfd)
+	struct Library *, (___base), 31, Guigfx_lib_sfd)
 
 #ifndef NO_INLINE_STDARG
 #define CreatePictureMask(___pic, ___mask, ___maskwidth, ___firstTag, ...) __CreatePictureMask_WB(GUIGFX_LIB_SFD_BASE_NAME, ___pic, ___mask, ___maskwidth, ___firstTag, ## __VA_ARGS__)

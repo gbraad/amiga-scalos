@@ -16,6 +16,6 @@
 	AROS_LC2NR(VOID, SCAMenuFunction, \
 	AROS_LCA(struct ScaWindowTask *, (___wt), A0), \
 	AROS_LCA(struct ScaIconNode *, (___in), A1), \
-	*struct Library *, (___base), 5, Scalosmenuplugin_lib_sfd)
+	struct Library *, (___base), 5, Scalosmenuplugin_lib_sfd)
 
 #endif /* !_INLINE_SCALOSMENUPLUGIN_LIB_SFD_H */
