@@ -36,9 +36,9 @@
 
 #include "FormatDisk.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	FormatDiskMUI_NUMBERS
+#define	FormatDiskMUI_BLOCK
+#define	FormatDiskMUI_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -86,7 +86,7 @@ struct FileSystemName
 #if defined(MUII_StringBack)
 	#define	StringBack	MUIA_Background, MUII_StringBack
 #else /* MUII_StringBack */
-	#define StringBack
+	#define StringBack	MUIA_Background, MUII_TextBack
 #endif /* MUII_StringBack */
 
 //----------------------------------------------------------------------------
@@ -313,7 +313,7 @@ static const struct FileSystemName FsList[] =
 	/* C64 */
 	{FS_C64, "C64"}, /* "1541" */
 
-	{NULL, NULL},
+	{0, NULL},
 };
 
 //----------------------------------------------------------------------------
@@ -691,7 +691,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct FormatDiskMUI_LocaleInfo li;
 
 	li.li_Catalog = gb_Catalog;
 #ifndef __amigaos4__
@@ -700,7 +700,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetFormatDiskMUIString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------
@@ -1217,19 +1217,19 @@ static void GetCapacityString(STRPTR Buffer, size_t MaxLength, const struct Info
 	if (GBytes > 2)
 		{
 		if (GBytes > 20)
-			snprintf(Buffer, MaxLength, "%lu %s", GBytes, GetLocString(MSGID_GBYTENAME));
+			snprintf(Buffer, MaxLength, "%lu %s", (unsigned long)GBytes, GetLocString(MSGID_GBYTENAME));
 		else
-			snprintf(Buffer, MaxLength, "%lu.%lu %s", GBytes, (MBytes / 100) % 10, GetLocString(MSGID_GBYTENAME));
+			snprintf(Buffer, MaxLength, "%lu.%lu %s", (unsigned long)GBytes, (unsigned long)((MBytes / 100) % 10), GetLocString(MSGID_GBYTENAME));
 		}
 	else if (MBytes > 2)
 		{
 		if (MBytes > 20)
-			snprintf(Buffer, MaxLength, "%lu %s", MBytes, GetLocString(MSGID_MBYTENAME));
+			snprintf(Buffer, MaxLength, "%lu %s", (unsigned long)MBytes, GetLocString(MSGID_MBYTENAME));
 		else
-			snprintf(Buffer, MaxLength, "%lu.%lu %s", MBytes, (KBytes / 100) % 10, GetLocString(MSGID_MBYTENAME));
+			snprintf(Buffer, MaxLength, "%lu.%lu %s", (unsigned long)MBytes, (unsigned long)((KBytes / 100) % 10), GetLocString(MSGID_MBYTENAME));
 		}
 	else
-		snprintf(Buffer, MaxLength, "%lu %s", KBytes, GetLocString(MSGID_KBYTENAME));
+		snprintf(Buffer, MaxLength, "%lu %s", (unsigned long)KBytes, GetLocString(MSGID_KBYTENAME));
 }
 
 //----------------------------------------------------------------------------

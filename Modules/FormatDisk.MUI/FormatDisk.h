@@ -170,10 +170,20 @@
 
 //----------------------------------------------------------------------------
 
+#ifdef __AROS__
+#define KPrintF kprintf
+#endif
+
 extern int kprintf(CONST_STRPTR, ...);
 extern int KPrintF(CONST_STRPTR, ...);
 
 ULONG mui_getv(APTR, ULONG );
+
+struct FormatDiskMUI_LocaleInfo
+{
+    APTR li_LocaleBase;
+    APTR li_Catalog;
+};
 
 //----------------------------------------------------------------------------
 
