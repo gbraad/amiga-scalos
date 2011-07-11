@@ -1,6 +1,6 @@
 ; FormatDisk.cd
 ; version $VER: FormatDiskMUI.catalog 40.1 (26 Feb 2005 21:03:45)
-; codeset 0s
+; codeset 0
 ; language english
 ;
 ;#arrayopts static __far
