@@ -3,6 +3,7 @@
 # $Revision$
 #############################################################
 
+TOPLEVEL	= /
 SUBDIRMAKE 	= $(MAKE) -s -C 
 CATCOMP 	= CatComp
 FLEXCAT		= FlexCat
@@ -161,7 +162,7 @@ install:
 
 clean:
 	@printf '\033[32mCleanup: \033[31m\033[1m'
-	@delete $(OBJS) $(NAME) $(DBGNAME) $(ALLCATS) $(CATCOMPHEADER)
+	-@delete $(OBJS) $(NAME) $(DBGNAME) $(ALLCATS) $(CATCOMPHEADER)
 	@printf '\033[0m'
 
 #############################################################

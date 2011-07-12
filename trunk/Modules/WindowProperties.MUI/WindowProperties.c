@@ -65,6 +65,9 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
+#define	WindowProperties_NUMBERS
+#define WindowProperties_BLOCK
+#define WindowProperties_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
