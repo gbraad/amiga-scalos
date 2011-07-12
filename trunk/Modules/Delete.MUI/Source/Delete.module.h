@@ -69,8 +69,8 @@
 
 struct Delete_LocaleInfo
 {
-    APTR li_LocaleBase;
-    APTR li_Catalog;
+	APTR li_LocaleBase;
+	APTR li_Catalog;
 };
 
 #define	Delete_NUMBERS

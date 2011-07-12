@@ -18,8 +18,8 @@ extern int KPrintF(const char *fmt, ...);
 
 struct Empty_Trashcan_LocaleInfo
 {
-    APTR li_LocaleBase;
-    APTR li_Catalog;
+	APTR li_LocaleBase;
+	APTR li_Catalog;
 };
 
 #endif /* DEBUG_H */
