@@ -23,6 +23,12 @@
 extern int kprintf(CONST_STRPTR, ...);
 extern int KPrintF(CONST_STRPTR, ...);
 
-ULONG mui_getv(APTR, ULONG );
+IPTR mui_getv(APTR, ULONG );
+
+struct NewDrawer_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+};
 
 #endif	/* NEWDRAWER_H */

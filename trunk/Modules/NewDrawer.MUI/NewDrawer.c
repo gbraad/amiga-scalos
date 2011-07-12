@@ -45,9 +45,9 @@
 
 #include "NewDrawer.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	NewDrawer_NUMBERS
+#define	NewDrawer_BLOCK
+#define	NewDrawer_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -545,7 +545,7 @@ static void CloseLibraries(void)
 #endif
 	if (LocaleBase)
 		{
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *)LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -631,7 +631,7 @@ static LONG MakeNewDrawer(struct WBStartup *wbMsg)
 	struct ScaWindowStruct *ws;
 	APTR UndoStep = NULL;
 	BPTR newDirLock;
-	ULONG CreateIcon = FALSE;
+	IPTR CreateIcon = FALSE;
 
 	d1(kprintf(__FILE__ "/%s/%ld:\n", __FUNC__, __LINE__));
 
@@ -723,7 +723,7 @@ static LONG MakeNewDrawer(struct WBStartup *wbMsg)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct NewDrawer_LocaleInfo li;
 
 	li.li_Catalog = gb_Catalog;
 #ifndef __amigaos4__
@@ -732,7 +732,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetNewDrawerString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------
@@ -978,9 +978,9 @@ static void WritePrefs(STRPTR PrefsFile)
 
 //----------------------------------------------------------------------------
 
-ULONG mui_getv(APTR obj, ULONG attr)
+IPTR mui_getv(APTR obj, ULONG attr)
 {
-    ULONG v;
+    IPTR v;
     GetAttr(attr, obj, &v);
     return (v);
 }
