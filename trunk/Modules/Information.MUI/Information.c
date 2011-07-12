@@ -2,6 +2,9 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -67,9 +70,9 @@
 #include "FsAbstraction.h"
 #include "debug.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	Information_NUMBERS
+#define	Information_BLOCK
+#define	Information_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -1769,7 +1772,7 @@ int main(int argc, char *argv[])
 
 			//---------------------------------------------------------------------------------------------
 
-			get(WIN_Main, MUIA_Window_Window, (APTR)&MainWin);
+			get(WIN_Main, MUIA_Window_Window, &MainWin);
 
 			myAppWindow = AddAppWindowA(0, 0,
 				MainWin, AppMsgPort, NULL);
@@ -1815,7 +1818,7 @@ int main(int argc, char *argv[])
 				case MUIV_Application_ReturnID_Quit:
 					//---- Show icon path gadget --------------------------------------------------------------------------------------
 					get(MenuIconPath, MUIA_Menuitem_Checked, &ShowIconPath);
-					sprintf(VarBuffer, "%ld", ShowIconPath);
+					sprintf(VarBuffer, "%ld", (long) ShowIconPath);
 					SetVar(INFO_ICONPATH_ENV, VarBuffer, -1, GVF_GLOBAL_ONLY);
 					SetVar(INFO_ICONPATH_ENVARC, VarBuffer, -1, GVF_GLOBAL_ONLY);
 
@@ -1825,7 +1828,7 @@ int main(int argc, char *argv[])
 					//---- Auto GetSize calculation at startup -------------------------------------------------------------------------
 
 					get(MenuGetSize, MUIA_Menuitem_Checked, &AutoGetSize);
-					sprintf(VarBuffer, "%ld", AutoGetSize);
+					sprintf(VarBuffer, "%ld", (long) AutoGetSize);
 					SetVar(INFO_AUTOGETSIZE_ENV, VarBuffer, -1, GVF_GLOBAL_ONLY);
 					SetVar(INFO_AUTOGETSIZE_ENVARC, VarBuffer, -1, GVF_GLOBAL_ONLY);
 
@@ -2260,7 +2263,7 @@ static void CloseLibraries(void)
 
 static CONST_STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Information_LocaleInfo li;
 
 	li.li_Catalog = InformationCatalog;  
 #ifndef __amigaos4__
@@ -2269,7 +2272,7 @@ static CONST_STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return GetString(&li, MsgId);
+	return GetInformationString(&li, MsgId);
 }
 
 static void TranslateStringArray(STRPTR *stringArray)
@@ -2290,7 +2293,7 @@ static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o,
 		WIN_AboutMUI = MUI_NewObject(MUIC_Aboutmui,
 			MUIA_Window_RefWindow, WIN_Main,
 			MUIA_Aboutmui_Application, APP_Main,
-			End;
+			TAG_END);
 		}
 
 	if (WIN_AboutMUI)
@@ -2585,7 +2588,7 @@ static SAVEDS(void) INTERRUPT DefaultIconHookFunc(struct Hook *hook, Object *o, 
 
 	if (NULL == NewIconObj)
 		{
-		ULONG IconType;
+		IPTR IconType;
 
 		GetAttr(IDTA_Type, *dii->dii_IconObjectFromDisk, &IconType);
 		NewIconObj = GetDefIconObject(IconType, NULL);
@@ -2738,8 +2741,8 @@ static void ReplaceIcon(Object *NewIconObj, Object **OldIconObj)
 	//struct IBox *WinRect;
 	struct ExtGadget *ggOld = (struct ExtGadget *) *OldIconObj;
 	struct ExtGadget *ggNew = (struct ExtGadget *) NewIconObj;
-	ULONG ul;
-	ULONG IconType;
+	IPTR  ul;
+	IPTR  IconType;
 
 	d1(KPrintF("%s/%ld: START NewIconObj=%08lx  OldIconObj=%08lx\n", __FUNC__, __LINE__, NewIconObj, OldIconObj));
 
@@ -2798,8 +2801,8 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 	if (IconObj)
 		{
-		ULONG IconType;
-		LONG ToolPri;
+		IPTR  IconType;
+		SIPTR ToolPri;
 		char ToolPriString[15];
 		struct ScaWindowStruct *ws;
 		CONST_STRPTR *ToolTypesArray;
@@ -2808,9 +2811,9 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 		APTR UndoStep = NULL;
 		STRPTR Comment = "";
 		STRPTR DefaultTool = "";
-		ULONG Selected;
+		IPTR  Selected;
 		ULONG Protection = 0;
-		ULONG StackSize;
+		IPTR  StackSize;
 		CONST_STRPTR NewName = ScalosExamineGetName(fib);
 		char GetName[128];
 		char VolumeName[128];
@@ -2920,9 +2923,9 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (SliderStartPriTool)
 				{
-				LONG StartPri;
+				SIPTR StartPri;
 
-				GetAttr(MUIA_Numeric_Value, SliderStartPriTool, (ULONG *) &StartPri);
+				GetAttr(MUIA_Numeric_Value, SliderStartPriTool, &StartPri);
 				if (0 != StartPri)
 					{
 					sprintf(ToolPriString, "%ld", StartPri);
@@ -2934,12 +2937,12 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (StringWaitTimeTool)
 				{
-				ULONG WaitTime;
+				IPTR WaitTime;
 
 				GetAttr(MUIA_String_Integer, StringWaitTimeTool, &WaitTime);
 				if (0 != WaitTime)
 					{
-					sprintf(ToolPriString, "%ld", WaitTime);
+					sprintf(ToolPriString, "%ld", (long) WaitTime);
 					SetToolType(IconObj, "WAIT", ToolPriString);
 					}
 				else
@@ -2948,7 +2951,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (CheckMarkWaitUntilFinishedTool)
 				{
-				ULONG WaitUntilFinished;
+				IPTR WaitUntilFinished;
 
 				GetAttr(MUIA_Selected, CheckMarkWaitUntilFinishedTool, &WaitUntilFinished);
 				if (WaitUntilFinished)
@@ -2959,7 +2962,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (STARTFROM_CLI == StartFrom || STARTFROM_Arexx == StartFrom)
 				{
-				ULONG PromptForInput;
+				IPTR PromptForInput;
 
 				GetAttr(MUIA_Selected, ButtonPromptForInputTool, &PromptForInput);
 
@@ -2969,10 +2972,10 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 					SetToolType(IconObj, "DONOTPROMPT", "");
 				}
 
-			GetAttr(MUIA_Numeric_Value, SliderToolPriTool, (ULONG *) &ToolPri);
+			GetAttr(MUIA_Numeric_Value, SliderToolPriTool, &ToolPri);
 			if (ToolPri)
 				{
-				sprintf(ToolPriString, "%ld", ToolPri);
+				sprintf(ToolPriString, "%ld", (long) ToolPri);
 				SetToolType(IconObj, "TOOLPRI", ToolPriString);
 				}
 			else
@@ -3041,9 +3044,9 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (SliderStartPriTool2)
 				{
-				LONG StartPri;
+				IPTR StartPri;
 
-				GetAttr(MUIA_Numeric_Value, SliderStartPriTool2, (ULONG *) &StartPri);
+				GetAttr(MUIA_Numeric_Value, SliderStartPriTool2, &StartPri);
 				if (0 != StartPri)
 					{
 					sprintf(ToolPriString, "%ld", StartPri);
@@ -3055,12 +3058,12 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (StringWaitTimeTool2)
 				{
-				ULONG WaitTime;
+				IPTR WaitTime;
 
 				GetAttr(MUIA_String_Integer, StringWaitTimeTool2, &WaitTime);
 				if (0 != WaitTime)
 					{
-					sprintf(ToolPriString, "%ld", WaitTime);
+					sprintf(ToolPriString, "%ld", (long) WaitTime);
 					SetToolType(IconObj, "WAIT", ToolPriString);
 					}
 				else
@@ -3069,7 +3072,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (CheckMarkWaitUntilFinishedTool2)
 				{
-				ULONG WaitUntilFinished;
+				IPTR WaitUntilFinished;
 
 				GetAttr(MUIA_Selected, CheckMarkWaitUntilFinishedTool2, &WaitUntilFinished);
 				if (WaitUntilFinished)
@@ -3081,7 +3084,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (STARTFROM_CLI == StartFrom || STARTFROM_Arexx == StartFrom)
 				{
-				ULONG PromptForInput;
+				IPTR PromptForInput;
 
 				GetAttr(MUIA_Selected, ButtonPromptForInputProject, &PromptForInput);
 
@@ -3091,10 +3094,10 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 					SetToolType(IconObj, "DONOTPROMPT", "");
 				}
 
-			GetAttr(MUIA_Numeric_Value, SliderToolPriProject, (ULONG *) &ToolPri);
+			GetAttr(MUIA_Numeric_Value, SliderToolPriProject, (IPTR *) &ToolPri);
 			if (ToolPri)
 				{
-				sprintf(ToolPriString, "%ld", ToolPri);
+				sprintf(ToolPriString, "%ld", (long) ToolPri);
 				SetToolType(IconObj, "TOOLPRI", ToolPriString);
 				}
 			else
@@ -4097,7 +4100,7 @@ static UBYTE MakePrintable(UBYTE ch)
 
 static CONST_STRPTR GetIconTypeName(Object *IconObj)
 {
-	ULONG IconType;
+	IPTR IconType;
 	CONST_STRPTR TypeName;
 
 	GetAttr(IDTA_Type, IconObj, &IconType);
@@ -4191,7 +4194,7 @@ static STRPTR GetChangeDate(BOOL Valid, struct DateStamp *ChangeDate)
 
 static ULONG GetStackSize(Object *IconObj)
 {
-	ULONG StackSize = 16384;
+	IPTR StackSize = 16384;
 
 	GetAttr(IDTA_Stacksize, IconObj, &StackSize);
 
@@ -4357,7 +4360,7 @@ const struct Resident *SearchResident(const UWORD *block, size_t BlockLen)
 
 static void SetGuiFromIconType(Object *IconObj)
 {
-	ULONG IconType;
+	IPTR IconType;
 
 	GetAttr(IDTA_Type, IconObj, &IconType);
 
@@ -4441,7 +4444,7 @@ static SAVEDS(void) INTERRUPT ChangeIconTypeHookFunc(struct Hook *hook, Object *
 
 static SAVEDS(void) INTERRUPT StartFromCycleHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	ULONG StartFrom;
+	IPTR StartFrom;
 
 	GetAttr(MUIA_Cycle_Active, o, &StartFrom);
 
@@ -4589,7 +4592,7 @@ static void SetupToolTypes(Object *IconObj, Object *TextEditor)
 
 static void SetChangedToolTypes(Object *IconObj, Object *TextEditor)
 {
-	ULONG Changed = FALSE;
+	IPTR  Changed = FALSE;
 	ULONG ToolTypesCount = 0;
 	STRPTR Contents = NULL;
 	STRPTR *ToolTypeArray = NULL;
