@@ -300,7 +300,7 @@ static void ForceRelayout(struct IClass *cl, Object *obj)
 	if (muiRenderInfo(obj))
 		{
 		WindowObj = _win(obj);
-		get(WindowObj, MUIA_Window_RootObject, (APTR) &RootObj);
+		get(WindowObj, MUIA_Window_RootObject, &RootObj);
 
 		if (RootObj)
 			{

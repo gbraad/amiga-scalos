@@ -8,6 +8,10 @@
 // removed VSpace(0) between groupframe and "Group_Buttons2 = HGroup",
 // to show entirely the window's title.
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -54,9 +58,9 @@
 #include "ToolTypes.h"
 #include "debug.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	IconProperties_NUMBERS
+#define	IconProperties_BLOCK
+#define	IconProperties_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -271,7 +275,7 @@ int main(int argc, char *argv[])
 		ULONG IconType;
 		STRPTR tt;
 
-		GetAttr(IDTA_Type, iconObj, &IconType);
+		GetAttr(IDTA_Type, iconObj, (IPTR *)&IconType);
 
 		if ((WBDISK == IconType) || (WBDRAWER == IconType) || (WBGARBAGE == IconType))
 			BrowserSupported = TRUE;
@@ -607,7 +611,7 @@ static VOID fail(APTR APP_Main, CONST_STRPTR str)
 static void init(void)
 {
 	if (!OpenLibraries())
-		fail(NULL, "Failed to open "MUIMASTER_NAME".");
+		fail(NULL, "Failed to call OpenLibraries()");
 
 	if (LocaleBase)
 		IconPropertiesCatalog = OpenCatalogA(NULL, "Scalos/IconProperties.catalog", NULL);
@@ -622,73 +626,73 @@ static BOOL OpenLibraries(void)
 {
 	IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
 	if (NULL == IntuitionBase)
-		return FALSE;
+		fail(NULL, "Failed to open intuition.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IIntuition = (struct IntuitionIFace *)GetInterface((struct Library *)IntuitionBase, "main", 1, NULL);
 		if (NULL == IIntuition)
-			return FALSE;
+			fail(NULL, "Failed to open intuition interface.");
 		}
 #endif
 
 	MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN-1);
 	if (NULL == MUIMasterBase)
-		return FALSE;
+		fail(NULL, "Failed to open "MUIMASTER_NAME".");
 #ifdef __amigaos4__
 	else
 		{
 		IMUIMaster = (struct MUIMasterIFace *)GetInterface((struct Library *)MUIMasterBase, "main", 1, NULL);
 		if (NULL == IMUIMaster)
-			return FALSE;
+			fail(NULL, "Failed to open muimaster interface.");
 		}
 #endif
 
 	IconBase = OpenLibrary("icon.library", 0);
 	if (NULL == IconBase)
-		return FALSE;
+		fail(NULL, "Failed to open icon.library");
 #ifdef __amigaos4__
 	else
 		{
 		IIcon = (struct IconIFace *)GetInterface((struct Library *)IconBase, "main", 1, NULL);
 		if (NULL == IIcon)
-			return FALSE;
+			fail(NULL, "Failed to open icon interface.");
 		}
 #endif
 
 	ScalosBase = (struct ScalosBase *) OpenLibrary("scalos.library", 40);
 	if (NULL == ScalosBase)
-		return FALSE;
+		fail(NULL, "Failed to open scalos.library");
 #ifdef __amigaos4__
 	else
 		{
 		IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
 		if (NULL == IScalos)
-			return FALSE;
+			fail(NULL, "Failed to open scalos interface.");
 		}
 #endif
 
 	PreferencesBase = OpenLibrary("preferences.library", 39);
 	if (NULL == PreferencesBase)
-		return FALSE;
+		fail(NULL, "Failed to open preferences.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IPreferences = (struct PreferencesIFace *)GetInterface((struct Library *)PreferencesBase, "main", 1, NULL);
 		if (NULL == IPreferences)
-			return FALSE;
+			fail(NULL, "Failed to open preferences interface.");
 		}
 #endif
 
 	IconobjectBase = OpenLibrary("iconobject.library", 0);
 	if (NULL == IconobjectBase)
-		return FALSE;
+		fail(NULL, "Failed to open iconobject.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IIconobject = (struct IconobjectIFace *)GetInterface((struct Library *)IconobjectBase, "main", 1, NULL);
 		if (NULL == IIconobject)
-			return FALSE;
+			fail(NULL, "Failed to open iconobject interface.");
 		}
 #endif
 
@@ -698,7 +702,7 @@ static BOOL OpenLibraries(void)
 		{
 		ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
 		if (NULL == ILocale)
-			return FALSE;
+			fail(NULL, "Failed to open locale interface");
 		}
 #endif
 
@@ -803,7 +807,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct IconProperties_LocaleInfo li;
 
 	li.li_Catalog = IconPropertiesCatalog;	
 #ifndef __amigaos4__
@@ -812,7 +816,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetIconPropertiesString(&li, MsgId);
 }
 
 #if 0
@@ -835,7 +839,7 @@ static SAVEDS(APTR) INTERRUPT OpenAboutMUIFunc(struct Hook *hook, Object *o, Msg
 		WIN_AboutMUI = MUI_NewObject(MUIC_Aboutmui,
 			MUIA_Window_RefWindow, WIN_Main,
 			MUIA_Aboutmui_Application, APP_Main,
-			End;
+			TAG_END);
 		}
 
 	if (WIN_AboutMUI)
@@ -860,7 +864,7 @@ static SAVEDS(void) INTERRUPT DefaultIconHookFunc(struct Hook *hook, Object *o, 
 {
 	Object **OldIconObj = (Object **) hook->h_Data;
 	Object *NewIconObj;
-	ULONG IconType;
+	IPTR IconType;
 
 	GetAttr(IDTA_Type, *OldIconObj, &IconType);
 	NewIconObj = GetDefIconObject(IconType, NULL);
@@ -948,9 +952,9 @@ static void ReplaceIcon(Object *NewIconObj, Object **OldIconObj)
 	struct IBox *WinRect;
 	struct ExtGadget *ggOld = (struct ExtGadget *) *OldIconObj;
 	struct ExtGadget *ggNew = (struct ExtGadget *) NewIconObj;
-	ULONG ul;
-	ULONG IconType;
-	ULONG TheName;
+	IPTR  ul;
+	IPTR  IconType;
+	IPTR  TheName;
 	STRPTR *ToolTypesArray = NULL;
 
 	GetAttr(IDTA_Type, *OldIconObj, &IconType);
@@ -996,7 +1000,7 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 {
 	if (IconObj)
 		{
-		ULONG IconType;
+		IPTR  IconType;
 		ULONG Checked;
 		char CheckName[256];
 		ULONG Pos;
@@ -1392,6 +1396,8 @@ static BOOL ReadScalosPrefs(void)
 	ReadPrefsHandle(MainPrefsHandle, (STRPTR) MainPrefsFileName);
 
 	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_LoadDefIconsFirst, &prefDefIconsFirst, sizeof(prefDefIconsFirst));
+	// UBYTE, no endiannes handling needed
+
 	prefDefIconPath = GetPrefsConfigString(MainPrefsHandle, SCP_PathsDefIcons, prefDefIconPath);
 
 	if (prefDefIconPath)

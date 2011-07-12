@@ -4,6 +4,10 @@
 #ifndef ICONPROPERTIES_H 
 #define	ICONPROPERTIES_H
 
-
+struct IconProperties_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+};
 
 #endif	/* ICONPROPERTIES_H */

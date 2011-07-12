@@ -65,8 +65,8 @@ LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTy
 
 		//GetAttr(IDTA_ToolTypes, iconObj, (ULONG *) &ToolTypeArray);
 		//GetAttr(DTA_Name, iconObj, (ULONG *) &iconName);
-		get(iconObj, IDTA_ToolTypes, (APTR)&ToolTypeArray);
-		get(iconObj, DTA_Name, (APTR)&iconName);
+		get(iconObj, IDTA_ToolTypes, &ToolTypeArray);
+		get(iconObj, DTA_Name, &iconName);
 
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: ToolTypeArray=%08lx  iconName=<%s>\n", \
 			__LINE__, ToolTypeArray, iconName));

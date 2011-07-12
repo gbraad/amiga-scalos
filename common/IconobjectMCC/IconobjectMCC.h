@@ -13,7 +13,11 @@ void CleanupIconobjectClass(struct MUI_CustomClass *mcc);
 
 /* ------------------------------------------------------------------------- */
 
+#ifdef __AROS__
+#define IconobjectMCCObject BOOPSIOBJMACRO_START(IconobjectClass->mcc_Class)
+#else
 #define IconobjectMCCObject NewObject(IconobjectClass->mcc_Class, 0
+#endif
 
 /* ------------------------------------------------------------------------- */
 
