@@ -37,7 +37,7 @@ endif
 # Subdirs
 #
 
-SUBDIRS	=	$(filter-out catalogs/sample/Scalos, $(wildcard catalogs/*/Scalos))
+SUBDIRS	=	$(filter-out Catalogs/sample/Scalos, $(wildcard Catalogs/*/Scalos))
 
 ##############################################################################
 #
