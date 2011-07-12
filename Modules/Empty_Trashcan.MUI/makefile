@@ -20,6 +20,7 @@ LNFLAGS		= quiet batch noicons stripdebug
 LNDBFLAGS 	= quiet batch noicons addsym
 LIBS		= LIB:sc.lib LIB:debug.lib LIB:amiga.lib
 CATCOMP		= catcomp
+FLEXCAT		= FlexCat
 CSTARTUP	= LIB:c.o
 OBJDIR		= .sasobj
 
@@ -92,7 +93,7 @@ $(OBJDIR)/%.o : %.asm
 
 $(CATCOMPH) : Empty_Trashcan.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$(CATCOMPH) XDEF
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 $(OBJDIR)/Empty_Trashcan.o : Empty_Trashcan.c Empty_Trashcan.h $(CATCOMPH)
 
