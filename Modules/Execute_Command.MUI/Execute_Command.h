@@ -15,8 +15,8 @@ extern int KPrintF(CONST_STRPTR, ...);
 
 struct Execute_Command_LocaleInfo
 {
-    APTR li_LocaleBase;
-    APTR li_Catalog;
+	APTR li_LocaleBase;
+	APTR li_Catalog;
 };
 
 #endif	/* EXECUTE_COMMAND_H */

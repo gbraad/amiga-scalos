@@ -75,8 +75,8 @@ int vsnprintf(char *, size_t, const char *, va_list ap);
 
 struct Exchange_LocaleInfo
 {
-    APTR li_LocaleBase;
-    APTR li_Catalog;
+	APTR li_LocaleBase;
+	APTR li_Catalog;
 };
 
 #endif	/* EXCHANGE_MODULE_H */

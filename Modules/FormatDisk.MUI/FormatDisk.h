@@ -181,8 +181,8 @@ ULONG mui_getv(APTR, ULONG );
 
 struct FormatDiskMUI_LocaleInfo
 {
-    APTR li_LocaleBase;
-    APTR li_Catalog;
+	APTR li_LocaleBase;
+	APTR li_Catalog;
 };
 
 //----------------------------------------------------------------------------
