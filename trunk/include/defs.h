@@ -128,14 +128,15 @@
 	#define	T_LOCALEBASE	struct Library *
 	#define T_REXXSYSBASE   struct Library *
 	#define T_CONSOLEDEVICE	struct Library *
+	#define T_TIMERBASE	struct Library *
 #else // __USE_BASETYPE__
 	#define T_UTILITYBASE	struct UtilityBase *
 	#define	T_LOCALEBASE	struct LocaleBase *
 	#define T_REXXSYSBASE   struct RxsLib *
 	#define T_CONSOLEDEVICE	struct Device *
+	#define T_TIMERBASE	struct Device *
 #endif // __USE_BASETYPE__
 	#define	T_INPUTBASE	struct Library *
-	#define T_TIMERBASE	struct Library *
 	#define T_INPUTDEVICE	struct Library *
 
 #ifdef __amigaos4__
@@ -2830,7 +2831,8 @@
 
 #if !defined(__AROS__) && !defined(__MORPHOS__)
 // IPTR is an integer type which is large enough to store a pointer
-typedef LONG IPTR;
+typedef ULONG IPTR;
+typedef LONG  SIPTR;
 #endif
 
 // ==============================================================
