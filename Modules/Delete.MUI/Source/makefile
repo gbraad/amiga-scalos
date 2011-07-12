@@ -29,6 +29,7 @@ COPTS 		= NOWVRET NOVERSION nostackcheck \
 OPTIONS 	=  $(OPT_FLG) DATA=FAR DEBUG=L $(COPTS) def=NDEBUG
 DBFLAG 		= nodebug
 CSTARTUP 	= LIB:c.o
+TOPLEVEL	= //
 CATCOMP		= catcomp
 FLEXCAT		= FlexCat
 OBJDIR		= .sasobj
@@ -100,8 +101,8 @@ allcatalogs:
 
 clean:
 	@printf '\033[32mCleanup: \033[31m\033[1m'
-	@delete $(NAME) $(OBJS)
-	-@delete $(OBJS) $(NAME) $(NAMEDBG) $(CATCOMPH) $(ALLCATS) 
+	-@delete $(NAME) $(OBJS)
+	-@delete $(OBJS) $(NAME) $(NAMEDBG) $(CATCOMPH) $(ALLCATS)  
 	@printf '\033[0m'
 
 #############################################################

@@ -4,6 +4,7 @@
 
 #####################################################################
 
+TOPLEVEL	= /
 SUBDIRMAKE 	= $(MAKE) -s -C 
 CHEADERS	= 
 CC		= sc
@@ -115,8 +116,7 @@ install:
 # A little something to clean it all up
 clean:
 	@printf '\033[32mCleanup: \033[31m\033[1m'
-	@delete $(XOBJS) $(NAME) $(DBGNAME) \
-	  $(CATCOMPH)
+	-@delete $(XOBJS) $(NAME) $(DBGNAME) $(CATCOMPH)
 	@printf '\033[0m'
 
 #####################################################################

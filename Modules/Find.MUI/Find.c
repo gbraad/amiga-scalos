@@ -52,6 +52,9 @@
 #define	CATCOMP_NUMBERS
 #define	CATCOMP_BLOCK
 #define	CATCOMP_CODE
+#define	Find_NUMBERS
+#define	Find_BLOCK
+#define	Find_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------

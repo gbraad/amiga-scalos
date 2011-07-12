@@ -4,6 +4,7 @@
 # $Revision$
 #####################################################################
 
+TOPLEVEL	= /
 SUBDIRMAKE 	= $(MAKE) -s -C 
 CHEADERS	= 
 CC		= sc
@@ -92,7 +93,8 @@ $(OBJDIR)/%.o : %.asm
 
 $(CATCOMPH) : Rename.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) \033[32mfrom \033[31m$<\033[0m\n'
-	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
+	@$(CATCOMP) $< cfile=$@
+#	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 $(OBJDIR)/Rename.o : Rename.c Rename.h $(CATCOMPH)
 
@@ -115,7 +117,7 @@ install:
 # A little something to clean it all up
 clean:
 	@printf '\033[32mCleanup: \033[31m\033[1m'
-	@delete $(XOBJS) $(NAME) $(DBGNAME) \
+	-@delete $(XOBJS) $(NAME) $(DBGNAME) \
 	  $(CATCOMPH)
 	@printf '\033[0m'
 
