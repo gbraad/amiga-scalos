@@ -30,6 +30,7 @@ OPTIONS 	=  $(OPT_FLG) DATA=FAR DEBUG=L $(COPTS) def=NDEBUG
 DBFLAG 		= nodebug
 CSTARTUP 	= LIB:c.o
 CATCOMP		= catcomp
+FLEXCAT		= FlexCat
 OBJDIR		= .sasobj
 SUBDIRMAKE 	= $(MAKE) -s -C 
 
@@ -79,7 +80,7 @@ $(OBJDIR)/Delete.module_files.o: Delete.module_files.c Delete.module.h $(CATCOMP
 
 $(CATCOMPH) : Delete.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$(CATCOMPH) XDEF
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 #############################################################
 

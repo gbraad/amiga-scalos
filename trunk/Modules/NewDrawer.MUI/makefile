@@ -33,6 +33,7 @@ SCALOS_LOCALE	= $(OBJDIR)/NewDrawer_Locale.h
 NAME	= NewDrawer.module
 DBGNAME	= $(NAME).debug
 CATCOMPH	= $(SCALOS_LOCALE)
+FLEXCAT		= FlexCat
 CAT_FILE	= Scalos/NewDrawer.catalog
 DESTCAT		= Locale:Catalogs
 ALLCATS 	= Catalogs/deutsch/$(CAT_FILE) \
@@ -89,7 +90,7 @@ $(OBJDIR)/%.o : %.asm
 
 $(CATCOMPH) : NewDrawer.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$(CATCOMPH) XDEF
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 $(OBJDIR)/NewDrawer.o : NewDrawer.c NewDrawer.h $(CATCOMPH)
 

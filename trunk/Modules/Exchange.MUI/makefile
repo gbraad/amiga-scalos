@@ -5,6 +5,7 @@
 
 SUBDIRMAKE 	= $(MAKE) -s -C 
 CATCOMP 	= CatComp
+FLEXCAT		= FlexCat
 CHEADERS	= 
 CC		= sc
 CFLAGS		= optimize nostackcheck nochkabort debug=s NOWVRET \
@@ -72,7 +73,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 $(CATCOMPHEADER) : Exchange.cd
 	@printf '\033[32mMake Catcomp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$@
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 #####################################################################
 
