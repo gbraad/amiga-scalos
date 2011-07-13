@@ -112,39 +112,39 @@ static BOOL RemovePatches(const struct PatchEntry *PatchList);
 static const struct PatchEntry EmulationPatches[] =
 	{
 #ifdef TEST_OPENWINDOWTAGLIST
-	{ (struct Library **) &IntuitionBase, 39,	LVOOpenWindowTagList,	AROS_SLIB_ENTRY(sca_OpenWindowTagList, iBase),	(APTR) &OldOpenWindowTagList },
+	{ (struct Library **) &IntuitionBase, 39,	LVOOpenWindowTagList,	AROS_SLIB_ENTRY(sca_OpenWindowTagList, iBase, 0),	(APTR) &OldOpenWindowTagList },
 #endif /* TEST_OPENWINDOWTAGLIST */
-	{ (struct Library **) &IntuitionBase, 39,	LVOCloseWorkBench,	AROS_SLIB_ENTRY(sca_CloseWorkBench, iBase),	(APTR) &OldCloseWB },
-	{ (struct Library **) &IntuitionBase, 39,	LVOOpenWorkBench,	AROS_SLIB_ENTRY(sca_OpenWorkBench, iBase),	(APTR) &OldOpenWB },
-	{ (struct Library **) &IntuitionBase, 39,	LVOOpenScreenTagList,	AROS_SLIB_ENTRY(sca_OpenScreenTagList, iBase),	(APTR) &OldOpenScreenTagList },
-	{ (struct Library **) &WorkbenchBase, 39,	LVOAddAppIconA,		AROS_SLIB_ENTRY(sca_AddAppIconA, wbBase),	(APTR) &OldAddAppIconA },
-	{ (struct Library **) &WorkbenchBase, 39,	LVORemoveAppIcon,	AROS_SLIB_ENTRY(sca_RemoveAppIcon, wbBase),	(APTR) &OldRemoveAppIcon },
-	{ (struct Library **) &WorkbenchBase, 39,	LVOAddAppWindowA,	AROS_SLIB_ENTRY(sca_AddAppWindowA, wbBase),	(APTR) &OldAddAppWindowA },
-	{ (struct Library **) &WorkbenchBase, 39,	LVORemoveAppWindow,	AROS_SLIB_ENTRY(sca_RemoveAppWindow, wbBase),	(APTR) &OldRemoveAppWindow },
-	{ (struct Library **) &WorkbenchBase, 39,	LVOAddAppMenuItemA,	AROS_SLIB_ENTRY(sca_AddAppMenuItemA, wbBase),	(APTR) &OldAppAppMenuItemA },
-	{ (struct Library **) &WorkbenchBase, 39,	LVORemoveAppMenuItem,	AROS_SLIB_ENTRY(sca_RemoveAppMenuItem, wbBase),	(APTR) &OldRemoveAppMenuItem },
-//	{ (struct Library **) &WorkbenchBase, 39,	LVOwbPrivate2,		AROS_SLIB_ENTRY(dummy,sca_GetLocString),	(APTR) &OldwbPrivate2 },
-	{ NULL, 			      0,	0, 			NULL, 						NULL },
+	{ (struct Library **) &IntuitionBase, 39,	LVOCloseWorkBench,	AROS_SLIB_ENTRY(sca_CloseWorkBench, iBase, 0),		(APTR) &OldCloseWB },
+	{ (struct Library **) &IntuitionBase, 39,	LVOOpenWorkBench,	AROS_SLIB_ENTRY(sca_OpenWorkBench, iBase, 0),		(APTR) &OldOpenWB },
+	{ (struct Library **) &IntuitionBase, 39,	LVOOpenScreenTagList,	AROS_SLIB_ENTRY(sca_OpenScreenTagList, iBase, 0),	(APTR) &OldOpenScreenTagList },
+	{ (struct Library **) &WorkbenchBase, 39,	LVOAddAppIconA,		AROS_SLIB_ENTRY(sca_AddAppIconA, wbBase, 0),		(APTR) &OldAddAppIconA },
+	{ (struct Library **) &WorkbenchBase, 39,	LVORemoveAppIcon,	AROS_SLIB_ENTRY(sca_RemoveAppIcon, wbBase, 0),		(APTR) &OldRemoveAppIcon },
+	{ (struct Library **) &WorkbenchBase, 39,	LVOAddAppWindowA,	AROS_SLIB_ENTRY(sca_AddAppWindowA, wbBase, 0),		(APTR) &OldAddAppWindowA },
+	{ (struct Library **) &WorkbenchBase, 39,	LVORemoveAppWindow,	AROS_SLIB_ENTRY(sca_RemoveAppWindow, wbBase, 0),	(APTR) &OldRemoveAppWindow },
+	{ (struct Library **) &WorkbenchBase, 39,	LVOAddAppMenuItemA,	AROS_SLIB_ENTRY(sca_AddAppMenuItemA, wbBase, 0),	(APTR) &OldAppAppMenuItemA },
+	{ (struct Library **) &WorkbenchBase, 39,	LVORemoveAppMenuItem,	AROS_SLIB_ENTRY(sca_RemoveAppMenuItem, wbBase, 0),	(APTR) &OldRemoveAppMenuItem },
+//	{ (struct Library **) &WorkbenchBase, 39,	LVOwbPrivate2,		AROS_SLIB_ENTRY(dummy,sca_GetLocString, 0),		(APTR) &OldwbPrivate2 },
+	{ NULL, 			      0,	0, 			NULL, 							NULL },
 	};
 static const struct PatchEntry StandardPatches[] =
 	{
-	{ (struct Library **) &IconBase, 39, 	LVOPutDiskObject,	AROS_SLIB_ENTRY(sca_PutDiskObject, IconBase),		(APTR) &OldPutDiskObject },
-	{ (struct Library **) &IconBase, 39, 	LVODeleteDiskObject,	AROS_SLIB_ENTRY(sca_DeleteDiskObject, IconBase),	(APTR) &OldDeleteDiskObject },
-	{ (struct Library **) &IconBase, 44, 	LVOPutIconTagList,	AROS_SLIB_ENTRY(sca_PutIconTagList, IconBase),		(APTR) &OldPutIconTagList},
+	{ (struct Library **) &IconBase, 39, 	LVOPutDiskObject,	AROS_SLIB_ENTRY(sca_PutDiskObject, IconBase, 0),		(APTR) &OldPutDiskObject },
+	{ (struct Library **) &IconBase, 39, 	LVODeleteDiskObject,	AROS_SLIB_ENTRY(sca_DeleteDiskObject, IconBase, 0),		(APTR) &OldDeleteDiskObject },
+	{ (struct Library **) &IconBase, 44, 	LVOPutIconTagList,	AROS_SLIB_ENTRY(sca_PutIconTagList, IconBase, 0),		(APTR) &OldPutIconTagList},
 
-	{ (struct Library **) &DOSBase,	 39,	LVODeleteFile,		AROS_SLIB_ENTRY(sca_DeleteFile, DOSBase),		(APTR) &OldDeleteFile },
-	{ (struct Library **) &DOSBase,	 39,	LVORename,		AROS_SLIB_ENTRY(sca_Rename, DOSBase),			(APTR) &OldRename },
-	{ (struct Library **) &DOSBase,	 39,	LVOCreateDir,		AROS_SLIB_ENTRY(sca_CreateDir, DOSBase),		(APTR) &OldCreateDir },
-	{ (struct Library **) &DOSBase,	 39,	LVOOpen,		AROS_SLIB_ENTRY(sca_Open, DOSBase),			(APTR) &OldOpen },
-	{ (struct Library **) &DOSBase,	 39,	LVOClose,		AROS_SLIB_ENTRY(sca_Close, DOSBase),			(APTR) &OldClose },
-	{ NULL, 			 0, 	0,			NULL,							NULL },
+	{ (struct Library **) &DOSBase,	 39,	LVODeleteFile,		AROS_SLIB_ENTRY(sca_DeleteFile, DOSBase, 0),			(APTR) &OldDeleteFile },
+	{ (struct Library **) &DOSBase,	 39,	LVORename,		AROS_SLIB_ENTRY(sca_Rename, DOSBase, 0),			(APTR) &OldRename },
+	{ (struct Library **) &DOSBase,	 39,	LVOCreateDir,		AROS_SLIB_ENTRY(sca_CreateDir, DOSBase, 0),			(APTR) &OldCreateDir },
+	{ (struct Library **) &DOSBase,	 39,	LVOOpen,		AROS_SLIB_ENTRY(sca_Open, DOSBase, 0),				(APTR) &OldOpen },
+	{ (struct Library **) &DOSBase,	 39,	LVOClose,		AROS_SLIB_ENTRY(sca_Close, DOSBase, 0),				(APTR) &OldClose },
+	{ NULL, 			 0, 	0,			NULL,								NULL },
 	};
 static const struct PatchEntry HardEmulationPatches[] =
 	{
-	{ (struct Library **) &WorkbenchBase, 39, 	LVOUpdateWorkbench,	AROS_SLIB_ENTRY(sca_UpdateWorkbench, wbBase),	(APTR) &OldUpdateWorkbench },
-	{ (struct Library **) &WorkbenchBase, 39, 	LVOSetBackFill,		AROS_SLIB_ENTRY(sca_SetBackFill, wbBase),	(APTR) &OldSetBackFill },
-	{ (struct Library **) &WorkbenchBase, 39, 	LVOWBInfo,		AROS_SLIB_ENTRY(sca_WBInfo, wbBase),		(APTR) &OldWBInfo },
-	{ NULL, 			      0,	0, 			NULL,						NULL },
+	{ (struct Library **) &WorkbenchBase, 39, 	LVOUpdateWorkbench,	AROS_SLIB_ENTRY(sca_UpdateWorkbench, wbBase, 0),	(APTR) &OldUpdateWorkbench },
+	{ (struct Library **) &WorkbenchBase, 39, 	LVOSetBackFill,		AROS_SLIB_ENTRY(sca_SetBackFill, wbBase, 0),		(APTR) &OldSetBackFill },
+	{ (struct Library **) &WorkbenchBase, 39, 	LVOWBInfo,		AROS_SLIB_ENTRY(sca_WBInfo, wbBase, 0),			(APTR) &OldWBInfo },
+	{ NULL, 			      0,	0, 			NULL,							NULL },
 	};
 
 //----------------------------------------------------------------------------

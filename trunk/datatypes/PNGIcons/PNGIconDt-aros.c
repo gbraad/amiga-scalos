@@ -58,11 +58,11 @@ SAVEDS(LONG) ASM Libstart(void)
 
 static APTR functable[] =
 	{
-	PNGIconObject_Openlib,
-	PNGIconObject_Closelib,
-	PNGIconObject_Expungelib,
-	PNGIconObject_Extfunclib,
-	Dummy_ObtainInfoEngine,
+	PNGIconObject_1_Openlib,
+	PNGIconObject_2_Closelib,
+	PNGIconObject_3_Expungelib,
+	PNGIconObject_4_Extfunclib,
+	Dummy_0_ObtainInfoEngine,
 	(APTR) -1
 	};
 
@@ -114,7 +114,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!aroscbase && !InitDatatype(PngDtLibBase))
 		{
-		PNGIconObject_Expungelib(NULL, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
+		PNGIconObject_3_Expungelib(NULL, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
 		PngDtLibBase = NULL;
 		}
 
@@ -140,7 +140,7 @@ static AROS_LH1(struct Library *, Openlib,
 
 	if (!OpenDatatype(PngDtLibBase))
 		{
-		PNGIconObject_Closelib(&PngDtLibBase->nib_ClassLibrary.cl_Lib);
+		PNGIconObject_2_Closelib(&PngDtLibBase->nib_ClassLibrary.cl_Lib);
 		return NULL;
 		}
 
@@ -166,7 +166,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (PngDtLibBase->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return PNGIconObject_Expungelib(NULL, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
+			return PNGIconObject_3_Expungelib(NULL, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
 			}
 		}
 

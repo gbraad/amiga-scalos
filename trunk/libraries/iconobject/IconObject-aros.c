@@ -50,17 +50,17 @@ SAVEDS(LONG) ASM Libstart(void)
 
 static APTR functable[] =
 	{
-	IconObject_Openlib,
-	IconObject_Closelib,
-	IconObject_Expungelib,
-	IconObject_Extfunclib,
-	IconObjectBase_LIBNewIconObject,
-	IconObjectBase_LIBDisposeIconObject,
-	IconObjectBase_LIBGetDefIconObject,
-	IconObjectBase_LIBPutIconObject,
-	IconObjectBase_LIBIsIconName,
-	IconObjectBase_LIBConvert2IconObject,
-	IconObjectBase_LIBConvert2IconObjectA,
+	IconObject_1_Openlib,
+	IconObject_2_Closelib,
+	IconObject_3_Expungelib,
+	IconObject_4_Extfunclib,
+	IconObjectBase_0_LIBNewIconObject,
+	IconObjectBase_0_LIBDisposeIconObject,
+	IconObjectBase_0_LIBGetDefIconObject,
+	IconObjectBase_0_LIBPutIconObject,
+	IconObjectBase_0_LIBIsIconName,
+	IconObjectBase_0_LIBConvert2IconObject,
+	IconObjectBase_0_LIBConvert2IconObjectA,
 	(APTR) -1
 	};
 
@@ -108,7 +108,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!IconObjectInit(IconObjLibBase))
 		{
-		IconObject_Expungelib(NULL, &IconObjLibBase->iob_LibNode);
+		IconObject_3_Expungelib(NULL, &IconObjLibBase->iob_LibNode);
 		IconObjLibBase = NULL;
 		}
 
@@ -131,7 +131,7 @@ static AROS_LH1(struct Library *, Openlib,
 
 	if (!IconObjectOpen(IconObjLibBase))
 		{
-		IconObject_Closelib(&IconObjLibBase->iob_LibNode);
+		IconObject_2_Closelib(&IconObjLibBase->iob_LibNode);
 		return NULL;
 		}
 
@@ -155,7 +155,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (IconObjLibBase->iob_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			return IconObject_Expungelib(NULL, &IconObjLibBase->iob_LibNode);
+			return IconObject_3_Expungelib(NULL, &IconObjLibBase->iob_LibNode);
 			}
 		}
 

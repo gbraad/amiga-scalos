@@ -53,20 +53,20 @@ SAVEDS(LONG) ASM Libstart(void)
 
 static APTR functable[] =
 	{
-	Preferences_Openlib,
-	Preferences_Closelib,
-	Preferences_Expungelib,
-	Preferences_Extfunclib,
-	PreferencesBase_LIBAllocPrefsHandle,
-	PreferencesBase_LIBFreePrefsHandle,
-	PreferencesBase_LIBSetPreferences,
-	PreferencesBase_LIBGetPreferences,
-	PreferencesBase_LIBReadPrefsHandle,
-	PreferencesBase_LIBWritePrefsHandle,
-	PreferencesBase_LIBFindPreferences,
-	PreferencesBase_LIBSetEntry,
-	PreferencesBase_LIBGetEntry,
-	PreferencesBase_LIBRemEntry,
+	Preferences_1_Openlib,
+	Preferences_2_Closelib,
+	Preferences_3_Expungelib,
+	Preferences_4_Extfunclib,
+	PreferencesBase_0_LIBAllocPrefsHandle,
+	PreferencesBase_0_LIBFreePrefsHandle,
+	PreferencesBase_0_LIBSetPreferences,
+	PreferencesBase_0_LIBGetPreferences,
+	PreferencesBase_0_LIBReadPrefsHandle,
+	PreferencesBase_0_LIBWritePrefsHandle,
+	PreferencesBase_0_LIBFindPreferences,
+	PreferencesBase_0_LIBSetEntry,
+	PreferencesBase_0_LIBGetEntry,
+	PreferencesBase_0_LIBRemEntry,
 	(APTR) -1
 	};
 
@@ -118,7 +118,7 @@ struct Resident ALIGNED romtag =
 
 	if (!PreferencesInit(PrefsLibBase))
 		{
-		Preferences_Expungelib(NULL, &PrefsLibBase->prb_LibNode);
+		Preferences_3_Expungelib(NULL, &PrefsLibBase->prb_LibNode);
 		PrefsLibBase = NULL;
 		}
 
@@ -144,7 +144,7 @@ static AROS_LH1(struct Library *, Openlib,
 		{
 		if (!PreferencesOpen(PrefsLibBase))
 			{
-			Preferences_Closelib(&PrefsLibBase->prb_LibNode);
+			Preferences_2_Closelib(&PrefsLibBase->prb_LibNode);
 			return NULL;
 			}
 
@@ -171,7 +171,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (PrefsLibBase->prb_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			return Preferences_Expungelib(NULL, &PrefsLibBase->prb_LibNode);
+			return Preferences_3_Expungelib(NULL, &PrefsLibBase->prb_LibNode);
 			}
 		}
 

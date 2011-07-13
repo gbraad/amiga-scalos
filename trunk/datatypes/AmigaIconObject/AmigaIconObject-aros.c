@@ -53,11 +53,11 @@ SAVEDS(LONG) ASM Libstart(void)
 
 static APTR functable[] =
 	{
-	AmigaIconObject_Openlib,
-	AmigaIconObject_Closelib,
-	AmigaIconObject_Expungelib,
-	AmigaIconObject_Extfunclib,
-	Dummy_ObtainInfoEngine,
+	AmigaIconObject_1_Openlib,
+	AmigaIconObject_2_Closelib,
+	AmigaIconObject_3_Expungelib,
+	AmigaIconObject_4_Extfunclib,
+	Dummy_0_ObtainInfoEngine,
 	(APTR) -1
 	};
 
@@ -104,7 +104,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!InitDatatype(dtLib))
 		{
-		AmigaIconObject_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+		AmigaIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
 		}
 
@@ -128,7 +128,7 @@ static AROS_LH1(struct Library *, Openlib,
 
 	if (!OpenDatatype(dtLib))
 		{
-		AmigaIconObject_Closelib(&dtLib->nib_ClassLibrary.cl_Lib);
+		AmigaIconObject_2_Closelib(&dtLib->nib_ClassLibrary.cl_Lib);
 		return NULL;
 		}
 
@@ -152,7 +152,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (dtLib->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return AmigaIconObject_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+			return AmigaIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 			}
 		}
 
