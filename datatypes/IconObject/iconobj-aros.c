@@ -47,11 +47,11 @@ static AROS_LD0 (ULONG, Extfunclib,
 
 static APTR functable[] =
 	{
-	IconObj_Openlib,
-	IconObj_Closelib,
-	IconObj_Expungelib,
-	IconObj_Extfunclib,
-	Dummy_ObtainInfoEngine,
+	IconObj_1_Openlib,
+	IconObj_2_Closelib,
+	IconObj_3_Expungelib,
+	IconObj_4_Extfunclib,
+	Dummy_0_ObtainInfoEngine,
 	(APTR) -1
 	};
 
@@ -99,7 +99,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!InitDatatype(dtLib))
 		{
-		IconObj_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+		IconObj_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
 		}
 
@@ -123,7 +123,7 @@ static AROS_LH1(struct Library *, Openlib,
 
 	if (!OpenDatatype(dtLib))
 		{
-		IconObj_Closelib(&dtLib->nib_ClassLibrary.cl_Lib);
+		IconObj_2_Closelib(&dtLib->nib_ClassLibrary.cl_Lib);
 		return NULL;
 		}
 
@@ -147,7 +147,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (dtLib->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return IconObj_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+			return IconObj_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 			}
 		}
 

@@ -49,11 +49,11 @@ static AROS_LD0 (ULONG, Extfunclib,
 
 static APTR functable[] =
 	{
-	GlowIconObject_Openlib,
-	GlowIconObject_Closelib,
-	GlowIconObject_Expungelib,
-	GlowIconObject_Extfunclib,
-	Dummy_ObtainInfoEngine,
+	GlowIconObject_1_Openlib,
+	GlowIconObject_2_Closelib,
+	GlowIconObject_3_Expungelib,
+	GlowIconObject_4_Extfunclib,
+	Dummy_0_ObtainInfoEngine,
 	(APTR) -1
 	};
 
@@ -110,7 +110,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!aroscbase && !InitDatatype(dtLib))
 		{
-		GlowIconObject_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+		GlowIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
 		}
 
@@ -134,7 +134,7 @@ static AROS_LH1(struct Library *, Openlib,
 
 	if (!OpenDatatype(dtLib))
 		{
-		GlowIconObject_Closelib(&dtLib->nib_ClassLibrary.cl_Lib);
+		GlowIconObject_2_Closelib(&dtLib->nib_ClassLibrary.cl_Lib);
 		return NULL;
 		}
 
@@ -158,7 +158,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (dtLib->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return GlowIconObject_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+			return GlowIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 			}
 		}
 

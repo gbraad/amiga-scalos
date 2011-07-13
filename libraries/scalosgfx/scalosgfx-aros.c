@@ -50,38 +50,38 @@ SAVEDS(LONG) ASM Libstart(void)
 
 static APTR functable[] =
 	{
-	ScalosGfx_Openlib,
-	ScalosGfx_Closelib,
-	ScalosGfx_Expungelib,
-	ScalosGfx_Extfunclib,
-	ScalosGfxBase_LIBScalosGfxCreateEmptySAC,
-	ScalosGfxBase_LIBScalosGfxCreateSAC,
-	ScalosGfxBase_LIBScalosGfxFreeSAC,
-	ScalosGfxBase_LIBScalosGfxCreateARGB,
-	ScalosGfxBase_LIBScalosGfxFreeARGB,
-	ScalosGfxBase_LIBScalosGfxARGBSetAlpha,
-	ScalosGfxBase_LIBScalosGfxARGBSetAlphaMask,
-	ScalosGfxBase_LIBScalosGfxCreateARGBFromBitMap,
-	ScalosGfxBase_LIBScalosGfxFillARGBFromBitMap,
-	ScalosGfxBase_LIBScalosGfxWriteARGBToBitMap,
-	ScalosGfxBase_LIBScalosGfxMedianCut,
-	ScalosGfxBase_LIBScalosGfxScaleARGBArray,
-	ScalosGfxBase_LIBScalosGfxScaleBitMap,
-	ScalosGfxBase_LIBScalosGfxCalculateScaleAspect,
-	ScalosGfxBase_LIBScalosGfxBlitARGB,
-	ScalosGfxBase_LIBScalosGfxFillRectARGB,
-	ScalosGfxBase_LIBScalosGfxSetARGB,
-	ScalosGfxBase_LIBScalosGfxNewColorMap,
-	ScalosGfxBase_LIBScalosGfxARGBRectMult,
-	ScalosGfxBase_LIBScalosGfxBlitARGBAlpha,
-	ScalosGfxBase_LIBScalosGfxBlitARGBAlphaTagList,
-	ScalosGfxBase_LIBScalosGfxBlitIcon,
-	ScalosGfxBase_LIBScalosGfxDrawGradient,
-	ScalosGfxBase_LIBScalosGfxDrawGradientRastPort,
-	ScalosGfxBase_LIBScalosGfxDrawLine,
-	ScalosGfxBase_LIBScalosGfxDrawLineRastPort,
-	ScalosGfxBase_LIBScalosGfxDrawEllipse,
-	ScalosGfxBase_LIBScalosGfxDrawEllipseRastPort,
+	ScalosGfx_1_Openlib,
+	ScalosGfx_2_Closelib,
+	ScalosGfx_3_Expungelib,
+	ScalosGfx_4_Extfunclib,
+	ScalosGfxBase_0_LIBScalosGfxCreateEmptySAC,
+	ScalosGfxBase_0_LIBScalosGfxCreateSAC,
+	ScalosGfxBase_0_LIBScalosGfxFreeSAC,
+	ScalosGfxBase_0_LIBScalosGfxCreateARGB,
+	ScalosGfxBase_0_LIBScalosGfxFreeARGB,
+	ScalosGfxBase_0_LIBScalosGfxARGBSetAlpha,
+	ScalosGfxBase_0_LIBScalosGfxARGBSetAlphaMask,
+	ScalosGfxBase_0_LIBScalosGfxCreateARGBFromBitMap,
+	ScalosGfxBase_0_LIBScalosGfxFillARGBFromBitMap,
+	ScalosGfxBase_0_LIBScalosGfxWriteARGBToBitMap,
+	ScalosGfxBase_0_LIBScalosGfxMedianCut,
+	ScalosGfxBase_0_LIBScalosGfxScaleARGBArray,
+	ScalosGfxBase_0_LIBScalosGfxScaleBitMap,
+	ScalosGfxBase_0_LIBScalosGfxCalculateScaleAspect,
+	ScalosGfxBase_0_LIBScalosGfxBlitARGB,
+	ScalosGfxBase_0_LIBScalosGfxFillRectARGB,
+	ScalosGfxBase_0_LIBScalosGfxSetARGB,
+	ScalosGfxBase_0_LIBScalosGfxNewColorMap,
+	ScalosGfxBase_0_LIBScalosGfxARGBRectMult,
+	ScalosGfxBase_0_LIBScalosGfxBlitARGBAlpha,
+	ScalosGfxBase_0_LIBScalosGfxBlitARGBAlphaTagList,
+	ScalosGfxBase_0_LIBScalosGfxBlitIcon,
+	ScalosGfxBase_0_LIBScalosGfxDrawGradient,
+	ScalosGfxBase_0_LIBScalosGfxDrawGradientRastPort,
+	ScalosGfxBase_0_LIBScalosGfxDrawLine,
+	ScalosGfxBase_0_LIBScalosGfxDrawLineRastPort,
+	ScalosGfxBase_0_LIBScalosGfxDrawEllipse,
+	ScalosGfxBase_0_LIBScalosGfxDrawEllipseRastPort,
 	(APTR) -1
 	};
 
@@ -133,7 +133,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!ScalosGfxInit(ScalosGfxLibBase))
 		{
-		ScalosGfx_Expungelib(NULL, &ScalosGfxLibBase->sgb_LibNode);
+		ScalosGfx_3_Expungelib(NULL, &ScalosGfxLibBase->sgb_LibNode);
 		ScalosGfxLibBase = NULL;
 		}
 
@@ -159,7 +159,7 @@ static AROS_LH1(struct Library *, Openlib,
 		{
 		if (!ScalosGfxOpen(ScalosGfxLibBase))
 			{
-			ScalosGfx_Closelib(&ScalosGfxLibBase->sgb_LibNode);
+			ScalosGfx_2_Closelib(&ScalosGfxLibBase->sgb_LibNode);
 			return NULL;
 			}
 
@@ -186,7 +186,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (ScalosGfxLibBase->sgb_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			return ScalosGfx_Expungelib(NULL, &ScalosGfxLibBase->sgb_LibNode);
+			return ScalosGfx_3_Expungelib(NULL, &ScalosGfxLibBase->sgb_LibNode);
 			}
 		}
 
