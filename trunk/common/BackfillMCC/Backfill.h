@@ -28,6 +28,14 @@ struct SetBackFillMsg
 extern struct MUI_CustomClass *BackfillClass;
 extern struct MUI_CustomClass *BitMapPicClass;
 
+#ifdef __AROS__
+#define BackfillObject BOOPSIOBJMACRO_START(BackfillClass->mcc_Class)
+#define BitMapPicObject BOOPSIOBJMACRO_START(BitMapPicClass->mcc_Class)
+#else
+#define BackfillObject NewObject(BackfillClass->mcc_Class, 0
+#define BitMapPicObject NewObject(BitMapPicClass->mcc_Class, 0
+#endif
+
 //----------------------------------------------------------------------------
 
 struct MUI_CustomClass *InitBackfillClass(void);
