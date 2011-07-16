@@ -42,7 +42,7 @@ ifeq ($(MACHINE), i386-aros)
 
 INCLUDES	+= 	-DMUI_OBSOLETE
 
-LFLAGS	+=	-lmui -larossupport
+LFLAGS	+=	-lmui -larossupport -lasl -lgraphics
 
 else
 

@@ -45,7 +45,7 @@ ifeq ($(MACHINE), i386-aros)
 
 INCLUDES	+=      -I$(ICONOBJMCC_DIR) \
 
-LFLAGS	+=	-lmui
+LFLAGS	+=	-lmui -lutility
 
 
 else
