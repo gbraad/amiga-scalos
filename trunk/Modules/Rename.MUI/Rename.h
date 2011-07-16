@@ -22,4 +22,10 @@
 extern int kprintf(CONST_STRPTR, ...);
 extern int KPrintF(CONST_STRPTR, ...);
 
+struct Rename_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+};
+
 #endif	/* RENAME_H */

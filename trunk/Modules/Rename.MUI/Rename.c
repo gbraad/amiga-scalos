@@ -12,7 +12,7 @@
 #include <intuition/classusr.h>
 #include <libraries/mui.h>
 #include <mui/BetterString_mcc.h>
-#include <mui/textinput_mcc.h>
+#include <mui/TextInput_mcc.h>
 #include <workbench/startup.h>
 #include <scalos/scalos.h>
 #include <scalos/undo.h>
@@ -37,9 +37,9 @@
 
 #include "Rename.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	Rename_NUMBERS
+#define	Rename_BLOCK
+#define	Rename_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -52,7 +52,9 @@
 #define	Application_Return_Ok	1001
 #define	Application_Return_Skip	1002
 
+#ifndef __AROS__
 #define	BNULL		((BPTR) NULL)
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -479,55 +481,82 @@ static BOOL OpenLibraries(void)
 {
 	MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN-1);
 	if (NULL == MUIMasterBase)
+		{
+		puts("Can't open muimaster.library.");
 		return FALSE;
+		}
 #ifdef __amigaos4__
 	else
 		{
 		IMUIMaster = (struct MUIMasterIFace *)GetInterface((struct Library *)MUIMasterBase, "main", 1, NULL);
-		if (NULL == IMUIMaster)
+			if (NULL == IMUIMaster)
+			{
+			puts("Can't open muimaster interface");
 			return FALSE;
+			}
 		}
 #endif //__amigaos4__
 
 	IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
 	if (NULL == IntuitionBase)
+		{
+		puts("Can't open intuition.library.");
 		return FALSE;
+		}
 #ifdef __amigaos4__
 	else
 		{
 		IIntuition = (struct IntuitionIFace *)GetInterface((struct Library *)IntuitionBase, "main", 1, NULL);
-		if (NULL == IIntuition)
+			if (NULL == IIntuition)
+			{
+			puts("Can't open intuition interface.");
 			return FALSE;
+			}
 		}
 #endif //__amigaos4__
 
 	LocaleBase = (T_LOCALEBASE) OpenLibrary("locale.library", 38);
 	if (NULL == LocaleBase)
+		{
+		puts("Can't open locale.library.");
 		return FALSE;
+		}
 #ifdef __amigaos4__
 	else
 		{
 		ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
-		if (NULL == ILocale)
+			if (NULL == ILocale)
+			{
+			puts("Can't open locale interface.");
 			return FALSE;
+			}
 		}
 #endif //__amigaos4__
 
 #ifndef __amigaos4__
-	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library", 39);
+	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library.", 39);
 	if (NULL == UtilityBase)
+		{
+		puts("Can't open utility.library.");
 		return FALSE;
+		}
 #endif //__amigaos4__
 
 	ScalosBase = (struct ScalosBase *) OpenLibrary(SCALOSNAME, 40);
 	if (NULL == ScalosBase)
+		{
+		puts("Can't open scalos.library.");
 		return FALSE;
+		}
 #ifdef __amigaos4__
 	else
 		{
 		IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
 		if (NULL == IScalos)
+			{
+			puts("Can't open scalos interface.");
 			return FALSE;
+			}
 		}
 #endif //__amigaos4__
 
@@ -566,7 +595,7 @@ static void CloseLibraries(void)
 #endif //__amigaos4__
 	if (LocaleBase)
 		{
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *)LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -896,7 +925,7 @@ void StripTrailingColon(STRPTR Line)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Rename_LocaleInfo li;
 
 	li.li_Catalog = gb_Catalog;
 #ifndef __amigaos4__
@@ -905,7 +934,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetRenameString(&li, MsgId);
 }
 
 /*
@@ -1131,7 +1160,7 @@ static BOOL FindScalosIcon(struct Rectangle *IconNameRect, struct WBArg *Icon)
 					{
 					if (LOCK_SAME == SameLock(Icon->wa_Lock, ws->ws_Lock))
 						{
-						ULONG Left = 0, Top = 0;
+						IPTR Left = 0, Top = 0;
 
 						GetAttr(SCCA_IconWin_InnerLeft, ws->ws_WindowTask->mt_MainObject, &Left);
 						GetAttr(SCCA_IconWin_InnerTop, ws->ws_WindowTask->mt_MainObject, &Top);
