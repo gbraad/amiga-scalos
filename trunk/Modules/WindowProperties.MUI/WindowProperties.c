@@ -3,6 +3,10 @@
 // $Revision$
 
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -22,7 +26,7 @@
 #include <workbench/workbench.h>
 #include <workbench/icon.h>
 #include <intuition/intuition.h>
-#include <intuition/IntuitionBase.h>
+#include <intuition/intuitionbase.h>
 #include <intuition/classusr.h>
 #include <prefs/prefhdr.h>
 #include <prefs/wbpattern.h>
@@ -34,7 +38,7 @@
 
 #include <clib/alib_protos.h>
 
-#include <MUI/NListview_mcc.h>
+#include <mui/NListview_mcc.h>
 
 #include <proto/exec.h>
 #include <proto/dos.h>
@@ -124,6 +128,12 @@ struct PatternListEntry
 	ULONG ple_PatternCount;
 	struct List ple_PatternList;
 	};
+
+#ifdef __AROS__
+#define ThumbnailLifetimeSliderObject BOOPSIOBJMACRO_START(ThumbnailLifetimeSliderClass->mcc_Class)
+#else
+#define ThumbnailLifetimeSliderObject NewObject(ThumbnailLifetimeSliderClass->mcc_Class, 0
+#endif
 
 #define KeyButtonHelp(name,key,HelpText)\
 	TextObject,\
@@ -702,7 +712,7 @@ int main(int argc, char *argv[])
 												MUIA_Text_Contents, GetLocString(MSGID_PATTERNR_DEFAULT),
 												End, //TextObject
 
-											Child, BackfillPatternPreview = NewObject(BackfillClass->mcc_Class, 0,
+											Child, BackfillPatternPreview = BackfillObject,
 												ImageButtonFrame,
 												MUIA_Background, MUII_ButtonBack,
 												ImageButtonFrame,
@@ -862,7 +872,7 @@ int main(int argc, char *argv[])
 											End, //CycleObject
 
 										Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE)),
-										Child, NumericButtonThumbnailsLifetime = NewObject(ThumbnailLifetimeSliderClass->mcc_Class, 0,
+										Child, NumericButtonThumbnailsLifetime = ThumbnailLifetimeSliderObject,
 											MUIA_CycleChain, TRUE,
 											MUIA_Numeric_Min, 0,
 											MUIA_Numeric_Max, 366,
@@ -1175,7 +1185,7 @@ DISPATCHER(ThumbnailLifetimeSlider)
 		else
 			{
 			snprintf(inst->buf, sizeof(inst->buf), MUIX_C "%lu %s",
-				mstr->value,
+				(unsigned long)mstr->value,
 				GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE_DAYS));
 			}
 		d1(KPrintF("%s/%s/%ld: inst=%08lx  buf=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, inst, inst->buf, inst->buf));
@@ -1253,7 +1263,7 @@ static VOID fail(APTR APP_Main, CONST_STRPTR str)
 static void init(void)
 {
 	if (!OpenLibraries())
-		fail(NULL, "Failed to open "MUIMASTER_NAME".");
+		fail(NULL, "Failed to call OpenLibraries.");
 
 	if (LocaleBase)
 		WindowPropertiesCatalog = OpenCatalogA(NULL, "Scalos/WindowProperties.catalog", NULL);
@@ -1293,120 +1303,120 @@ static BOOL OpenLibraries(void)
 {
 	IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
 	if (NULL == IntuitionBase)
-		return FALSE;
+		fail(NULL, "Failed to open intuition.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IIntuition = (struct IntuitionIFace *)GetInterface((struct Library *)IntuitionBase, "main", 1, NULL);
 		if (NULL == IIntuition)
-			return FALSE;
+			return fail(NULL, "Failed to open intuition interface.");
 		}
 #endif /* __amigaos4__ */
 
 	MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN-1);
 	if (NULL == MUIMasterBase)
-		return FALSE;
+		fail(NULL, "Failed to open muimaster.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IMUIMaster = (struct MUIMasterIFace *)GetInterface((struct Library *)MUIMasterBase, "main", 1, NULL);
 		if (NULL == IMUIMaster)
-			return FALSE;
+			fail(NULL, "Failed to open muimaster interface.");
 		}
 #endif /* __amigaos4__ */
 
 	IconBase = OpenLibrary("icon.library", 0);
 	if (NULL == IconBase)
-		return FALSE;
+		fail(NULL, "Failed to open icon.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IIcon = (struct IconIFace *)GetInterface((struct Library *)IconBase, "main", 1, NULL);
 		if (NULL == IIcon)
-			return FALSE;
+			fail(NULL, "Failed to open icon interface.");
 		}
 #endif /* __amigaos4__ */
 
 	ScalosBase = (struct ScalosBase *) OpenLibrary("scalos.library", 40);
 	if (NULL == ScalosBase)
-		return FALSE;
+		fail(NULL, "Failed to open scalos.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
 		if (NULL == IScalos)
-			return FALSE;
+			fail(NULL, "Failed to open scalos interface.");
 		}
 #endif /* __amigaos4__ */
 
 	IFFParseBase = OpenLibrary("iffparse.library", 36);
 	if (NULL == IFFParseBase)
-		return FALSE;
+		fail(NULL, "Failed to open iffparse.library.");
 #ifdef __amigaos4__
 	IIFFParse = (struct IFFParseIFace *) GetInterface((struct Library *) IFFParseBase, "main", 1, NULL);
 	if (NULL == IIFFParse)
-		return FALSE;
+		fail(NULL, "Failed to open iffparse interface.");
 #endif /* __amigaos4__ */
 
 	PreferencesBase = OpenLibrary("preferences.library", 39);
 	if (NULL == PreferencesBase)
-		return FALSE;
+		fail(NULL, "Failed to open preferences.");
 #ifdef __amigaos4__
 	else
 		{
 		IPreferences = (struct PreferencesIFace *)GetInterface((struct Library *)PreferencesBase, "main", 1, NULL);
 		if (NULL == IPreferences)
-			return FALSE;
+			fail(NULL, "Failed to open preferences interface.");
 		}
 #endif /* __amigaos4__ */
 
 	IconobjectBase = OpenLibrary("iconobject.library", 0);
 	if (NULL == IconobjectBase)
-		return FALSE;
+		fail(NULL, "Failed to open iconobject.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IIconobject = (struct IconobjectIFace *)GetInterface((struct Library *)IconobjectBase, "main", 1, NULL);
 		if (NULL == IIconobject)
-			return FALSE;
+			fail(NULL, "Failed to open iconobject interface.");
 		}
 #endif /* __amigaos4__ */
 
 	GfxBase = (struct GfxBase *) OpenLibrary("graphics.library", 39);
 	if (NULL == GfxBase)
-		return FALSE;
+		fail(NULL, "Failed to open graphics.library.");
 #ifdef __amigaos4__
 	IGraphics = (struct GraphicsIFace *) GetInterface((struct Library *) GfxBase, "main", 1, NULL);
 	if (NULL == IGraphics)
-		return FALSE;
+		fail(NULL, "Failed to open graphics interface.");
 #endif /* __amigaos4__ */
 
 	ScalosGfxBase = (struct ScalosGfxBase *) OpenLibrary(SCALOSGFXNAME, 41);
 	if (NULL == ScalosGfxBase)
-		return FALSE;
+		fail(NULL, "Failed to open scalosgfx.library.");
 #ifdef __amigaos4__
 	IScalosGfx = (struct ScalosGfxIFace *) GetInterface((struct Library *) ScalosGfxBase, "main", 1, NULL);
 	if (NULL == IScalosGfx)
-		return FALSE;
+		fail(NULL, "Failed to open scalosgfx interface.");
 #endif /* __amigaos4__ */
 
 	TimerIORequest = (T_TIMEREQUEST *) CreateIORequest(CreateMsgPort(), sizeof(T_TIMEREQUEST));
 	if (NULL == TimerIORequest)
-		return FALSE;
+		fail(NULL, "Failed to call CreateIORequest.");
 	if (0 != OpenDevice("timer.device", UNIT_VBLANK, &TimerIORequest->tr_node, 0))
 		{
 		// OpenDevice failed
 		DeleteIORequest((struct IORequest *)TimerIORequest);
 		TimerIORequest = NULL;
-		return FALSE;
+		fail(NULL, "Failed to open timer.device.");
 		}
 	TimerBase = (T_TIMERBASE) TimerIORequest->tr_node.io_Device;
 	if (NULL == TimerBase)
-		return FALSE;
+		fail(NULL, "Failed to get TimerBase.");
 #ifdef __amigaos4__
 	ITimer = (struct TimerIFace *)GetInterface((struct Library *)TimerBase, "main", 1, NULL);
 	if (NULL == ITimer)
-		return FALSE;
+		fail(NULL, "Failed to open timer interface.");
 #endif /* __amigaos4__ */
 
 	CyberGfxBase = (APTR) OpenLibrary( "cybergraphics.library", 40);
@@ -1422,7 +1432,7 @@ static BOOL OpenLibraries(void)
 		{
 		ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
 		if (NULL == ILocale)
-			return FALSE;
+			fail(NULL, "Failed to get locale interface.");
 		}
 #endif /* __amigaos4__ */
 
@@ -1589,7 +1599,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct WindowProperties_LocaleInfo li;
 
 	li.li_Catalog = WindowPropertiesCatalog;	
 #ifndef __amigaos4__
@@ -1598,7 +1608,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif /* __amigaos4__ */
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetWindowPropertiesString(&li, MsgId);
 }
 
 static void TranslateStringArray(STRPTR *stringArray)
@@ -1619,7 +1629,7 @@ static SAVEDS(APTR) INTERRUPT OpenAboutMUIFunc(struct Hook *hook, Object *o, Msg
 		WIN_AboutMUI = MUI_NewObject(MUIC_Aboutmui,
 			MUIA_Window_RefWindow, WIN_Main,
 			MUIA_Aboutmui_Application, APP_Main,
-			End;
+			TAG_END);
 		}
 
 	if (WIN_AboutMUI)
@@ -1691,7 +1701,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 			char ThumbnailLifetimeString[20];
 
 			snprintf(ThumbnailLifetimeString, sizeof(ThumbnailLifetimeString),
-				"%ld", ThumbnailLifetime);
+				"%ld", (long)ThumbnailLifetime);
 			SetToolType(IconObj, "SCALOS_THUMBNAIL_LIFETIME", ThumbnailLifetimeString);
 			}
 		else
@@ -1707,7 +1717,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 				char PatternNumberString[20];
 
 				snprintf(PatternNumberString, sizeof(PatternNumberString),
-					"%ld", NewPatternNumber);
+					"%ld", (long)NewPatternNumber);
 				SetToolType(IconObj, "SCALOS_PATTERNNO", PatternNumberString);
 				}
 			else
@@ -1762,7 +1772,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 					TAG_END);
 				}
 			}
-                
+
 		get(CycleCheckOverlap, MUIA_Cycle_Active, &NewCheckOverlap);
 		if (NewCheckOverlap != CheckOverlap)
 			{
@@ -1775,7 +1785,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 				{
 				char CheckOverlapString[10];
 
-				snprintf(CheckOverlapString, sizeof(CheckOverlapString), "%ld", NewCheckOverlap);
+				snprintf(CheckOverlapString, sizeof(CheckOverlapString), "%ld", (long)NewCheckOverlap);
 				SetToolType(IconObj, "SCALOS_CHECKOVERLAP", CheckOverlapString);
 				}
 
@@ -1800,7 +1810,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 
 			get(SliderTransparencyActiveWindow, MUIA_Numeric_Value, &ActiveWindowTransparency);
 
-			snprintf(TransparencyString, sizeof(TransparencyString), "%ld", ActiveWindowTransparency);
+			snprintf(TransparencyString, sizeof(TransparencyString), "%ld", (long)ActiveWindowTransparency);
 			SetToolType(IconObj, "SCALOS_ACTIVETRANSPARENCY", TransparencyString);
 
 			SetAttrs(ws->ws_WindowTask->mt_MainObject,
@@ -1823,7 +1833,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 
 			get(SliderTransparencyInactiveWindow, MUIA_Numeric_Value, &InactiveWindowTransparency);
 
-			snprintf(TransparencyString, sizeof(TransparencyString), "%ld", InactiveWindowTransparency);
+			snprintf(TransparencyString, sizeof(TransparencyString), "%ld", (long)InactiveWindowTransparency);
 			SetToolType(IconObj, "SCALOS_INACTIVETRANSPARENCY", TransparencyString);
 
 			SetAttrs(ws->ws_WindowTask->mt_MainObject,
@@ -1846,7 +1856,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 
 			get(SliderNominalIconSize, MUIA_Numeric_Value, &IconScaleFactor);
 
-			snprintf(IconSizeString, sizeof(IconSizeString), "%ld", IconScaleFactor);
+			snprintf(IconSizeString, sizeof(IconSizeString), "%ld", (long)IconScaleFactor);
 			SetToolType(IconObj, "SCALOS_ICONSCALEFACTOR", IconSizeString);
 
 			SetAttrs(ws->ws_WindowTask->mt_MainObject,
@@ -1870,7 +1880,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 			GetIconSizeConstraints(&IconSizeConstraints);
 
 			snprintf(IconSizeConstraintsString, sizeof(IconSizeConstraintsString), "%ld,%ld",
-				(LONG) IconSizeConstraints.MinX, (LONG) IconSizeConstraints.MaxX);
+				(long) IconSizeConstraints.MinX, (long) IconSizeConstraints.MaxX);
 			SetToolType(IconObj, "SCALOS_ICONSIZECONSTRAINTS", IconSizeConstraintsString);
 
 			SetAttrs(ws->ws_WindowTask->mt_MainObject,
@@ -1887,7 +1897,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 			CurrentDir(dirLock);
 
 			GetAttr(IDTA_ToolTypes, IconObj, (APTR) &NewToolTypeArray);
-			get(IconObj, DTA_Name, (APTR)&iconName);
+			get(IconObj, DTA_Name, &iconName);
 
 			DoMethod(ws->ws_WindowTask->mt_MainObject,
 				SCCM_IconWin_AddUndoEvent,
@@ -2390,7 +2400,7 @@ static SAVEDS(ULONG) INTERRUPT PatternListDisplayHookFunc(struct Hook *hook, Obj
 				ped != (const struct PatternEntryDef *) &scp->ple_PatternList.lh_Tail;
 				ped = (const struct PatternEntryDef *) ped->ped_Node.ln_Succ)
 				{
-				sprintf(lp, "\33o[%ld]", ped->ped_ThumbnailImageNr);
+				sprintf(lp, "\33o[%ld]", (unsigned long)ped->ped_ThumbnailImageNr);
 				lp += strlen(lp);
 
 				d1(KPrintF("%s/%s/%ld: lp=<%s>  ord=%ld  scp=%08lx  ImageObj=%08lx\n", \
@@ -2529,11 +2539,11 @@ static Object *CreateEmptyThumbnailImage(void)
 		BitMapObj = BitmapObject,
 			MUIA_Bitmap_Width, ThumbnailWidth,
 			MUIA_Bitmap_Height, ThumbnailHeight,
-			MUIA_Bitmap_Bitmap, bm,
+			MUIA_Bitmap_Bitmap, (IPTR)bm,
 			MUIA_Bitmap_Transparent, 0,
 			MUIA_Bitmap_UseFriend, TRUE,
 			MUIA_Bitmap_Precision, PRECISION_ICON,
-			MUIA_Bitmap_SourceColors, ThumbnailImageColors,
+			MUIA_Bitmap_SourceColors, (IPTR)ThumbnailImageColors,
 			End;
 
 		d1(kprintf("%s/%s/%ld: BitMapObj=%08lx\n", __FILE__, __FUNC__, __LINE__, BitMapObj));
@@ -2587,8 +2597,8 @@ static LONG ReadPatternPrefsFile(CONST_STRPTR Filename, BOOL Quiet)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			{
 			Result = IoErr();
 			break;
@@ -2738,7 +2748,7 @@ static LONG ReadPatternPrefsFile(CONST_STRPTR Filename, BOOL Quiet)
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -3013,13 +3023,13 @@ static void CreateThumbnailImage(struct PatternEntryDef *ped)
 
 			if (CyberGfxBase && ScreenDepth > 8)
 				{
-				ped->ped_MUI_ImageObject = ped->ped_MUI_AllocatedImageObject = NewObject(BitMapPicClass->mcc_Class, 0,
-					MUIA_ScaBitMappic_BitMap, ped->ped_SAC->sac_BitMap,
-					MUIA_ScaBitMappic_ColorTable, ped->ped_SAC->sac_ColorTable,
+				ped->ped_MUI_ImageObject = ped->ped_MUI_AllocatedImageObject = BitMapPicObject,
+					MUIA_ScaBitMappic_BitMap, (IPTR)ped->ped_SAC->sac_BitMap,
+					MUIA_ScaBitMappic_ColorTable, (IPTR)ped->ped_SAC->sac_ColorTable,
 					MUIA_ScaBitMappic_Width, ped->ped_SAC->sac_Width,
 					MUIA_ScaBitMappic_Height, ped->ped_SAC->sac_Height,
-					MUIA_ScaBitMappic_Screen, WBScreen,
-					MUIA_ScaBitmappic_BitMapArray, BitMapArray,
+					MUIA_ScaBitMappic_Screen, (IPTR)WBScreen,
+					MUIA_ScaBitmappic_BitMapArray, (IPTR)BitMapArray,
 					End;
 				}
 			else
@@ -3027,8 +3037,8 @@ static void CreateThumbnailImage(struct PatternEntryDef *ped)
 				ped->ped_MUI_ImageObject = ped->ped_MUI_AllocatedImageObject = BitmapObject,
 					MUIA_Bitmap_Width, ped->ped_SAC->sac_Width,
 					MUIA_Bitmap_Height, ped->ped_SAC->sac_Height,
-					MUIA_Bitmap_Bitmap, ped->ped_SAC->sac_BitMap,
-					MUIA_Bitmap_SourceColors, ped->ped_SAC->sac_ColorTable,
+					MUIA_Bitmap_Bitmap, (IPTR)ped->ped_SAC->sac_BitMap,
+					MUIA_Bitmap_SourceColors, (IPTR)ped->ped_SAC->sac_ColorTable,
 					MUIA_Bitmap_UseFriend, TRUE,
 					MUIA_Bitmap_Precision, PRECISION_ICON,
 					End;
@@ -3106,7 +3116,7 @@ static void SelectPattern(ULONG PatternNumber)
 		}
 
 	if (PatternNumber)
-		snprintf(buffer, sizeof(buffer), "%lu", PatternNumber);
+		snprintf(buffer, sizeof(buffer), "%lu", (unsigned long)PatternNumber);
 	else
 		stccpy(buffer, GetLocString(MSGID_PATTERNR_DEFAULT), sizeof(buffer));
 	set(TextPatternNumber, MUIA_Text_Contents, buffer);

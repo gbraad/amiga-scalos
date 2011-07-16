@@ -37,6 +37,14 @@ enum IconSizesMax
 
 //--------------------------------------------------------------------
 
+struct  WindowProperties_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+};
+
+//--------------------------------------------------------------------
+
 #define	debugLock_d1(LockName) ;
 #define	debugLock_d2(LockName) \
 	{\
