@@ -53,4 +53,12 @@ int vsnprintf(char *, size_t, const char *, va_list ap);
 
 //----------------------------------------------------------------------------
 
+struct Find_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+};
+
+//----------------------------------------------------------------------------
+
 #endif	/* FIND_MODULE_H */

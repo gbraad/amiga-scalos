@@ -38,6 +38,17 @@ LFLAGS	+=	-lauto
 
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+INCLUDES	+=      -I$(ICONOBJMCC_DIR) \
+
+LFLAGS	+=	-lmui -lutility
+
+
+else
 
 
 ###############################################################################
@@ -47,4 +58,4 @@ LFLAGS	+=	#
 
 endif
 endif
-
+endif

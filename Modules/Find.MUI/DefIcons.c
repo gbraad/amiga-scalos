@@ -34,8 +34,8 @@
 
 #include <clib/alib_protos.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/NListtree_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 #include <defs.h>
 
 #include <stdlib.h>
@@ -54,7 +54,9 @@
 #define IOBUFFERLEN		480
 #define NO_TYPE_NODE            ((struct TypeNode *) -1)
 
+#ifndef __AROS__
 #define	BNULL			((BPTR) 0)
+#endif
 
 //----------------------------------------------------------------------------
 

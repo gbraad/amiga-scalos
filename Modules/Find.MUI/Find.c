@@ -2,6 +2,10 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -19,7 +23,7 @@
 #include <libraries/asl.h>
 #include <libraries/mui.h>
 #include <libraries/gadtools.h>
-#include <MUI/NListtree_mcc.h>
+#include <mui/NListtree_mcc.h>
 #include <mui/NListview_mcc.h>
 #include <devices/clipboard.h>
 #include <devices/timer.h>
@@ -49,9 +53,9 @@
 #include "Find.h"
 #include "debug.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	Find_NUMBERS
+#define	Find_BLOCK
+#define	Find_CODE
 #define	Find_NUMBERS
 #define	Find_BLOCK
 #define	Find_CODE
@@ -334,6 +338,19 @@ static struct MUI_CustomClass *myFileTypesNListTreeClass;
 static struct MUI_CustomClass *myPersistentNListClass;
 static struct MUI_CustomClass *myPopObjectClass;
 
+
+#if defined(__AROS__)
+#define FindResultsNListObject		BOOPSIOBJMACRO_START(myFindResultsNListClass->mcc_Class)
+#define FileTypesNListTreeObject	BOOPSIOBJMACRO_START(myFileTypesNListTreeClass->mcc_Class)
+#define PersistentNListObject		BOOPSIOBJMACRO_START(myPersistentNListClass->mcc_Class)
+#define PopObject			BOOPSIOBJMACRO_START(myPopObjectClass->mcc_Class)
+#else
+#define FindResultsNListObject		NewObject(myFindResultsNListClass->mcc_Class, NULL
+#define FileTypesNListTreeObject	NewObject(myFileTypesNListTreeClass->mcc_Class, NULL
+#define PersistentNListObject		NewObject(myPersistentNListClass->mcc_Class, NULL
+#define PopObject			NewObject(myPopObjectClass->mcc_Class, NULL
+#endif
+
 //----------------------------------------------------------------------------
 
 int main(int argc, char *argv[])
@@ -394,7 +411,7 @@ int main(int argc, char *argv[])
 					Child, VGroup,
 						Child, ColGroup(2),
 							Child, Label1(GetLocString(MSGID_POPSTRING_NAME)),
-							Child, PopObjectPattern = NewObject(myPopObjectClass->mcc_Class, 0,
+							Child, PopObjectPattern = PopObject,
 								MUIA_Popstring_Button, MyPopButton(MUII_PopUp),
 								MUIA_Popstring_String, StringFilePattern = StringObject,
 									StringFrame,
@@ -404,7 +421,7 @@ int main(int argc, char *argv[])
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_POPSTRING_NAME_SHORTHELP),
 								MUIA_Popobject_Object, VGroup,
 									Child, NListviewObject,
-										MUIA_NListview_NList, NListPatternHistory = NewObject(myPersistentNListClass->mcc_Class, 0,
+										MUIA_NListview_NList, NListPatternHistory = PersistentNListObject,
 											MUIA_ObjectID, OBJID_NLIST_NAME,
 											MUIA_ContextMenu, ContextMenuPatternPopup,
 											MUIA_NList_Exports, MUIV_NList_Exports_All,
@@ -417,7 +434,7 @@ int main(int argc, char *argv[])
 								End, //PopobjectObject
 
 							Child, Label1(GetLocString(MSGID_POPSTRING_TEXT)),
-							Child, PopObjectContents = NewObject(myPopObjectClass->mcc_Class, 0,
+							Child, PopObjectContents = PopObject,
 								MUIA_Popstring_Button, MyPopButton(MUII_PopUp),
 								MUIA_Popstring_String, StringFileContents = StringObject,
 									StringFrame,
@@ -427,7 +444,7 @@ int main(int argc, char *argv[])
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_POPSTRING_TEXT_SHORTHELP),
 								MUIA_Popobject_Object, VGroup,
 									Child, NListviewObject,
-										MUIA_NListview_NList, NListContentsHistory = NewObject(myPersistentNListClass->mcc_Class, 0,
+										MUIA_NListview_NList, NListContentsHistory = PersistentNListObject,
 											MUIA_ObjectID, OBJID_NLIST_TEXT,
 											MUIA_ContextMenu, ContextMenuContentsPopup,
 											MUIA_NList_Exports, MUIV_NList_Exports_All,
@@ -440,7 +457,7 @@ int main(int argc, char *argv[])
 								End, //PopobjectObject
 
 							Child, Label1(GetLocString(MSGID_POPSTRING_TYPE)),
-							Child, PopObjectFiletypes = NewObject(myPopObjectClass->mcc_Class, 0,
+							Child, PopObjectFiletypes = PopObject,
 								MUIA_Popstring_Button, MyPopButton(MUII_PopUp),
 								MUIA_Popstring_String, StringFileType = StringObject,
 									StringFrame,
@@ -453,7 +470,7 @@ int main(int argc, char *argv[])
 									Child, NListviewObject,
 										MUIA_CycleChain, TRUE,
 										MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SHORTHELP_LISTVIEW_FILETYPES),
-										MUIA_NListview_NList, ListtreeFileTypes = NewObject(myFileTypesNListTreeClass->mcc_Class, 0,
+										MUIA_NListview_NList, ListtreeFileTypes = FileTypesNListTreeObject,
 											MUIA_Background, MUII_ListBack,
 											MUIA_NListtree_DisplayHook, &FileTypesDisplayHook,
 											MUIA_NListtree_ConstructHook, &FileTypesConstructHook,
@@ -542,7 +559,7 @@ int main(int argc, char *argv[])
 						Child, NListviewObject,
 							//MUIA_CycleChain, TRUE,
 							MUIA_NListview_Horiz_ScrollBar, MUIV_NListview_HSB_FullAuto,
-							MUIA_NListview_NList, NListResults = NewObject(myFindResultsNListClass->mcc_Class, 0,
+							MUIA_NListview_NList, NListResults = FindResultsNListObject,
 								MUIA_CycleChain, TRUE,
 								MUIA_NList_Format, "BAR,BAR,",
 								MUIA_NList_ConstructHook2, &ResultsConstructHook,
@@ -1038,7 +1055,7 @@ DISPATCHER_END
 static void init(void)
 {
 	if (!OpenLibraries())
-		fail(NULL, "Failed to open "MUIMASTER_NAME".");
+		fail(NULL, "Failed to call OpenLibraries");
 
 	if (LocaleBase)
 		FindCatalog = OpenCatalogA(NULL, "Scalos/Find.catalog", NULL);
@@ -1066,37 +1083,37 @@ static BOOL OpenLibraries(void)
 {
 	IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library", 39);
 	if (NULL == IntuitionBase)
-		return FALSE;
+		fail(NULL, "Failed to open intuition.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IIntuition = (struct IntuitionIFace *)GetInterface((struct Library *)IntuitionBase, "main", 1, NULL);
 		if (NULL == IIntuition)
-			return FALSE;
+			fail(NULL, "Failed to open intuition interface.");
 		}
 #endif
 
 	MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN-1);
 	if (NULL == MUIMasterBase)
-		return FALSE;
+		fail(NULL, "Failed to open muimaster.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IMUIMaster = (struct MUIMasterIFace *)GetInterface((struct Library *)MUIMasterBase, "main", 1, NULL);
 		if (NULL == IMUIMaster)
-			return FALSE;
+			fail(NULL, "Failed to open muimaster interface.");
 		}
 #endif
 
 	ScalosBase = (struct ScalosBase *) OpenLibrary("scalos.library", 40);
 	if (NULL == ScalosBase)
-		return FALSE;
+		fail(NULL, "Failed to open scalos.library.");
 #ifdef __amigaos4__
 	else
 		{
 		IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
 		if (NULL == IScalos)
-			return FALSE;
+			fail(NULL, "Failed to open scalos interface.");
 		}
 #endif
 
@@ -1106,23 +1123,23 @@ static BOOL OpenLibraries(void)
 		{
 		ILocale = (struct LocaleIFace *)GetInterface((struct Library *)LocaleBase, "main", 1, NULL);
 		if (NULL == ILocale)
-			return FALSE;
+			fail(NULL, "Failed to open locale interface.");
 		}
 #endif
 
 	TimerPort = CreateMsgPort();
 	TimerIO = (T_TIMEREQUEST *)CreateIORequest(TimerPort, sizeof(T_TIMEREQUEST));
 	if (NULL == TimerIO)
-		return FALSE;
+		fail(NULL, "Failed to call CreateIORequest.");
 
 	OpenDevice("timer.device", UNIT_VBLANK, &TimerIO->tr_node, 0);
 	TimerBase = (T_TIMERBASE) TimerIO->tr_node.io_Device;
 	if (NULL == TimerBase)
-		return FALSE;
+		fail(NULL, "Failed to open timer.device.");
 #ifdef __amigaos4__
 	ITimer = (struct TimerIFace *)GetInterface((struct Library *)TimerBase, "main", 1, NULL);
 	if (NULL == ITimer)
-		return FALSE;
+		fail(NULL, "Failed to open timer interface.");
 #endif
 
 	return TRUE;
@@ -1207,7 +1224,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Find_LocaleInfo li;
 
 	li.li_Catalog = FindCatalog;  
 #ifndef __amigaos4__
@@ -1216,7 +1233,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetFindString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------
@@ -1257,7 +1274,7 @@ static SAVEDS(APTR) INTERRUPT OpenAboutMUIFunc(struct Hook *hook, Object *o, Msg
 		WIN_AboutMUI = MUI_NewObject(MUIC_Aboutmui,
 			MUIA_Window_RefWindow, WIN_Main,
 			MUIA_Aboutmui_Application, APP_Main,
-			End;
+			TAG_DONE);
 		}
 
 	if (WIN_AboutMUI)
