@@ -2,6 +2,9 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -219,7 +222,7 @@ static ULONG BackFillDraw(Class *cl, Object *o, Msg msg)
 			{
 			struct BitMap *bm = NULL;
 
-			get(inst->bfi_BitMapObject, MUIA_Bitmap_RemappedBitmap, (APTR) &bm);
+			get(inst->bfi_BitMapObject, MUIA_Bitmap_RemappedBitmap, &bm);
 
 			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: BitMapObject=%08lx  BitMap=%08lx\n", \
 				__LINE__, inst->bfi_BitMapObject, inst->bfi_BitMap));
@@ -286,8 +289,8 @@ static void CloneBitMapObject(Class *cl, Object *o, Object *NewBitMapObj)
 
 			get(NewBitMapObj, MUIA_Bitmap_Width, &Width);
 			get(NewBitMapObj, MUIA_Bitmap_Height, &Height);
-			get(NewBitMapObj, MUIA_Bitmap_Bitmap, (APTR) &NewBitMap);
-			get(NewBitMapObj, MUIA_Bitmap_SourceColors, (APTR) &SourceColors);
+			get(NewBitMapObj, MUIA_Bitmap_Bitmap, &NewBitMap);
+			get(NewBitMapObj, MUIA_Bitmap_SourceColors, &SourceColors);
 
 			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: BitmapObject BitMap=%08lx  SourceColors=%08lx\n", \
 				__LINE__, NewBitMap, SourceColors));
@@ -316,14 +319,14 @@ static void CloneBitMapObject(Class *cl, Object *o, Object *NewBitMapObj)
 
 			inst->bfi_GenericBitMapObject = FALSE;
 
-			get(NewBitMapObj, MUIA_ScaBitMappic_BitMap, (APTR) &bm);
-			get(NewBitMapObj, MUIA_ScaBitMappic_ColorTable, (APTR) &ColorTable);
+			get(NewBitMapObj, MUIA_ScaBitMappic_BitMap, &bm);
+			get(NewBitMapObj, MUIA_ScaBitMappic_ColorTable, &ColorTable);
 			get(NewBitMapObj, MUIA_ScaBitMappic_Width, &Width);
 			get(NewBitMapObj, MUIA_ScaBitMappic_Height, &Height);
-			get(NewBitMapObj, MUIA_ScaBitmappic_BitMapArray, (APTR) &BitMapArray);
-			get(NewBitMapObj, MUIA_ScaBitMappic_Screen, (APTR) &screen);
+			get(NewBitMapObj, MUIA_ScaBitmappic_BitMapArray, &BitMapArray);
+			get(NewBitMapObj, MUIA_ScaBitMappic_Screen, &screen);
 
-			inst->bfi_BitMapObject = NewObject(BitMapPicClass->mcc_Class, 0,
+			inst->bfi_BitMapObject = BitMapPicObject,
 				MUIA_ScaBitMappic_BitMap, bm,
 				MUIA_ScaBitMappic_ColorTable, ColorTable,
 				MUIA_ScaBitMappic_Width, Width,
@@ -377,7 +380,7 @@ static void ForceRelayout(struct IClass *cl, Object *obj)
 	if (muiRenderInfo(obj))
 		{
 		WindowObj = _win(obj);
-		get(WindowObj, MUIA_Window_RootObject, (APTR) &RootObj);
+		get(WindowObj, MUIA_Window_RootObject, &RootObj);
 
 		if (RootObj)
 			{

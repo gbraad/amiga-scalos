@@ -19,6 +19,12 @@ void CleanupBitMappicClass(struct MUI_CustomClass *mcc);
 
 extern struct MUI_CustomClass *DataTypesImageClass;
 
+#ifdef __AROS__
+#define DataTypesImageObject BOOPSIOBJMACRO_START(DataTypesImageClass->mcc_Class)
+#else
+#define DataTypesImageObject NewObject(DataTypesImageClass->mcc_Class, 0
+#endif
+
 /* ------------------------------------------------------------------------- */
 
 #define	MUIA_BITMAPPIC_TAGBASE		0x8042a875
