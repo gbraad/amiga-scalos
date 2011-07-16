@@ -57,7 +57,7 @@ ifeq ($(MACHINE), i386-aros)
 
 INCLUDES	+=
 
-LFLAGS	+=	-lmui
+LFLAGS	+=	-lmui -lutility
 
 
 else

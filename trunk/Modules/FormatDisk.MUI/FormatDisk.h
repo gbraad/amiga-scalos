@@ -177,7 +177,7 @@
 extern int kprintf(CONST_STRPTR, ...);
 extern int KPrintF(CONST_STRPTR, ...);
 
-ULONG mui_getv(APTR, ULONG );
+IPTR mui_getv(APTR, ULONG );
 
 struct FormatDiskMUI_LocaleInfo
 {

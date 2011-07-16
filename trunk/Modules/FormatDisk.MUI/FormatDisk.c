@@ -646,7 +646,7 @@ static void CloseLibraries(void)
 #endif
 	if (LocaleBase)
 		{
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *)LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -755,9 +755,9 @@ static SAVEDS(void) INTERRUPT SelectDeviceHookFunc(struct Hook *hook, Object *o,
 
 //----------------------------------------------------------------------------
 
-ULONG mui_getv(APTR obj, ULONG attr)
+IPTR mui_getv(APTR obj, ULONG attr)
 {
-    ULONG v;
+    IPTR v;
     GetAttr(attr, obj, &v);
     return (v);
 }

@@ -1225,7 +1225,7 @@ static void CloseLibraries(void)
 #endif
 	if (LocaleBase)
 		{
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *)LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -1346,10 +1346,10 @@ static ULONG ReadDeleteModulePrefs(void)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open("ENV:mui/DELETE.MODULE.cfg", MODE_OLDFILE);
+		iff->iff_Stream = (IPTR)Open("ENV:mui/DELETE.MODULE.cfg", MODE_OLDFILE);
 		d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: iff_Stream=%08lx\n", __LINE__, iff->iff_Stream));
 
-		if ((BPTR)NULL == iff->iff_Stream)
+		if (0 == iff->iff_Stream)
 			{
 			Result = IoErr();
 			break;
@@ -1433,7 +1433,7 @@ static ULONG ReadDeleteModulePrefs(void)
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
