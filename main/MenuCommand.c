@@ -1772,7 +1772,7 @@ static void CloneProg(struct internalScaWindowTask *iwt, const struct MenuCmdArg
 
 		DoForAppIcons(AMCLASSICON_Copy);
 
-		if (ArgCount < 2)
+		if (ArgCount < 1)
 			break;
 
 		processArgs.cla_wbArg = wbArgAlloc;

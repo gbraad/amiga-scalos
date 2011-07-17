@@ -695,7 +695,7 @@ static BOOL AppIconStart(struct internalScaWindowTask *iwt, struct ScaIconNode *
 		if (APPTYPE_AppIcon == appo->appo_type
 			&& in->in_Icon == appo->appo_object.appoo_IconObject)
 			{
-			d2(kprintf("%s/%s/%ld: mp_SigTask=%08lx\n", __FILE__, __FUNC__, __LINE__, appo->appo_msgport->mp_SigTask));
+			d1(kprintf("%s/%s/%ld: mp_SigTask=%08lx\n", __FILE__, __FUNC__, __LINE__, appo->appo_msgport->mp_SigTask));
 			if (!CheckTaskState(appo->appo_msgport->mp_SigTask))
 				{
 				ScalosReleaseSemaphore(iwt->iwt_AppListSemaphore);
@@ -1093,7 +1093,7 @@ static BOOL CheckTaskState(struct Task *testTask)
 		struct Task *theTask;
 		BOOL TaskFound = FALSE;
 
-		d2(kprintf("%s/%s/%ld: checking if task is still alife\n", __FILE__, __FUNC__, __LINE__));
+		d1(kprintf("%s/%s/%ld: checking if task is still alife\n", __FILE__, __FUNC__, __LINE__));
 
 		Disable();
 		for (theTask = (struct Task *) SysBase->TaskReady.lh_Head;
@@ -1127,7 +1127,7 @@ static BOOL CheckTaskState(struct Task *testTask)
 			}
 		Enable();
 
-		d2(kprintf("%s/%s/%ld: TaskFound=%ld\n", __FILE__, __FUNC__, __LINE__, TaskFound));
+		d1(kprintf("%s/%s/%ld: TaskFound=%ld\n", __FILE__, __FUNC__, __LINE__, TaskFound));
 
 		if (!TaskFound)
 			{
