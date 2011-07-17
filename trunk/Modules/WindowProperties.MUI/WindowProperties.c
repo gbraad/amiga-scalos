@@ -2204,12 +2204,32 @@ static BOOL ReadScalosPrefs(void)
 
 	ReadPrefsHandle(MainPrefsHandle, (STRPTR) MainPrefsFileName);
 
-	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_ActiveWindowTransparency, &prefsActiveWindowTransparency, sizeof(&prefsActiveWindowTransparency));
-	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_InactiveWindowTransparency, &prefsInactiveWindowTransparency, sizeof(&prefsInactiveWindowTransparency));
-	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconSizeConstraints, &prefIconSizeConstraints, sizeof(prefIconSizeConstraints));
-	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconNominalSize, &prefsIconScaleFactor, sizeof(prefsIconScaleFactor));
+	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_ActiveWindowTransparency, &prefsActiveWindowTransparency, sizeof(&prefsActiveWindowTransparency)))
+		{
+		prefsActiveWindowTransparency = SCA_BE2WORD(prefsActiveWindowTransparency);
+		}
+
+	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_InactiveWindowTransparency, &prefsInactiveWindowTransparency, sizeof(&prefsInactiveWindowTransparency)))
+		{
+		prefsActiveWindowTransparency = SCA_BE2WORD(prefsInactiveWindowTransparency);
+		}
+
+	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconSizeConstraints, &prefIconSizeConstraints, sizeof(prefIconSizeConstraints)))
+		{
+		WORD MinX = SCA_BE2WORD(MinX);
+		WORD MinY = SCA_BE2WORD(MinY);
+		WORD MaxX = SCA_BE2WORD(MaxX);
+		WORD MaxY = SCA_BE2WORD(MaxY);
+		}
+
+	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconNominalSize, &prefsIconScaleFactor, sizeof(prefsIconScaleFactor)))
+		{
+		prefsIconScaleFactor = SCA_BE2WORD(prefsIconScaleFactor);
+		}
 
 	GetPreferences(MainPrefsHandle, ID_MAIN, SCP_LoadDefIconsFirst, &prefDefIconsFirst, sizeof(prefDefIconsFirst));
+	// UBYTE
+
 	prefDefIconPath = GetPrefsConfigString(MainPrefsHandle, SCP_PathsDefIcons, prefDefIconPath);
 
 	if (prefDefIconPath)
@@ -2637,6 +2657,11 @@ static LONG ReadPatternPrefsFile(CONST_STRPTR Filename, BOOL Quiet)
 					Result = IoErr();
 					break;
 					}
+				pDefs.scd_Flags = SCA_BE2WORD(pDefs.scd_Flags);
+				pDefs.scd_WorkbenchPattern = SCA_BE2WORD(pDefs.scd_WorkbenchPattern);
+				pDefs.scd_ScreenPattern = SCA_BE2WORD(pDefs.scd_ScreenPattern);
+				pDefs.scd_WindowPattern = SCA_BE2WORD(pDefs.scd_ScreenPattern);
+				pDefs.scd_TextModePattern = SCA_BE2WORD(pDefs.scd_TextModePattern);
 				}
 			else if (ID_PATT == cn->cn_ID)
 				{
@@ -2652,6 +2677,13 @@ static LONG ReadPatternPrefsFile(CONST_STRPTR Filename, BOOL Quiet)
 					Result = IoErr();
 					break;
 					}
+
+				ped->ped_PatternPrefs.scxp_PatternPrefs.scp_Number = SCA_BE2WORD(ped->ped_PatternPrefs.scxp_PatternPrefs.scp_Number);
+				ped->ped_PatternPrefs.scxp_PatternPrefs.scp_RenderType = SCA_BE2WORD(ped->ped_PatternPrefs.scxp_PatternPrefs.scp_RenderType);
+				ped->ped_PatternPrefs.scxp_PatternPrefs.scp_Flags = SCA_BE2WORD(ped->ped_PatternPrefs.scxp_PatternPrefs.scp_Flags);
+				ped->ped_PatternPrefs.scxp_PatternPrefs.scp_NumColors = SCA_BE2WORD(ped->ped_PatternPrefs.scxp_PatternPrefs.scp_NumColors);
+				ped->ped_PatternPrefs.scxp_PatternPrefs.scp_DitherMode = SCA_BE2WORD(ped->ped_PatternPrefs.scxp_PatternPrefs.scp_DitherMode);
+				ped->ped_PatternPrefs.scxp_PatternPrefs.scp_DitherAmount = SCA_BE2WORD(ped->ped_PatternPrefs.scxp_PatternPrefs.scp_DitherAmount);
 
 				if (AllPatterns[ped->ped_PatternPrefs.scxp_PatternPrefs.scp_Number])
 					{
@@ -2703,7 +2735,7 @@ static LONG ReadPatternPrefsFile(CONST_STRPTR Filename, BOOL Quiet)
 							Result = IoErr();
 							break;
 							}
-
+						NumColors = SCA_BE2WORD(NumColors);
 						d1(KPrintF("%s/%s/%ld: NumColors=%ld\n", __FILE__, __FUNC__, __LINE__, NumColors));
 						Length = NumColors * 3;
 						if (Length != ReadChunkBytes(iff, byteColorTable, Length))
@@ -2797,6 +2829,9 @@ static LONG ReadPrefsBitMap(struct IFFHandle *iff, struct PatternEntryDef *ped, 
 			Result = IoErr();
 			break;
 			}
+
+		spb.spb_Width = SCA_BE2WORD(spb.spb_Width);
+		spb.spb_Height = SCA_BE2WORD(spb.spb_Height);
 
 		sac = ScalosGfxCreateSAC(spb.spb_Width, spb.spb_Height,
 			8, NULL, NULL);
