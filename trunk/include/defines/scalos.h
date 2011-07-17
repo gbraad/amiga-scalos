@@ -1,5 +1,9 @@
 /* Automatically generated header! Do not edit! */
 
+/*******************************************************************************/
+/* Different order of arguments for SCA_WBStart/SCA_WBStartTags manually fixed */
+/*******************************************************************************/
+
 #ifndef _INLINE_SCALOS_LIB_SFD_H
 #define _INLINE_SCALOS_LIB_SFD_H
 
@@ -22,7 +26,7 @@
 #ifndef NO_INLINE_VARARGS
 #define SCA_WBStartTags(___argArray, ___numArgs, ___firstTag, ...) __SCA_WBStartTags_WB(SCALOS_LIB_SFD_BASE_NAME, ___argArray, ___numArgs, ___firstTag, ## __VA_ARGS__)
 #define __SCA_WBStartTags_WB(___base, ___argArray, ___numArgs, ___firstTag, ...) \
-	({IPTR _message[] = { (IPTR) ___firstTag, ## __VA_ARGS__ }; __SCA_WBStart_WB((___base), (___argArray), (___numArgs), (ULONG) _message); })
+	({IPTR _message[] = { (IPTR) ___firstTag, ## __VA_ARGS__ }; __SCA_WBStart_WB((___base), (___argArray), (ULONG) _message, (___numArgs)); })
 #endif /* !NO_INLINE_VARARGS */
 
 #define SCA_SortNodes(___nodelist, ___sortHook, ___sortType) __SCA_SortNodes_WB(SCALOS_LIB_SFD_BASE_NAME, ___nodelist, ___sortHook, ___sortType)
