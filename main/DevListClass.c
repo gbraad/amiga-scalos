@@ -167,7 +167,7 @@ static ULONG DevListClass_New(Class *cl, Object *o, Msg msg)
 		{
 		struct DevListClassInstance *inst = INST_DATA(cl, o);
 
-		d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>  o=%08lx\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle, o));
+		d1(kprintf("%s/%s/%ld: o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
 
 		inst->dlci_DevIconList = NULL;
 		inst->dlci_ReplyPort = CreateMsgPort();
@@ -189,7 +189,7 @@ static ULONG DevListClass_Dispose(Class *cl, Object *o, Msg msg)
 	struct DevListClassInstance *inst = INST_DATA(cl, o);
 	struct DevListEntry *dle;
 
-	d1(kprintf("%s/%s/%ld: iwt=%08lx  <%s>\n", __FILE__, __FUNC__, __LINE__, iwt, iwt->iwt_WinTitle));
+	d1(kprintf("%s/%s/%ld\n", __FILE__, __FUNC__, __LINE__));
 
 	while ((dle = (struct DevListEntry *) RemHead(&inst->dlci_DleList)))
 		{
@@ -360,6 +360,17 @@ static ULONG DevListClass_Filter(Class *cl, Object *o, Msg msg)
 
 static STRPTR AllocCopyBString(BPTR bString)
 {
+#ifdef __AROS__
+	// AROS needs special handling because it uses NULL-terminated
+	// strings on some platforms.
+	CONST_STRPTR Src = AROS_BSTR_ADDR(bString);
+	size_t Len = AROS_BSTR_strlen(Src);
+	STRPTR Name, lp;
+
+	Name = lp = ScalosAlloc(Len + 3);
+	if (NULL == Name)
+		return NULL;
+#else
 	CONST_STRPTR Src = BADDR(bString);
 	size_t Len = *Src;
 	STRPTR Name, lp;
@@ -369,6 +380,7 @@ static STRPTR AllocCopyBString(BPTR bString)
 		return NULL;
 
 	Len = *Src++;
+#endif
 
 	while (Len--)
 		*lp++ = *Src++;
@@ -579,7 +591,7 @@ static void CreateDeviceIcons(struct DevListClassInstance *inst, struct ScaDevic
 		{
 		struct DevListEntry *dle;
 
-		d1(kprintf("%s/%s/%ld: pkt=%08lx  Res1=%08lx\n", __FILE__, __FUNC__, __LINE__, pkt, pkt->sp_Pkt.dp_Res1));
+		d1(kprintf("%s/%s/%ld\n", __FILE__, __FUNC__, __LINE__));
 
 		for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
 			dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
@@ -608,7 +620,7 @@ static void RemoveObsoleteEntries(struct DevListClassInstance *inst)
 {
 	struct DevListEntry *dle, *dleNext;
 
-	d1(kprintf("%s/%s/%ld: pkt=%08lx  Res1=%08lx\n", __FILE__, __FUNC__, __LINE__, pkt, pkt->sp_Pkt.dp_Res1));
+	d1(kprintf("%s/%s/%ld\n", __FILE__, __FUNC__, __LINE__));
 
 	for (dle = (struct DevListEntry *) inst->dlci_DleList.lh_Head;
 		dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
