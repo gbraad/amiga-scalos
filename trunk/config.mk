@@ -54,6 +54,9 @@ CODETYPE	=	PPC
 
 WARNINGS	=	-Wall -Wno-parentheses -Wunused -Wuninitialized -Winline 
 
+ifeq ($(GCCVERSION), 4.4.5)
+	WARNINGS	+=	-Wno-pointer-sign
+endif
 ifeq ($(GCCVERSION), 4.4.4)
 	WARNINGS	+=	-Wno-pointer-sign
 endif
