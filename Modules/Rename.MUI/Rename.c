@@ -12,7 +12,7 @@
 #include <intuition/classusr.h>
 #include <libraries/mui.h>
 #include <mui/BetterString_mcc.h>
-#include <mui/TextInput_mcc.h>
+#include <mui/textinput_mcc.h>
 #include <workbench/startup.h>
 #include <scalos/scalos.h>
 #include <scalos/undo.h>
