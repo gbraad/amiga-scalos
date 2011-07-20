@@ -22,7 +22,7 @@
 
 // Other headers
 #include "Format.h"
-#include "gui.h"
+#include "GUI.h"
 
 extern LONG args[];
 
