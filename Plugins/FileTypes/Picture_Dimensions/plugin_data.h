@@ -27,7 +27,7 @@
 //----------------------------------------------------------------------------
 // code and includes to define the structs and functions used above
 
-#include "PictureDimensions_base.h"
+#include "picturedimensions_base.h"
 
 #endif /* PLUGUN_DATA_H_INCLUDED */
 
