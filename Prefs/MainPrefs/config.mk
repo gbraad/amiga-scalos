@@ -28,6 +28,7 @@ ifeq ($(MACHINE), ppc-morphos)
 
 LFLAGS		+=	#
 
+CFLAGS += -D USE_HYPERLINK_MCC=1
 
 else
 ifeq ($(MACHINE), ppc-amigaos)
