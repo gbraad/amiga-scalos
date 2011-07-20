@@ -31,7 +31,7 @@
 #define	CATCOMP_NUMBERS
 #include STR(SCALOSLOCALE)
 
-#include "gui.h"
+#include "GUI.h"
 
 //-----------------------------------------------------------------------------
 
