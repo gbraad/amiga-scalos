@@ -47,11 +47,6 @@
 #endif
 
 
-#ifdef %b_CODE
-#include <proto/locale.h>
-extern T_LOCALEBASE LocaleBase;
-#endif
-
 #ifdef %b_NUMBERS
 
 #define %i %d
@@ -109,51 +104,64 @@ static const char %b_Block[] =
 
 #ifdef %b_CODE
 
+#ifndef PROTO_LOCALE_H
+#define __NOLIBBASE__
+#define __NOGLOBALIFACE__
+#include <proto/locale.h>
+#endif
+
 #ifndef %b_CODE_EXISTS
  #define %b_CODE_EXISTS
 
- STRPTR Get%bString(struct %b_LocaleInfo *li, LONG stringNum)
- {
- ULONG  *idp;
- ULONG   id;
- UWORD  *lenp;
- UWORD   len;
- STRPTR  builtIn;
-
-     idp = (ULONG *)%b_Block;
-     id = SCA_BE2LONG(*idp);
-
-     while (id != stringNum)
-       {
-       lenp = (UWORD *)((IPTR)idp + 4);
-       len = SCA_BE2WORD(*lenp);
-       
-       idp = (ULONG *)((IPTR)idp + (IPTR)len + 6);
-       id = SCA_BE2LONG(*idp);
-       }
-     builtIn = (STRPTR)((IPTR)idp + 6);
-
-// #define %b_XLocaleBase LocaleBase
-// #define LocaleBase li->li_LocaleBase
-
-#ifdef __amigaos4__
-     if(LocaleBase && li)
-        return(li->li_ILocale->GetCatalogStr(li->li_Catalog, stringNum, builtIn));
+CONST_STRPTR Get%bString(struct %b_LocaleInfo *li, LONG stringNum)
+{
+#ifndef __amigaos4__
+    struct Library     *LocaleBase = li->li_LocaleBase;
 #else
-     if(LocaleBase && li)
-        return(GetCatalogStr(li->li_Catalog, stringNum, builtIn));
+    struct LocaleIFace *ILocale    = li->li_ILocale;
 #endif
 
-// #undef  LocaleBase
-// #define LocaleBase XLocaleBase
-// #undef  %b_XLocaleBase
+    ULONG  *idp;
+    ULONG   id;
+    UWORD  *lenp;
+    UWORD   len;
+    STRPTR  builtIn;
 
-     return(builtIn);
- }
+    idp = (ULONG *)%b_Block;
+    id = SCA_BE2LONG(*idp);
+
+    while (id != stringNum)
+    {
+        lenp = (UWORD *)((IPTR)idp + 4);
+        len = SCA_BE2WORD(*lenp);
+
+        idp = (ULONG *)((IPTR)idp + (IPTR)len + 6);
+        id = SCA_BE2LONG(*idp);
+    }
+    builtIn = (STRPTR)((IPTR)idp + 6);
+
+#ifndef __amigaos4__
+    if (LocaleBase)
+    {
+        return GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+    }
+#else
+    if (ILocale)
+    {
+#ifdef __USE_INLINE__
+        return GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+#else
+        return ILocale->GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+#endif
+    }
+#endif
+
+    return builtIn;
+}
 
 #else
 
- STRPTR Get%bString(struct %b_LocaleInfo *li, LONG stringNum);
+STRPTR Get%bString(struct %b_LocaleInfo *li, LONG stringNum);
 
 #endif /* %b_CODE_EXISTS */
 
