@@ -88,8 +88,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 $(CATCOMPHEADER) : WindowProperties.cd
 	@printf '\033[32mMake Catcomp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$@
-#	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 #############################################################
 
