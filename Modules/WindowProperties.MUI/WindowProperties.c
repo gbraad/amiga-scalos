@@ -1309,7 +1309,7 @@ static BOOL OpenLibraries(void)
 		{
 		IIntuition = (struct IntuitionIFace *)GetInterface((struct Library *)IntuitionBase, "main", 1, NULL);
 		if (NULL == IIntuition)
-			return fail(NULL, "Failed to open intuition interface.");
+			fail(NULL, "Failed to open intuition interface.");
 		}
 #endif /* __amigaos4__ */
 
