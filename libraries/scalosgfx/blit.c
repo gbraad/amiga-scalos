@@ -1297,6 +1297,66 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaHookFunc(struct Hook *hook, Object *
 			}
 		UnLockBitMap(handle);
 		}
+	else
+		{
+		ULONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
+		ULONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
+		BytesPerPixel = 3;
+		BytesPerRow = BytesPerPixel * width;
+		Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
+		if (Addr)
+			{
+			ULONG y;
+			ULONG SrcLeft = baa->baa_SrcLeft + (dhcr->dhcr_OffsetX - baa->baa_DestLeft);
+			ULONG SrcTop  = baa->baa_SrcTop  + (dhcr->dhcr_OffsetY - baa->baa_DestTop);
+			const struct ARGB *Src = baa->baa_Src->argb_ImageData + SrcTop * baa->baa_Src->argb_Width;
+			UBYTE *pPixel = ((UBYTE *) Addr); // + BytesPerRow * dhcr->dhcr_Bounds.MinY;
+
+			//PIXFMT_RGB24
+			for (y = 0; y < height; y++)
+				{
+				ULONG x;
+				UBYTE *pLine = pPixel; // + dhcr->dhcr_Bounds.MinX * BytesPerPixel;
+				const struct ARGB *SrcPtr = Src + SrcLeft;
+
+				for (x = 0; x < width; x++)
+					{
+					ULONG a = (ULONG) SrcPtr->Alpha;
+					ULONG mla;
+
+					switch (a)
+						{
+					case 0:
+					case 1:
+						break;
+					case ALPHA_OPAQUE:
+						pLine[0] = SrcPtr->Red;
+						pLine[1] = SrcPtr->Green;
+						pLine[2] = SrcPtr->Blue;
+						break;
+					default:
+						mla = 257 - a;
+
+						pLine[0] = (a * SrcPtr->Red   + mla * pLine[0])   >> 8;
+						pLine[1] = (a * SrcPtr->Green + mla * pLine[1])   >> 8;
+						pLine[2] = (a * SrcPtr->Blue  + mla * pLine[2])   >> 8;
+						break;
+						}
+
+					pLine += BytesPerPixel;
+					SrcPtr++;
+					}
+
+				pPixel += BytesPerRow;
+				Src += baa->baa_Src->argb_Width;
+				}
+			WritePixelArray(Addr, SrcLeft, SrcTop, BytesPerRow, rp, 
+				dhcr->dhcr_Bounds.MinX, dhcr->dhcr_Bounds.MinY,
+				width, height,
+				RECTFMT_RGB);
+			FreeVec(Addr);
+			}
+		}
 
 	return 0;
 }
@@ -2493,7 +2553,7 @@ void BlitTransparent(struct RastPort *rpBackground, struct RastPort *rpIcon,
 		bt.bt_a	= Trans + 1;
 		bt.bt_mla = 257 - bt.bt_a;
 
-		d1(KPrintF(__FILE__ "/%s/%ld: a=%lu  mla=%lu\n", __FUNC__, __LINE__, bt.btk_a, bt.bt_mla));
+		d1(KPrintF(__FILE__ "/%s/%ld: a=%lu  mla=%lu\n", __FUNC__, __LINE__, bt.bt_a, bt.bt_mla));
 
 		if (ALPHA_OPAQUE != bt.bt_a)
 			{
