@@ -1351,7 +1351,7 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaHookFunc(struct Hook *hook, Object *
 				Src += baa->baa_Src->argb_Width;
 				}
 			WritePixelArray(Addr, SrcLeft, SrcTop, BytesPerRow, rp, 
-				dhcr->dhcr_Bounds.MinX, dhcr->dhcr_Bounds.MinY,
+				baa->baa_DestLeft, baa->baa_DestTop,
 				width, height,
 				RECTFMT_RGB);
 			FreeVec(Addr);
