@@ -7,8 +7,9 @@
 
 struct Scalos_LocaleInfo
 {
-    APTR li_LocaleBase;
-    APTR li_Catalog;
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
 };
 
 CONST_STRPTR      GetLocString(LONG lStrnum);
