@@ -2216,10 +2216,10 @@ static BOOL ReadScalosPrefs(void)
 
 	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconSizeConstraints, &prefIconSizeConstraints, sizeof(prefIconSizeConstraints)))
 		{
-		WORD MinX = SCA_BE2WORD(MinX);
-		WORD MinY = SCA_BE2WORD(MinY);
-		WORD MaxX = SCA_BE2WORD(MaxX);
-		WORD MaxY = SCA_BE2WORD(MaxY);
+		prefIconSizeConstraints.MinX = SCA_BE2WORD(prefIconSizeConstraints.MinX);
+		prefIconSizeConstraints.MinY = SCA_BE2WORD(prefIconSizeConstraints.MinY);
+		prefIconSizeConstraints.MaxX = SCA_BE2WORD(prefIconSizeConstraints.MaxX);
+		prefIconSizeConstraints.MaxY = SCA_BE2WORD(prefIconSizeConstraints.MaxY);
 		}
 
 	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconNominalSize, &prefsIconScaleFactor, sizeof(prefsIconScaleFactor)))
