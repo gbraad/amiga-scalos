@@ -183,6 +183,7 @@ struct FormatDiskMUI_LocaleInfo
 {
 	APTR li_LocaleBase;
 	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
 };
 
 //----------------------------------------------------------------------------
