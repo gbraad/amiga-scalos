@@ -93,8 +93,7 @@ $(OBJDIR)/%.o : %.asm
 
 $(CATCOMPH) : Rename.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$(CATCOMPH) \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$@
-#	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
+	@$(FLEXCAT) $< $@=$(TOPLEVEL)/CatComp_h.sd
 
 $(OBJDIR)/Rename.o : Rename.c Rename.h $(CATCOMPH)
 
