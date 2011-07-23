@@ -135,9 +135,14 @@ static const char %b_Block[] =
 
 // #define %b_XLocaleBase LocaleBase
 // #define LocaleBase li->li_LocaleBase
-    
+
+#ifdef __amigaos4__
+     if(LocaleBase && li)
+        return(li->li_ILocale->GetCatalogStr(li->li_Catalog, stringNum, builtIn));
+#else
      if(LocaleBase && li)
         return(GetCatalogStr(li->li_Catalog, stringNum, builtIn));
+#endif
 
 // #undef  LocaleBase
 // #define LocaleBase XLocaleBase
