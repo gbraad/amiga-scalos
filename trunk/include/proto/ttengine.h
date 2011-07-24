@@ -7,6 +7,9 @@
 
 #ifdef __amigaos4__
 # include <interfaces/ttengine.h>
+#ifdef __USE_INLINE__
+	#include <inline4/ttengine.h>
+#endif
 # ifndef __NOGLOBALIFACE__
    extern struct TTEngineIFace *ITTEngine;
 # endif /* __NOGLOBALIFACE__*/

@@ -86,10 +86,13 @@ struct Catalog *WordsCat      = NULL;
 static struct Locale *DeleteLocale     = NULL;
 
 #ifdef __amigaos4__
+struct IntuitionBase *IntuitionBase = NULL;
+
 struct MUIMasterIFace *IMUIMaster = NULL;
 struct AslIFace *IAsl             = NULL;
 struct ScalosIFace *IScalos       = NULL;
 struct LocaleIFace *ILocale       = NULL;
+struct IntuitionIFace *IIntuition = NULL;
 #endif
 
 // MUI globals
@@ -189,6 +192,12 @@ static struct Hook EnableTrashcanHook = { { NULL, NULL }, HOOKFUNC_DEF(EnableTra
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
 #ifdef __amigaos4__
+	if (IIntuition )
+		DropInterface((struct Interface *)IIntuition  );
+#endif
+	if (IntuitionBase)
+		CloseLibrary((struct Library *) IntuitionBase);
+#ifdef __amigaos4__
 	if(IMUIMaster   )
 		DropInterface((struct Interface *)IMUIMaster  );
 #endif
@@ -252,6 +261,16 @@ static struct Hook EnableTrashcanHook = { { NULL, NULL }, HOOKFUNC_DEF(EnableTra
 	else
 		{
 		IAsl = (struct AslIFace *)GetInterface((struct Library *)AslBase, "main", 1, NULL);
+		}
+#endif
+	if(!(IntuitionBase       = (struct IntuitionBase *) OpenLibrary(IntuitionName , 39)))
+		{
+		ExitMUI(NULL, "Unable to open " IntuitionName ".");
+		}
+#ifdef __amigaos4__
+	else
+		{
+		IIntuition = (struct IntuitionIFace *)GetInterface((struct Library *)IntuitionBase, "main", 1, NULL);
 		}
 #endif
 #ifndef __amigaos4__
