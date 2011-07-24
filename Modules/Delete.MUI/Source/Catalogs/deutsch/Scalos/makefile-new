@@ -25,7 +25,7 @@ all:	$(CATNAME).catalog
 $(CATNAME).catalog : $(CATNAME).ct ../../../$(CATNAME).cd
 
 clean:
-	-$(RM) $(CATNAME).catalog
+	$(RM) -f $(CATNAME).catalog
 
 install:
 	-copy $(CATNAME).catalog Locale:catalogs/$(LANG)/Scalos/ clone

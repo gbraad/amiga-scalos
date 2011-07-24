@@ -25,7 +25,7 @@ all:	$(CATNAME).catalog
 $(CATNAME)MUI.catalog : $(CATNAME).ct ../../../$(CATNAME).cd
 
 clean:
-	-$(RM) $(CATNAME)MUI.catalog
+	$(RM) -f $(CATNAME)MUI.catalog
 
 install:
 	-copy $(CATNAME)MUI.catalog Locale:catalogs/$(LANG)/Scalos/ clone

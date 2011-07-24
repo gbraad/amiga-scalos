@@ -24,7 +24,7 @@ all:	$(CATNAME).catalog
 $(CATNAME).catalog : $(CATNAME).ct ../../../$(CATNAME).cd
 
 clean:
-	-$(RM) -f $(CATNAME).catalog
+	$(RM) -f $(CATNAME).catalog
 
 install:
 	-@mkdir -p Locale:catalogs/$(LANG)/Scalos
