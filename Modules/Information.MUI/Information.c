@@ -2328,7 +2328,7 @@ static SAVEDS(void) INTERRUPT DrawerSizeHookFunc(struct Hook *hook, Object *o, M
 	BlocksCount = 1;
 	Result = RETURN_OK;
 
-	d1(KPrintF(__FILE__ "/%s/%ld: arg=%08lx  wa_Lock=%08lx  wa_Name=<%s> TestLock=<%s>\n", __FUNC__, __LINE__, arg, arg->wa_Lock, arg->wa_Name, TestLock));
+	d1(KPrintF(__FILE__ "/%s/%ld: arg=%08lx  wa_Lock=%08lx  wa_Name=<%s>\n", __FUNC__, __LINE__, arg, arg->wa_Lock, arg->wa_Name));
 
 	GetSysTime(&lastUpdateTime);
 
@@ -4696,7 +4696,7 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 ///
 	BOOL flush = TRUE;
 
-	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: %s ", name, __LINE__);)
+	d1(kprintf("%s/%s/%ld: %s ", __FILE__, __FUNC__,  __LINE__, name));
 
 	while (1)
 		{
@@ -4716,7 +4716,7 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 			if(ver > minver || (ver == minver && rev >= minrev))
 				{
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: v%ld.%ld found through MUIA_Version/Revision\n", __LINE__, ver, rev);)
+				d1(kprintf("%s/%s/%ld: v%ld.%ld found through MUIA_Version/Revision\n", __FILE__, __FUNC__, __LINE__, ver, rev));
 				return TRUE;
 				}
 			}
@@ -4739,7 +4739,7 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 			// a chance to pass this test (i.e. Toolbar.mcc is broken)
 			if (ver > minver || (ver == minver && rev >= minrev))
 				{
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: v%ld.%ld found through OpenLibrary()\n", __LINE__, ver, rev);)
+				d1(kprintf("%s/%s/%ld: v%ld.%ld found through OpenLibrary()\n", __FILE__, __FUNC__, __LINE__, ver, rev));
 				return TRUE;
 				}
 
@@ -4770,7 +4770,7 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 				}
 			else
 				{
-				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: couldn`t find minimum required version.\n", __LINE__);)
+				d1(kprintf("%s/%s/%ld: couldn`t find minimum required version.\n", __FILE__, __FUNC__, __LINE__));
 
 				// We're out of luck - open count is 0, we've tried to flush
 				// and still haven't got the version we want
