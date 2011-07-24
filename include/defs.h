@@ -131,7 +131,11 @@
 	#define T_TIMERBASE	struct Library *
 #else // __USE_BASETYPE__
 	#define T_UTILITYBASE	struct UtilityBase *
+#if defined(__amigaos4__)
+	#define	T_LOCALEBASE	struct Library *
+#else //defined(__amigaos4__)
 	#define	T_LOCALEBASE	struct LocaleBase *
+#endif //defined(__amigaos4__)
 	#define T_REXXSYSBASE   struct RxsLib *
 	#define T_CONSOLEDEVICE	struct Device *
 	#define T_TIMERBASE	struct Device *
