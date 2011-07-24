@@ -1946,6 +1946,71 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaKTHookFunc(struct Hook *hook, Object
 			}
 		UnLockBitMap(handle);
 		}
+	else
+		{
+		ULONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
+		ULONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
+		BytesPerPixel = 3;
+		BytesPerRow = BytesPerPixel * width;
+		Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
+		ULONG T = baa->baa_Transparency;
+
+		if (Addr)
+			{
+			ULONG y;
+			ULONG SrcLeft = baa->baa_SrcLeft + (dhcr->dhcr_OffsetX - baa->baa_DestLeft);
+			ULONG SrcTop  = baa->baa_SrcTop  + (dhcr->dhcr_OffsetY - baa->baa_DestTop);
+			const struct ARGB *Src = baa->baa_Src->argb_ImageData + SrcTop * baa->baa_Src->argb_Width;
+			UBYTE *pPixel = ((UBYTE *) Addr); // + BytesPerRow * dhcr->dhcr_Bounds.MinY;
+
+			for (y = 0; y < height; y++)
+				{
+				ULONG x;
+				UBYTE *pLine = pPixel; // + dhcr->dhcr_Bounds.MinX * BytesPerPixel;
+				const struct ARGB *SrcPtr = Src + SrcLeft;
+				UWORD SrcRed, SrcGreen, SrcBlue;
+
+				for (x = 0; x < width; x++)
+					{
+					ULONG a = ((T * SrcPtr->Alpha) >> 8) + 1;
+					ULONG mla;
+
+					SrcRed   = min(255, SrcPtr->Red   + baa->baa_K->Red);
+					SrcGreen = min(255, SrcPtr->Green + baa->baa_K->Green);
+					SrcBlue  = min(255, SrcPtr->Blue  + baa->baa_K->Blue);
+
+					switch (a)
+						{
+					case 0:
+					case 1:
+						break;
+					case ALPHA_OPAQUE:
+						pLine[0] = SrcRed;
+						pLine[1] = SrcGreen;
+						pLine[2] = SrcBlue;
+						break;
+					default:
+						mla = 257 - a;
+
+						pLine[0] = (a * SrcRed   + mla * pLine[0])   >> 8;
+						pLine[1] = (a * SrcGreen + mla * pLine[1])   >> 8;
+						pLine[2] = (a * SrcBlue  + mla * pLine[2])   >> 8;
+						break;
+						}
+
+					pLine += BytesPerPixel;
+					SrcPtr++;
+					}
+				pPixel += BytesPerRow;
+				Src += baa->baa_Src->argb_Width;
+				}
+			WritePixelArray(Addr, SrcLeft, SrcTop, BytesPerRow, rp, 
+				baa->baa_DestLeft, baa->baa_DestTop,
+				width, height,
+				RECTFMT_RGB);
+			FreeVec(Addr);
+			}
+		}
 
 	return 0;
 }
