@@ -15,13 +15,13 @@ ifeq ($(MACHINE), i386-aros)
 SUBDIRS	=	WindowProperties.MUI \
 		IconProperties.MUI \
 		Information.MUI \
-		# Rename.MUI \
 		NewDrawer.MUI \
 		Execute_Command.MUI \
 		Exchange.MUI \
 		Find.MUI \
 		Delete.MUI \
 		Empty_Trashcan.MUI \
+		# Rename.MUI \
 		# Updater.MUI \
 		# FormatDisk.Gadtools \
 		#
