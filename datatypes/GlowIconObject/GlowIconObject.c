@@ -602,7 +602,7 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 			if (NULL == IconName)
 				break;
 
-			IconFh = GetTagData(DTA_Handle, BNULL, ops->ops_AttrList);
+			IconFh = (BPTR)GetTagData(DTA_Handle, 0, ops->ops_AttrList);
 			d1(KPrintF("%s/%s/%ld: IconFh=%08lx\n", __FILE__, __FUNC__, __LINE__, IconFh));
 
 			TIMESTAMP_d1();
@@ -951,6 +951,7 @@ static ULONG DtWrite(Class *cl, Object *o, struct iopWrite *iopw)
 
 	do	{
 		ULONG NeedUpdateWB;
+		IPTR storage;
 
 		memset(&DiskObjectCopy, 0, sizeof(DiskObjectCopy));
 
@@ -967,15 +968,24 @@ static ULONG DtWrite(Class *cl, Object *o, struct iopWrite *iopw)
 
 		memset(&wd, 0, sizeof(wd));
 
-		GetAttr(IDTA_Type, 		o, &wd.aiowd_Type);
-		GetAttr(IDTA_ViewModes, 	o, &wd.aiowd_ViewModes);
-		GetAttr(IDTA_Flags, 		o, &wd.aiowd_Flags);
-		GetAttr(IDTA_WinCurrentX, 	o, &wd.aiowd_CurrentX);
-		GetAttr(IDTA_WinCurrentY, 	o, &wd.aiowd_CurrentY);
-		GetAttr(IDTA_WindowRect, 	o, (ULONG *) &wd.aiowd_WindowRect);
-		GetAttr(IDTA_Stacksize, 	o, &wd.aiowd_StackSize);
-		GetAttr(IDTA_ToolTypes, 	o, (ULONG *) &wd.aiowd_ToolTypes);
-		GetAttr(IDTA_DefaultTool, 	o, (ULONG *) &wd.aiowd_DefaultTool);
+		GetAttr(IDTA_Type, 		o, &storage);
+		wd.aiowd_Type = storage;
+		GetAttr(IDTA_ViewModes, 	o, &storage);
+		wd.aiowd_ViewModes = storage;
+		GetAttr(IDTA_Flags, 		o, &storage);
+		wd.aiowd_Flags = storage;
+		GetAttr(IDTA_WinCurrentX, 	o, &storage);
+		wd.aiowd_CurrentX = storage;
+		GetAttr(IDTA_WinCurrentY, 	o, &storage);
+		wd.aiowd_CurrentY = storage;
+		GetAttr(IDTA_WindowRect, 	o, &storage);
+		wd.aiowd_WindowRect = (struct IBox *)storage;
+		GetAttr(IDTA_Stacksize, 	o, &storage);
+		wd.aiowd_StackSize = storage;
+		GetAttr(IDTA_ToolTypes, 	o, &storage);
+		wd.aiowd_ToolTypes = (STRPTR *)storage;
+		GetAttr(IDTA_DefaultTool, 	o, &storage);
+		wd.aiowd_DefaultTool = (STRPTR)storage;
 
 		*WriteDiskObject = *inst->aio_DiskObject;
 
@@ -1227,7 +1237,7 @@ static ULONG DtClone(Class *cl, Object *o, struct iopCloneIconObject *iocio)
 
 			while (*ToolTypeSrc)
 				{
-				d1(KPrintF("%s/%s/%ld:  *ToolTypePtr=<%s>\n", __FILE__, __FUNC__, __LINE__, *ToolTypePtr));
+				d1(KPrintF("%s/%s/%ld:  *ToolTypePtr=<%s>\n", __FILE__, __FUNC__, __LINE__, *ToolTypeSrc));
 				*ToolTypeDest = MyAllocVecPooled(1 + strlen(*ToolTypeSrc));
 				if (NULL == *ToolTypeDest)
 					break;
@@ -1747,7 +1757,7 @@ static void ReadIcon(struct InstanceData *inst, CONST_STRPTR Filename, BPTR Icon
 			break;
 
 		InitIFF(iff, IFFF_RSEEK | IFFF_READ, &StreamHook);
-		iff->iff_Stream = fd;
+		iff->iff_Stream = (IPTR)fd;
 
 		Result = OpenIFF(iff, IFFF_READ);
 		d1(kprintf(__FILE__ "/" "%s/%s/%ld: OpenIFF Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
@@ -1785,6 +1795,8 @@ static void ReadIcon(struct InstanceData *inst, CONST_STRPTR Filename, BPTR Icon
 				Actual = ReadChunkBytes(iff, &inst->aio_FaceChunk, sizeof(inst->aio_FaceChunk));
 				if (Actual != sizeof(inst->aio_FaceChunk))
 					break;
+
+				inst->aio_FaceChunk.fc_MaxPaletteBytes = SCA_BE2WORD(inst->aio_FaceChunk.fc_MaxPaletteBytes);
 
 				d1(kprintf("%s/%s/%ld: FACE id read OK.\n", __FILE__, __FUNC__, __LINE__));
 
@@ -1905,7 +1917,7 @@ static BOOL WriteIcon(Class *cl, Object *o,
 			break;
 
 		InitIFF(iff, IFFF_RSEEK | IFFF_WRITE, &StreamHook);
-		iff->iff_Stream = fd;
+		iff->iff_Stream = (IPTR)fd;
 
 		Result = OpenIFF(iff, IFFF_WRITE);
 		d1(kprintf(__FILE__ "/" "%s/%s/%ld: OpenIFF Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
@@ -2404,6 +2416,10 @@ static struct NewImage *ReadNewImage(struct IFFHandle *iff, const struct FaceChu
 
 		if (sizeof(ni->nim_ImageChunk) != ReadChunkBytes(iff, &ni->nim_ImageChunk, sizeof(ni->nim_ImageChunk)))
 			break;
+
+		ni->nim_ImageChunk.ic_NumImageBytes = SCA_BE2WORD(ni->nim_ImageChunk.ic_NumImageBytes);
+		ni->nim_ImageChunk.ic_NumPaletteBytes = SCA_BE2WORD(ni->nim_ImageChunk.ic_NumPaletteBytes);
+
 		d1(kprintf("%s/%s/%ld: IMAG Chunk Read Ok.\n", __FILE__, __FUNC__, __LINE__));
 
 		d1(kprintf("%s/%s/%ld: Transparent=%ld  ic_PaletteSize=%ld  Flags=%02lx  ImgComp=%02lx  PalComp=%02lx  BitsPerPixel=%ld  NumImageBytes=%ld  NumPaletteBytes=%ld\n",\
@@ -2574,6 +2590,10 @@ static struct NewImage *ReadARGBImage(struct IFFHandle *iff, const struct FaceCh
 
 		if (sizeof(ni->nim_ImageChunk) != ReadChunkBytes(iff, &ni->nim_ImageChunk, sizeof(ni->nim_ImageChunk)))
 			break;
+
+		ni->nim_ImageChunk.ic_NumImageBytes = SCA_BE2WORD(ni->nim_ImageChunk.ic_NumImageBytes);
+		ni->nim_ImageChunk.ic_NumPaletteBytes = SCA_BE2WORD(ni->nim_ImageChunk.ic_NumPaletteBytes);
+
 		d1(KPrintF("%s/%s/%ld: ARGB Chunk Read Ok.\n", __FILE__, __FUNC__, __LINE__));
 
 		d1(KPrintF("%s/%s/%ld: Transparent=%ld  ic_PaletteSize=%ld  Flags=%02lx  ImgComp=%02lx  PalComp=%02lx  BitsPerPixel=%ld  NumImageBytes=%ld  NumPaletteBytes=%ld\n",\
@@ -2600,6 +2620,7 @@ static struct NewImage *ReadARGBImage(struct IFFHandle *iff, const struct FaceCh
 			break;
 
 		BytesRead = ReadChunkBytes(iff, UnCompressBuffer, ImageSize);
+		ImageSize = SCA_BE2LONG(ImageSize);
 		d1(KPrintF("%s/%s/%ld: ReadLength=%lu  BytesRead=%lu\n", __FILE__, __FUNC__, __LINE__, ImageSize, BytesRead));
 		if (BytesRead != ImageSize)
 			break;
@@ -3610,7 +3631,7 @@ static SAVEDS(LONG) StreamHookDispatcher(struct Hook *hook, struct IFFHandle *if
 		stream and place them in the buffer pointed to by sc_Buf.
 		Any (non-zero) error returned will be remapped by the parser
 		into IFFERR_READ. */
-		if (1 != FRead(iff->iff_Stream, cmd->sc_Buf, cmd->sc_NBytes, 1))
+		if (1 != FRead((BPTR)iff->iff_Stream, cmd->sc_Buf, cmd->sc_NBytes, 1))
 			Result = IFFERR_READ;
 		break;
 	case IFFCMD_WRITE:
@@ -3618,7 +3639,7 @@ static SAVEDS(LONG) StreamHookDispatcher(struct Hook *hook, struct IFFHandle *if
 		stream from the buffer pointed to by sc_Buf. Any (non-zero)
 		error returned will be remapped by the parser into
 		IFFERR_WRITE. */
-		if (1 != FWrite(iff->iff_Stream, cmd->sc_Buf, cmd->sc_NBytes, 1))
+		if (1 != FWrite((BPTR)iff->iff_Stream, cmd->sc_Buf, cmd->sc_NBytes, 1))
 			Result = IFFERR_WRITE;
 		d1(KPrintF("%s/%s/%ld: IFFCMD_WRITE Result=%ld  sc_NBytes=%ld\n", __FILE__, __FUNC__, __LINE__, Result, cmd->sc_NBytes));
 		break;
@@ -3628,7 +3649,7 @@ static SAVEDS(LONG) StreamHookDispatcher(struct Hook *hook, struct IFFHandle *if
 		negative values mean seek backward, positive values mean seek
 		forward. sc_Buf has no meaning here. Any (non-zero) error
 		returned will be remapped by the parser into IFFERR_SEEK. */
-		if (Seek(iff->iff_Stream, cmd->sc_NBytes, OFFSET_CURRENT) < 0)
+		if (Seek((BPTR)iff->iff_Stream, cmd->sc_NBytes, OFFSET_CURRENT) < 0)
 			Result = IFFERR_SEEK;
 		d1(KPrintF("%s/%s/%ld: IFFCMD_SEEK Result=%ld  sc_NBytes=%ld\n", __FILE__, __FUNC__, __LINE__, Result, cmd->sc_NBytes));
 		break;
@@ -3650,7 +3671,6 @@ static void SetParentAttributes(Class *cl, Object *o)
 		GA_Width, inst->aio_Image1->nim_Width,
 		GA_Height, inst->aio_Image1->nim_Height,
 		TAG_END);
-	d1(KPrintF("%s/%s/%ld:  o=%08lx  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__, o, gg->Width, gg->Height));
 	d1(KPrintF("%s/%s/%ld:  o=%08lx  Image1 nim_Palette=%08lx\n", __FILE__, __FUNC__, __LINE__, o, inst->aio_Image1->nim_Palette));
 
 	if (NULL == inst->aio_Image1->nim_Palette)
