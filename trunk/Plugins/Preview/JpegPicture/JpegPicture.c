@@ -69,7 +69,7 @@ struct Library *NewlibBase;
 struct Interface *INewlib;
 #endif /* __amigaos4__ */
 
-#if defined(__GNUC__) && !defined(__MORPHOS__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__AROS__)
 extern T_UTILITYBASE __UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) */
 
@@ -100,7 +100,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 		PluginBase, FindTask(NULL)->tc_Node.ln_Name));
 
 	do	{
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		if (_STI_240_InitMemFunctions())
 			break;;
 #endif /* __amigaos4__ */
@@ -162,7 +162,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 #endif /* __amigaos4__ */
 
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 		__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
@@ -179,7 +179,7 @@ void closePlugin(struct PluginBase *PluginBase)
 {
 	d1(kprintf("%s/%ld:\n", __FUNC__, __LINE__));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 
@@ -988,7 +988,7 @@ METHODDEF(void) JpegOutputDummy(j_common_ptr cinfo)
 
 //-----------------------------------------------------------------------------
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 int errno = 0;
 #endif
 
