@@ -42,7 +42,11 @@
 #elif PLUGIN_TYPE == PREVIEW
 
 #ifndef PV_GENERATE
+#ifdef __AROS__
+#define PV_GENERATE PluginBase_0_LIBSCAPreviewGenerate
+#else
 #define PV_GENERATE LIBSCAPreviewGenerate
+#endif
 #endif
 
 #elif PLUGIN_TYPE == PREFS
