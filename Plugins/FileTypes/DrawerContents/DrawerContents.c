@@ -28,9 +28,9 @@
 #include "DrawerContents_base.h"
 #include "DrawerContents.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	DrawerContentsPlugin_NUMBERS
+#define	DrawerContentsPlugin_BLOCK
+#define	DrawerContentsPlugin_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ BOOL initPlugin (struct PluginBase *PluginBase)
 	DrawerContentsBase->dcb_Locale = NULL;
 	DrawerContentsBase->dcb_Catalog = NULL;
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STI_240_InitMemFunctions();
 #endif
 
@@ -164,7 +164,7 @@ VOID closePlugin(struct PluginBase *PluginBase)
 			ILocale = NULL;
 			}
 #endif
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *)LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -190,7 +190,7 @@ VOID closePlugin(struct PluginBase *PluginBase)
 		DOSBase = NULL;
 		}
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 }
@@ -217,7 +217,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 	do	{
 		char FaultBuffer[100];
 		char PatternBuffer[40];
-		LONG ArgArray[5];
+		IPTR ArgArray[5];
 		ULONG *argMaxEntries;
 		ULONG *argLineLength;
 		STRPTR lp = ttshd->ttshd_Buffer;
@@ -382,7 +382,7 @@ static BOOL isDrawer(const struct FileInfoBlock *fib)
 
 static CONST_STRPTR GetLocString(ULONG MsgId, struct DrawerContentsBase *DrawerContentsBase)
 {
-	struct LocaleInfo li;
+	struct DrawerContentsPlugin_LocaleInfo li;
 
 	li.li_Catalog = DrawerContentsBase->dcb_Catalog;	
 #ifndef __amigaos4__
@@ -391,7 +391,7 @@ static CONST_STRPTR GetLocString(ULONG MsgId, struct DrawerContentsBase *DrawerC
 	li.li_ILocale = ILocale;
 #endif
 
-	return GetString(&li, MsgId);
+	return GetDrawerContentsPluginString(&li, MsgId);
 }
 
 //-----------------------------------------------------------------------------

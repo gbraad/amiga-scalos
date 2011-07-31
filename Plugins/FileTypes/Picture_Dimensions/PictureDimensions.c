@@ -34,9 +34,9 @@
 #include "picturedimensions_base.h"
 #include "PictureDimensions.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	PictureDimensionsPlugin_NUMBERS
+#define	PictureDimensionsPlugin_BLOCK
+#define	PictureDimensionsPlugin_CODE
 #include STR(SCALOSLOCALE)
 
 //---------------------------------------------------------------
@@ -176,7 +176,7 @@ VOID closePlugin(struct PluginBase *PluginBase)
 			ILocale = NULL;
 			}
 #endif
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *)LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -281,7 +281,7 @@ LIBFUNC_END
 
 static CONST_STRPTR GetLocString(ULONG MsgId, struct PictureDimensionsBase *PictureDimensionsBase)
 {
-	struct LocaleInfo li;
+	struct PictureDimensionsPlugin_LocaleInfo li;
 
 	li.li_Catalog = PictureDimensionsBase->pdb_Catalog;	
 #ifndef __amigaos4__
@@ -290,7 +290,7 @@ static CONST_STRPTR GetLocString(ULONG MsgId, struct PictureDimensionsBase *Pict
 	li.li_ILocale = ILocale;
 #endif
 
-	return GetString(&li, MsgId);
+	return GetPictureDimensionsPluginString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------
