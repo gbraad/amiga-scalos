@@ -65,7 +65,7 @@ static BOOL SetInstanceData(struct FsMCCInstance *inst, struct TagItem *TagList)
 static APTR OpenTTFontFromDesc(CONST_STRPTR FontDesc);
 static struct TextFont *OpenDiskFontFromDesc(CONST_STRPTR FontDesc);
 static void ForceRelayout(struct IClass *cl, Object *obj);
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !__SASC && !__MORPHOS__ && !__amigaos4__ */
 
@@ -540,7 +540,7 @@ static void ForceRelayout(struct IClass *cl, Object *obj)
 	if (muiRenderInfo(obj))
 		{
 		WindowObj = _win(obj);
-		get(WindowObj, MUIA_Window_RootObject, (APTR) &RootObj);
+		get(WindowObj, MUIA_Window_RootObject, &RootObj);
 
 		if (RootObj)
 			{
@@ -565,7 +565,7 @@ void CleanupFontSampleClass(struct MUI_CustomClass *mcc)
 
 /* ------------------------------------------------------------------------- */
 
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 static size_t stccpy(char *dest, const char *src, size_t MaxLen)
