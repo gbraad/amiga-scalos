@@ -41,9 +41,9 @@
 
 #include "ExifPicture_base.h"
 #include "ExifPicture.h"
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	ExifPicturePlugin_NUMBERS
+#define	ExifPicturePlugin_BLOCK
+#define	ExifPicturePlugin_CODE
 #include STR(SCALOSLOCALE)
 
 //---------------------------------------------------------------
@@ -481,7 +481,7 @@ BOOL initPlugin(struct PluginBase *base)
 		return FALSE;
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 	__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
@@ -559,7 +559,7 @@ VOID closePlugin(struct PluginBase *base)
 			ILocale = NULL;
 			}
 #endif
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *)LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -700,7 +700,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 	(void) args;
 
 	do	{
-		LONG ArgArray[5];
+		IPTR ArgArray[5];
 		BPTR fLock;
 
 		ReadMode_t ReadMode = READ_EXIF;
@@ -2535,7 +2535,7 @@ static void ResetJpgfile(void)
 
 static CONST_STRPTR GetLocString(ULONG MsgId, struct ExifPictureBase *ExifPictureBase)
 {
-	struct LocaleInfo li;
+	struct ExifPicturePlugin_LocaleInfo li;
 
 	li.li_Catalog = ExifPictureBase->pdb_Catalog;	
 #ifndef __amigaos4__
@@ -2544,7 +2544,7 @@ static CONST_STRPTR GetLocString(ULONG MsgId, struct ExifPictureBase *ExifPictur
 	li.li_ILocale = ILocale;
 #endif
 
-	return GetString(&li, MsgId);
+	return GetExifPicturePluginString(&li, MsgId);
 }
 
 //-----------------------------------------------------------------------------

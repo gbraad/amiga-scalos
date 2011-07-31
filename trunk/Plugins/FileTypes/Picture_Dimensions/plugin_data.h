@@ -22,7 +22,8 @@
 			" The Scalos Team"
 
 
-#define FT_INFOSTRING	LIBToolTipInfoString
+#define FT_INFOSTRING		LIBToolTipInfoString
+#define FT_INFOSTRING_AROS	PluginBase_0_LIBToolTipInfoString
 
 //----------------------------------------------------------------------------
 // code and includes to define the structs and functions used above
