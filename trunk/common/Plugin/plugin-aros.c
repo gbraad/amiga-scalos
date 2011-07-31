@@ -90,7 +90,7 @@ static APTR functable[] =
 	FT_INFOSTRING_AROS,
 #endif
 #if PLUGIN_TYPE == PREVIEW
-	PluginBase_0_PV_GENERATE,
+	PV_GENERATE,
 #endif
 #if (PLUGIN_TYPE == PREFS)
 	PluginBase_0_LIBSCAGetPrefsInfo,
