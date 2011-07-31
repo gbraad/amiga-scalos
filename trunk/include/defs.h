@@ -129,6 +129,8 @@
 	#define T_REXXSYSBASE   struct Library *
 	#define T_CONSOLEDEVICE	struct Library *
 	#define T_TIMERBASE	struct Library *
+	#define	T_INPUTBASE	struct Library *
+	#define T_INPUTDEVICE	struct Library *
 #else // __USE_BASETYPE__
 	#define T_UTILITYBASE	struct UtilityBase *
 #if defined(__amigaos4__)
@@ -139,14 +141,18 @@
 	#define T_REXXSYSBASE   struct RxsLib *
 	#define T_CONSOLEDEVICE	struct Device *
 	#define T_TIMERBASE	struct Device *
+	#define	T_INPUTBASE	struct Device *
+	#define T_INPUTDEVICE	struct Device *
 #endif // __USE_BASETYPE__
-	#define	T_INPUTBASE	struct Library *
-	#define T_INPUTDEVICE	struct Library *
 
 #ifdef __amigaos4__
 	#define GCC_PLATFORM	"AmigaOS4/PPC"
 #elif defined(__AROS__)
-	#define GCC_PLATFORM	"AROS/?"
+#ifdef __i386__
+	#define GCC_PLATFORM	"AROS/i386"
+#else
+	#define GCC_PLATFORM	"AROS/???"
+#endif
 #else // __amigaos4__
 	#define GCC_PLATFORM	"MorphOS/PPC"
 #endif // __amigaos4__

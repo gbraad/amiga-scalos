@@ -14,6 +14,12 @@
 
 extern struct MUI_CustomClass *FontSampleClass;
 
+#ifdef __AROS__
+#define FontSampleObject BOOPSIOBJMACRO_START(FontSampleClass->mcc_Class)
+#else
+#define FontSampleObject NewObject(FontSampleClass->mcc_Class, 0
+#endif
+
 struct MUI_CustomClass *InitFontSampleClass(void);
 void CleanupFontSampleClass(struct MUI_CustomClass *mcc);
 
