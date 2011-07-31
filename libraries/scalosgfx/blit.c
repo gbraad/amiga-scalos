@@ -1299,62 +1299,70 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaHookFunc(struct Hook *hook, Object *
 		}
 	else
 		{
-		ULONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
-		ULONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
-		BytesPerPixel = 3;
-		BytesPerRow = BytesPerPixel * width;
-		Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
-		if (Addr)
+		LONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
+		LONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
+		if (width > 0 && height > 0)
 			{
-			ULONG y;
-			ULONG SrcLeft = baa->baa_SrcLeft + (dhcr->dhcr_OffsetX - baa->baa_DestLeft);
-			ULONG SrcTop  = baa->baa_SrcTop  + (dhcr->dhcr_OffsetY - baa->baa_DestTop);
-			const struct ARGB *Src = baa->baa_Src->argb_ImageData + SrcTop * baa->baa_Src->argb_Width;
-			UBYTE *pPixel = ((UBYTE *) Addr); // + BytesPerRow * dhcr->dhcr_Bounds.MinY;
-
-			//PIXFMT_RGB24
-			for (y = 0; y < height; y++)
+			BytesPerPixel = 3;
+			BytesPerRow = BytesPerPixel * width;
+			Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
+			if (Addr)
 				{
-				ULONG x;
-				UBYTE *pLine = pPixel; // + dhcr->dhcr_Bounds.MinX * BytesPerPixel;
-				const struct ARGB *SrcPtr = Src + SrcLeft;
+				ULONG y;
+				ULONG SrcLeft = baa->baa_SrcLeft + (dhcr->dhcr_OffsetX - baa->baa_DestLeft);
+				ULONG SrcTop  = baa->baa_SrcTop  + (dhcr->dhcr_OffsetY - baa->baa_DestTop);
+				const struct ARGB *Src = baa->baa_Src->argb_ImageData + SrcTop * baa->baa_Src->argb_Width;
+				UBYTE *pPixel = ((UBYTE *) Addr); // + BytesPerRow * dhcr->dhcr_Bounds.MinY;
 
-				for (x = 0; x < width; x++)
+				ReadPixelArray(Addr, 0, 0, BytesPerRow, rp,
+					baa->baa_DestLeft, baa->baa_DestTop,
+					width, height,
+					RECTFMT_RGB);
+
+				//PIXFMT_RGB24
+				for (y = 0; y < height; y++)
 					{
-					ULONG a = (ULONG) SrcPtr->Alpha;
-					ULONG mla;
+					ULONG x;
+					UBYTE *pLine = pPixel; // + dhcr->dhcr_Bounds.MinX * BytesPerPixel;
+					const struct ARGB *SrcPtr = Src + SrcLeft;
 
-					switch (a)
+					for (x = 0; x < width; x++)
 						{
-					case 0:
-					case 1:
-						break;
-					case ALPHA_OPAQUE:
-						pLine[0] = SrcPtr->Red;
-						pLine[1] = SrcPtr->Green;
-						pLine[2] = SrcPtr->Blue;
-						break;
-					default:
-						mla = 257 - a;
+						ULONG a = (ULONG) SrcPtr->Alpha;
+						ULONG mla;
 
-						pLine[0] = (a * SrcPtr->Red   + mla * pLine[0])   >> 8;
-						pLine[1] = (a * SrcPtr->Green + mla * pLine[1])   >> 8;
-						pLine[2] = (a * SrcPtr->Blue  + mla * pLine[2])   >> 8;
-						break;
+						switch (a)
+							{
+						case 0:
+						case 1:
+							break;
+						case ALPHA_OPAQUE:
+							pLine[0] = SrcPtr->Red;
+							pLine[1] = SrcPtr->Green;
+							pLine[2] = SrcPtr->Blue;
+							break;
+						default:
+							mla = 257 - a;
+
+							pLine[0] = (a * SrcPtr->Red   + mla * pLine[0])   >> 8;
+							pLine[1] = (a * SrcPtr->Green + mla * pLine[1])   >> 8;
+							pLine[2] = (a * SrcPtr->Blue  + mla * pLine[2])   >> 8;
+							break;
+							}
+
+						pLine += BytesPerPixel;
+						SrcPtr++;
 						}
 
-					pLine += BytesPerPixel;
-					SrcPtr++;
+					pPixel += BytesPerRow;
+					Src += baa->baa_Src->argb_Width;
 					}
-
-				pPixel += BytesPerRow;
-				Src += baa->baa_Src->argb_Width;
+				WritePixelArray(Addr, 0, 0, BytesPerRow, rp, 
+					baa->baa_DestLeft, baa->baa_DestTop,
+					width, height,
+					RECTFMT_RGB);
+				FreeVec(Addr);
 				}
-			WritePixelArray(Addr, SrcLeft, SrcTop, BytesPerRow, rp, 
-				baa->baa_DestLeft, baa->baa_DestTop,
-				width, height,
-				RECTFMT_RGB);
-			FreeVec(Addr);
 			}
 		}
 
@@ -1948,67 +1956,75 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaKTHookFunc(struct Hook *hook, Object
 		}
 	else
 		{
-		ULONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
-		ULONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
-		BytesPerPixel = 3;
-		BytesPerRow = BytesPerPixel * width;
-		Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
-		ULONG T = baa->baa_Transparency;
-
-		if (Addr)
+		LONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
+		LONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
+		if (width > 0 && height > 0)
 			{
-			ULONG y;
-			ULONG SrcLeft = baa->baa_SrcLeft + (dhcr->dhcr_OffsetX - baa->baa_DestLeft);
-			ULONG SrcTop  = baa->baa_SrcTop  + (dhcr->dhcr_OffsetY - baa->baa_DestTop);
-			const struct ARGB *Src = baa->baa_Src->argb_ImageData + SrcTop * baa->baa_Src->argb_Width;
-			UBYTE *pPixel = ((UBYTE *) Addr); // + BytesPerRow * dhcr->dhcr_Bounds.MinY;
+			BytesPerPixel = 3;
+			BytesPerRow = BytesPerPixel * width;
+			Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
+			ULONG T = baa->baa_Transparency;
 
-			for (y = 0; y < height; y++)
+			if (Addr && width > 0 && height > 0)
 				{
-				ULONG x;
-				UBYTE *pLine = pPixel; // + dhcr->dhcr_Bounds.MinX * BytesPerPixel;
-				const struct ARGB *SrcPtr = Src + SrcLeft;
-				UWORD SrcRed, SrcGreen, SrcBlue;
+				ULONG y;
+				ULONG SrcLeft = baa->baa_SrcLeft + (dhcr->dhcr_OffsetX - baa->baa_DestLeft);
+				ULONG SrcTop  = baa->baa_SrcTop  + (dhcr->dhcr_OffsetY - baa->baa_DestTop);
+				const struct ARGB *Src = baa->baa_Src->argb_ImageData + SrcTop * baa->baa_Src->argb_Width;
+				UBYTE *pPixel = ((UBYTE *) Addr); // + BytesPerRow * dhcr->dhcr_Bounds.MinY;
 
-				for (x = 0; x < width; x++)
+				ReadPixelArray(Addr, 0, 0, BytesPerRow, rp,
+					baa->baa_DestLeft, baa->baa_DestTop,
+					width, height,
+					RECTFMT_RGB);
+
+				for (y = 0; y < height; y++)
 					{
-					ULONG a = ((T * SrcPtr->Alpha) >> 8) + 1;
-					ULONG mla;
+					ULONG x;
+					UBYTE *pLine = pPixel; // + dhcr->dhcr_Bounds.MinX * BytesPerPixel;
+					const struct ARGB *SrcPtr = Src + SrcLeft;
+					UWORD SrcRed, SrcGreen, SrcBlue;
 
-					SrcRed   = min(255, SrcPtr->Red   + baa->baa_K->Red);
-					SrcGreen = min(255, SrcPtr->Green + baa->baa_K->Green);
-					SrcBlue  = min(255, SrcPtr->Blue  + baa->baa_K->Blue);
-
-					switch (a)
+					for (x = 0; x < width; x++)
 						{
-					case 0:
-					case 1:
-						break;
-					case ALPHA_OPAQUE:
-						pLine[0] = SrcRed;
-						pLine[1] = SrcGreen;
-						pLine[2] = SrcBlue;
-						break;
-					default:
-						mla = 257 - a;
+						ULONG a = ((T * SrcPtr->Alpha) >> 8) + 1;
+						ULONG mla;
 
-						pLine[0] = (a * SrcRed   + mla * pLine[0])   >> 8;
-						pLine[1] = (a * SrcGreen + mla * pLine[1])   >> 8;
-						pLine[2] = (a * SrcBlue  + mla * pLine[2])   >> 8;
-						break;
+						SrcRed   = min(255, SrcPtr->Red   + baa->baa_K->Red);
+						SrcGreen = min(255, SrcPtr->Green + baa->baa_K->Green);
+						SrcBlue  = min(255, SrcPtr->Blue  + baa->baa_K->Blue);
+
+						switch (a)
+							{
+						case 0:
+						case 1:
+							break;
+						case ALPHA_OPAQUE:
+							pLine[0] = SrcRed;
+							pLine[1] = SrcGreen;
+							pLine[2] = SrcBlue;
+							break;
+						default:
+							mla = 257 - a;
+
+							pLine[0] = (a * SrcRed   + mla * pLine[0])   >> 8;
+							pLine[1] = (a * SrcGreen + mla * pLine[1])   >> 8;
+							pLine[2] = (a * SrcBlue  + mla * pLine[2])   >> 8;
+							break;
+							}
+
+						pLine += BytesPerPixel;
+						SrcPtr++;
 						}
-
-					pLine += BytesPerPixel;
-					SrcPtr++;
+					pPixel += BytesPerRow;
+					Src += baa->baa_Src->argb_Width;
 					}
-				pPixel += BytesPerRow;
-				Src += baa->baa_Src->argb_Width;
+				WritePixelArray(Addr, 0, 0, BytesPerRow, rp, 
+					baa->baa_DestLeft, baa->baa_DestTop,
+					width, height,
+					RECTFMT_RGB);
+				FreeVec(Addr);
 				}
-			WritePixelArray(Addr, SrcLeft, SrcTop, BytesPerRow, rp, 
-				baa->baa_DestLeft, baa->baa_DestTop,
-				width, height,
-				RECTFMT_RGB);
-			FreeVec(Addr);
 			}
 		}
 
