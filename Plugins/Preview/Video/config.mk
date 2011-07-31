@@ -61,6 +61,19 @@ COMPAT_OBJS =	$(OBJDIR)/compat_os4.o
 
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+LFLAGS  +=      -nostartfiles \
+		-lm
+#
+
+COMPAT_OBJS =	$(OBJDIR)/compat_mos.o
+
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -85,4 +98,4 @@ COMPAT_OBJS =	$(OBJDIR)/compat_68k.o
 
 endif
 endif
-
+endif

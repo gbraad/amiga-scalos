@@ -111,8 +111,9 @@ struct IntuitionIFace *IIntuition;
 struct ScalosGfxIFace *IScalosGfx;
 #endif /* __amigaos4__ */
 
-static const int FILMHOLE_WIDTH = 12;
-static const int FILMHOLE_HEIGHT = 10;
+/* won't compile for me when defined as constants - mazze */
+#define FILMHOLE_WIDTH (12)
+#define FILMHOLE_HEIGHT (10)
 
 STRPTR VersTag = LIB_VERSTRING;
 
