@@ -51,9 +51,9 @@ $(OBJDIR)/%.o: $(PREFS_DIR)/%.c
 $(TITLECLOCKPREFS): $(OBJS)
 	@$(ECHO) "Link $@"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$@.debug
-	@$(STRIP) $@.debug -o $@
+	@$(STRIP) $(SFLAGS) $@.debug -o $@
 ifneq ($(MACHINE), ppc-amigaos)
-	@protect $@ +e
+	@chmod u+x $@
 endif
 
 ##############################################################################

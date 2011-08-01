@@ -51,7 +51,7 @@
 static LONG OpenWBHelpFile(void);
 static SAVEDS(void) WBHelpProcess(void);
 
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !defined(__SASC) && !defined(__MORPHOS__)  */
 
@@ -2747,7 +2747,7 @@ static SAVEDS(void) WBHelpProcess(void)
 }
 
 
-#if !defined(__SASC) &&!defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) &&!defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 static size_t stccpy(char *dest, const char *src, size_t MaxLen)

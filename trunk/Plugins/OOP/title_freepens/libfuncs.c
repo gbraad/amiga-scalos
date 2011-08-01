@@ -173,7 +173,7 @@ M68KFUNC_P3(ULONG, FreePens,
 				size_t Length;
 
 				/* Add our text to the end of the title text*/
-				sprintf(msg->mxl_Buffer, "%lu", freepens);
+				sprintf(msg->mxl_Buffer, "%lu", (unsigned long)freepens);
 
 				/* Advance the pointer to the title text to the new end
 				** of the title Text (add on the number of characters we have added

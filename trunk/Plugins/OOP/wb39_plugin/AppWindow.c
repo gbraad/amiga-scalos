@@ -71,6 +71,11 @@ extern struct List AppWindowList;	// list of all AppWindows
 extern struct SignalSemaphore AppWindowSema;
 
 
+#ifdef __AROS__
+extern APTR origAddAppWindowA;
+extern APTR origRemoveAppWindow;
+extern APTR origSCA_DrawDrag;
+#else
 extern LIBFUNC_P6_DPROTO(struct ScaAppObjNode *, (*origAddAppWindowA),
 	D0, ULONG, id,
 	D1, ULONG, userdata,
@@ -87,6 +92,7 @@ extern LIBFUNC_P5_DPROTO(void, (*origSCA_DrawDrag),
 	D1, LONG, Y,
 	D2, LONG, Flags,
 	A6, struct Library *, ScalosBase);
+#endif
 
 //-------------------------------------------------------------------------------------
 
@@ -312,6 +318,15 @@ LIBFUNC_P6(struct myAppWindow *, myAddAppWindowA,
 	d1(KPrintF(__FUNC__ "/%ld: origAddAppWindowA=%08lx\n", __LINE__, origAddAppWindowA));
 
 	// all AppWindow Messages will be relayed to myPort
+#ifdef __AROS__
+	aw = (struct ScaAppObjNode *)AROS_CALL5(struct AppWindow *, origAddAppWindowA,
+			AROS_LDA(ULONG, id, D0),
+			AROS_LDA(ULONG, (ULONG)maw, D1),
+			AROS_LDA(struct Window *, window, A0),
+			AROS_LDA(struct MsgPort *, msgport, A1),
+			AROS_LDA(struct TagItem *, taglist, A2),
+			struct Library *, WorkbenchBase);
+#else
 	aw = (struct ScaAppObjNode *) CALLLIBFUNC_P6(origAddAppWindowA,
 		D0, id,
 		D1, (ULONG) maw,
@@ -319,6 +334,7 @@ LIBFUNC_P6(struct myAppWindow *, myAddAppWindowA,
 		A1, myPort,
 		A2, taglist,
 		A6, WorkbenchBase);
+#endif
 
 	d1(KPrintF(__FUNC__ "/%ld: aw=%08lx\n", __LINE__, aw));
 	if (NULL == aw)
@@ -352,9 +368,15 @@ LIBFUNC_P2(BOOL, myRemoveAppWindow,
 		return TRUE;
 	if (Maw_ID != maw->maw_Magic)
 		{
+#ifdef __AROS__
+		return AROS_CALL1(BOOL, origRemoveAppWindow,
+				AROS_LDA(struct AppWindow *, maw, A0),
+				struct Library *, WorkbenchBase);
+#else
 		return CALLLIBFUNC_P2(origRemoveAppWindow,
 			A0, (struct ScaAppObjNode *) maw,
 			A6, WorkbenchBase);
+#endif
 		}
 
 	d1(KPrintF(__FUNC__ "/%ld: maw=%08lx\n", __LINE__, maw));
@@ -365,9 +387,15 @@ LIBFUNC_P2(BOOL, myRemoveAppWindow,
 
 	ObtainSemaphore(&maw->maw_Sema);
 
+#ifdef __AROS__
+	Result = AROS_CALL1(BOOL, origRemoveAppWindow,
+		AROS_LDA(struct AppWindow *, maw->maw_AppWindow, A0),
+		struct Library *, WorkbenchBase);
+#else
 	Result = CALLLIBFUNC_P2(origRemoveAppWindow,
 		A0, maw->maw_AppWindow,
 		A6, WorkbenchBase);
+#endif
 
 	d1(KPrintF(__FUNC__ "/%ld: Result=%08lx\n", __LINE__, Result));
 
@@ -443,12 +471,21 @@ LIBFUNC_P5(void, mySCA_DrawDrag,
 					d1(kprintf(__FUNC__ "/%ld: INSIDE \n", __LINE__));
 					if (mmaw->maw_ActiveDropZone != dzz)
 						{
+#ifdef __AROS__
+						AROS_CALL4(VOID, origSCA_DrawDrag,
+							AROS_LDA(struct DragHandle *, draghandle, A0),
+							AROS_LDA(LONG, 400 + win->WScreen->Width, D0),
+							AROS_LDA(LONG, 400 + win->WScreen->Height, D1),
+							AROS_LDA(ULONG, (Flags | SCAF_Drag_Hide), D2),
+							struct Library *, ScalosBase);        // Hide Bobs
+#else
 						CALLLIBFUNC_P5(origSCA_DrawDrag,
 							A0, draghandle,
 							D0, 400 + win->WScreen->Width,
 							D1, 400 + win->WScreen->Height,
 							D2, (Flags | SCAF_Drag_Hide),
 							A6, ScalosBase);        // Hide Bobs
+#endif
 
 						if (mmaw->maw_ActiveDropZone)
 							{
@@ -468,12 +505,21 @@ LIBFUNC_P5(void, mySCA_DrawDrag,
 				{
 				d1(kprintf(__FUNC__ "/%ld: OUTSIDE \n", __LINE__));
 
+#ifdef __AROS__
+				AROS_CALL4(VOID, origSCA_DrawDrag,
+					AROS_LDA(struct DragHandle *, draghandle, A0),
+					AROS_LDA(LONG, 400 + win->WScreen->Width, D0),
+					AROS_LDA(LONG, 400 + win->WScreen->Height, D1),
+					AROS_LDA(ULONG, (Flags | SCAF_Drag_Hide), D2),
+					struct Library *, ScalosBase);
+#else
 				CALLLIBFUNC_P5(origSCA_DrawDrag,
 					A0, draghandle,
 					D0, 400 + win->WScreen->Width,
 					D1, 400 + win->WScreen->Height,
 					D2, (Flags | SCAF_Drag_Hide),
 					A6, ScalosBase);        // Hide Bobs
+#endif
 
 				SignalDropzoneMouseEnterLeave(draghandle, mmaw->maw_ActiveDropZone, ADZMACTION_Leave);
 				mmaw->maw_ActiveDropZone = NULL;
@@ -481,12 +527,21 @@ LIBFUNC_P5(void, mySCA_DrawDrag,
 			}
 		}
 
+#ifdef __AROS__
+	AROS_CALL4(VOID, origSCA_DrawDrag,
+		AROS_LCA(struct DragHandle *, draghandle, A0),
+		AROS_LCA(LONG, X, D0),
+		AROS_LCA(LONG, Y, D1),
+		AROS_LCA(ULONG, Flags, D2),
+		struct Library *, ScalosBase);
+#else
 	CALLLIBFUNC_P5(origSCA_DrawDrag,
 		A0, draghandle,
 		D0, X,
 		D1, Y,
 		D2, Flags,
 		A6, ScalosBase);
+#endif
 }
 LIBFUNC_END
 

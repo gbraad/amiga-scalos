@@ -211,7 +211,7 @@ CreateRexxHost(
 		/* Add the index number if provided. */
 
 		if(Index != 0)
-			sprintf((char *)PortName,"%s.%ld",BaseName,Index);
+			sprintf((char *)PortName,"%s.%ld",BaseName,(long)Index);
 		else
 			strcpy((char *)PortName,BaseName);
 
@@ -727,7 +727,7 @@ static VOID ReturnErrorMsg(
 		 * ARexx only deals with strings.
 		 */
 
-	sprintf((char *)Value,"%ld",Error);
+	sprintf((char *)Value,"%ld",(long)Error);
 
 	/* Now set the variable to the error code.
 	 * We use the RVI (Rexx Variables Interface)
@@ -798,7 +798,7 @@ static VOID HandleRexxMsg(
 		 * including following arguments.
 		 */
 
-	Command = Message->rm_Args[0];
+	Command = (STRPTR)Message->rm_Args[0];
 
 		/* Skip leading blanks. */
 
@@ -893,7 +893,7 @@ static VOID HandleRexxMsg(
 			 * set up the Data->Args array.
 			 */
 
-		if(ReadArgs(CmdFunc->Template,(LONG *)Data->Args,Data->ReadArgs))
+		if(ReadArgs(CmdFunc->Template,(IPTR *)Data->Args,Data->ReadArgs))
 			{
 			/* Invoke the command. */
 
@@ -1000,7 +1000,7 @@ LONG DoRexxCommand(CONST_STRPTR Command)
 		 * message argument.
 		 */
 		RexxMsg->rm_Args[0] = CreateArgstring((STRPTR) Command,strlen(Command));
-		if (NULL == RexxMsg->rm_Args[0])
+		if (0 == RexxMsg->rm_Args[0])
 			{
 			Error = ERROR_NO_FREE_STORE;
 			break;

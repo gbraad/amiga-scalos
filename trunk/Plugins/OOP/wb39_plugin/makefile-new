@@ -68,14 +68,14 @@ all:	$(BINDIR)/$(NAME) \
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS_NAME)
 	$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS_NAME) $(LFLAGS2) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
-	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@chmod u+x $@
 
 $(BINDIR)/$(TEST) $(BINDIR)/$(TEST_DB) : $(OBJS_TEST)
 	@$(ECHO) "Link $(TEST)"
 	@$(CC) $(STARTUP) $(OBJS_TEST) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(TEST_DB)
-	@$(STRIP) $(BINDIR)/$(TEST_DB) -o $(BINDIR)/$(TEST)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(TEST_DB) -o $(BINDIR)/$(TEST)
+	@chmod u+x $@
 
 ##############################################################################
 

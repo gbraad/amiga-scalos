@@ -68,7 +68,7 @@ struct ScalosIFace *IScalos;
 struct Interface *INewlib;
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 extern T_UTILITYBASE __UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
@@ -301,7 +301,7 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 	__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
