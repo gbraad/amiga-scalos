@@ -350,7 +350,7 @@ LONG Cmd_Icon(APTR UserData, struct RexxMsg *Message, STRPTR *Args)
 
 			if (0 == Stricmp(Args[ARG_MOVE], "IN"))
 				{
-				ULONG IconType;
+				IPTR IconType;
 
 				d1(kprintf(__FUNC__ "/%ld: MOVE IN\n", __LINE__);)
 

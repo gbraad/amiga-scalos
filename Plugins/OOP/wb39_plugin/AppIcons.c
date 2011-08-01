@@ -51,6 +51,11 @@ static SAVEDS(struct myAppIcon *) INTERRUPT ASM myNewAddAppIcon(
 #endif
 
 
+#ifdef __AROS__
+static APTR origNewAddAppIcon;
+static APTR origRemoveAppIcon;
+static APTR origAddAppIcon;
+#else
 static LIBFUNC_P5_DPROTO(struct ScaAppObjNode *, (*origNewAddAppIcon),
 	D0, ULONG, ID,
 	D1, ULONG, UserData,
@@ -67,6 +72,7 @@ static LIBFUNC_P7_DPROTO(struct AppIcon *, (*origAddAppIcon),
 	A2, BPTR, lock,
 	A3, struct DiskObject *, diskobj,
 	A4, struct TagItem *, taglist);
+#endif
 
 
 BOOL AppIconsInit(void)

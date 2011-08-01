@@ -399,7 +399,7 @@ static BOOL ReadWorkbenchPrefs(CONST_STRPTR filename, struct List *HiddenDevsLis
 
 		iff->iff_Stream = (ULONG) Open((STRPTR) filename, MODE_OLDFILE);
 		d1(KPrintF(__FILE__ "/%s/%ld: iff_Stream=%08lx\n", __FUNC__, __LINE__, iff->iff_Stream));
-		if ((BPTR)NULL == iff->iff_Stream)
+		if (0 == iff->iff_Stream)
 			break;
 
 		InitIFFasDOS( iff );
@@ -442,7 +442,7 @@ static BOOL ReadWorkbenchPrefs(CONST_STRPTR filename, struct List *HiddenDevsLis
 		if (IffOpened)
 			CloseIFF( iff );
 		if (iff->iff_Stream)
-			Close( iff->iff_Stream );
+			Close((BPTR) iff->iff_Stream );
 		FreeIFF( iff );
 		}
 
@@ -561,7 +561,7 @@ static void AddHiddenDeviceFromDosList(struct DosList *dl, struct InfoData *id,
 
 	if (dl->dol_Task &&
 		DoPkt(dl->dol_Task, ACTION_DISK_INFO,
-			MKBADDR(id),
+			(IPTR)MKBADDR(id),
 			0, 0, 0, 0))
 		{
 		InfoDataValid = TRUE;

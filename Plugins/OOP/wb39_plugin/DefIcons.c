@@ -144,7 +144,9 @@ SAVEDS(void) INTERRUPT ASM DefIconsCleanup(void)
 
 static BOOL OpenLibraries(void)
 {
+#ifndef __AROS__
 	SysBase = *( (struct ExecBase **) 4l);
+#endif
 
 	DOSBase = (struct DosLibrary *) OpenLibrary(DOSNAME, 39);
 	if (NULL == DOSBase)

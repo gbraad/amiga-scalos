@@ -48,6 +48,16 @@ LFLAGS2  =      $(LFLAGS) \
 #INCLUDES	+= -I/Werk/Programming/WBStart/dev/OS4/include -I/Werk/Programming/WBStart/dev/c/include
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+LFLAGS2  =      $(LFLAGS) \
+		-nostartfiles \
+#
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -65,4 +75,4 @@ LFLAGS	+=	-lscalos \
 
 endif
 endif
-
+endif

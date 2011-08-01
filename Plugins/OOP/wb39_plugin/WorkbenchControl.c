@@ -63,7 +63,7 @@ static struct List *GetSelectedIconList(void);
 static struct List *GetHiddenDeviceList(void);
 static void AddHiddenDevice(STRPTR devname, enum HiddenDevArg Quiet);
 static void RemoveHiddenDevice(STRPTR devname, enum HiddenDevArg Quiet);
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !defined(__SASC) &&!defined(__MORPHOS__)  */
 
@@ -76,6 +76,10 @@ static ULONG IconMemoryType = MEMF_ANY;
 //-------------------------------------------------------------------------
 
 // undocumented WorkbenchControl tags
+
+#ifdef __AROS__
+#define WBA_Dummy WBA_BASE
+#endif
 
 #define	WBCTRLAX_GetMaxCopyMemory	(WBA_Dummy+40)
 #define	WBCTRLAX_SetMaxCopyMemory	(WBA_Dummy+41)
@@ -1186,7 +1190,7 @@ LIBFUNC_P2VA(BOOL, myWorkbenchControl,
 LIBFUNC_END
 #endif
 
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 static size_t stccpy(char *dest, const char *src, size_t MaxLen)

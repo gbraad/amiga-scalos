@@ -14,6 +14,7 @@
 #include <intuition/classusr.h>
 #include <intuition/gadgetclass.h>
 #include <intuition/imageclass.h>
+#include <intuition/cghooks.h>
 
 #include <clib/alib_protos.h>
 
@@ -38,7 +39,7 @@
 #include "volumegauge.h"
 
 // aus Amiga.lib
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 extern ULONG HookEntry(struct Hook *, Object *, APTR);
 #endif
 

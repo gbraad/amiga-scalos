@@ -74,7 +74,7 @@ static BOOL InitProcessTimer(struct ProcessTimerInfo *Timer);
 static void CleanupProcessTimer(struct ProcessTimerInfo *Timer);
 static SAVEDS(int) UpdaterProcess(void);
 
-#if !defined(__SASC) &&!defined(__MORPHOS__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__AROS__)
 static char *stpblk(CONST_STRPTR q);
 #endif /* !defined(__SASC) &&!defined(__MORPHOS__) */
 
@@ -100,7 +100,7 @@ struct InputIFace *IInput;
 struct Interface *INewlib;
 #endif /* __amigaos4__ */
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 extern T_UTILITYBASE __UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) && ! defined(__amigaos4__) */
 
@@ -161,7 +161,7 @@ BOOL initPlugin(struct PluginBase *pluginbase)
 			break;
 #endif /* __amigaos4__ */
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 		__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) */
 
@@ -191,7 +191,7 @@ BOOL initPlugin(struct PluginBase *pluginbase)
 #endif /* __amigaos4__ */
 
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		if (_STI_240_InitMemFunctions())
 			break;
 #endif /* __amigaos4__ */
@@ -230,7 +230,7 @@ VOID closePlugin(struct PluginBase *pluginbase)
 
 	fInit = FALSE;
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif /* __amigaos4__ */
 
@@ -954,7 +954,7 @@ static void ReadNodes(void)
 					ARG_Width,
 					ARG_Height
                                         };
-				LONG ArgArray[7];
+				IPTR ArgArray[7];
 				struct RDArgs *rdArg;
 				char *ArgString;
 
@@ -1584,7 +1584,7 @@ void _XCEXIT(long x)
 
 #else /* __SASC */
 
-#if !defined(__MORPHOS__)
+#if !defined(__MORPHOS__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 static char *stpblk(CONST_STRPTR q)

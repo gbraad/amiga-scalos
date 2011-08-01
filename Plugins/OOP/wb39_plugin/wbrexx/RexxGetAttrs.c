@@ -108,7 +108,7 @@ static ULONG GetCount_AllIcon(struct UData UserData, struct LeafData *lData);
 static ULONG GetCount_SelectedIcon(struct UData UserData, struct LeafData *lData);
 static ULONG GetCount_UnselectedIcon(struct UData UserData, struct LeafData *lData);
 static BOOL IsIconNodeOpen(struct ScaIconNode *sIcon);
-#if defined(__GNUC__) && !defined(__MORPHOS__) && ! defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && ! defined(__amigaos4__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 static char *strupr(char *q);
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
@@ -278,12 +278,12 @@ static void DoLeafCmd(const struct LeafCmd *lc, struct UData UserData, struct Le
 					{
 					char NameBuff[20];
 
-					sprintf(NameBuff, "%ld", n);
+					sprintf(NameBuff, "%ld", (long)n);
 
 					if ('.' == *StemLeaf)
-						sprintf(StemLeafBuff, "%s%ld", StemLeaf, n);
+						sprintf(StemLeafBuff, "%s%ld", StemLeaf, (long)n);
 					else
-						sprintf(StemLeafBuff, "%s.%ld", StemLeaf, n);
+						sprintf(StemLeafBuff, "%s.%ld", StemLeaf, (long)n);
 
 					DoLeafCmd(lc, UserData, lData, NameBuff, StemLeafBuff);
 					}
@@ -1375,7 +1375,7 @@ static struct UData GetAttr_WindowIconsAllCount(struct UData UserData, struct Le
 
 	d(kprintf(__FUNC__ "/%ld: UserData=%08lx  ArgPtr=<%s>\n", __LINE__, UserData.uda_Type, lData->lres_ArgPtr);)
 
-	sprintf(lData->lres_ResultBuffer, "%ld", GetCount_AllIcon(UserData, lData));
+	sprintf(lData->lres_ResultBuffer, "%ld", (long)GetCount_AllIcon(UserData, lData));
 	PutResult(lData, lData->lres_ResultBuffer, StemLeaf);
 
 	return uEmpty;
@@ -1588,7 +1588,7 @@ static struct UData GetAttr_WindowIconsType(struct UData UserData, struct LeafDa
 		{
 		if (sIcon->in_Icon)
 			{
-			ULONG Type;
+			IPTR Type;
 
 			GetAttr(IDTA_Type, sIcon->in_Icon, &Type);
 
@@ -1674,7 +1674,7 @@ static struct UData GetAttr_WindowIconsSelectedCount(struct UData UserData, stru
 
 	d(kprintf(__FUNC__ "/%ld: UserData=%08lx  ArgPtr=<%s>\n", __LINE__, UserData.uda_Type, lData->lres_ArgPtr);)
 
-	sprintf(lData->lres_ResultBuffer, "%ld", GetCount_SelectedIcon(UserData, lData));
+	sprintf(lData->lres_ResultBuffer, "%ld", (long)GetCount_SelectedIcon(UserData, lData));
 	PutResult(lData, lData->lres_ResultBuffer, StemLeaf);
 
 	return uEmpty;
@@ -1687,7 +1687,7 @@ static struct UData GetAttr_WindowIconsUnselectedCount(struct UData UserData, st
 
 	d(kprintf(__FUNC__ "/%ld: UserData=%08lx  ArgPtr=<%s>\n", __LINE__, UserData.uda_Type, lData->lres_ArgPtr);)
 
-	sprintf(lData->lres_ResultBuffer, "%ld", GetCount_UnselectedIcon(UserData, lData));
+	sprintf(lData->lres_ResultBuffer, "%ld", (long)GetCount_UnselectedIcon(UserData, lData));
 	PutResult(lData, lData->lres_ResultBuffer, StemLeaf);
 
 	return uEmpty;
@@ -1811,7 +1811,7 @@ static struct UData GetAttr_ApplicationLastError(struct UData UserData, struct L
 	d(kprintf(__FUNC__ "/%ld: UserData=%08lx  ArgPtr=<%s>\n", __LINE__, UserData.uda_Type, lData->lres_ArgPtr);)
 	d(kprintf(__FUNC__ "/%ld: LastError=%ld\n", __LINE__, LastError);)
 
-	sprintf(lData->lres_ResultBuffer, "%ld", LastError);
+	sprintf(lData->lres_ResultBuffer, "%ld", (long)LastError);
 	PutResult(lData, lData->lres_ResultBuffer, StemLeaf);
 
 	return uEmpty;
@@ -1990,7 +1990,7 @@ static struct UData GetAttr_WindowsCount(struct UData UserData, struct LeafData 
 
 	d(kprintf(__FUNC__ "/%ld: UserData=%08lx  ArgPtr=<%s>\n", __LINE__, UserData.uda_Type, lData->lres_ArgPtr);)
 
-	sprintf(lData->lres_ResultBuffer, "%ld", GetCount_Windows(UserData, lData));
+	sprintf(lData->lres_ResultBuffer, "%ld", (long)GetCount_Windows(UserData, lData));
 	PutResult(lData, lData->lres_ResultBuffer, StemLeaf);
 
 	return uEmpty;
@@ -2186,7 +2186,7 @@ static struct UData GetAttr_KeyCommandsCount(struct UData UserData, struct LeafD
 
 	d(kprintf(__FUNC__ "/%ld: UserData=%08lx  ArgPtr=<%s>\n", __LINE__, UserData.uda_Type, lData->lres_ArgPtr);)
 
-	sprintf(lData->lres_ResultBuffer, "%ld", GetCount_KeyCommands(UserData, lData));
+	sprintf(lData->lres_ResultBuffer, "%ld", (long)GetCount_KeyCommands(UserData, lData));
 	PutResult(lData, lData->lres_ResultBuffer, StemLeaf);
 
 	return uEmpty;
@@ -2199,7 +2199,7 @@ static struct UData GetAttr_MenuCommandsCount(struct UData UserData, struct Leaf
 
 	d(kprintf(__FUNC__ "/%ld: UserData=%08lx  ArgPtr=<%s>\n", __LINE__, UserData.uda_Type, lData->lres_ArgPtr);)
 
-	sprintf(lData->lres_ResultBuffer, "%ld", GetCount_MenuCommands(UserData, lData));
+	sprintf(lData->lres_ResultBuffer, "%ld", (long)GetCount_MenuCommands(UserData, lData));
 	PutResult(lData, lData->lres_ResultBuffer, StemLeaf);
 
 	return uEmpty;
@@ -2530,7 +2530,7 @@ static BOOL IsIconNodeOpen(struct ScaIconNode *sIcon)
 }
 
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 static size_t stccpy(char *dest, const char *src, size_t MaxLen)

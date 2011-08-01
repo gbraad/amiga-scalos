@@ -102,7 +102,7 @@ WorkbenchControlA			- fully supported :
 */
 
 // aus mempools.lib
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 extern int _STI_240_InitMemFunctions(void);
 extern void _STD_240_TerminateMemFunctions(void);
 #endif
@@ -178,7 +178,7 @@ struct IFFParseIFace *IIFFParse = NULL;
 struct Interface *INewlib = NULL;
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 extern T_UTILITYBASE __UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) */
 
@@ -480,34 +480,7 @@ static BOOL LateInit(void)
 			if (!AppIconsInit())
 				return FALSE;
 
-#ifndef __amigaos4__
-			origOpenWorkbenchObjectA = SetFunction(WorkbenchBase,
-				-96, PATCH_NEWFUNC(myOpenWorkbenchObjectA));
-			origCloseWorkbenchObjectA = SetFunction(WorkbenchBase,
-				-102, PATCH_NEWFUNC(myCloseWorkbenchObjectA));
-			origMakeWorkbenchObjectVisibleA = SetFunction(WorkbenchBase,
-				 -132, PATCH_NEWFUNC(myMakeWorkbenchObjectVisibleA));
-			origChangeWorkbenchSelectionA = SetFunction(WorkbenchBase,
-				-126, PATCH_NEWFUNC(myChangeWorkbenchSelectionA));
-
-			origAddAppWindowDropZoneA = SetFunction(WorkbenchBase,
-				-114, PATCH_NEWFUNC(myAddAppWindowDropZoneA));
-			origRemoveAppWindowDropZone = SetFunction(WorkbenchBase,
-				-120, PATCH_NEWFUNC(myRemoveAppWindowDropZone));
-			origAddAppWindowA = SetFunction(WorkbenchBase,
-				-48, PATCH_NEWFUNC(myAddAppWindowA));
-			origRemoveAppWindow = SetFunction(WorkbenchBase,
-				-54, PATCH_NEWFUNC(myRemoveAppWindow));
-
-			origWorkbenchControlA = SetFunction(WorkbenchBase,
-				-108, PATCH_NEWFUNC(myWorkbenchControlA));
-
-			origWbprivate1 = SetFunction(WorkbenchBase,
-				-30, PATCH_NEWFUNC(myWbprivate1));
-
-			origSCA_DrawDrag = SetFunction(&ScalosBase->scb_LibNode,
-				-150, PATCH_NEWFUNC(mySCA_DrawDrag));
-#else
+#if defined(__amigaos4__)
 			origOpenWorkbenchObjectA = SetMethod((struct Interface *)IWorkbench,
 				offsetof(struct WorkbenchIFace, OpenWorkbenchObjectA),
 				(APTR)myOpenWorkbenchObjectA);
@@ -566,7 +539,60 @@ static BOOL LateInit(void)
 			origSCA_DrawDrag = SetMethod((struct Interface *)IScalos,
 				offsetof(struct ScalosIFace, SCA_DrawDrag),
 				(APTR)mySCA_DrawDrag);
+#elif defined(__AROS__)
+			origOpenWorkbenchObjectA = SetFunction(WorkbenchBase,
+				-16 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myOpenWorkbenchObjectA, WorkbenchBase, 0));
+			origCloseWorkbenchObjectA = SetFunction(WorkbenchBase,
+				-17 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myCloseWorkbenchObjectA, WorkbenchBase, 0));
+			origMakeWorkbenchObjectVisibleA = SetFunction(WorkbenchBase,
+				-22 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myMakeWorkbenchObjectVisibleA, WorkbenchBase, 0));
+			origChangeWorkbenchSelectionA = SetFunction(WorkbenchBase,
+				-21 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myChangeWorkbenchSelectionA, WorkbenchBase, 0));
 
+			origAddAppWindowDropZoneA = SetFunction(WorkbenchBase,
+				-19 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myAddAppWindowDropZoneA, WorkbenchBase, 0));
+			origRemoveAppWindowDropZone = SetFunction(WorkbenchBase,
+				-20 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myRemoveAppWindowDropZone, WorkbenchBase, 0));
+			origAddAppWindowA = SetFunction(WorkbenchBase,
+				-8 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myAddAppWindowA, WorkbenchBase, 0));
+			origRemoveAppWindow = SetFunction(WorkbenchBase,
+				-9 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myRemoveAppWindow, WorkbenchBase, 0));
+
+			origWorkbenchControlA = SetFunction(WorkbenchBase,
+				-18 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myWorkbenchControlA, WorkbenchBase, 0));
+
+			origWbprivate1 = SetFunction(WorkbenchBase,
+				-5 * LIB_VECTSIZE, AROS_SLIB_ENTRY(myWbprivate1, WorkbenchBase, 0));
+
+			origSCA_DrawDrag = SetFunction(&ScalosBase->scb_LibNode,
+				-25 * LIB_VECTSIZE, AROS_SLIB_ENTRY(mySCA_DrawDrag, ScalosBase, 0));
+#else
+			origOpenWorkbenchObjectA = SetFunction(WorkbenchBase,
+				-96, PATCH_NEWFUNC(myOpenWorkbenchObjectA));
+			origCloseWorkbenchObjectA = SetFunction(WorkbenchBase,
+				-102, PATCH_NEWFUNC(myCloseWorkbenchObjectA));
+			origMakeWorkbenchObjectVisibleA = SetFunction(WorkbenchBase,
+				 -132, PATCH_NEWFUNC(myMakeWorkbenchObjectVisibleA));
+			origChangeWorkbenchSelectionA = SetFunction(WorkbenchBase,
+				-126, PATCH_NEWFUNC(myChangeWorkbenchSelectionA));
+
+			origAddAppWindowDropZoneA = SetFunction(WorkbenchBase,
+				-114, PATCH_NEWFUNC(myAddAppWindowDropZoneA));
+			origRemoveAppWindowDropZone = SetFunction(WorkbenchBase,
+				-120, PATCH_NEWFUNC(myRemoveAppWindowDropZone));
+			origAddAppWindowA = SetFunction(WorkbenchBase,
+				-48, PATCH_NEWFUNC(myAddAppWindowA));
+			origRemoveAppWindow = SetFunction(WorkbenchBase,
+				-54, PATCH_NEWFUNC(myRemoveAppWindow));
+
+			origWorkbenchControlA = SetFunction(WorkbenchBase,
+				-108, PATCH_NEWFUNC(myWorkbenchControlA));
+
+			origWbprivate1 = SetFunction(WorkbenchBase,
+				-30, PATCH_NEWFUNC(myWbprivate1));
+
+			origSCA_DrawDrag = SetFunction(&ScalosBase->scb_LibNode,
+				-150, PATCH_NEWFUNC(mySCA_DrawDrag));
 #endif
 			DetachMyProcess();
 			}
@@ -598,7 +624,7 @@ BOOL initPlugin(struct Library *libbase)
 			__FILE__, __FUNC__, __LINE__, \
                         IconobjectBase, WorkbenchBase, UtilityBase));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		_STI_240_InitMemFunctions();
 #endif
 
@@ -619,53 +645,7 @@ VOID closePlugin(struct Library *libbase)
 
 	ShutdownMyProcess();
 
-#ifndef __amigaos4__
-	if (origWbprivate1)
-		{
-		SetFunction(WorkbenchBase, -30, (ULONG (* const )()) origWbprivate1);
-		origWbprivate1 = NULL;
-		}
-	if (origWorkbenchControlA)
-		{
-		SetFunction(WorkbenchBase, -108, (ULONG (* const )()) origWorkbenchControlA);
-		origWorkbenchControlA = NULL;
-		}
-	if (origRemoveAppWindow)
-		{
-		SetFunction(WorkbenchBase, -54, (ULONG (* const )()) origRemoveAppWindow);
-		origRemoveAppWindow = NULL;
-		}
-	if (origAddAppWindowA)
-		{
-		SetFunction(WorkbenchBase, -48, (ULONG (* const )()) origAddAppWindowA);
-		origAddAppWindowA = NULL;
-		}
-	if (origRemoveAppWindowDropZone)
-		{
-		SetFunction(WorkbenchBase, -120, (ULONG (* const )()) origRemoveAppWindowDropZone);
-		origRemoveAppWindowDropZone = NULL;
-		}
-	if (origAddAppWindowDropZoneA)
-		{
-		SetFunction(WorkbenchBase, -114, (ULONG (* const )()) origAddAppWindowDropZoneA);
-		origAddAppWindowDropZoneA = NULL;
-		}
-	if (origMakeWorkbenchObjectVisibleA)
-		{
-		SetFunction(WorkbenchBase,  -132, (ULONG (* const )()) origMakeWorkbenchObjectVisibleA);
-		origMakeWorkbenchObjectVisibleA = NULL;
-		}
-	if (origOpenWorkbenchObjectA)
-		{
-		SetFunction(WorkbenchBase, -96, (ULONG (* const )()) origOpenWorkbenchObjectA);
-		origOpenWorkbenchObjectA = NULL;
-		}
-	if (origSCA_DrawDrag)
-		{
-		SetFunction(&ScalosBase->scb_LibNode, -150, (ULONG (* const )()) origSCA_DrawDrag);
-		origSCA_DrawDrag = NULL;
-		}
-#else
+#if defined(__amigaos4__)
 	if (origWbprivate1)
 		{
 		SetMethod((struct Interface *)IWorkbench, offsetof(struct WorkbenchIFace, Private1),
@@ -726,12 +706,104 @@ VOID closePlugin(struct Library *libbase)
 			(APTR) origSCA_DrawDrag);
 		origSCA_DrawDrag = NULL;
 		}
+#elif defined(__AROS__)
+	if (origWbprivate1)
+		{
+		SetFunction(WorkbenchBase, -5 * LIB_VECTSIZE, (ULONG (* const )()) origWbprivate1);
+		origWbprivate1 = NULL;
+		}
+	if (origWorkbenchControlA)
+		{
+		SetFunction(WorkbenchBase, -18 * LIB_VECTSIZE, (ULONG (* const )()) origWorkbenchControlA);
+		origWorkbenchControlA = NULL;
+		}
+	if (origRemoveAppWindow)
+		{
+		SetFunction(WorkbenchBase, -9 * LIB_VECTSIZE, (ULONG (* const )()) origRemoveAppWindow);
+		origRemoveAppWindow = NULL;
+		}
+	if (origAddAppWindowA)
+		{
+		SetFunction(WorkbenchBase, -8 * LIB_VECTSIZE, (ULONG (* const )()) origAddAppWindowA);
+		origAddAppWindowA = NULL;
+		}
+	if (origRemoveAppWindowDropZone)
+		{
+		SetFunction(WorkbenchBase, -20 * LIB_VECTSIZE, (ULONG (* const )()) origRemoveAppWindowDropZone);
+		origRemoveAppWindowDropZone = NULL;
+		}
+	if (origAddAppWindowDropZoneA)
+		{
+		SetFunction(WorkbenchBase, -19 * LIB_VECTSIZE, (ULONG (* const )()) origAddAppWindowDropZoneA);
+		origAddAppWindowDropZoneA = NULL;
+		}
+	if (origMakeWorkbenchObjectVisibleA)
+		{
+		SetFunction(WorkbenchBase,  -22 * LIB_VECTSIZE, (ULONG (* const )()) origMakeWorkbenchObjectVisibleA);
+		origMakeWorkbenchObjectVisibleA = NULL;
+		}
+	if (origOpenWorkbenchObjectA)
+		{
+		SetFunction(WorkbenchBase, -16 * LIB_VECTSIZE, (ULONG (* const )()) origOpenWorkbenchObjectA);
+		origOpenWorkbenchObjectA = NULL;
+		}
+	if (origSCA_DrawDrag)
+		{
+		SetFunction(&ScalosBase->scb_LibNode, -25 * LIB_VECTSIZE, (ULONG (* const )()) origSCA_DrawDrag);
+		origSCA_DrawDrag = NULL;
+		}
+#else
+	if (origWbprivate1)
+		{
+		SetFunction(WorkbenchBase, -30, (ULONG (* const )()) origWbprivate1);
+		origWbprivate1 = NULL;
+		}
+	if (origWorkbenchControlA)
+		{
+		SetFunction(WorkbenchBase, -108, (ULONG (* const )()) origWorkbenchControlA);
+		origWorkbenchControlA = NULL;
+		}
+	if (origRemoveAppWindow)
+		{
+		SetFunction(WorkbenchBase, -54, (ULONG (* const )()) origRemoveAppWindow);
+		origRemoveAppWindow = NULL;
+		}
+	if (origAddAppWindowA)
+		{
+		SetFunction(WorkbenchBase, -48, (ULONG (* const )()) origAddAppWindowA);
+		origAddAppWindowA = NULL;
+		}
+	if (origRemoveAppWindowDropZone)
+		{
+		SetFunction(WorkbenchBase, -120, (ULONG (* const )()) origRemoveAppWindowDropZone);
+		origRemoveAppWindowDropZone = NULL;
+		}
+	if (origAddAppWindowDropZoneA)
+		{
+		SetFunction(WorkbenchBase, -114, (ULONG (* const )()) origAddAppWindowDropZoneA);
+		origAddAppWindowDropZoneA = NULL;
+		}
+	if (origMakeWorkbenchObjectVisibleA)
+		{
+		SetFunction(WorkbenchBase,  -132, (ULONG (* const )()) origMakeWorkbenchObjectVisibleA);
+		origMakeWorkbenchObjectVisibleA = NULL;
+		}
+	if (origOpenWorkbenchObjectA)
+		{
+		SetFunction(WorkbenchBase, -96, (ULONG (* const )()) origOpenWorkbenchObjectA);
+		origOpenWorkbenchObjectA = NULL;
+		}
+	if (origSCA_DrawDrag)
+		{
+		SetFunction(&ScalosBase->scb_LibNode, -150, (ULONG (* const )()) origSCA_DrawDrag);
+		origSCA_DrawDrag = NULL;
+		}
 #endif
 
 	FreeAllNodes(&HiddenDeviceList);    // +dm+ 20010518
 	CloseLibraries();
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 
@@ -778,7 +850,7 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 	__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__) */
 
@@ -1201,7 +1273,7 @@ static struct WBArg *BuildWBArg(struct TagItem *tags, ULONG *ArgCount)
 		case WBOPENA_ArgLock:
 			if (ArgList[n].wa_Lock)
 				n++;
-			ArgList[n].wa_Lock = DupLock(tag->ti_Data);
+			ArgList[n].wa_Lock = DupLock((BPTR)tag->ti_Data);
 #if 0
 			{
 			char Path[256];
