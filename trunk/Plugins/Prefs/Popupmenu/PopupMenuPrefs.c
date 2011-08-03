@@ -2,6 +2,9 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -45,27 +48,31 @@
 #include <proto/preferences.h>
 #include <proto/utility.h>
 #include <proto/asl.h>
+#ifdef __AROS__
+#include <proto/popupmenu.h>
+#else
 #include <proto/pm.h>
+#endif
 #include <proto/locale.h>
 #include <proto/iffparse.h>
 #define	NO_INLINE_STDARG
 #include <proto/muimaster.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/NListtree_mcc.h>
-#include <MUI/Lamp_mcc.h>
-#include <Scalos/scalosprefsplugin.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
+#include <mui/Lamp_mcc.h>
+#include <scalos/scalosprefsplugin.h>
 #include <defs.h>
 #include <Year.h>
-
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
-#include STR(SCALOSLOCALE)
 
 #include "PopupMenuPrefs.h"
 #include "DataTypesMCC.h"
 #include "FrameButtonMCC.h"
+
+#define	ScalosPopupMenu_NUMBERS
+#define	ScalosPopupMenu_BLOCK
+#define	ScalosPopupMenu_CODE
+#include STR(SCALOSLOCALE)
 
 #include "plugin.h"
 
@@ -117,7 +124,7 @@
 #define FrameButton(objindex, frame, text, selected, raised)\
 	VGroup, \
 		MUIA_ShowSelState, FALSE, \
-		Child, NewObject(FrameButtonClass->mcc_Class, 0, \
+		Child, FrameButtonObject, \
 			MUIA_Frame, MUIV_Frame_None, \
 			MUIA_Text_Contents, (text),\
 			MUIA_Text_PreParse, "\33c", \
@@ -192,11 +199,11 @@ static void SetChangedFlag(struct PopupMenuPrefsInst *inst, BOOL changed);
 static void ParseToolTypes(struct PopupMenuPrefsInst *inst, struct MUIP_ScalosPrefs_ParseToolTypes *ptt);
 static void PrefsToGUI(struct PopupMenuPrefsInst *inst, const struct PopupMenuPrefs *pmPrefs);
 static void GUItoPrefs(struct PopupMenuPrefsInst *inst, struct PopupMenuPrefs *pmPrefs);
-static ULONG getv(APTR obj, ULONG attr);
+static IPTR getv(APTR obj, ULONG attr);
 static LONG ReadOldPrefsFile(CONST_STRPTR Filename, struct oldPopupMenuPrefs *prefs, const struct oldPopupMenuPrefs *defaultPrefs);
 static void ConvertPmPrefs(CONST_STRPTR prefsFileOld, CONST_STRPTR prefsFileNew);
 
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
@@ -230,6 +237,10 @@ struct DataTypesIFace *IDataTypes;
 struct Library *NewlibBase;
 struct Interface *INewlib;
 struct PreferencesIFace *IPreferences;
+#endif
+
+#ifdef __AROS__
+struct DosLibrary *DOSBase;
 #endif
 
 #include "PopupMenuPrefsImage.h"
@@ -354,7 +365,7 @@ VOID closePlugin(struct PluginBase *PluginBase)
 
 	d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 
@@ -1375,7 +1386,7 @@ static SAVEDS(ULONG) INTERRUPT ImagePopAslFileStartHookFunc(struct Hook *hook, O
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosPopupMenu_LocaleInfo li;
 
 	li.li_Catalog = PopupMenuPrefsCatalog;	     
 #ifndef __amigaos4__
@@ -1384,7 +1395,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR) GetString(&li, MsgId);
+	return (STRPTR) GetScalosPopupMenuString(&li, MsgId);
 }
 
 static void TranslateStringArray(STRPTR *stringArray)
@@ -1434,7 +1445,7 @@ static SAVEDS(APTR) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->mpb_LoadReq,
@@ -1510,7 +1521,7 @@ static SAVEDS(APTR) INTERRUPT SaveAsHookFunc(struct Hook *hook, Object *o, Msg m
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->mpb_SaveReq,
@@ -2105,7 +2116,7 @@ static Object *CreatePrefsImage(void)
 	Object	*img;
 
 	// First try to load datatypes image from THEME: tree
-	img = NewObject(DataTypesImageClass->mcc_Class, 0,
+	img = DataTypesImageObject,
 		MUIA_ScaDtpic_Name, (ULONG) "THEME:prefs/plugins/popupmenu",
 		MUIA_ScaDtpic_FailIfUnavailable, TRUE,
 		End; //DataTypesMCCObject
@@ -2185,7 +2196,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 
 		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		if (_STI_240_InitMemFunctions())
 			return FALSE;
 #endif
@@ -2237,9 +2248,9 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 
 //----------------------------------------------------------------------------
 
-static ULONG getv(APTR obj, ULONG attr)
+static IPTR getv(APTR obj, ULONG attr)
 {
-    ULONG v;
+    IPTR v;
     GetAttr(attr, obj, &v);
     return (v);
 }
@@ -2327,7 +2338,7 @@ static LONG ReadOldPrefsFile(CONST_STRPTR Filename, struct oldPopupMenuPrefs *pr
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -2421,7 +2432,7 @@ static void ConvertPmPrefs(CONST_STRPTR prefsFileOld, CONST_STRPTR prefsFileNew)
 
 //----------------------------------------------------------------------------
 
-#if !defined(__SASC) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__amigaos4__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 #if !defined(__MORPHOS__)

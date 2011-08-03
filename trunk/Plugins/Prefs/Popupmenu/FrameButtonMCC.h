@@ -19,6 +19,12 @@ void CleanupFrameButtonClass(struct MUI_CustomClass *mcc);
 
 extern struct MUI_CustomClass *FrameButtonClass;
 
+#ifdef __AROS__
+#define FrameButtonObject BOOPSIOBJMACRO_START(FrameButtonClass->mcc_Class)
+#else
+#define FrameButtonObject NewObject(FrameButtonClass->mcc_Class, 0
+#endif
+
 /* ------------------------------------------------------------------------- */
 
 #define	PMP_MENUBORDER_NONE		999

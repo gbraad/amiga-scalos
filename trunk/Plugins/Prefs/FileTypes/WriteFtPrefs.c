@@ -41,8 +41,8 @@
 #define	NO_INLINE_STDARG
 #include <proto/muimaster.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/NListtree_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 
 #include <defs.h>
 

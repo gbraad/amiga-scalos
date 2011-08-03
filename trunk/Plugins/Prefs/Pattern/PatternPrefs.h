@@ -144,4 +144,11 @@ struct PatternPrefsInst
 
 //----------------------------------------------------------------------------
 
+struct ScalosPattern_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
+
 #endif /* SCALOS_PATTERNPREFS_H */

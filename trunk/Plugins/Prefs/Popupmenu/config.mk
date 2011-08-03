@@ -44,6 +44,17 @@ LFLAGS  +=      -nostartfiles \
 
 
 else
+ifeq ($(MACHINE), i386-aros)
+
+###############################################################################
+# i386-aros
+
+DEFINES +=      -DMUI_OBSOLETE
+
+LFLAGS  +=      -nostartfiles -lrom -lmui \
+#
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -63,4 +74,4 @@ LFLAGS	+=	-lscalos \
 
 endif
 endif
-
+endif

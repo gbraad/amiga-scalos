@@ -31,11 +31,11 @@
 
 #include <clib/alib_protos.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/NListtree_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 #include <defs.h>
 
-#define	CATCOMP_NUMBERS
+#define	ScalosFileTypes_NUMBERS
 #include STR(SCALOSLOCALE)
 
 #include <stdlib.h>
@@ -441,7 +441,7 @@ SAVEDS(ULONG) INTERRUPT SelectFileTypesEntryHookFunc(struct Hook *hook, Object *
 	DoMethod(inst->fpb_Objects[OBJNDX_Popobject_FileTypes_Methods_Add],
 		MUIM_Popstring_Close, FALSE);
 
-	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
+	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
 	d1(KPrintF("%s/%s/%ld: inst=%08lx  ln=%08lx\n", __FILE__, __FUNC__, __LINE__, inst, ln));
 
@@ -685,7 +685,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionMatchMatchHookFunc(struct Hook *hoo
 		CONST_STRPTR MatchString;
 		size_t Length;
 
-		get(inst->fpb_Objects[OBJNDX_String_Filetypes_Actions_Match_Match], MUIA_String_Contents, (APTR) &MatchString);
+		get(inst->fpb_Objects[OBJNDX_String_Filetypes_Actions_Match_Match], MUIA_String_Contents, &MatchString);
 
 		Length = TranslateFromPrintable(TempString, sizeof(TempString), MatchString);
 
@@ -776,7 +776,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionSearchSearchHookFunc(struct Hook *h
 		CONST_STRPTR SearchString;
 		size_t Length;
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Search_Search], MUIA_String_Contents, (APTR) &SearchString);
+		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Search_Search], MUIA_String_Contents, &SearchString);
 
 		Length = TranslateFromPrintable(TempString, sizeof(TempString), SearchString);
 
@@ -919,7 +919,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionPatternHookFunc(struct Hook *hook, 
 		{
 		CONST_STRPTR Pattern;
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Pattern_Pattern], MUIA_String_Contents, (APTR) &Pattern);
+		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Pattern_Pattern], MUIA_String_Contents, &Pattern);
 
 		SetMagicString(fae, Pattern, 1 + strlen(Pattern));
 		
@@ -946,7 +946,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionDosDeviceHookFunc(struct Hook *hook
 		{
 		CONST_STRPTR Pattern;
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DosDevice_Pattern], MUIA_String_Contents, (APTR) &Pattern);
+		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DosDevice_Pattern], MUIA_String_Contents, &Pattern);
 
 		SetMagicString(fae, Pattern, 1 + strlen(Pattern));
 
@@ -973,7 +973,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionDeviceNameHookFunc(struct Hook *hoo
 		{
 		CONST_STRPTR Pattern;
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DeviceName_Pattern], MUIA_String_Contents, (APTR) &Pattern);
+		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DeviceName_Pattern], MUIA_String_Contents, &Pattern);
 
 		SetMagicString(fae, Pattern, 1 + strlen(Pattern));
 
@@ -1000,7 +1000,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionContentsHookFunc(struct Hook *hook,
 		{
 		CONST_STRPTR Pattern;
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Contents_Pattern], MUIA_String_Contents, (APTR) &Pattern);
+		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Contents_Pattern], MUIA_String_Contents, &Pattern);
 
 		SetMagicString(fae, Pattern, 1 + strlen(Pattern));
 
@@ -1029,7 +1029,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionDosTypeHookFunc(struct Hook *hook, 
 		size_t Length;
 		CONST_STRPTR MatchString;
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DosType_Pattern], MUIA_String_Contents, (APTR) &MatchString);
+		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DosType_Pattern], MUIA_String_Contents, &MatchString);
 
 		Length = TranslateFromPrintable(TempString, sizeof(TempString), MatchString);
 
@@ -1191,7 +1191,7 @@ SAVEDS(void) INTERRUPT RenameFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
 	struct MUI_NListtree_TreeNode *ln;
 
-	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
+	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
 	if (ln)
 		{
@@ -1200,7 +1200,7 @@ SAVEDS(void) INTERRUPT RenameFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *
 
 		CleanupFoundNodes(inst);
 
-		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Name], MUIA_String_Contents, (APTR) &NewName);
+		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Name], MUIA_String_Contents, &NewName);
 
 		if (fte->fte_AllocatedName)
 			free(fte->fte_AllocatedName);
@@ -1256,7 +1256,7 @@ SAVEDS(void) INTERRUPT RemoveFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *
 	struct MUI_NListtree_TreeNode *ln;
 
 	CleanupFoundNodes(inst);
-	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
+	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
 	if (ln)
 		{
@@ -1277,7 +1277,7 @@ SAVEDS(void) INTERRUPT AddFileTypesMethodHookFunc(struct Hook *hook, APTR obj, M
 
 	d1(KPrintF("%s/%s//%ld: inst=%08lx\n", __FILE__, __FUNC__, __LINE__, inst));
 
-	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
+	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 	d1(KPrintF("%s/%s//%ld: ln=%08lx\n", __FILE__, __FUNC__, __LINE__, ln));
 	if (ln)
 		{
@@ -1601,7 +1601,7 @@ SAVEDS(void) INTERRUPT FileTypesActionDragDropSortHookFunc(struct Hook *hook, AP
 		MUIM_NList_GetEntry,
 		InsertPosition, &fae);
 
-	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
+	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
 	if (ln && fae)
 		{
@@ -1645,7 +1645,7 @@ SAVEDS(void) INTERRUPT LearnFileTypeHookFunc(struct Hook *hook, APTR obj, Msg ms
 
 	struct MUI_NListtree_TreeNode *ln;
 
-	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
+	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
 	d1(KPrintF(__FUNC__ "/%ld: inst=%08lx\n", __FUNC__, __LINE__, inst, ln));
 
@@ -1658,7 +1658,7 @@ SAVEDS(void) INTERRUPT LearnFileTypeHookFunc(struct Hook *hook, APTR obj, Msg ms
 		struct MUI_NListtree_TreeNode *ln;
 		struct FileTypesEntry *fte;
 
-		get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, (APTR) &ln);
+		get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
 		d1(KPrintF(__FUNC__ "/%ld: inst=%08lx\n", __FUNC__, __LINE__, inst, ln));
 
@@ -1667,7 +1667,7 @@ SAVEDS(void) INTERRUPT LearnFileTypeHookFunc(struct Hook *hook, APTR obj, Msg ms
 
 		fte = (struct FileTypesEntry *) ln->tn_User;
 
-		get(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 		if (NULL == win)
 			break;
 
@@ -1866,7 +1866,7 @@ SAVEDS(void) INTERRUPT EditFileTypesIconHookFunc(struct Hook *hook, APTR obj, Ms
 		if (NULL == ln)
 			break;
 
-		get(inst->fpb_Objects[OBJNDX_Text_FileTypes_DefIconName], MUIA_Text_Contents, (APTR) &DefIconName);
+		get(inst->fpb_Objects[OBJNDX_Text_FileTypes_DefIconName], MUIA_Text_Contents, &DefIconName);
 
 		stccpy(IconPath, inst->fpb_DefIconPath, sizeof(IconPath));
 		AddPart(IconPath, DefIconName, sizeof(IconPath));

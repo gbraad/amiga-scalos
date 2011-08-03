@@ -2,6 +2,9 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,12 +51,15 @@
 #define USE_INLINE_STDARG
 #include <proto/ttengine.h>
 #undef	USE_INLINE_STDARG
+
+#if !defined(__AROS__)
 #define	NO_INLINE_STDARG
+#endif
 #include <proto/muimaster.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/NListtree_mcc.h>
-#include <MUI/Lamp_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
+#include <mui/Lamp_mcc.h>
 
 #include <scalos/scalosprefsplugin.h>
 #include <scalos/preferences.h>
@@ -62,11 +68,6 @@
 #include "defs.h"
 #include <Year.h> // +jmc+
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
-#include STR(SCALOSLOCALE)
-
 #include <FontSampleMCC.h>
 #include "IconobjectMCC.h"
 #include "DataTypesMCC.h"
@@ -74,6 +75,11 @@
 
 #include "FileTypesPrefs.h"
 #include "FileTypesPrefs_proto.h"
+
+#define	ScalosFileTypes_NUMBERS
+#define	ScalosFileTypes_BLOCK
+#define	ScalosFileTypes_CODE
+#include STR(SCALOSLOCALE)
 
 #include "plugin.h"
 
@@ -231,7 +237,7 @@ struct FoundNode
 //----------------------------------------------------------------------------
 
 // aus mempools.lib
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 extern int _STI_240_InitMemFunctions(void);
 extern void _STD_240_TerminateMemFunctions(void);
 #endif
@@ -375,7 +381,7 @@ static ULONG DoDragDrop(Class *cl, Object *obj, Msg msg);
 static struct FoundNode *AddFoundNode(struct FileTypesPrefsInst *inst, Object *ListTree, struct MUI_NListtree_TreeNode *tn);
 static CONST_STRPTR FindString(CONST_STRPTR string, CONST_STRPTR pattern, BOOL CaseSensitive);
 
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
@@ -417,6 +423,10 @@ struct Library *NewlibBase;
 struct Interface *INewlib;
 #endif
 
+#ifdef __AROS__
+struct DosLibrary *DOSBase;
+#endif
+
 struct MUI_CustomClass *FileTypesPrefsClass;
 struct MUI_CustomClass *myNListClass;
 struct MUI_CustomClass *myFileTypesActionsNListClass;
@@ -425,6 +435,18 @@ struct MUI_CustomClass *myFileTypesNListTreeClass;
 struct MUI_CustomClass *FontSampleClass;
 struct MUI_CustomClass *IconobjectClass;
 struct MUI_CustomClass *DataTypesImageClass;
+
+#ifdef __AROS__
+#define myNListTreeObject BOOPSIOBJMACRO_START(myNListTreeClass->mcc_Class)
+#define myNListObject BOOPSIOBJMACRO_START(myNListClass->mcc_Class)
+#define myFileTypesNListTreeObject BOOPSIOBJMACRO_START(myFileTypesNListTreeClass->mcc_Class)
+#define myFileTypesActionsNListObject BOOPSIOBJMACRO_START(myFileTypesActionsNListClass->mcc_Class)
+#else
+#define myNListTreeObject NewObject(myNListTreeClass->mcc_Class, 0
+#define myNListObject NewObject(myNListClass->mcc_Class, 0
+#define myFileTypesNListTreeObject NewObject(myFileTypesNListTreeClass->mcc_Class, 0
+#define myFileTypesActionsNListObject NewObject(myFileTypesActionsNListClass->mcc_Class, 0
+#endif
 
 static struct Catalog *FileTypesPrefsCatalog;
 static struct Locale *FileTypesPrefsLocale;
@@ -1619,7 +1641,7 @@ VOID closePlugin(struct PluginBase *PluginBase)
 
 	CloseLibraries();
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 }
@@ -2026,7 +2048,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 		Child, inst->fpb_Objects[OBJNDX_ShadowListView] = NListviewObject,
 			MUIA_ShowMe, FALSE,
 			MUIA_CycleChain, TRUE,
-			MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_ShadowListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
+			MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_ShadowListTree] = myNListTreeObject,
 				MUIA_NList_PrivateData, inst,
 				MUIA_NList_Format, "",
 				MUIA_NListtree_DisplayHook, &inst->fpb_Hooks[HOOKNDX_TreeDisplay],
@@ -2038,7 +2060,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 		Child, inst->fpb_Objects[OBJNDX_ShadowAttrListView] = NListviewObject,
 			MUIA_ShowMe, FALSE,
 			MUIA_CycleChain, TRUE,
-			MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_ShadowAttrList] = NewObject(myNListClass->mcc_Class, 0,
+			MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_ShadowAttrList] = myNListObject,
 				MUIA_NList_PrivateData, inst,
 				MUIA_NList_Format, ",",
 				InputListFrame,
@@ -2118,7 +2140,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 							Child, inst->fpb_Objects[OBJNDX_NListview_FileTypes] = NListviewObject,
 								MUIA_CycleChain, TRUE,
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SHORTHELP_LISTVIEW_FILETYPES),
-								MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_NListtree_FileTypes] = NewObject(myFileTypesNListTreeClass->mcc_Class, 0,
+								MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_NListtree_FileTypes] = myFileTypesNListTreeObject,
 									MUIA_Background, MUII_ListBack,
 									MUIA_NList_PrivateData, inst,
 									MUIA_ContextMenu, inst->fpb_Objects[OBJNDX_ContextMenuFileTypes],
@@ -2196,7 +2218,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 					Child, inst->fpb_Objects[OBJNDX_NListview_FileTypes_Methods] = NListviewObject,
 						MUIA_CycleChain, TRUE,
 						MUIA_ShortHelp, (ULONG) GetLocString(MSGID_SHORTHELP_LISTVIEW_FILETYPE_ACTION),
-						MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_NList_FileTypes_Actions] = NewObject(myFileTypesActionsNListClass->mcc_Class, 0,
+						MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_NList_FileTypes_Actions] = myFileTypesActionsNListObject,
 							MUIA_NList_PrivateData, inst,
 							MUIA_NList_Format, "BAR,",
 							InputListFrame,
@@ -2521,7 +2543,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 			Child, VGroup,
 				Child, inst->fpb_Objects[OBJNDX_MainListView] = NListviewObject,
 					MUIA_CycleChain, TRUE,
-					MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_MainListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
+					MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_MainListTree] = myNListTreeObject,
 						MUIA_ContextMenu, inst->fpb_Objects[OBJNDX_ContextMenu],
 						MUIA_NList_PrivateData, inst,
 						MUIA_NList_Format, "",
@@ -2542,7 +2564,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 				Child, inst->fpb_Objects[OBJNDX_HiddenListView] = NListviewObject,
 					MUIA_ShowMe, FALSE,
 					MUIA_CycleChain, TRUE,
-					MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_HiddenListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
+					MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_HiddenListTree] = myNListTreeObject,
 						MUIA_ContextMenu, inst->fpb_Objects[OBJNDX_ContextMenu],
 						MUIA_NList_PrivateData, inst,
 						MUIA_NList_Format, "",
@@ -2597,7 +2619,7 @@ static Object *CreatePrefsGroup(struct FileTypesPrefsInst *inst)
 
 				Child, inst->fpb_Objects[OBJNDX_AttrListView] = NListviewObject,
 					MUIA_CycleChain, TRUE,
-					MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_AttrList] = NewObject(myNListClass->mcc_Class, 0,
+					MUIA_NListview_NList, inst->fpb_Objects[OBJNDX_AttrList] = myNListObject,
 						MUIA_ContextMenu, inst->fpb_Objects[OBJNDX_ContextMenuAttrList],
 						MUIA_NList_PrivateData, inst,
 						MUIA_NList_Format, ",",
@@ -2886,7 +2908,7 @@ static Object **CreateSubWindows(Class *cl, Object *o)
 			Child, inst->fpb_Objects[OBJNDX_Group_AttributeAslFile] = HGroup,
 				MUIA_ShowMe, FALSE,
 
-				Child, inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile] = NewObject(DataTypesImageClass->mcc_Class, 0,
+				Child, inst->fpb_Objects[OBJNDX_DtPic_AttributeSelectAslFile] = DataTypesImageObject,
 					MUIA_ScaDtpic_Name, (ULONG) "",
 					MUIA_ScaDtpic_FailIfUnavailable, FALSE,
 					End, //DataTypesMCCObject
@@ -2911,7 +2933,7 @@ static Object **CreateSubWindows(Class *cl, Object *o)
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
 				End, //PopaslObject
 
-				Child, inst->fpb_Objects[OBJNDX_AslFont_Sample] = NewObject(FontSampleClass->mcc_Class, 0,
+				Child, inst->fpb_Objects[OBJNDX_AslFont_Sample] = FontSampleObject,
 					TextFrame,
 					MUIA_Background, MUII_TextBack,
 					MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -2934,7 +2956,7 @@ static Object **CreateSubWindows(Class *cl, Object *o)
 					MUIA_Popstring_CloseHook, &inst->fpb_Hooks[HOOKNDX_EditAttributeTTFontClose],
 				End, //PopstringObject
 
-				Child, inst->fpb_Objects[OBJNDX_TTFont_Sample] = NewObject(FontSampleClass->mcc_Class, 0,
+				Child, inst->fpb_Objects[OBJNDX_TTFont_Sample] = FontSampleObject,
 					TextFrame,
 					MUIA_Background, MUII_TextBack,
 					MUIA_FontSample_Antialias, inst->fpb_TTfAntialias,
@@ -3011,7 +3033,7 @@ static Object *CreatePrefsImage(void)
 	Object	*img;
 
 	// First try to load datatypes image from THEME: tree
-	img = NewObject(DataTypesImageClass->mcc_Class, 0,
+	img = DataTypesImageObject,
 		MUIA_ScaDtpic_Name, (ULONG) "THEME:prefs/plugins/filetypes",
 		MUIA_ScaDtpic_FailIfUnavailable, TRUE,
 		End; //DataTypesMCCObject
@@ -3377,7 +3399,7 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 		GetAttributeValueString(FindAttribute(fte, ATTRTYPE_UnselIconName), UnSelIconName, sizeof(UnSelIconName));
 		if (strlen(UnSelIconName) > 0)
 			{
-			fte->fte_ImageObject = NewObject(DataTypesImageClass->mcc_Class, 0,
+			fte->fte_ImageObject = DataTypesImageObject, 0,
 				MUIA_ScaDtpic_Name, (ULONG) UnSelIconName,
 				MUIA_ScaDtpic_FailIfUnavailable, TRUE,
 				End; //DataTypesMCCObject
@@ -3816,7 +3838,7 @@ static SAVEDS(ULONG) INTERRUPT EditAttrDisplayFunc(struct Hook *hook, APTR obj, 
 
 STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosFileTypes_LocaleInfo li;
 
 	li.li_Catalog = FileTypesPrefsCatalog;	
 #ifndef __amigaos4__
@@ -3825,7 +3847,7 @@ STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR) GetString(&li, MsgId);
+	return (STRPTR) GetScalosFileTypesString(&li, MsgId);
 }
 
 
@@ -4718,12 +4740,12 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 				if (atd->atd_NumberOfValues > 0)
 					{
 					get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectValue],
-						MUIA_String_Contents, (APTR) &ValueString);
+						MUIA_String_Contents, &ValueString);
 					}
 				else
 					{
 					get(inst->fpb_Objects[OBJNDX_String_AttributeValue],
-						MUIA_String_Contents, (APTR) &ValueString);
+						MUIA_String_Contents, &ValueString);
 					}
 
 				if (atd->atd_DefaultContents.avd_ConvertValueFromString)
@@ -4738,7 +4760,7 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 
 			case ATTRDEFTYPE_FileName:
 				get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslFile],
-					MUIA_String_Contents, (APTR) &ValueString);
+					MUIA_String_Contents, &ValueString);
 
 				// Remove attribute from fte's list
 				RemoveAttribute(fte, atd->atd_Type);
@@ -4747,7 +4769,7 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 
 			case ATTRDEFTYPE_PathName:
 				get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslPath],
-					MUIA_String_Contents, (APTR) &ValueString);
+					MUIA_String_Contents, &ValueString);
 
 				// Remove attribute from fte's list
 				RemoveAttribute(fte, atd->atd_Type);
@@ -4756,7 +4778,7 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 
 			case ATTRDEFTYPE_FontString:
 				get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslFont],
-					MUIA_String_Contents, (APTR) &ValueString);
+					MUIA_String_Contents, &ValueString);
 
 				// Remove attribute from fte's list
 				RemoveAttribute(fte, atd->atd_Type);
@@ -4765,7 +4787,7 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 
 			case ATTRDEFTYPE_TTFontString:
 				get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectTTFont],
-					MUIA_String_Contents, (APTR) &ValueString);
+					MUIA_String_Contents, &ValueString);
 
 				// Remove attribute from fte's list
 				RemoveAttribute(fte, atd->atd_Type);
@@ -4778,12 +4800,12 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 				if (atd->atd_NumberOfValues > 0)
 					{
 					get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectValue],
-						MUIA_String_Contents, (APTR) &ValueString);
+						MUIA_String_Contents, &ValueString);
 					}
 				else
 					{
 					get(inst->fpb_Objects[OBJNDX_String_AttributeValue],
-						MUIA_String_Contents, (APTR) &ValueString);
+						MUIA_String_Contents, &ValueString);
 					}
 				// Remove attribute from fte's list
 				RemoveAttribute(fte, atd->atd_Type);
@@ -4849,7 +4871,7 @@ static SAVEDS(ULONG) INTERRUPT EditAttributePopAslFileStartHookFunc(struct Hook 
 
 	d1(KPrintF("%s/%ld: inst=%08lx\n", __FUNC__, __LINE__, inst));
 
-	get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslFile], MUIA_String_Contents, (APTR) &ValueString);
+	get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslFile], MUIA_String_Contents, &ValueString);
 
 	d1(KPrintF("%s/%ld: ValueString=<%s>\n", __FUNC__, __LINE__, ValueString));
 
@@ -4892,7 +4914,7 @@ static SAVEDS(ULONG) INTERRUPT EditAttributePopAslPathStartHookFunc(struct Hook 
 
 	d1(kprintf("%s/%ld: inst=%08lx\n", __FUNC__, __LINE__, inst));
 
-	get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslPath], MUIA_String_Contents, (APTR) &ValueString);
+	get(inst->fpb_Objects[OBJNDX_Pop_AttributeSelectAslPath], MUIA_String_Contents, &ValueString);
 
 	while (TAG_END != TagList->ti_Tag)
 		TagList++;
@@ -4938,13 +4960,13 @@ static SAVEDS(ULONG) INTERRUPT EditAttrTTFontOpenHookFunc(struct Hook *hook, Obj
 		ULONG FontStyle, FontWeight, FontSize;
 		STRPTR FontDesc;
 
-		get(o, MUIA_String_Contents, (APTR) &FontDesc);
+		get(o, MUIA_String_Contents, &FontDesc);
 
 		ParseTTFontFromDesc(FontDesc, &FontStyle, &FontWeight, 
 			&FontSize, FontName, sizeof(FontName));
 
 //		set(inst->fpb_Objects[OBJNDX_WIN_EditAttribute], MUIA_Window_Sleep, TRUE);
-		get(inst->fpb_Objects[OBJNDX_WIN_EditAttribute], MUIA_Window_Window, (APTR) &PrefsWindow);
+		get(inst->fpb_Objects[OBJNDX_WIN_EditAttribute], MUIA_Window_Window, &PrefsWindow);
 
 		//TT_RequestA()
 		AttrList = TT_Request(ttRequest,
@@ -5425,7 +5447,7 @@ DISPATCHER(myNListTree)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf("%s/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __FUNC__, __LINE__, cmc->item));
 
@@ -5457,7 +5479,7 @@ DISPATCHER(myNListTree)
 			};
 		struct TestPosArg *tpa = (struct TestPosArg *) msg;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		if (inst->fpb_PageIsActive)
 			Result = DoSuperMethodA(cl, obj, msg);
@@ -5476,7 +5498,7 @@ DISPATCHER(myNListTree)
 		{
 		struct MUIP_DragQuery *dq = (struct MUIP_DragQuery *) msg;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf("%s/%ld: MUIM_DragQuery obj=%08lx\n", __FUNC__, __LINE__, dq->obj));
 
@@ -5497,7 +5519,7 @@ DISPATCHER(myNListTree)
 		struct MUI_NListtree_TreeNode *tnTo, *tnFrom;
 		struct MUI_NListtree_TestPos_Result res;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		inst->fpb_MenuTreeMayDrop = FALSE;
 
@@ -5509,7 +5531,7 @@ DISPATCHER(myNListTree)
 		tnTo = res.tpr_TreeNode;
 
 		tnFrom = MUIV_NListtree_Active_Off;
-		get(obj, MUIA_NListtree_Active, (APTR) &tnFrom);
+		get(obj, MUIA_NListtree_Active, &tnFrom);
 
 		d1(KPrintF("%s/%ld: tnFrom=%08lx  tnTo=%08lx\n", __FUNC__, __LINE__, tnFrom, tnTo));
 
@@ -5539,7 +5561,7 @@ DISPATCHER(myNListTree)
 	// we catch MUIM_DragReport because we want to restrict some dragging for some special objects
 	case MUIM_DragReport:
 		{
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(KPrintF("%s/%ld: MUIM_DragReport\n", __FUNC__, __LINE__));
 
@@ -5577,7 +5599,7 @@ DISPATCHER(myFileTypesNListTree)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf("%s/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __FUNC__, __LINE__, cmc->item));
 
@@ -5618,7 +5640,7 @@ DISPATCHER(myFileTypesNListTree)
 		//struct MUIP_DragDrop *dq = (struct MUIP_DragDrop *) msg;
 		struct MUI_NListtree_TreeNode *ln;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 		d1(kprintf("%s/%ld: MUIP_DragDrop obj=%08lx\n", __FUNC__, __LINE__, obj));
 
 		Result = DoSuperMethodA(cl, obj, msg);
@@ -5664,7 +5686,7 @@ DISPATCHER(myNList)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf("%s/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __FUNC__, __LINE__, cmc->item));
 
@@ -5707,7 +5729,7 @@ DISPATCHER(myFileTypesActionsNList)
 		{
 	case MUIM_DragDrop:
 		Result = DoSuperMethodA(cl, obj, msg);
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 		CallHookPkt(&inst->fpb_Hooks[HOOKNDX_DragDropSort_FileTypesAction], obj, msg);
 		break;
 
@@ -5718,7 +5740,7 @@ DISPATCHER(myFileTypesActionsNList)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf("%s/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __FUNC__, __LINE__, cmc->item));
 
@@ -7133,7 +7155,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 	if (!OpenLibraries())
 		return FALSE;
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	if (_STI_240_InitMemFunctions())
 		return FALSE;
 #endif
@@ -7248,12 +7270,12 @@ static ULONG DoDragDrop(Class *cl, Object *obj, Msg msg)
 	struct FileTypesPrefsInst *inst;
 	struct MUI_NListtree_TreeNode *tnTo, *tnFrom;
 
-	get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+	get(obj, MUIA_NList_PrivateData, &inst);
 
-	get(obj, MUIA_NListtree_DropTarget, (APTR)&tnTo);
+	get(obj, MUIA_NListtree_DropTarget, &tnTo);
 
 	tnFrom = MUIV_NListtree_Active_Off;
-	get(obj, MUIA_NListtree_Active, (APTR) &tnFrom);
+	get(obj, MUIA_NListtree_Active, &tnFrom);
 
 	d1(kprintf(__FILE__ "/%s/%ld: tnFrom=%08lx  tnTo=%08lx\n", __FUNC__, __LINE__, tnFrom, tnTo));
 
@@ -7329,7 +7351,7 @@ static SAVEDS(APTR) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->fpb_LoadReq,
@@ -7379,7 +7401,7 @@ static SAVEDS(APTR) INTERRUPT SaveAsHookFunc(struct Hook *hook, Object *o, Msg m
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->fpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->fpb_SaveReq,
@@ -7806,7 +7828,7 @@ void UpdateMenuImage(struct FileTypesPrefsInst *inst, ULONG ListTree, struct Fil
 	GetAttributeValueString(FindAttribute(fte, ATTRTYPE_UnselIconName), UnSelIconName, sizeof(UnSelIconName));
 	if (strlen(UnSelIconName) > 0)
 		{
-		fte->fte_ImageObject = NewObject(DataTypesImageClass->mcc_Class, 0,
+		fte->fte_ImageObject = DataTypesImageObject,
 			MUIA_ScaDtpic_Name, (ULONG) UnSelIconName,
 			MUIA_ScaDtpic_FailIfUnavailable, TRUE,
 			End; //DataTypesMCCObject
@@ -7827,7 +7849,7 @@ void UpdateMenuImage(struct FileTypesPrefsInst *inst, ULONG ListTree, struct Fil
 #if !defined(__SASC) && ! defined(__amigaos4__)
 // Replacement for SAS/C library functions
 
-#if !defined(__MORPHOS__)
+#if !defined(__MORPHOS__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen)
 {
 	size_t Count = 0;

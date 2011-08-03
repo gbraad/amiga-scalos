@@ -6,6 +6,14 @@ ifndef TOPLEVEL
 	TOPLEVEL=$(shell pwd)/../../..
 endif
 
+
+# Native FlexCat doesn't like Linux paths
+ifeq ($(CROSS), )
+	SDPATH=//
+else
+	SDPATH=../../..
+endif
+
 ##############################################################################
 
 include		config.mk
@@ -72,16 +80,16 @@ $(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
 FileTypesPrefs.c DefIconsPrefs.c : $(SCALOS_LOCALE)
 
 $(SCALOS_LOCALE) : $(PREFSDIR)/ScalosFileTypes.cd
-	@$(ECHO) "CatComp $@"
-	@catcomp $(subst ../,/,$<) cfile=$@
+	@$(ECHO) "FlexCat $@"
+	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
 
 ##############################################################################
 
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
-	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@chmod u+x $@
 
 ##############################################################################
 

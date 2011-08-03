@@ -2,6 +2,9 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -42,33 +45,48 @@
 #include <proto/asl.h>
 #include <proto/locale.h>
 #include <proto/iffparse.h>
+
+#ifndef __AROS__
 #define	NO_INLINE_STDARG
+#endif
 #include <proto/muimaster.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/Lamp_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/Lamp_mcc.h>
 #include <scalos/palette.h>
 #include <defs.h>
 #include <Year.h>
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
-#include STR(SCALOSLOCALE)
-#include <Scalos/scalosprefsplugin.h>
+#include <scalos/scalosprefsplugin.h>
 
 #include <defs.h>
 #include <Year.h>
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
-#include STR(SCALOSLOCALE)
-
 #include "PalettePrefs.h"
 #include "DataTypesMCC.h"
 
+#define	ScalosPalette_NUMBERS
+#define	ScalosPalette_BLOCK
+#define	ScalosPalette_CODE
+#include STR(SCALOSLOCALE)
+
 #include "plugin.h"
+
+//----------------------------------------------------------------------------
+
+#ifdef __AROS__
+#define NewColorAdjustObject BOOPSIOBJMACRO_START(NewColorAdjustClass->mcc_Class)
+#define NewPalettePenListObject BOOPSIOBJMACRO_START(NewPalettePenListClass->mcc_Class)
+#define NewScalosPenListObject BOOPSIOBJMACRO_START(NewScalosPenListClass->mcc_Class)
+#define myNListObject BOOPSIOBJMACRO_START(myNListClass->mcc_Class)
+#define DataTypesImageObject BOOPSIOBJMACRO_START(DataTypesImageClass->mcc_Class)
+#else
+#define NewColorAdjustObject NewObject(NewColorAdjustClass->mcc_Class, 0
+#define NewPalettePenListObject NewObject(NewPalettePenListClass->mcc_Class, 0
+#define NewScalosPenListObject NewObject(NewScalosPenListClass->mcc_Class, 0
+#define myNListObject NewObject(myNListClass->mcc_Class, 0
+#define DataTypesImageObject NewObject(DataTypesImageClass->mcc_Class, 0
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -189,7 +207,7 @@ static const LONG StopChunkList[] =
 //----------------------------------------------------------------------------
 
 // aus mempools.lib
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 extern int _STI_240_InitMemFunctions(void);
 extern void _STD_240_TerminateMemFunctions(void);
 #endif
@@ -282,6 +300,10 @@ struct IntuitionIFace *IIntuition;
 struct DataTypesIFace *IDataTypes;
 struct Library *NewlibBase;
 struct Interface *INewlib;
+#endif
+
+#ifdef __AROS__
+struct DosLibrary *DOSBase;
 #endif
 
 struct MUI_CustomClass *NewColorAdjustClass;
@@ -455,7 +477,7 @@ VOID closePlugin(struct PluginBase *PluginBase)
 
 	CloseLibraries();
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 }
@@ -762,7 +784,7 @@ static Object *CreatePrefsGroup(struct PalettePrefsInst *inst)
 					MUIA_CycleChain, TRUE,
 					MUIA_Listview_Input, TRUE,
 					MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-					MUIA_NListview_NList, inst->ppb_Objects[OBJNDX_ScalosPenList] = NewObject(NewScalosPenListClass->mcc_Class, 0,
+					MUIA_NListview_NList, inst->ppb_Objects[OBJNDX_ScalosPenList] = NewScalosPenListObject,
 						MUIA_NList_PrivateData, inst,
 						InputListFrame,
 						MUIA_Background, MUII_ListBack,
@@ -801,7 +823,7 @@ static Object *CreatePrefsGroup(struct PalettePrefsInst *inst)
 					MUIA_Listview_Input, TRUE,
 					MUIA_CycleChain, TRUE,
 					MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-					MUIA_NListview_NList, inst->ppb_Objects[OBJNDX_AllocatedPensList] = NewObject(NewPalettePenListClass->mcc_Class, 0,
+					MUIA_NListview_NList, inst->ppb_Objects[OBJNDX_AllocatedPensList] = NewPalettePenListObject,
 						MUIA_NList_PrivateData, inst,
 						MUIA_UserData, inst,
 						InputListFrame,
@@ -841,7 +863,7 @@ static Object *CreatePrefsGroup(struct PalettePrefsInst *inst)
 				Child, BalanceObject,
 				End, //BalanceObject
 
-				Child, inst->ppb_Objects[OBJNDX_ColorAdjust] = NewObject(NewColorAdjustClass->mcc_Class, 0,
+				Child, inst->ppb_Objects[OBJNDX_ColorAdjust] = NewColorAdjustObject,
 					MUIA_UserData, inst,
 				End, //NewColorAdjustClass
 
@@ -862,7 +884,7 @@ static Object *CreatePrefsGroup(struct PalettePrefsInst *inst)
 						MUIA_Listview_MultiSelect, TRUE,
 						MUIA_CycleChain, TRUE,
 						MUIA_ShortHelp, GetLocString(MSGID_SHORTHELP_WBPENLIST),
-						MUIA_NListview_NList, inst->ppb_Objects[OBJNDX_WBColorsList] = NewObject(myNListClass->mcc_Class, 0,
+						MUIA_NListview_NList, inst->ppb_Objects[OBJNDX_WBColorsList] = myNListObject,
 							MUIA_NList_PrivateData, inst,
 							InputListFrame,
 							MUIA_Background, MUII_ListBack,
@@ -958,7 +980,7 @@ static Object *CreatePrefsImage(void)
 	Object	*img;
 
 	// First try to load datatypes image from THEME: tree
-	img = NewObject(DataTypesImageClass->mcc_Class, 0,
+	img = DataTypesImageObject,
 		MUIA_ScaDtpic_Name, (ULONG) "THEME:prefs/plugins/palette",
 		MUIA_ScaDtpic_FailIfUnavailable, TRUE,
 		End; //DataTypesMCCObject
@@ -1051,7 +1073,7 @@ static BOOL OpenLibraries(void)
 		return FALSE;
 #endif
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 	__UtilityBase = UtilityBase;
 #endif /* __GNUC__ && !__MORPHOS__ && ! __amigaos4__ */
 
@@ -1210,7 +1232,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosPalette_LocaleInfo li;
 
 	li.li_Catalog = PalettePrefsCatalog;	
 #ifndef __amigaos4__
@@ -1219,7 +1241,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetScalosPaletteString(&li, MsgId);
 }
 
 
@@ -1272,7 +1294,7 @@ DISPATCHER(myNList)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf(__FUNC__ "/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __LINE__, cmc->item));
 
@@ -1317,7 +1339,7 @@ DISPATCHER(NewColorAdjust)
 		{
 		struct MUIP_DragQuery *dq = (struct MUIP_DragQuery *) msg;
 
-		get(obj, MUIA_UserData, (APTR) &inst);
+		get(obj, MUIA_UserData, &inst);
 
 		if (inst->ppb_Objects[OBJNDX_WBColorsList] == dq->obj)
 			Result = MUIV_DragQuery_Accept;
@@ -1331,7 +1353,7 @@ DISPATCHER(NewColorAdjust)
 		struct MUIP_DragDrop *dd = (struct MUIP_DragDrop *) msg;
 		APTR activeEntry = NULL;
 
-		get(obj, MUIA_UserData, (APTR) &inst);
+		get(obj, MUIA_UserData, &inst);
 
 		DoMethod(dd->obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &activeEntry);
 
@@ -1365,7 +1387,7 @@ DISPATCHER(NewPalettePenList)
 		{
 		struct MUIP_DragQuery *dq = (struct MUIP_DragQuery *) msg;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		if (inst->ppb_Objects[OBJNDX_WBColorsList] == dq->obj || inst->ppb_Objects[OBJNDX_AllocatedPensList] == dq->obj)
 			Result = MUIV_DragQuery_Accept;
@@ -1378,7 +1400,7 @@ DISPATCHER(NewPalettePenList)
 		{
 		struct MUIP_DragDrop *dd = (struct MUIP_DragDrop *) msg;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		if (inst->ppb_Objects[OBJNDX_AllocatedPensList] == dd->obj)
 			{
@@ -1436,7 +1458,7 @@ DISPATCHER(NewPalettePenList)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf(__FUNC__ "/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __LINE__, cmc->item));
 
@@ -1479,7 +1501,7 @@ DISPATCHER(NewScalosPenList)
 		{
 		struct MUIP_DragQuery *dq = (struct MUIP_DragQuery *) msg;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		if (inst->ppb_Objects[OBJNDX_ScalosPenList] == dq->obj || inst->ppb_Objects[OBJNDX_AllocatedPensList] == dq->obj)
 			Result = MUIV_DragQuery_Accept;
@@ -1493,7 +1515,7 @@ DISPATCHER(NewScalosPenList)
 		LONG DropMark;
 		struct MUIP_DragDrop *dd = (struct MUIP_DragDrop *) msg;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 		get(obj, MUIA_NList_DropMark, &DropMark);
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: DropMark=%ld\n", __LINE__, DropMark));
 
@@ -1575,7 +1597,7 @@ DISPATCHER(NewScalosPenList)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf(__FUNC__ "/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __LINE__, cmc->item));
 
@@ -1640,31 +1662,31 @@ static ULONG AllocatedPensListDisplayFunc(struct Hook *hook, Object *obj, struct
 		static char Buffer[80];
 		STRPTR lp = Buffer;
 
-		sprintf(lp, "%ld", sple->sple_Index);
+		sprintf(lp, "%ld", (long)sple->sple_Index);
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: lp=<%s>\n", __LINE__, lp));
 		ndm->strings[0] = lp;
 		lp += 1 + strlen(lp);
 
 		sprintf(lp, "\033I[2:%08lx %08lx %08lx]",
-			sple->sple_Red, sple->sple_Green, sple->sple_Blue);
+			(long)sple->sple_Red, (long)sple->sple_Green, (long)sple->sple_Blue);
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: lp=<%s>\n", __LINE__, lp));
 		ndm->strings[1] = lp;
 		lp += 1 + strlen(lp);
 
 		// Ref. Count
-		sprintf(lp, "%ld", GetPenReferenceCount(inst, sple->sple_Index));
+		sprintf(lp, "%ld", (long)GetPenReferenceCount(inst, sple->sple_Index));
 		ndm->strings[2] = lp;
 		lp += 1 + strlen(lp);
 
-		sprintf(lp, "%ld", sple->sple_Red >> 24);
+		sprintf(lp, "%ld", (long)sple->sple_Red >> 24);
 		ndm->strings[3] = lp;
 		lp += 1 + strlen(lp);
 
-		sprintf(lp, "%ld", sple->sple_Green >> 24);
+		sprintf(lp, "%ld", (long)(sple->sple_Green >> 24));
 		ndm->strings[4] = lp;
 		lp += 1 + strlen(lp);
 
-		sprintf(lp, "%ld", sple->sple_Blue >> 24);
+		sprintf(lp, "%ld", (long)(sple->sple_Blue >> 24));
 		ndm->strings[5] = lp;
 		}
 	else
@@ -1813,26 +1835,26 @@ static ULONG WBPensListDisplayFunc(struct Hook *hook, Object *obj, struct NList_
 		static char Buffer[80];
 		STRPTR lp = Buffer;
 
-		sprintf(lp, "%ld", sple->sple_Index);
+		sprintf(lp, "%ld", (long)sple->sple_Index);
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: lp=<%s>\n", __LINE__, lp));
 		ndm->strings[0] = lp;
 		lp += 1 + strlen(lp);
 
 		sprintf(lp, "\x1bI[2:%08lx %08lx %08lx]",
-			sple->sple_Red, sple->sple_Green, sple->sple_Blue);
+			(long)sple->sple_Red, (long)sple->sple_Green, (long)sple->sple_Blue);
 		d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: lp=<%s>\n", __LINE__, lp));
 		ndm->strings[1] = lp;
 		lp += 1 + strlen(lp);
 
-		sprintf(lp, "%ld", sple->sple_Red >> 24);
+		sprintf(lp, "%ld", (long)(sple->sple_Red >> 24));
 		ndm->strings[2] = lp;
 		lp += 1 + strlen(lp);
 
-		sprintf(lp, "%ld", sple->sple_Green >> 24);
+		sprintf(lp, "%ld", (long)(sple->sple_Green >> 24));
 		ndm->strings[3] = lp;
 		lp += 1 + strlen(lp);
 
-		sprintf(lp, "%ld", sple->sple_Blue >> 24);
+		sprintf(lp, "%ld", (long)(sple->sple_Blue >> 24));
 		ndm->strings[4] = lp;
 		}
 	else
@@ -1984,7 +2006,7 @@ static ULONG ScalosPenListDisplayFunc(struct Hook *hook, Object *obj, struct NLi
 		if (sple)
 			{
 			sprintf(lp, "\x1bI[2:%08lx %08lx %08lx]", 
-				sple->sple_Red, sple->sple_Green, sple->sple_Blue);
+				(long)sple->sple_Red, (long)sple->sple_Green, (long)sple->sple_Blue);
 			}
 		else
 			{
@@ -2141,7 +2163,7 @@ static APTR AddPenFunc(struct Hook *hook, Object *o, Msg msg)
 
 	sple.sple_Index = 0;
 
-	get(inst->ppb_Objects[OBJNDX_ColorAdjust], MUIA_Coloradjust_RGB, (APTR) &rgb);
+	get(inst->ppb_Objects[OBJNDX_ColorAdjust], MUIA_Coloradjust_RGB, &rgb);
 	get(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIA_NList_Entries, &sple.sple_Index );
 
 	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: rgb=%08lx  %08lx  %08lx\n", __LINE__, rgb[0], rgb[1], rgb[2]));
@@ -2304,7 +2326,7 @@ static APTR OpenFunc(struct Hook *hook, Object *o, Msg msg)
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->ppb_LoadReq,
@@ -2375,7 +2397,7 @@ static APTR SaveAsFunc(struct Hook *hook, Object *o, Msg msg)
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->ppb_SaveReq,
@@ -2526,8 +2548,8 @@ static LONG ReadPrefsFile(struct PalettePrefsInst *inst, CONST_STRPTR Filename, 
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			{
 			Result = IoErr();
 			break;
@@ -2629,7 +2651,7 @@ static LONG ReadPrefsFile(struct PalettePrefsInst *inst, CONST_STRPTR Filename, 
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -2699,8 +2721,8 @@ static LONG WritePrefsFile(struct PalettePrefsInst *inst, CONST_STRPTR Filename)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+		if (0 == iff->iff_Stream)
 			{
 			// ... try to create missing directories here
 			STRPTR FilenameCopy;
@@ -2727,8 +2749,8 @@ static LONG WritePrefsFile(struct PalettePrefsInst *inst, CONST_STRPTR Filename)
 					if (dirLock)
 						UnLock(dirLock);
 
-					iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-					if ((BPTR)NULL == iff->iff_Stream)
+					iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+					if (0 == iff->iff_Stream)
 						Result = IoErr();
 					else
 						Result = RETURN_OK;
@@ -2862,8 +2884,8 @@ static LONG WritePrefsFile(struct PalettePrefsInst *inst, CONST_STRPTR Filename)
 
 		if (iff->iff_Stream)
 			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = (BPTR)NULL;
+			Close((BPTR)iff->iff_Stream);
+			iff->iff_Stream = 0;
 			}
 
 		FreeIFF(iff);
@@ -3059,7 +3081,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 		if (!OpenLibraries())
 			return FALSE;
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		if (_STI_240_InitMemFunctions())
 			return FALSE;
 #endif
