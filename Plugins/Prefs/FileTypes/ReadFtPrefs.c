@@ -42,8 +42,8 @@
 #define	NO_INLINE_STDARG
 #include <proto/muimaster.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/NListtree_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 
 #include <defs.h>
 
@@ -97,7 +97,7 @@ static LONG FtCliCmd(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeN
 static LONG FtPluginCmd(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *tn, LONG *ArgArray);
 static LONG FtIconWindowCmd(struct FileTypesPrefsInst *inst, struct MUI_NListtree_TreeNode *tn, LONG *ArgArray);
 
-#if !defined(__SASC) && !defined(__MORPHOS__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__AROS__)
 static char *stpblk(const char *q);
 #endif /* !defined(__SASC) && !defined(__MORPHOS__)  */
 
@@ -321,7 +321,7 @@ static LONG ReadFileTypeDefFile(struct FileTypesPrefsInst *inst, struct MUI_NLis
 				if (InputRdArgs)
 					{
 					struct RDArgs *rdArg;
-					LONG ArgArray[10];
+					IPTR ArgArray[10];
 
 					d1(kprintf(__FUNC__ "/%ld: Template = <%s>\n", __FUNC__, __LINE__, cmdTableEntry->cf_Template));
 
@@ -1329,7 +1329,7 @@ void GenerateFileTypesNewEntry(struct FileTypesPrefsInst *inst, CONST_STRPTR Nam
 }
 
 
-#if !defined(__SASC) && !defined(__MORPHOS__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 static char *stpblk(const char *q)

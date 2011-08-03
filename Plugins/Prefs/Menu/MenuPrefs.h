@@ -6,7 +6,7 @@
 #ifndef SCALOS_MENUPREFS_H
 #define	SCALOS_MENUPREFS_H
 
-#include <Scalos/menu.h>
+#include <scalos/menu.h>
 #include <stddef.h>
 #include <stdarg.h>
 
@@ -205,5 +205,12 @@ extern int kprintf(const char *fmt, ...);
 extern int KPrintF(const char *fmt, ...);
 
 //----------------------------------------------------------------------------
+
+struct ScalosMenu_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
 
 #endif /* SCALOS_MENUPREFS_H */

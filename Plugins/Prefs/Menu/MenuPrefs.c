@@ -2,6 +2,9 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -40,26 +43,43 @@
 #include <proto/asl.h>
 #include <proto/locale.h>
 #include <proto/iffparse.h>
+
+#ifndef __AROS__
 #define	NO_INLINE_STDARG
+#endif
+
 #include <proto/muimaster.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/NListtree_mcc.h>
-#include <MUI/Lamp_mcc.h>
-#include <Scalos/scalosprefsplugin.h>
-#include <Scalos/scalosmenuprefsplugin.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
+#include <mui/Lamp_mcc.h>
+#include <scalos/scalosprefsplugin.h>
+#include <scalos/scalosmenuprefsplugin.h>
 #include <defs.h>
 #include <Year.h>
-
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
-#include STR(SCALOSLOCALE)
 
 #include "MenuPrefs.h"
 #include "DataTypesMCC.h"
 
+#define	ScalosMenu_NUMBERS
+#define	ScalosMenu_BLOCK
+#define	ScalosMenu_CODE
+#include STR(SCALOSLOCALE)
+
 #include "plugin.h"
+
+//----------------------------------------------------------------------------
+
+#ifdef __AROS__
+#define myNListTreeObject BOOPSIOBJMACRO_START(myNListTreeClass->mcc_Class)
+//#define myNListObject BOOPSIOBJMACRO_START(myNListClass->mcc_Class)
+//#define myFileTypesNListTreeObject BOOPSIOBJMACRO_START(myFileTypesNListTreeClass->mcc_Class)
+#else
+#define myNListTreeObject NewObject(myNListTreeClass->mcc_Class, 0
+#define myNListObject NewObject(myNListClass->mcc_Class, 0
+#define myFileTypesNListTreeObject NewObject(myFileTypesNListTreeClass->mcc_Class, 0
+#define myFileTypesActionsNListObject NewObject(myFileTypesActionsNListClass->mcc_Class, 0
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -317,7 +337,7 @@ static BOOL MayPasteOnto(struct MenuPrefsInst *inst,
 	struct MUI_NListtree_TreeNode *tnTo, struct MUI_NListtree_TreeNode *tnFrom);
 static struct MUI_NListtree_TreeNode *MayPasteBelow(struct MenuPrefsInst *inst,
 	struct MUI_NListtree_TreeNode *tnTo, struct MUI_NListtree_TreeNode *tnFrom);
-#if !defined(__SASC) && !defined(__MORPHOS__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__AROS__)
 static char *stpblk(const char *q);
 #if !defined(__amigaos4__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
@@ -350,6 +370,10 @@ struct UtilityIFace *IUtility;
 struct IntuitionIFace *IIntuition;
 struct Library *NewlibBase;
 struct Interface *INewlib;
+#endif
+
+#ifdef __AROS__
+struct DosLibrary *DOSBase;
 #endif
 
 static BOOL StaticsTranslated;
@@ -601,7 +625,7 @@ void closePlugin(struct PluginBase *PluginBase)
 
 	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 
@@ -932,7 +956,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 			Child, HGroup,
 				Child, VGroup,
 					Child, inst->mpb_Objects[OBJNDX_MainListView] = NListviewObject,
-						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_MainListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
+						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_MainListTree] = myNListTreeObject,
 							MUIA_CycleChain, TRUE,
 							MUIA_ContextMenu, inst->mpb_Objects[OBJNDX_ContextMenu],
 							MUIA_NList_PrivateData, inst,
@@ -952,7 +976,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 
 					Child, NListviewObject,
 						MUIA_ShowMe, FALSE,
-						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_HiddenListTree] = NewObject(myNListTreeClass->mcc_Class, 0,
+						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_HiddenListTree] = myNListTreeObject,
 							MUIA_CycleChain, TRUE,
 							MUIA_NList_PrivateData, inst,
 							MUIA_NList_Format, ",",
@@ -967,7 +991,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 
 					Child, NListviewObject,
 						MUIA_ShowMe, FALSE,
-						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_ListTreeClipboard] = NewObject(myNListTreeClass->mcc_Class, 0,
+						MUIA_NListview_NList, inst->mpb_Objects[OBJNDX_ListTreeClipboard] = myNListTreeObject,
 							MUIA_CycleChain, TRUE,
 							MUIA_NList_PrivateData, inst,
 							MUIA_NList_Format, ",",
@@ -1025,7 +1049,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							MUIA_Popstring_Button, PopButton(MUII_PopFile),
 							End, //PopaslObject
 
-						Child, inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
+						Child, inst->mpb_Objects[OBJNDX_DtImage_UnselectedImage] = DataTypesImageObject,
 							MUIA_ShortHelp, GetLocString(MSGID_SAMPLE_UNSELECTEDIMAGE_SHORTHELP),
 							MUIA_ScaDtpic_Name,  (ULONG) "",
 							End, //DataTypesMCCObject
@@ -1045,7 +1069,7 @@ static Object *CreatePrefsGroup(struct MenuPrefsInst *inst)
 							MUIA_Popstring_Button, PopButton(MUII_PopFile),
 							End, //PopaslObject
 
-						Child, inst->mpb_Objects[OBJNDX_DtImage_SelectedImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
+						Child, inst->mpb_Objects[OBJNDX_DtImage_SelectedImage] = DataTypesImageObject,
 							MUIA_ShortHelp, GetLocString(MSGID_SAMPLE_SELECTEDIMAGE_SHORTHELP),
 							MUIA_ScaDtpic_Name,  (ULONG) "",
 							End, //DataTypesMCCObject
@@ -1631,7 +1655,7 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 
 			mle->llist_UnSelImageIndex = ++inst->mpb_TreeImageIndex;
 
-			mle->llist_UnSelImageObj = NewObject(DataTypesImageClass->mcc_Class, 0,
+			mle->llist_UnSelImageObj = DataTypesImageObject,
 				MUIA_ScaDtpic_Name,  (ULONG) mle->llist_UnselectedIconName,
 				End;
 
@@ -1735,7 +1759,7 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 					{
 					snprintf(mle->llist_MenuItemName, sizeof(mle->llist_MenuItemName),
 						"\33o[%ld]%s",
-						mle->llist_UnSelImageIndex, ltdm->TreeNode->tn_Name);
+						(long)mle->llist_UnSelImageIndex, ltdm->TreeNode->tn_Name);
 					ltdm->Array[0] = mle->llist_MenuItemName;
 					}
 				else
@@ -1788,7 +1812,7 @@ static SAVEDS(ULONG) INTERRUPT ImagePopAslFileStartHookFunc(struct Hook *hook, O
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosMenu_LocaleInfo li;
 
 	li.li_Catalog = MenuPrefsCatalog;	
 #ifndef __amigaos4__
@@ -1797,7 +1821,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR) GetString(&li, MsgId);
+	return (STRPTR) GetScalosMenuString(&li, MsgId);
 }
 
 static void TranslateStringArray(STRPTR *stringArray)
@@ -1881,7 +1905,7 @@ static SAVEDS(APTR) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->mpb_LoadReq,
@@ -1931,7 +1955,7 @@ static SAVEDS(APTR) INTERRUPT MergeHookFunc(struct Hook *hook, Object *o, Msg ms
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->mpb_LoadReq,
@@ -2016,7 +2040,7 @@ static SAVEDS(APTR) INTERRUPT SaveAsHookFunc(struct Hook *hook, Object *o, Msg m
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->mpb_SaveReq,
@@ -2080,7 +2104,7 @@ static SAVEDS(APTR) INTERRUPT RenameEntryHookFunc(struct Hook *hook, Object *o, 
 
 		SetChangedFlag(inst, TRUE);
 
-		get(inst->mpb_Objects[OBJNDX_NameString], MUIA_String_Contents, (APTR) &newName);
+		get(inst->mpb_Objects[OBJNDX_NameString], MUIA_String_Contents, &newName);
 
 		set(inst->mpb_Objects[OBJNDX_MainListTree], MUIA_NListtree_Quiet, TRUE);
 
@@ -2184,7 +2208,7 @@ static SAVEDS(APTR) INTERRUPT ChangeEntry3HookFunc(struct Hook *hook, Object *o,
 
 			SetChangedFlag(inst, TRUE);
 
-			get(inst->mpb_Objects[OBJNDX_StringCmd], MUIA_String_Contents, (APTR) &string);
+			get(inst->mpb_Objects[OBJNDX_StringCmd], MUIA_String_Contents, &string);
 			stccpy(mle->llist_name, string, sizeof(mle->llist_name));
 
 			get(inst->mpb_Objects[OBJNDX_CycleGad], MUIA_Cycle_Active, &Value);
@@ -2248,7 +2272,7 @@ static SAVEDS(APTR) INTERRUPT ChangeUnselectedImageHookFunc(struct Hook *hook, O
 
 		if (strlen(mle->llist_UnselectedIconName) > 0)
 			{
-			mle->llist_UnSelImageObj = NewObject(DataTypesImageClass->mcc_Class, 0,
+			mle->llist_UnSelImageObj = DataTypesImageObject,
 				MUIA_ScaDtpic_Name,  (ULONG) mle->llist_UnselectedIconName,
 				End;
 			DoMethod(o, MUIM_NList_UseImage, mle->llist_UnSelImageObj, mle->llist_UnSelImageIndex, 0);
@@ -2495,8 +2519,8 @@ static SAVEDS(APTR) INTERRUPT PopButtonHookFunc(struct Hook *hook, Object *o, Ms
 		BOOL drawersOnly = FALSE;
 		ULONG AslTitle = MSGID_IMPORTNAME;
 
-		get(inst->mpb_Objects[OBJNDX_StringCmd], MUIA_String_Contents, (APTR) &path);
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_StringCmd], MUIA_String_Contents, &path);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		switch (CommandType)
 			{
@@ -2759,8 +2783,8 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			{
 			Result = IoErr();
 			break;
@@ -2875,7 +2899,7 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -2920,8 +2944,8 @@ static LONG WritePrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+		if (0 == iff->iff_Stream)
 			{
 			// ... try to create missing directories here
 			STRPTR FilenameCopy;
@@ -2948,8 +2972,8 @@ static LONG WritePrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename)
 					if (dirLock)
 						UnLock(dirLock);
 
-					iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-					if ((BPTR)NULL == iff->iff_Stream)
+					iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+					if (0 == iff->iff_Stream)
 						Result = IoErr();
 					else
 						Result = RETURN_OK;
@@ -3040,8 +3064,8 @@ static LONG WritePrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename)
 
 		if (iff->iff_Stream)
 			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = (BPTR)NULL;
+			Close((BPTR)iff->iff_Stream);
+			iff->iff_Stream = 0;
 			}
 
 		FreeIFF(iff);
@@ -3802,7 +3826,7 @@ static BOOL RequestTdFile(struct MenuPrefsInst *inst, char *FileName, size_t Max
 		{
 		struct Window *win = NULL;
 
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		// MUI_AslRequest()
 		Result = MUI_AslRequestTags(Req,
@@ -3834,7 +3858,7 @@ static BOOL RequestParmFile(struct MenuPrefsInst *inst, char *FileName, size_t M
 		{
 		struct Window *win = NULL;
 
-		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->mpb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		// MUI_AslRequest()
 		Result = MUI_AslRequestTags(Req,
@@ -5082,7 +5106,7 @@ DISPATCHER(myNListTree)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf("%s/%s//%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __FILE__, __FUNC__, __LINE__, cmc->item));
 
@@ -5114,7 +5138,7 @@ DISPATCHER(myNListTree)
 			};
 		struct TestPosArg *tpa = (struct TestPosArg *) msg;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		if (inst->mpb_PageIsActive)
 			Result = DoSuperMethodA(cl, obj, msg);
@@ -5130,7 +5154,7 @@ DISPATCHER(myNListTree)
 		break;
 
 	case MUIM_DragDrop:
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 		SetChangedFlag(inst, TRUE);
 		Result = DoSuperMethodA(cl, obj, msg);
 		break;
@@ -5141,7 +5165,7 @@ DISPATCHER(myNListTree)
 		struct MUI_NListtree_TreeNode *tnTo, *tnFrom;
 		struct MUI_NListtree_TestPos_Result res;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		inst->mpb_MenuTreeMayDrop = FALSE;
 
@@ -5153,7 +5177,7 @@ DISPATCHER(myNListTree)
 		tnTo = res.tpr_TreeNode;
 
 		tnFrom = MUIV_NListtree_Active_Off;
-		get(obj, MUIA_NListtree_Active, (APTR) &tnFrom);
+		get(obj, MUIA_NListtree_Active, &tnFrom);
 
 		d1(KPrintF("%s/%ld: tnFrom=%08lx  tnTo=%08lx\n", __FUNC__, __LINE__, tnFrom, tnTo));
 
@@ -5183,7 +5207,7 @@ DISPATCHER(myNListTree)
 	// we catch MUIM_DragReport because we want to restrict some dragging for some special objects
 	case MUIM_DragReport:
 		{
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(KPrintF("%s/%ld: MUIM_DragReport\n", __FUNC__, __LINE__));
 
@@ -5209,7 +5233,7 @@ static Object *CreatePrefsImage(void)
 	Object	*img;
 
 	// First try to load datatypes image from THEME: tree
-	img = NewObject(DataTypesImageClass->mcc_Class, 0,
+	img = DataTypesImageObject,
 		MUIA_ScaDtpic_Name, (ULONG) "THEME:prefs/plugins/menu",
 		MUIA_ScaDtpic_FailIfUnavailable, TRUE,
 		End; //DataTypesMCCObject
@@ -5445,7 +5469,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 
 	d1(kprintf("%s/%s//%ld:\n", __FILE__, __FUNC__, __LINE__));
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	if (_STI_240_InitMemFunctions())
 		return FALSE;
 #endif
@@ -5783,7 +5807,7 @@ static char *stpblk(const char *q)
 	return (char *) q;
 }
 
-#elif !defined(__SASC)
+#elif !defined(__SASC) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 #if !defined(__MORPHOS__)

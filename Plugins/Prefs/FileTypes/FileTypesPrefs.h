@@ -537,4 +537,13 @@ struct FileTypesPrefsInst
 
 //----------------------------------------------------------------------------
 
+struct ScalosFileTypes_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
+
+//----------------------------------------------------------------------------
+
 #endif /* SCALOS_FILETYPESPREFS_H */

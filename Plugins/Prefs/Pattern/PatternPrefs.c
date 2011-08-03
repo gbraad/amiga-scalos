@@ -2,6 +2,9 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -48,22 +51,20 @@
 #include <proto/datatypes.h>
 #include <proto/scalosgfx.h>
 #include <proto/timer.h>
+
+#ifndef __AROS__
 #define	NO_INLINE_STDARG
+#endif
 #include <proto/muimaster.h>
 
-#include <MUI/NListview_mcc.h>
-#include <MUI/Lamp_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/Lamp_mcc.h>
 #include <scalos/pattern.h>
-#include <Scalos/scalosprefsplugin.h>
-#include <Scalos/scalospatternprefsplugin.h>
+#include <scalos/scalosprefsplugin.h>
+#include <scalos/scalospatternprefsplugin.h>
 
 #include <defs.h>
 #include <Year.h>
-
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
-#include STR(SCALOSLOCALE)
 
 #include "PatternPrefs.h"
 #include "Backfill.h"
@@ -72,6 +73,23 @@
 #include "LoadDT.h"
 #include "debug.h"
 #include "plugin.h"
+
+#define	ScalosPattern_NUMBERS
+#define	ScalosPattern_BLOCK
+#define	ScalosPattern_CODE
+#include STR(SCALOSLOCALE)
+
+//----------------------------------------------------------------------------
+
+#ifdef __AROS__
+#define myNListObject BOOPSIOBJMACRO_START(myNListClass->mcc_Class)
+#define PrecSliderObject BOOPSIOBJMACRO_START(PrecSliderClass->mcc_Class)
+#define PatternSliderObject BOOPSIOBJMACRO_START(PatternSliderClass->mcc_Class)
+#else
+#define myNListObject NewObject(myNListClass->mcc_Class, 0
+#define PrecSliderObject NewObject(PrecSliderClass->mcc_Class, 0
+#define PatternSliderObject NewObject(PatternSliderClass->mcc_Class, 0
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -168,7 +186,7 @@ struct PatternListEntry
 //----------------------------------------------------------------------------
 
 // aus mempools.lib
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 extern int _STI_240_InitMemFunctions(void);
 extern void _STD_240_TerminateMemFunctions(void);
 #endif
@@ -243,7 +261,7 @@ static void DisableBackgroundColorGadgets(struct PatternPrefsInst *inst, UWORD R
 
 DISPATCHER_PROTO(myNList);
 
-#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 static size_t stccpy(char *dest, const char *src, size_t MaxLen);
 #endif /* !defined(__SASC) && !defined(__MORPHOS__) && !defined(__amigaos4__) */
 
@@ -264,7 +282,7 @@ struct ScalosGfxBase *ScalosGfxBase;
 struct Library *CyberGfxBase;
 T_TIMERBASE TimerBase;
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 extern T_UTILITYBASE __UtilityBase;
 #endif /* __GNUC__ && !__MORPHOS && !__amigaos4__ */
 
@@ -285,6 +303,10 @@ struct CyberGfxIFace *ICyberGfx;
 struct Library *NewlibBase;
 struct Interface *INewlib;
 struct TimerIFace *ITimer;
+#endif
+
+#ifdef __AROS__
+struct DosLibrary *DOSBase;
 #endif
 
 static ULONG Signature = 0x4711;
@@ -449,7 +471,7 @@ VOID closePlugin(struct PluginBase *PluginBase)
 
 	CloseLibraries();
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 	_STD_240_TerminateMemFunctions();
 #endif
 }
@@ -780,7 +802,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 						MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
 						MUIA_Listview_Input, TRUE,
 						MUIA_CycleChain, TRUE,
-						MUIA_Listview_List, inst->ppb_Objects[OBJNDX_MainList] = NewObject(myNListClass->mcc_Class, 0,
+						MUIA_Listview_List, inst->ppb_Objects[OBJNDX_MainList] = myNListObject,
 							InputListFrame,
 							MUIA_Background, MUII_ListBack,
 							MUIA_NList_Format, MainListFormat,
@@ -811,7 +833,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 
 					Child, inst->ppb_Objects[OBJNDX_Group_Preview] = VGroupV,
 						Child, HVSpace,
-						Child, inst->ppb_Objects[OBJNDX_PreviewImage] = NewObject(DataTypesImageClass->mcc_Class, 0,
+						Child, inst->ppb_Objects[OBJNDX_PreviewImage] = DataTypesImageObject,
 							MUIA_ScaDtpic_Name, (ULONG) "",
 							MUIA_ScaDtpic_Tiled, FALSE,
 							MUIA_UserData, inst,
@@ -878,7 +900,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 						End, //HGroup
 
 						Child, Label(GetLocString(MSGID_PRECNAME)),
-						Child, inst->ppb_Objects[OBJNDX_PrecSlider] = NewObject(PrecSliderClass->mcc_Class, 0,
+						Child, inst->ppb_Objects[OBJNDX_PrecSlider] = PrecSliderObject,
 							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 3,
@@ -990,7 +1012,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 
 					Child,	ColGroup(2),
 						Child, Label(GetLocString(MSGID_TASKPRINAME)),
-						Child, inst->ppb_Objects[OBJNDX_SliderTaskPri] = NewObject(PatternSliderClass->mcc_Class, 0,
+						Child, inst->ppb_Objects[OBJNDX_SliderTaskPri] = PatternSliderObject,
 							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, -128,
 							MUIA_Numeric_Max, 127,
@@ -1017,7 +1039,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 							Child, VSpace(0),
 
 							Child, Label(GetLocString(MSGID_DEFWBNAME)),
-							Child, inst->ppb_Objects[OBJNDX_SliderWB] = NewObject(PatternSliderClass->mcc_Class, 0,
+							Child, inst->ppb_Objects[OBJNDX_SliderWB] = PatternSliderObject,
 								MUIA_CycleChain, TRUE,
 								MUIA_Numeric_Min, 0,
 								MUIA_Numeric_Max, 300,
@@ -1029,7 +1051,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 							Child, VSpace(0),
 
 							Child, Label(GetLocString(MSGID_DEFSCREENNAME)),
-							Child, inst->ppb_Objects[OBJNDX_SliderScreen] = NewObject(PatternSliderClass->mcc_Class, 0,
+							Child, inst->ppb_Objects[OBJNDX_SliderScreen] = PatternSliderObject,
 								MUIA_CycleChain, TRUE,
 								MUIA_Numeric_Min, 0,
 								MUIA_Numeric_Max, 300,
@@ -1041,7 +1063,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 							Child, VSpace(0),
 
 							Child, Label(GetLocString(MSGID_DEFWINNAME)),
-							Child, inst->ppb_Objects[OBJNDX_SliderWin] = NewObject(PatternSliderClass->mcc_Class, 0,
+							Child, inst->ppb_Objects[OBJNDX_SliderWin] = PatternSliderObject,
 								MUIA_CycleChain, TRUE,
 								MUIA_Numeric_Min, 0,
 								MUIA_Numeric_Max, 300,
@@ -1053,7 +1075,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 							Child, VSpace(0),
 
 							Child, Label(GetLocString(MSGID_TEXTNAME)),
-							Child,	inst->ppb_Objects[OBJNDX_SliderText] = NewObject(PatternSliderClass->mcc_Class, 0,
+							Child,	inst->ppb_Objects[OBJNDX_SliderText] = PatternSliderObject,
 								MUIA_CycleChain, TRUE,
 								MUIA_Numeric_Min, 0,
 								MUIA_Numeric_Max, 300,
@@ -1069,7 +1091,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 						Child, inst->ppb_Objects[OBJNDX_Group_PatternPreviews] = VGroup,
 							MUIA_ShowMe, inst->ppb_UseThumbNails,
 
-							Child,  inst->ppb_Objects[OBJNDX_Image_DesktopPattern] = NewObject(BackfillClass->mcc_Class, 0,
+							Child,  inst->ppb_Objects[OBJNDX_Image_DesktopPattern] = BackfillObject,
 								MUIA_UserData, inst,
 								ImageButtonFrame,
 								MUIA_Background, MUII_ButtonBack,
@@ -1077,7 +1099,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 								MUIA_InputMode, MUIV_InputMode_None,
 								BFA_BitmapObject, inst->ppb_Objects[OBJNDX_EmptyThumbnailBitmap],
 								End, //BackfillClass
-							Child,  inst->ppb_Objects[OBJNDX_Image_ScreenPattern] = NewObject(BackfillClass->mcc_Class, 0,
+							Child,  inst->ppb_Objects[OBJNDX_Image_ScreenPattern] = BackfillObject,
 								MUIA_UserData, inst,
 								ImageButtonFrame,
 								MUIA_Background, MUII_ButtonBack,
@@ -1085,7 +1107,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 								MUIA_InputMode, MUIV_InputMode_None,
 								BFA_BitmapObject, inst->ppb_Objects[OBJNDX_EmptyThumbnailBitmap],
 								End, //BackfillClass
-							Child,  inst->ppb_Objects[OBJNDX_Image_IconWindowPattern] =NewObject(BackfillClass->mcc_Class, 0,
+							Child,  inst->ppb_Objects[OBJNDX_Image_IconWindowPattern] = BackfillObject,
 								MUIA_UserData, inst,
 								ImageButtonFrame,
 								MUIA_Background, MUII_ButtonBack,
@@ -1093,7 +1115,7 @@ static Object *CreatePrefsGroup(struct PatternPrefsInst *inst)
 								MUIA_InputMode, MUIV_InputMode_None,
 								BFA_BitmapObject, inst->ppb_Objects[OBJNDX_EmptyThumbnailBitmap],
 								End, //BackfillClass
-							Child,  inst->ppb_Objects[OBJNDX_Image_TextWindowPattern] = NewObject(BackfillClass->mcc_Class, 0,
+							Child,  inst->ppb_Objects[OBJNDX_Image_TextWindowPattern] = BackfillObject,
 								MUIA_UserData, inst,
 								ImageButtonFrame,
 								MUIA_Background, MUII_ButtonBack,
@@ -1362,7 +1384,7 @@ static Object *CreatePrefsImage(void)
 	Object	*img;
 
 	// First try to load datatypes image from THEME: tree
-	img = NewObject(DataTypesImageClass->mcc_Class, 0,
+	img = DataTypesImageObject,
 		MUIA_ScaDtpic_Name, (ULONG) "THEME:prefs/plugins/pattern",
 		MUIA_ScaDtpic_FailIfUnavailable, TRUE,
 		End; //DataTypesMCCObject
@@ -1498,7 +1520,7 @@ static BOOL OpenLibraries(void)
 #endif
 	// CyberGfxBase may be NULL
 
-#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__)
+#if defined(__GNUC__) && !defined(__MORPHOS__) && !defined(__amigaos4__) && !defined(__AROS__)
 	__UtilityBase = UtilityBase;
 #endif /* defined(__GNUC__) && !defined(__MORPHOS__)  && !defined(__amigaos4__)*/
 
@@ -1698,7 +1720,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosPattern_LocaleInfo li;
 
 	li.li_Catalog = PatternPrefsCatalog;	
 #ifndef __amigaos4__
@@ -1707,7 +1729,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetScalosPatternString(&li, MsgId);
 }
 
 
@@ -1850,7 +1872,7 @@ static SAVEDS(ULONG) INTERRUPT ListDisplayHookFunc(struct Hook *hook, Object *ob
 		if (inst->ppb_UseThumbNails)
 			{
 			lp += 1 + strlen(lp);
-			sprintf(lp, "\33o[%ld]", scp->ple_ThumbnailImageNr);
+			sprintf(lp, "\33o[%ld]", (long)scp->ple_ThumbnailImageNr);
 			ndm->strings[n++] = lp;
 
 			d1(kprintf("%s/%s/%ld: lp=<%s>  ord=%ld  scp=%08lx  ImageObj=%08lx\n", \
@@ -2079,8 +2101,8 @@ static LONG ReadPrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename, 
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			{
 			Result = IoErr();
 			break;
@@ -2252,7 +2274,7 @@ static LONG ReadPrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename, 
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -2410,8 +2432,8 @@ static LONG WritePrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+		if (0 == iff->iff_Stream)
 			{
 			// ... try to create missing directories here
 			STRPTR FilenameCopy;
@@ -2438,8 +2460,8 @@ static LONG WritePrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename)
 					if (dirLock)
 						UnLock(dirLock);
 
-					iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-					if ((BPTR)NULL == iff->iff_Stream)
+					iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+					if (0 == iff->iff_Stream)
 						Result = IoErr();
 					else
 						Result = RETURN_OK;
@@ -2583,8 +2605,8 @@ static LONG WritePrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename)
 
 		if (iff->iff_Stream)
 			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = (BPTR)NULL;
+			Close((BPTR)iff->iff_Stream);
+			iff->iff_Stream = 0;
 			}
 
 		FreeIFF(iff);
@@ -2987,7 +3009,7 @@ static SAVEDS(void) INTERRUPT ListChangeEntryHookFunc(struct Hook *hook, Object 
 			{
 			STRPTR String = NULL;
 
-			get(inst->ppb_Objects[OBJNDX_STR_PopAsl], MUIA_String_Contents, (APTR) &String);
+			get(inst->ppb_Objects[OBJNDX_STR_PopAsl], MUIA_String_Contents, &String);
 			if (NULL != String)
 				{
 				stccpy(scp->ple_PatternPrefs.scxp_Name, String, sizeof(scp->ple_PatternPrefs.scxp_Name));
@@ -3342,7 +3364,7 @@ static SAVEDS(APTR) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->ppb_LoadReq,
@@ -3394,7 +3416,7 @@ static SAVEDS(APTR) INTERRUPT SaveAsHookFunc(struct Hook *hook, Object *o, Msg m
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, (APTR) &win);
+		get(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(inst->ppb_SaveReq,
@@ -3997,7 +4019,7 @@ static void CreateThumbnailImage(struct PatternPrefsInst *inst, struct PatternLi
 
 			if (CyberGfxBase && ScreenDepth > 8)
 				{
-				scp->ple_MUI_ImageObject = NewObject(BitMapPicClass->mcc_Class, 0,
+				scp->ple_MUI_ImageObject = BitMapPicObject,
 					MUIA_ScaBitMappic_BitMap, scp->ple_SAC->sac_BitMap,
 					MUIA_ScaBitMappic_ColorTable, scp->ple_SAC->sac_ColorTable,
 					MUIA_ScaBitMappic_Width, scp->ple_SAC->sac_Width,
@@ -4082,7 +4104,7 @@ DISPATCHER(myNList)
 		ULONG MenuHookIndex = 0;
 		struct Hook *MenuHook = NULL;
 
-		get(obj, MUIA_NList_PrivateData, (APTR) &inst);
+		get(obj, MUIA_NList_PrivateData, &inst);
 
 		d1(kprintf(__FUNC__ "/%ld:  MUIM_ContextMenuChoice  item=%08lx\n", __FILE__, __FUNC__, __LINE__, cmc->item));
 
@@ -4186,7 +4208,7 @@ BOOL initPlugin(struct PluginBase *PluginBase)
 		if (!OpenLibraries())
 			return FALSE;
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 		if (_STI_240_InitMemFunctions())
 			return FALSE;
 #endif
@@ -4312,7 +4334,7 @@ static void DisableBackgroundColorGadgets(struct PatternPrefsInst *inst, UWORD R
 
 //----------------------------------------------------------------------------
 
-#if !defined(__SASC) && !defined(__amigaos4__)
+#if !defined(__SASC) && !defined(__amigaos4__) && !defined(__AROS__)
 // Replacement for SAS/C library functions
 
 #if !defined(__MORPHOS__)

@@ -5,11 +5,11 @@
 #include <exec/types.h>
 #include <utility/hooks.h>
 #include <intuition/classusr.h>
-#include <Scalos/scalosprefsplugin.h>
-#include <Scalos/scalosmenuprefsplugin.h>
+#include <scalos/scalosprefsplugin.h>
+#include <scalos/scalosmenuprefsplugin.h>
 #include <defs.h>
 
-#define	CATCOMP_NUMBERS
+#define	ScalosMenu_NUMBERS
 #include STR(SCALOSLOCALE)
 
 #include "MenuPrefs.h"
