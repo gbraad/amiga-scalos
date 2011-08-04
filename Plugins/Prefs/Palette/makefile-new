@@ -67,7 +67,7 @@ PalettePrefs.c : $(SCALOS_LOCALE)
 
 $(SCALOS_LOCALE) : $(PREFSDIR)/ScalosPalette.cd
 	@$(ECHO) "FlexCat $@"
-	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
+	$(FLEXCAT) $(subst ../,/,$<) $@=$(SDPATH)/CatComp_h.sd
 
 ##############################################################################
 

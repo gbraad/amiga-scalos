@@ -8,10 +8,13 @@ endif
 
 # Native FlexCat doesn't like Linux paths
 ifeq ($(CROSS), )
+	PARENTDIR=/
 	SDPATH=//
 else
+	PARENTDIR=../
 	SDPATH=../../..
 endif
+
 
 ##############################################################################
 
@@ -68,7 +71,7 @@ MenuPrefs.c DefaultMenu.c : $(SCALOS_LOCALE)
 
 $(SCALOS_LOCALE) : $(PREFSDIR)/ScalosMenu.cd
 	@$(ECHO) "FlexCat $@"
-	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
+	$(FLEXCAT) $(subst ../,$(PARENTDIR),$<) $@=$(SDPATH)/CatComp_h.sd
 
 ##############################################################################
 
