@@ -3,7 +3,10 @@
 # $Revision$
 #############################################################
 
+SDPATH		= //
+
 SUBDIRMAKE 	= $(MAKE) -s -C 
+FLEXCAT		= FlexCat
 CATCOMP 	= CatComp
 LD 		= slink
 CC 		= sc
@@ -140,7 +143,7 @@ PatternPrefs.c : $(SCALOS_LOCALE)
 
 $(CATCOMPHEADER) : $(PREFSPATH)/ScalosPattern.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@catcomp $(subst ../,/,$<) cfile=$(subst ../,/,$@)
+	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
 
 ##############################################################################
 

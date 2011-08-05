@@ -3,7 +3,10 @@
 # $Revision$
 #############################################################
 
-SUBDIRMAKE 	= $(MAKE) -s -C 
+SDPATH		= //
+
+SUBDIRMAKE 	= $(MAKE) -s -C
+FLEXCAT		= FlexCat
 CATCOMP 	= CatComp
 AS 		= phxAss
 LD		= slink
@@ -111,6 +114,7 @@ $(OBJDIR)/DefaultMenu.o : DefaultMenu.c MenuPrefs.h \
 $(CATCOMPHEADER) : $(PREFSPATH)/ScalosMenu.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
 	@$(CATCOMP) $(subst ../,/,$<) cfile=$(subst ../,/,$@)
+	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
 
 $(PLUGIN) : $(OBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
