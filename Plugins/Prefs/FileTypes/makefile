@@ -146,7 +146,7 @@ $(OBJDIR)/IconobjectMCC.o  : $(ICONOBJMCC_DIR)/IconobjectMCC.c \
 
 $(CATCOMPHEADER) : $(PREFSPATH)/ScalosFileTypes.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
+	$(FLEXCAT) $(subst ../,/,$<) $@=$(SDPATH)/CatComp_h.sd
 
 $(PLUGIN) : $(OBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'

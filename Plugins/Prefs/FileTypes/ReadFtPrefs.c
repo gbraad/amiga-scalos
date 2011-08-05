@@ -321,7 +321,7 @@ static LONG ReadFileTypeDefFile(struct FileTypesPrefsInst *inst, struct MUI_NLis
 				if (InputRdArgs)
 					{
 					struct RDArgs *rdArg;
-					IPTR ArgArray[10];
+					SIPTR ArgArray[10];
 
 					d1(kprintf(__FUNC__ "/%ld: Template = <%s>\n", __FUNC__, __LINE__, cmdTableEntry->cf_Template));
 

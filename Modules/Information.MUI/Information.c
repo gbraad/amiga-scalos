@@ -2802,7 +2802,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 	if (IconObj)
 		{
 		IPTR  IconType;
-		SIPTR ToolPri;
+		IPTR ToolPri;
 		char ToolPriString[15];
 		struct ScaWindowStruct *ws;
 		CONST_STRPTR *ToolTypesArray;
@@ -2923,7 +2923,7 @@ static void SaveSettings(Object *IconObj, Object *originalIconObj, CONST_STRPTR 
 
 			if (SliderStartPriTool)
 				{
-				SIPTR StartPri;
+				IPTR StartPri;
 
 				GetAttr(MUIA_Numeric_Value, SliderStartPriTool, &StartPri);
 				if (0 != StartPri)

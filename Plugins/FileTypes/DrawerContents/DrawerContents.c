@@ -217,7 +217,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 	do	{
 		char FaultBuffer[100];
 		char PatternBuffer[40];
-		IPTR ArgArray[5];
+		SIPTR ArgArray[5];
 		ULONG *argMaxEntries;
 		ULONG *argLineLength;
 		STRPTR lp = ttshd->ttshd_Buffer;

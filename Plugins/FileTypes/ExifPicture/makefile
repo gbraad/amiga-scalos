@@ -12,6 +12,8 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 
 PRECOMP 	= Include:all.gst
 
+SDPATH		= //
+
 CC      	= sc
 CFLAGS  	= nostackcheck nochkabort strmer dbg=l nover streq data=far \
 		  idlen=64 Math=s \
@@ -37,6 +39,7 @@ ASTARTUP	=
 
 OBJDIR		= .sasobj
 CATCOMP 	= CatComp
+FLEXCAT		= FlexCat
 
 COMMON_DIR	= ../../../common/Plugin
 
@@ -96,7 +99,7 @@ $(OBJDIR)/ExifPicture.o : ExifPicture.h ExifPicture_base.h $(SCALOS_LOCALE)
 
 $(CATCOMPHEADER) : ExifPicturePlugin.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$@
+	$(FLEXCAT) $(subst ../,/,$<) $@=$(SDPATH)/CatComp_h.sd
 
 $(PLUGIN) : $(OBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
