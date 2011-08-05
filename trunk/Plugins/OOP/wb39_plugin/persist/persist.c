@@ -954,7 +954,7 @@ static void ReadNodes(void)
 					ARG_Width,
 					ARG_Height
                                         };
-				IPTR ArgArray[7];
+				SIPTR ArgArray[7];
 				struct RDArgs *rdArg;
 				char *ArgString;
 

@@ -700,7 +700,7 @@ LIBFUNC_P3(STRPTR, LIBToolTipInfoString,
 	(void) args;
 
 	do	{
-		IPTR ArgArray[5];
+		SIPTR ArgArray[5];
 		BPTR fLock;
 
 		ReadMode_t ReadMode = READ_EXIF;

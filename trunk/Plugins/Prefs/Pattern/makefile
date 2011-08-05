@@ -143,7 +143,7 @@ PatternPrefs.c : $(SCALOS_LOCALE)
 
 $(CATCOMPHEADER) : $(PREFSPATH)/ScalosPattern.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
+	$(FLEXCAT) $(subst ../,/,$<) $@=$(SDPATH)/CatComp_h.sd
 
 ##############################################################################
 

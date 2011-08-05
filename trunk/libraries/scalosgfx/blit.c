@@ -1960,10 +1960,10 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBAlphaKTHookFunc(struct Hook *hook, Object
 		LONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
 		if (width > 0 && height > 0)
 			{
+			ULONG T = baa->baa_Transparency;
 			BytesPerPixel = 3;
 			BytesPerRow = BytesPerPixel * width;
 			Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
-			ULONG T = baa->baa_Transparency;
 
 			if (Addr && width > 0 && height > 0)
 				{
