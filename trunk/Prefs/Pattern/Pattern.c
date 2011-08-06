@@ -42,14 +42,14 @@
 #include <Year.h> // +jmc+
 
 #include <scalos/pattern.h>
-#include <Scalos/scalosprefsplugin.h>
-#include <Scalos/scalospatternprefsplugin.h>
+#include <scalos/scalosprefsplugin.h>
+#include <scalos/scalospatternprefsplugin.h>
 
 #include "Pattern.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+#define	ScalosPattern_NUMBERS
+#define	ScalosPattern_BLOCK
+#define	ScalosPattern_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
 		}
 	else
 		{
-		LONG ArgArray[7];
+		IPTR ArgArray[7];
 
 		ProgramName = argv[0];
 
@@ -630,7 +630,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosPattern_LocaleInfo li;
 
 	li.li_Catalog = PatternCatalog;	
 #ifndef __amigaos4__
@@ -639,7 +639,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR) GetString(&li, MsgId);
+	return (STRPTR) GetScalosPatternString(&li, MsgId);
 }
 
 /*

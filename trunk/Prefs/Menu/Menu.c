@@ -45,12 +45,19 @@
 #include <Year.h> // +jmc+
 #include <scalosdebug.h>
 
-#include <Scalos/scalosprefsplugin.h>
-#include <Scalos/scalosmenuprefsplugin.h>
+#include <scalos/scalosprefsplugin.h>
+#include <scalos/scalosmenuprefsplugin.h>
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+struct ScalosMenu_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
+
+#define	ScalosMenu_NUMBERS
+#define	ScalosMenu_BLOCK
+#define	ScalosMenu_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -665,7 +672,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosMenu_LocaleInfo li;
 
 	li.li_Catalog = MenuCatalog;	
 #ifndef __amigaos4__
@@ -674,7 +681,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR) GetString(&li, MsgId);
+	return (STRPTR) GetScalosMenuString(&li, MsgId);
 }
 /*
 static void TranslateStringArray(STRPTR *stringArray)

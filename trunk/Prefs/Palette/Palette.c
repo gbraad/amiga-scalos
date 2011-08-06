@@ -40,15 +40,22 @@
 #include <proto/scalosprefsplugin.h>
 
 #include <scalos/palette.h>
-#include <Scalos/scalosprefsplugin.h>
+#include <scalos/scalosprefsplugin.h>
 
 #include <defs.h>
 #include <Year.h> // +jmc+
 #include <scalosdebug.h>
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+struct ScalosPalette_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
+
+#define	ScalosPalette_NUMBERS
+#define	ScalosPalette_BLOCK
+#define	ScalosPalette_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -57,7 +64,7 @@
 
 //----------------------------------------------------------------------------
 
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__)
 #include <dos.h>
 
 long _stack = 16384;		// minimum stack size, used by SAS/C startup code
@@ -211,7 +218,7 @@ int main(int argc, char *argv[])
 		}
 	else
 		{
-		LONG ArgArray[4];
+		IPTR ArgArray[4];
 
 		ProgramName = argv[0];
 
@@ -593,7 +600,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosPalette_LocaleInfo li;
 
 	li.li_Catalog = PaletteCatalog;	
 #ifndef __amigaos4__
@@ -602,7 +609,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR) GetString(&li, MsgId);
+	return (STRPTR) GetScalosPaletteString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------

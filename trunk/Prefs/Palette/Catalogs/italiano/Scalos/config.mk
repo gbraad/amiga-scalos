@@ -33,7 +33,7 @@ LANG	=       italian
 else
 
 ###############################################################################
-# AmigaOS
+# AmigaOS and AROS
 
 LANG	=       italiano
 

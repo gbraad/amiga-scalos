@@ -6,6 +6,13 @@ ifndef TOPLEVEL
 	TOPLEVEL=$(shell pwd)/../..
 endif
 
+# Native FlexCat doesn't like Linux paths
+ifeq ($(CROSS), )
+	SDPATH=/
+else
+	SDPATH=../..
+endif
+
 ##############################################################################
 
 include		config.mk
@@ -28,23 +35,10 @@ endif
 
 ##############################################################################
 # 
-# Catalogs
-#
-
-CATS		= dansk \
-		  deutsch \
-		  español \
-		  français \
-		  italiano \
-		  svenska \
-		  ÃeÓtina
-
-##############################################################################
-# 
 # Subdirs
 #
 
-SUBDIRS =	$(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
+SUBDIRS	=	$(filter-out Catalogs/sample/Scalos, $(wildcard Catalogs/*/Scalos))
 
 ##############################################################################
 #
@@ -53,8 +47,8 @@ SUBDIRS =	$(foreach cat,$(CATS),Catalogs/$(cat)/Scalos)
 $(OBJDIR)/Menu.o $(OBJDIR)/Menu.d : $(OBJDIR)/ScalosMenu_locale.h
 
 $(OBJDIR)/ScalosMenu_locale.h : ScalosMenu.cd
-	@$(ECHO) "CatComp $@"
-	@catcomp $< cfile=$@
+	@$(ECHO) "FlexCat $@"
+	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
 
 ##############################################################################
 #
@@ -77,8 +71,8 @@ all:    $(BINDIR)/$(NAME) \
 $(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
 	@$(ECHO) "Link $(NAME)"
 	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
-	@$(STRIP) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
-	@protect $@ +e
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+	@chmod u+x $@
 
 ##############################################################################
 

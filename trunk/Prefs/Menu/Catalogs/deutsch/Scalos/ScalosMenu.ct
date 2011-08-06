@@ -1,6 +1,6 @@
 ; ScalosMenu.ct
 ## version $VER: ScalosMenu.catalog 40.18 (24 Aug 2008 10:22:42)
-## codeset 0s
+## codeset 0
 ## language deutsch
 ;
 ;#arrayopts static __far
