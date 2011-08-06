@@ -33,7 +33,7 @@ LANG	=       swedish
 else
 
 ###############################################################################
-# AmigaOS
+# AmigaOS and AROS
 
 LANG	=       svenska
 

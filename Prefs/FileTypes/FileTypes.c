@@ -44,11 +44,18 @@
 #include <Year.h> // +jmc+
 #include <scalosdebug.h>
 
-#include <Scalos/scalosprefsplugin.h>
+#include <scalos/scalosprefsplugin.h>
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
-#define	CATCOMP_CODE
+struct ScalosFileTypes_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
+
+#define	ScalosFileTypes_NUMBERS
+#define	ScalosFileTypes_BLOCK
+#define	ScalosFileTypes_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -638,7 +645,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct ScalosFileTypes_LocaleInfo li;
 
 	li.li_Catalog = FileTypesCatalog;	
 #ifndef __amigaos4__
@@ -647,7 +654,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR) GetString(&li, MsgId);
+	return (STRPTR) GetScalosFileTypesString(&li, MsgId);
 }
 /*
 static void TranslateStringArray(STRPTR *stringArray)

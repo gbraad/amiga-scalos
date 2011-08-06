@@ -33,7 +33,7 @@ LANG	=       spanish
 else
 
 ###############################################################################
-# AmigaOS
+# AmigaOS and AROS
 
 LANG	=       español
 
