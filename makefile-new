@@ -16,7 +16,7 @@ SUBDIRS	=	main       \
 		datatypes  \
 		Plugins    \
 		Prefs      \
-		modules    \
+		Modules    \
 
 ##############################################################################
 
