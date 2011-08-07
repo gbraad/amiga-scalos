@@ -13,6 +13,8 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 
 #############################################################
 
+SDPATH		= /
+
 SVNVERSION	= $(shell svnversion -n)
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort dbg=f nover streq \
@@ -39,6 +41,7 @@ LDLIBS  	= LIB:mempools.lib \
 CSTARTUP 	= LIB:c.o
 OBJDIR		= .sasobj
 CATCOMP 	= CatComp
+FLEXCAT		= FlexCat
 FONTSAMPLEMCC_DIR  = ../../common/FontSampleMCC
 DATATYPESMCC_DIR = ../../common/DataTypesMCC
 MCPGFX_DIR	= ../../common/McpGfx
@@ -167,7 +170,7 @@ FORCE:
 
 $(CATCOMPHEADER) : Scalos_Prefs.cd
 	@printf '\033[32mCatcomp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$@ NOBLOCK NOCODE
+	$(FLEXCAT) $(subst ../,/,$<) $@=$(SDPATH)/CatComp_h.sd
 
 #############################################################
 

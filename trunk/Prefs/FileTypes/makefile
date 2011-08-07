@@ -13,6 +13,8 @@ SUBDIRMAKE 	= $(MAKE) -s -C
 
 #############################################################
 
+SDPATH		= /
+
 CC      	= sc
 CFLAGS  	= nostkchk nochkabort strmer dbg=f nover streq data=far \
                   define SCALOSLOCALE=$(SCALOS_LOCALE) \
@@ -25,6 +27,7 @@ LDLIBS  	= LIB:mempools.lib LIB:scm.lib LIB:sc.lib LIB:debug.lib LIB:amiga.lib
 CSTARTUP 	= LIB:c.o
 OBJDIR		= .sasobj
 CATCOMP 	= CatComp
+FLEXCAT		= FlexCat
 SCALOS_LOCALE	= $(OBJDIR)/ScalosFileTypes_locale.h
 
 #############################################################
@@ -63,7 +66,7 @@ all:	$(NAME) $(DBGNAME) allcatalogs
 
 $(CATCOMPHEADER) : ScalosFileTypes.cd
 	@printf '\033[32mCatcomp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
-	@$(CATCOMP) $< cfile=$@
+	$(FLEXCAT) $(subst ../,/,$<) $@=$(SDPATH)/CatComp_h.sd
 
 #############################################################
 
