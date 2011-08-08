@@ -14,7 +14,12 @@
 #endif
 
 #define MUIC_MCPFrame "MCPFrame.mcc"
-#define MCPFrameObject MUI_NewObject(MUIC_MCPFrame
+
+#ifdef __AROS__
+#define McpFrameObject BOOPSIOBJMACRO_START(McpFrameClass->mcc_Class)
+#else
+#define McpFrameObject NewObject(McpFrameClass->mcc_Class, 0
+#endif
 
 
 #define MUIA_MCPFrame_FrameType		0x804d0009	/* isg LONG              */

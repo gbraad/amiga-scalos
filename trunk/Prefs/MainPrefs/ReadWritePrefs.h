@@ -14,7 +14,7 @@
 
 BOOL ReadWritePrefsInit(void);
 void ReadWritePrefsCleanup(void);
-ULONG mui_getv(APTR, ULONG );
+IPTR mui_getv(APTR, ULONG );
 LONG WriteScalosPrefs(struct SCAModule *, CONST_STRPTR PrefsFileName);
 LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName);
 void UpdateGuiFromPrefs(struct SCAModule *app);

@@ -19,8 +19,9 @@
 #include <prefs/font.h>
 #include <prefs/workbench.h>
 #include <mui/NListview_mcc.h>
-#include <mui/Pophotkey_mcc.h>
-#include <mui/popplaceholder_mcc.h>
+//#include <mui/Pophotkey_mcc.h>
+#include <mui/HotkeyString_mcc.h>
+#include <mui/Popplaceholder_mcc.h>
 #include <mui/TextEditor_mcc.h>
 
 #include "MCPFrame_mcc.h"
@@ -1695,9 +1696,9 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 }
 
 
-ULONG mui_getv(APTR obj, ULONG attr)
+IPTR mui_getv(APTR obj, ULONG attr)
 {
-    ULONG v;
+    IPTR v;
     GetAttr(attr, obj, &v);
     return (v);
 }
@@ -1769,7 +1770,7 @@ static void ReadPluginList(APTR p_MyPrefsHandle, LONG lID)
 						pd->plug_libVersion = ScalosPluginBase->soob_Library.lib_Version;
 						pd->plug_libRevision = ScalosPluginBase->soob_Library.lib_Revision;
 
-						sprintf(pd->plug_VersionString, "V%ld.%ld", (LONG) pd->plug_libVersion, (LONG) pd->plug_libRevision);
+						sprintf(pd->plug_VersionString, "V%ld.%ld", (long) pd->plug_libVersion, (long) pd->plug_libRevision);
 
 						d1(KPrintF(__FILE__ "/%s/%ld:  VersionString=<%s>\n", __FUNC__, __LINE__, pd->plug_VersionString));
 
@@ -1985,7 +1986,7 @@ BOOL AddPlugin(struct SCAModule *app, CONST_STRPTR FileName)
 		pd->plug_libVersion = ScalosPluginBase->soob_Library.lib_Version;
 		pd->plug_libRevision = ScalosPluginBase->soob_Library.lib_Revision;
 
-		sprintf(pd->plug_VersionString, "V%ld.%ld", (LONG) pd->plug_libVersion, (LONG) pd->plug_libRevision);
+		sprintf(pd->plug_VersionString, "V%ld.%ld", (long) pd->plug_libVersion, (long) pd->plug_libRevision);
 
 		d1(KPrintF(__FILE__ "/%s/%ld:  VersionString=<%s>\n", __FUNC__, __LINE__, pd->plug_VersionString));
 
@@ -2294,7 +2295,7 @@ void ReadIconFontPrefs(struct SCAModule *app)
 		iff->iff_Stream = (ULONG) Open("ENV:sys/font.prefs", MODE_OLDFILE);
 
 		d1(kprintf(__FILE__ "/%s/%ld: iff_Stream=%08lx\n", __FUNC__, __LINE__, iff->iff_Stream));
-		if ((BPTR)NULL == iff->iff_Stream)
+		if (0 == iff->iff_Stream)
 			break;
 
 		if (RETURN_OK != OpenIFF(iff, IFFF_READ))
@@ -2374,7 +2375,7 @@ void ReadIconFontPrefs(struct SCAModule *app)
 		if (IffOpened)
 			CloseIFF(iff);
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 		FreeIFF(iff);
 		}
 }
@@ -2396,10 +2397,10 @@ void WriteFontPrefs(struct SCAModule *app, CONST_STRPTR FontPrefsName)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = (ULONG) Open(FontPrefsName, MODE_NEWFILE);
+		iff->iff_Stream = (IPTR) Open(FontPrefsName, MODE_NEWFILE);
 
 		d1(kprintf(__FILE__ "/%s/%ld: iff_Stream=%08lx\n", __FUNC__, __LINE__, iff->iff_Stream));
-		if ((BPTR)NULL == iff->iff_Stream)
+		if (0 == iff->iff_Stream)
 			break;
 
 		if (RETURN_OK != OpenIFF(iff, IFFF_WRITE))
@@ -2473,7 +2474,7 @@ void WriteFontPrefs(struct SCAModule *app, CONST_STRPTR FontPrefsName)
 		if (IffOpened)
 			CloseIFF(iff);
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 		FreeIFF(iff);
 		}
 }

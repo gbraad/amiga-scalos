@@ -254,7 +254,7 @@ SAVEDS(void) INTERRUPT AddPlugin_Func(struct Hook *hook, Object *pPluginList, Ms
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, (APTR) &win);
+		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(Req,
@@ -370,7 +370,7 @@ SAVEDS(void) INTERRUPT OpenHookFunc(struct Hook *hook, Object *o, Msg msg)
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, (APTR) &win);
+		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(Req,
@@ -428,7 +428,7 @@ SAVEDS(void) INTERRUPT SaveAsFunc(struct Hook *hook, Object *o, Msg msg)
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, (APTR) &win);
+		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, &win);
 
 		//AslRequest(
 		Result = MUI_AslRequestTags(Req,
@@ -634,8 +634,8 @@ SAVEDS(void) INTERRUPT ScreenTtfPopOpenHookFunc(struct Hook *hook, Object *o, Ms
 
 		set(app->Obj[WINDOW_MAIN], MUIA_Window_Sleep, TRUE);
 
-		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, (APTR) &PrefsWindow);
-		get(o, MUIA_String_Contents, (APTR) &FontDesc);
+		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, &PrefsWindow);
+		get(o, MUIA_String_Contents, &FontDesc);
 
 		ParseTTFontFromDesc(FontDesc, &FontStyle, &FontWeight, 
 			&FontSize, FontName, sizeof(FontName));
@@ -705,8 +705,8 @@ SAVEDS(void) INTERRUPT IconTtfPopOpenHookFunc(struct Hook *hook, Object *o, Msg 
 
 		set(app->Obj[WINDOW_MAIN], MUIA_Window_Sleep, TRUE);
 
-		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, (APTR) &PrefsWindow);
-		get(o, MUIA_String_Contents, (APTR) &FontDesc);
+		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, &PrefsWindow);
+		get(o, MUIA_String_Contents, &FontDesc);
 
 		ParseTTFontFromDesc(FontDesc, &FontStyle, &FontWeight, 
 			&FontSize, FontName, sizeof(FontName));
@@ -779,8 +779,8 @@ SAVEDS(void) INTERRUPT TextWindowTtfPopOpenHookFunc(struct Hook *hook, Object *o
 
 		set(app->Obj[WINDOW_MAIN], MUIA_Window_Sleep, TRUE);
 
-		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, (APTR) &PrefsWindow);
-		get(o, MUIA_String_Contents, (APTR) &FontDesc);
+		get(app->Obj[WINDOW_MAIN], MUIA_Window_Window, &PrefsWindow);
+		get(o, MUIA_String_Contents, &FontDesc);
 
 		ParseTTFontFromDesc(FontDesc, &FontStyle, &FontWeight, 
 			&FontSize, FontName, sizeof(FontName));
@@ -860,7 +860,7 @@ static void BuildTTDescFromAttrList(char *buffer, size_t length, struct TagItem 
 	FontSize = GetTagData(TT_FontSize, 12, AttrList);
 	FontFamilyTable = (const STRPTR *) GetTagData(TT_FamilyTable, (ULONG) NULL, AttrList);
 
-	sprintf(buffer, "%ld/%ld/%ld/%s", FontStyle, FontWeight, FontSize, FontFamilyTable[0]);
+	sprintf(buffer, "%ld/%ld/%ld/%s", (long)FontStyle, (long)FontWeight, (long)FontSize, FontFamilyTable[0]);
 }
 
 //-----------------------------------------------------------------
