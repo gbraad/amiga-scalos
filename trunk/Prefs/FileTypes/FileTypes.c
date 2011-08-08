@@ -54,7 +54,7 @@ struct ScalosFileTypes_LocaleInfo
 };
 
 #define	ScalosFileTypes_NUMBERS
-#define	ScalosFileTypes_BLOCK
+#define	ScalosFileTypes_ARRAY
 #define	ScalosFileTypes_CODE
 #include STR(SCALOSLOCALE)
 

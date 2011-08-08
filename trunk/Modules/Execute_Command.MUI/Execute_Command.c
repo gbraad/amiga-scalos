@@ -44,7 +44,7 @@
 #include "Execute_Command.h"
 
 #define	Execute_Command_NUMBERS
-#define	Execute_Command_BLOCK
+#define	Execute_Command_ARRAY
 #define	Execute_Command_CODE
 #include STR(SCALOSLOCALE)
 

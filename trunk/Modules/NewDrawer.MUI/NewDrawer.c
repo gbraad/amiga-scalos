@@ -46,7 +46,7 @@
 #include "NewDrawer.h"
 
 #define	NewDrawer_NUMBERS
-#define	NewDrawer_BLOCK
+#define	NewDrawer_ARRAY
 #define	NewDrawer_CODE
 #include STR(SCALOSLOCALE)
 

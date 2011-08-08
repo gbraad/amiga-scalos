@@ -67,10 +67,10 @@
 #include "debug.h"
 
 #define	CATCOMP_NUMBERS
-#define	CATCOMP_BLOCK
+#define	CATCOMP_ARRAY
 #define	CATCOMP_CODE
 #define	WindowProperties_NUMBERS
-#define WindowProperties_BLOCK
+#define WindowProperties_ARRAY
 #define WindowProperties_CODE
 #include STR(SCALOSLOCALE)
 

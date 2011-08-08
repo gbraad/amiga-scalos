@@ -56,7 +56,7 @@ struct ScalosMenu_LocaleInfo
 };
 
 #define	ScalosMenu_NUMBERS
-#define	ScalosMenu_BLOCK
+#define	ScalosMenu_ARRAY
 #define	ScalosMenu_CODE
 #include STR(SCALOSLOCALE)
 

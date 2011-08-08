@@ -21,7 +21,7 @@
 #include "Variables.h"
 
 #define	Scalos_CODE
-#define	Scalos_BLOCK
+#define	Scalos_ARRAY
 #include "locale.h"
 
 //----------------------------------------------------------------------------

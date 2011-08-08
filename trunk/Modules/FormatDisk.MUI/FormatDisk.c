@@ -37,7 +37,7 @@
 #include "FormatDisk.h"
 
 #define	FormatDiskMUI_NUMBERS
-#define	FormatDiskMUI_BLOCK
+#define	FormatDiskMUI_ARRAY
 #define	FormatDiskMUI_CODE
 #include STR(SCALOSLOCALE)
 
