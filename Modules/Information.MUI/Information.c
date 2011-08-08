@@ -71,7 +71,7 @@
 #include "debug.h"
 
 #define	Information_NUMBERS
-#define	Information_BLOCK
+#define	Information_ARRAY
 #define	Information_CODE
 #include STR(SCALOSLOCALE)
 

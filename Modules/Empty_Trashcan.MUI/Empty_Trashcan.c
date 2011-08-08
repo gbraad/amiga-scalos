@@ -38,7 +38,7 @@
 #include "Empty_Trashcan.h"
 
 #define	Empty_Trashcan_NUMBERS
-#define	Empty_Trashcan_BLOCK
+#define	Empty_Trashcan_ARRAY
 #define	Empty_Trashcan_CODE
 #include STR(SCALOSLOCALE)
 

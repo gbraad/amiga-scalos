@@ -38,7 +38,7 @@
 #include "Rename.h"
 
 #define	Rename_NUMBERS
-#define	Rename_BLOCK
+#define	Rename_ARRAY
 #define	Rename_CODE
 #include STR(SCALOSLOCALE)
 

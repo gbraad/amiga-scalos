@@ -43,7 +43,7 @@
 #include "debug.h"
 
 #define	Exchange_NUMBERS
-#define	Exchange_BLOCK
+#define	Exchange_ARRAY
 #define	Exchange_CODE
 #include STR(SCALOSLOCALE)
 

@@ -121,24 +121,17 @@ CONST_STRPTR Get%bString(struct %b_LocaleInfo *li, LONG stringNum)
     struct LocaleIFace *ILocale    = li->li_ILocale;
 #endif
 
-    ULONG  *idp;
-    ULONG   id;
-    UWORD  *lenp;
-    UWORD   len;
-    STRPTR  builtIn;
+    CONST_STRPTR  builtIn = "";
+    ULONG n;
 
-    idp = (ULONG *)%b_Block;
-    id = SCA_BE2LONG(*idp);
-
-    while (id != stringNum)
+    for (n = 0; n < sizeof(%b_Array) / sizeof(%b_Array[0]); n++)
     {
-        lenp = (UWORD *)((IPTR)idp + 4);
-        len = SCA_BE2WORD(*lenp);
-
-        idp = (ULONG *)((IPTR)idp + (IPTR)len + 6);
-        id = SCA_BE2LONG(*idp);
+        if (%b_Array[n].cca_ID == stringNum)
+        {
+            builtIn = %b_Array[n].cca_Str;
+            break;
+        }
     }
-    builtIn = (STRPTR)((IPTR)idp + 6);
 
 #ifndef __amigaos4__
     if (LocaleBase)

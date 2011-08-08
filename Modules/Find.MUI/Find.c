@@ -54,10 +54,10 @@
 #include "debug.h"
 
 #define	Find_NUMBERS
-#define	Find_BLOCK
+#define	Find_ARRAY
 #define	Find_CODE
 #define	Find_NUMBERS
-#define	Find_BLOCK
+#define	Find_ARRAY
 #define	Find_CODE
 #include STR(SCALOSLOCALE)
 

@@ -59,7 +59,7 @@
 #include "debug.h"
 
 #define	IconProperties_NUMBERS
-#define	IconProperties_BLOCK
+#define	IconProperties_ARRAY
 #define	IconProperties_CODE
 #include STR(SCALOSLOCALE)
 

@@ -77,7 +77,7 @@
 #include "PrefsPlugins.h"
 #include "UrlSubject.h" // +jmc+ define url subject for mailer.
 
-#define	Scalos_Prefs_BLOCK
+#define	Scalos_Prefs_ARRAY
 #define	Scalos_Prefs_CODE
 #define	Scalos_Prefs_ARRAY
 #include "locale.h"

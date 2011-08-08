@@ -51,7 +51,7 @@
 //    End: /*GFE*/
 
 #define Delete_CODE
-#define Delete_BLOCK
+#define Delete_ARRAY
 #include"Delete.module.h"
 
 //----------------------------------------------------------------------------
