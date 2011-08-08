@@ -8,6 +8,10 @@
 // completed:
 //   updated:
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,14 +29,15 @@
 #include <scalos/scalosprefsplugin.h>
 #include <scalos/scalospreviewplugin.h>
 #include <mui/BetterString_mcc.h>
-#include <mui/popplaceholder_mcc.h>
+#include <mui/Popplaceholder_mcc.h>
 #include <mui/Urltext_mcc.h>
 #include <mui/NList_mcc.h>
 #include <mui/NListview_mcc.h>
 #include <mui/NListtree_mcc.h>
 #include <mui/Lamp_mcc.h>
 #include <mui/NFloattext_mcc.h>
-#include <mui/Pophotkey_mcc.h>
+//#include <mui/Pophotkey_mcc.h>
+#include <mui/HotkeyString_mcc.h>
 #include <mui/TextEditor_mcc.h>
 
 #define	__USE_SYSBASE
@@ -48,7 +53,10 @@
 #include <proto/locale.h>
 #include <proto/ttengine.h>
 #include <proto/utility.h>
+
+#ifndef __AROS__
 #define	NO_INLINE_STDARG
+#endif
 #include <proto/muimaster.h>
 
 #include <clib/alib_protos.h>
@@ -69,7 +77,9 @@
 #include "PrefsPlugins.h"
 #include "UrlSubject.h" // +jmc+ define url subject for mailer.
 
-#define	CATCOMP_ARRAY
+#define	Scalos_Prefs_BLOCK
+#define	Scalos_Prefs_CODE
+#define	Scalos_Prefs_ARRAY
 #include "locale.h"
 
 //-----------------------------------------------------------------
@@ -191,7 +201,7 @@ static SAVEDS(void) INTERRUPT CmdListDestructHookFunc(struct Hook *hook, APTR ob
 static SAVEDS(ULONG) INTERRUPT CmdListDisplayHookFunc(struct Hook *hook, APTR obj, struct NList_DisplayMessage *ltdm);
 static SAVEDS(LONG) INTERRUPT CmdListCompareHookFunc(struct Hook *hook, Object *obj, struct NList_CompareMessage *msg);
 
-CONST_STRPTR GetString(struct LocaleInfo *li, LONG stringNum);
+CONST_STRPTR GetString(struct Scalos_Prefs_LocaleInfo *li, LONG stringNum);
 static void TranslateStringArray(CONST_STRPTR *stringArray);
 static void EnableIconFontPrefs(struct SCAModule *app);
 static void SetupNewPrefsPages(struct SCAModule *app);
@@ -224,7 +234,7 @@ struct ScalosBase *ScalosBase = NULL;
 struct Library *IFFParseBase = NULL;
 struct GfxBase *GfxBase = NULL;
 #ifndef __amigaos4__
-struct Library *UtilityBase = NULL;
+T_UTILITYBASE UtilityBase = NULL;
 #endif
 T_LOCALEBASE LocaleBase = NULL;
 struct Library *IconBase = NULL;
@@ -302,6 +312,25 @@ struct MUI_CustomClass *FontSampleClass;
 struct MUI_CustomClass *SelectMarkSampleClass;
 static struct MUI_CustomClass *TextWindowColumnsListClass;
 static struct MUI_CustomClass *ControlBarGadgetsListClass;
+
+#ifdef __AROS__
+#define PrecisionSliderObject BOOPSIOBJMACRO_START(PrecisionSliderClass->mcc_Class)
+#define ThumbnailLifetimeSliderObject BOOPSIOBJMACRO_START(ThumbnailLifetimeSliderClass->mcc_Class)
+#define ControlBarGadgetsListObject BOOPSIOBJMACRO_START(ControlBarGadgetsListClass->mcc_Class)
+#define TextWindowColumnsListObject BOOPSIOBJMACRO_START(TextWindowColumnsListClass->mcc_Class)
+#define SelectMarkSampleObject BOOPSIOBJMACRO_START(SelectMarkSampleClass->mcc_Class)
+#define TTGammaSliderObject BOOPSIOBJMACRO_START(TTGammaSliderClass->mcc_Class)
+#define BufferSizeSliderObject BOOPSIOBJMACRO_START(BufferSizeSliderClass->mcc_Class)
+#else
+#define PrecisionSliderObject NewObject(PrecisionSliderClass->mcc_Class, 0
+#define ThumbnailLifetimeSliderObject NewObject(ThumbnailLifetimeSliderClass->mcc_Class, 0
+#define ControlBarGadgetsListObject NewObject(ControlBarGadgetsListClass->mcc_Class, 0
+#define TextWindowColumnsListObject NewObject(TextWindowColumnsListClass->mcc_Class, 0
+#define SelectMarkSampleObject NewObject(SelectMarkSampleClass->mcc_Class, 0
+#define TTGammaSliderObject NewObject(TTGammaSliderClass->mcc_Class, 0
+#define BufferSizeSliderObject NewObject(BufferSizeSliderClass->mcc_Class, 0
+#endif
+
 
 STRPTR ProgramName = "";
 static struct DiskObject *PrefsDiskObject = NULL;
@@ -833,7 +862,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		MUIC_BetterString,
 		MUIC_Lamp,
 		MUIC_NFloattext,
-		MUIC_Pophotkey,
+		MUIC_HotkeyString,
 		MUIC_Popplaceholder,
 		MUIC_Urltext,
 		MUIC_NListview,
@@ -848,7 +877,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	if (!CheckMCCVersion(MUIC_BetterString, 11, 0)
 		|| !CheckMCCVersion(MUIC_Lamp, 11, 0)
 		|| !CheckMCCVersion(MUIC_NFloattext, 19, 48)
-		|| !CheckMCCVersion(MUIC_Pophotkey, 17, 15)
+		|| !CheckMCCVersion(MUIC_HotkeyString, 17, 15)
 		|| !CheckMCCVersion(MUIC_Popplaceholder, 15, 4)
 		|| !CheckMCCVersion(MUIC_Urltext, 16, 1)
 		|| !CheckMCCVersion(MUIC_NListview, 19, 66)
@@ -1147,7 +1176,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 
 			WindowContents, RowGroup(2),
 
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1162,7 +1191,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Dropable, FALSE,
 				End,
 
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1176,7 +1205,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1190,7 +1219,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1204,7 +1233,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1218,7 +1247,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1232,7 +1261,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1246,7 +1275,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1260,7 +1289,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1277,7 +1306,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 				Child, RectangleObject,
 				End,
 
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1291,7 +1320,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1305,7 +1334,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1319,7 +1348,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1333,7 +1362,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1347,7 +1376,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1361,7 +1390,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -1375,7 +1404,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 					MUIA_Draggable, TRUE,
 					MUIA_Dropable, FALSE,
 				End,
-				Child, NewObject(McpFrameClass->mcc_Class, 0,
+				Child, McpFrameObject,
 					ButtonFrame,
 					MUIA_InputMode, MUIV_InputMode_None,
 					MUIA_FixWidth, 12,
@@ -2154,7 +2183,7 @@ int main(int argc, char *argv[])
 			}
 		else
 			{
-			LONG ArgArray[4];
+			IPTR ArgArray[4];
 
 			d1(KPrintF(__FILE__ "/%s/%ld: CLI\n", __FUNC__, __LINE__));
 
@@ -2374,7 +2403,7 @@ static SAVEDS(APTR) INTERRUPT PageListConstructHookFunc(struct Hook *hook, APTR 
 		d1(KPrintF(__FILE__ "/%s/%ld: nple_ImageIndex=%lu  nple_TitleString=<%s>  nple_TitleImage=%08lx\n", \
 			__FUNC__, __LINE__, nple->nple_ImageIndex, nple->nple_TitleString, nple->nple_TitleImage));
 
-		snprintf(pld->ImageSpec, sizeof(pld->ImageSpec), "\33o[%ld]", nple->nple_ImageIndex);
+		snprintf(pld->ImageSpec, sizeof(pld->ImageSpec), "\33o[%ld]", (long) nple->nple_ImageIndex);
 		pld->TextLine = nple->nple_TitleString;
 		}
 
@@ -2511,9 +2540,9 @@ static SAVEDS(APTR) INTERRUPT ControlBarGadgetListConstructHookFunc(struct Hook 
 			d1(KPrintF("%s/%s/%ld:  cgy_NormalImage=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy->cgy_NormalImage));
 			d1(KPrintF("%s/%s/%ld:  cgy_NormalImage=<%s>\n", __FILE__, __FUNC__, __LINE__, cgy->cgy_NormalImage));
 
-			cgy->cgy_Image = NewObject(DataTypesImageClass->mcc_Class, 0,
+			cgy->cgy_Image = DataTypesImageObject,
 				MUIA_ScaDtpic_Name, (ULONG) cgy->cgy_NormalImage,
-				TAG_END); //DataTypesMCC
+				End; //DataTypesMCC
 
 			d1(KPrintF("%s/%s/%ld:  <%s>  cgy_Image=%08lx\n", __FILE__, __FUNC__, __LINE__, cgy->cgy_NormalImage, cgy->cgy_Image));
 			}
@@ -2587,7 +2616,7 @@ static SAVEDS(ULONG) INTERRUPT ControlBarGadgetListDisplayHookFunc(struct Hook *
 		else
 			nldm->strings[0] = (STRPTR) GetLocString(MSGID_SCPGADGETTYPE_UNKNOWN);
 
-		snprintf(cgy->cgy_ImageString, sizeof(cgy->cgy_ImageString), "\033o[%lu]", cgy->cgy_ImageObjectIndex);
+		snprintf(cgy->cgy_ImageString, sizeof(cgy->cgy_ImageString), "\033o[%lu]", (unsigned long) cgy->cgy_ImageObjectIndex);
 		nldm->strings[1] = cgy->cgy_ImageString;
 		nldm->strings[2] = cgy->cgy_Action;
 		}
@@ -2705,7 +2734,7 @@ static SAVEDS(LONG) INTERRUPT CmdListCompareHookFunc(struct Hook *hook, Object *
 
 CONST_STRPTR GetLocString(LONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Scalos_Prefs_LocaleInfo li;
 
 	li.li_Catalog = ScalosPrefsCatalog;	
 #ifndef __amigaos4__
@@ -2714,7 +2743,7 @@ CONST_STRPTR GetLocString(LONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return GetString(&li, MsgId);
+	return GetScalos_PrefsString(&li, MsgId);
 }
 
 static void TranslateStringArray(CONST_STRPTR *stringArray)
@@ -2724,35 +2753,6 @@ static void TranslateStringArray(CONST_STRPTR *stringArray)
 		*stringArray = GetLocString((ULONG) *stringArray);
 		stringArray++;
 		}
-}
-
-
-CONST_STRPTR GetString(struct LocaleInfo *li, LONG stringNum)
-{
-	CONST_STRPTR  builtIn = "";
-	ULONG n;
-
-	for (n = 0; n < Sizeof(CatCompArray); n++)
-		{
-		if (CatCompArray[n].cca_ID == stringNum)
-			{
-			builtIn = CatCompArray[n].cca_Str;
-			break;
-			}
-		}
-
-#undef LocaleBase
-#ifndef __amigaos4__
-#define LocaleBase li->li_LocaleBase
-#else
-#define LocaleBase li->li_ILocale
-#endif
-
-	if (LocaleBase)
-        	return GetCatalogStr(li->li_Catalog, stringNum, (STRPTR) builtIn);
-#undef LocaleBase
-
-    return(builtIn);
 }
 
 //----------------------------------------------------------------------------
@@ -2905,12 +2905,12 @@ DISPATCHER(BufferSizeSlider)
 		if (m->value < 20)
 			{
                         size = 1 << (m->value - 10);	// Convert to KBytes
-			snprintf(data->buf, sizeof(data->buf), "%ldK", size);
+			snprintf(data->buf, sizeof(data->buf), "%ldK", (long) size);
 			}
 		else
 			{
 			size = 1 << (m->value - 20);	// Convert to MBytes
-                        snprintf(data->buf, sizeof(data->buf), "%ldM", size);
+                        snprintf(data->buf, sizeof(data->buf), "%ldM", (long) size);
 			}
 
 		return (ULONG) data->buf;
@@ -2936,7 +2936,7 @@ DISPATCHER(TTGammaSlider)
 		struct TTGammaSliderData *data = INST_DATA(cl,obj);
 		struct MUIP_Numeric_Stringify *m = (APTR)msg;
 
-		snprintf(data->buf, sizeof(data->buf), "%ld.%03ld", m->value / 1000, m->value % 1000);
+		snprintf(data->buf, sizeof(data->buf), "%ld.%03ld", (long) (m->value / 1000), (long) (m->value % 1000));
 
 		return (ULONG) data->buf;
 	}
@@ -2962,7 +2962,7 @@ DISPATCHER(ThumbnailLifetimeSlider)
 		else
 			{
 			snprintf(data->buf, sizeof(data->buf), MUIX_C "%lu %s",
-				mstr->value,
+				(unsigned long) mstr->value,
 				GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE_DAYS));
 			Result = (ULONG) data->buf;
 			}
@@ -3446,7 +3446,7 @@ static VOID Cleanup(struct SCAModule *app)
 #ifndef __amigaos4__
 	if (UtilityBase)
 		{
-		CloseLibrary(UtilityBase);
+		CloseLibrary((struct Library *)UtilityBase);
 		UtilityBase = NULL;
 		}
 #endif //__amigaos4__
@@ -3898,9 +3898,9 @@ static SAVEDS(APTR) INTERRUPT ModulesListConstructHookFunc(struct Hook *hook, Ob
 				d1(KPrintF("%s/%s/%ld:  tempLine=%08lx\n", __FILE__, __FUNC__, __LINE__, tempLine));
 				d1(KPrintF("%s/%s/%ld:  tempLine=<%s>\n", __FILE__, __FUNC__, __LINE__, tempLine));
 
-				mdle->mdle_Image = NewObject(DataTypesImageClass->mcc_Class, NULL,
+				mdle->mdle_Image = DataTypesImageObject,
 					MUIA_ScaDtpic_Name, (ULONG) tempLine,
-					TAG_END); //DataTypesMCC
+					End; //DataTypesMCC
 
 				d1(kprintf(__FUNC__ "/%ld:  <%s>  mdle_Image=%08lx\n", __LINE__, tempLine, mdle->mdle_Image));
 
@@ -3987,10 +3987,10 @@ static SAVEDS(ULONG) INTERRUPT ModulesListDisplayHookFunc(struct Hook *hook, Obj
 		{
 		struct ModuleListEntry *mdle = (struct ModuleListEntry *) nldm->entry;
 
-		snprintf(mdle->mdle_ImageString, sizeof(mdle->mdle_ImageString), "\033o[%lu]", mdle->mdle_ImageObjectIndex);
+		snprintf(mdle->mdle_ImageString, sizeof(mdle->mdle_ImageString), "\033o[%lu]", (unsigned long) mdle->mdle_ImageObjectIndex);
 
 		if (mdle->mdle_Popup)
-			snprintf(mdle->mdle_PopupObjectString, sizeof(mdle->mdle_PopupObjectString), "\033o[%lu@%lu]", mdle->mdle_PopupObjectIndex, mdle->mdle_EntryIndex);
+			snprintf(mdle->mdle_PopupObjectString, sizeof(mdle->mdle_PopupObjectString), "\033o[%lu@%lu]", (unsigned long) mdle->mdle_PopupObjectIndex, (unsigned long) mdle->mdle_EntryIndex);
 		else
 			strcpy(mdle->mdle_PopupObjectString, "");
 
@@ -4088,8 +4088,8 @@ static SAVEDS(ULONG) INTERRUPT HiddenDevicesDisplayHookFunc(struct Hook *hook, A
 		struct HiddenDeviceListEntry *hde = (struct HiddenDeviceListEntry *) nldm->entry;
 
 		snprintf(hde->hde_CheckboxString, sizeof(hde->hde_CheckboxString), "\033o[%lu@%lu]",
-			hde->hde_CheckboxObjectIndex,
-			nldm->entry_pos);
+			(unsigned long) hde->hde_CheckboxObjectIndex,
+			(unsigned long) nldm->entry_pos);
 
 		nldm->strings[0] = hde->hde_CheckboxString;
 		if (hde->hde_VolumeName[0])
@@ -4751,7 +4751,7 @@ static Object *GenerateAboutPage(struct SCAModule *app, CONST_STRPTR cVersion, C
 			Child, HVSpace,
 
 			Child, VGroup,
-				Child, NewObject(DataTypesImageClass->mcc_Class, 0,
+				Child, DataTypesImageObject,
 					MUIA_ScaDtpic_Name,  (ULONG) "THEME:ScalosLogo",
 					End, //DataTypesMCCObject
 
@@ -5312,7 +5312,7 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 					Child, ColGroup(2),
 						Child, Label1((ULONG) GetLocString(MSGID_DESKTOPPAGE_SINGLEWINDOW_LASSO)),
 						Child, HGroup,
-							Child, app->Obj[SINGLE_WINDOW_LASSO_HOTKEY] = PophotkeyObject,
+							Child, app->Obj[SINGLE_WINDOW_LASSO_HOTKEY] = HotkeyStringObject,
 								MUIA_String_Contents, "",
 							End, //Pophotkey
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_SINGLEWINDOW_LASSO_SHORTHELP),
@@ -5382,7 +5382,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					Child, HGroup,
 
 					Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_NEWICONS_REMAP_PRECISION)),
-						Child, app->Obj[SLIDER_ICONRMAP_PRECISION] = NewObject(PrecisionSliderClass->mcc_Class, 0,
+						Child, app->Obj[SLIDER_ICONRMAP_PRECISION] = PrecisionSliderObject,
 							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 1,
 							MUIA_Numeric_Max, 4,
@@ -5701,7 +5701,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							End, //Pop
 						End, //HGroup
 
-					Child, app->Obj[MCC_ICONFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+					Child, app->Obj[MCC_ICONFONT_SAMPLE] = FontSampleObject,
 						TextFrame,
 						MUIA_Background, MUII_TextBack,
 						MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -5728,7 +5728,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_SHORTHELP),
 							End, //PopstringObject
 
-						Child, app->Obj[MCC_ICONSPAGE_TTICONFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+						Child, app->Obj[MCC_ICONSPAGE_TTICONFONT_SAMPLE] = FontSampleObject,
 							TextFrame,
 							MUIA_Background, MUII_TextBack,
 							MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -5751,7 +5751,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					MUIA_Background, MUII_GroupBack,
 
 					Child, ColGroup(2),
-						Child, app->Obj[FRAME_ICONNORMAL] = NewObject(McpFrameClass->mcc_Class, 0,
+						Child, app->Obj[FRAME_ICONNORMAL] = McpFrameObject,
 							MUIA_InputMode, MUIV_InputMode_RelVerify,
 							ButtonFrame,
 							MUIA_InnerBottom, 4,
@@ -5766,7 +5766,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							MUIA_Dropable, TRUE,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_ICONFRAME_NORMAL_SHORTHELP),
 						End,
-						Child, app->Obj[FRAME_ICONSELECTED] = NewObject(McpFrameClass->mcc_Class, 0,
+						Child, app->Obj[FRAME_ICONSELECTED] = McpFrameObject,
 							MUIA_InputMode, MUIV_InputMode_RelVerify,
 							ButtonFrame,
 							MUIA_InnerBottom, 4,
@@ -5830,7 +5830,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 					MUIA_Background, MUII_GroupBack,
 
 					Child, ColGroup(2),
-						Child, app->Obj[FRAME_ICON_THUMBNAIL_NORMAL] = NewObject(McpFrameClass->mcc_Class, 0,
+						Child, app->Obj[FRAME_ICON_THUMBNAIL_NORMAL] = McpFrameObject,
 							MUIA_InputMode, MUIV_InputMode_RelVerify,
 							ButtonFrame,
 							MUIA_InnerBottom, 4,
@@ -5846,7 +5846,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_ICONFRAME_NORMAL_SHORTHELP),
 							End, //McpFrameClass
 
-						Child, app->Obj[FRAME_ICON_THUMBNAIL_SELECTED] = NewObject(McpFrameClass->mcc_Class, 0,
+						Child, app->Obj[FRAME_ICON_THUMBNAIL_SELECTED] = McpFrameObject,
 							MUIA_InputMode, MUIV_InputMode_RelVerify,
 							ButtonFrame,
 							MUIA_InnerBottom, 4,
@@ -6164,7 +6164,7 @@ static Object *GenerateIconsPage(struct SCAModule *app)
 
 					Child, ColGroup(2),
 						Child, Label1((ULONG) GetLocString(MSGID_ICONSPAGE_THUMBNAILS_MAXAGE)),
-						Child, app->Obj[SLIDER_THUMBNAILS_MAXAGE] = NewObject(ThumbnailLifetimeSliderClass->mcc_Class, 0,
+						Child, app->Obj[SLIDER_THUMBNAILS_MAXAGE] = ThumbnailLifetimeSliderObject,
 							MUIA_CycleChain, TRUE,
 							MUIA_Numeric_Min, 0,
 							MUIA_Numeric_Max, 365,
@@ -6334,7 +6334,7 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 					Child, ColGroup(2),
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCECOPY)),
 						Child, HGroup,
-							Child, app->Obj[COPY_HOTKEY] = PophotkeyObject,
+							Child, app->Obj[COPY_HOTKEY] = HotkeyStringObject,
 								MUIA_String_Contents, "",
 							End, //Pophotkey
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCECOPY_SHORTHELP),
@@ -6342,7 +6342,7 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMAKELINK)),
 						Child, HGroup,
-							Child, app->Obj[MAKELINK_HOTKEY] = PophotkeyObject,
+							Child, app->Obj[MAKELINK_HOTKEY] = HotkeyStringObject,
 								MUIA_String_Contents, "",
 							End, //Pophotkey
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMAKELINK_SHORTHELP),
@@ -6350,7 +6350,7 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMOVE)),
 						Child, HGroup,
-							Child, app->Obj[MOVE_HOTKEY] = PophotkeyObject,
+							Child, app->Obj[MOVE_HOTKEY] = HotkeyStringObject,
 								MUIA_String_Contents, "",
 							End, //Pophotkey
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMOVE_SHORTHELP),
@@ -6817,7 +6817,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									MUIA_Listview_Input, TRUE,
 									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
 									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_AVAILABLE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_AVAILABLE] = ControlBarGadgetsListObject,
 										InputListFrame,
 										MUIA_Background, MUII_ListBack,
 										MUIA_NList_Format, "W=-1, W=-1 MICW=3, W=-1",
@@ -6838,7 +6838,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									MUIA_Listview_Input, TRUE,
 									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
 									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE] = ControlBarGadgetsListObject,
 										InputListFrame,
 										MUIA_Background, MUII_ListBack,
 										MUIA_NList_Format, "W=-1, W=25 MICW=3, W=-1",
@@ -6869,7 +6869,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_ASLTITLE),
 									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_SHORTHELP),
 								End, //PopAsl
-								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_NORMALIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_NORMALIMAGE] = DataTypesImageObject,
 									MUIA_ScaDtpic_Name, (ULONG) "",
 									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
 								End, //DataTypesMCC
@@ -6887,7 +6887,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_ASLTITLE),
 									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_SHORTHELP),
 								End, //PopAsl
-								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_SELECTEDIMAGE] = DataTypesImageObject,
 									MUIA_ScaDtpic_Name, (ULONG) "",
 									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
 								End, //DataTypesMCC
@@ -6905,7 +6905,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_ASLTITLE),
 									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_SHORTHELP),
 								End, //PopAsl
-								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_BROWSER_DISABLEDIMAGE] = DataTypesImageObject,
 									MUIA_ScaDtpic_Name, (ULONG) "",
 									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
 								End, //DataTypesMCC
@@ -6981,7 +6981,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									MUIA_Listview_Input, TRUE,
 									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
 									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_AVAILABLE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_AVAILABLE] = ControlBarGadgetsListObject,
 										InputListFrame,
 										MUIA_Background, MUII_ListBack,
 										MUIA_NList_Format, "W=-1, W=-1 MICW=3, W=-1",
@@ -7002,7 +7002,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									MUIA_Listview_Input, TRUE,
 									MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
 									MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE] = NewObject(ControlBarGadgetsListClass->mcc_Class, 0,
+									MUIA_NListview_NList, app->Obj[NLIST_CONTROLBARGADGETS_NORMAL_ACTIVE] = ControlBarGadgetsListObject,
 										InputListFrame,
 										MUIA_Background, MUII_ListBack,
 										MUIA_NList_Format, "W=-1, W=25 MICW=3, W=-1",
@@ -7033,7 +7033,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_ASLTITLE),
 									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_NORMALIMAGE_SHORTHELP),
 								End, //PopAsl
-								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_NORMALIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_NORMALIMAGE] = DataTypesImageObject,
 									MUIA_ScaDtpic_Name, (ULONG) "",
 									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
 								End, //DataTypesMCC
@@ -7051,7 +7051,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_ASLTITLE),
 									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_SELECTEDIMAGE_SHORTHELP),
 								End, //PopAsl
-								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_SELECTEDIMAGE] = DataTypesImageObject,
 									MUIA_ScaDtpic_Name, (ULONG) "",
 									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
 								End, //DataTypesMCC
@@ -7069,7 +7069,7 @@ static Object *GenerateWindowPage(struct SCAModule *app)
 									ASLFR_TitleText, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_ASLTITLE),
 									MUIA_ShortHelp, (ULONG) GetLocString(MSGID_WINDOWPAGE_CONTROLBAR_DISABLEDIMAGE_SHORTHELP),
 								End, //PopAsl
-								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE] = NewObject(DataTypesImageClass->mcc_Class, 0,
+								Child, app->Obj[DTIMG_CONTROLBARGADGETS_NORMAL_DISABLEDIMAGE] = DataTypesImageObject,
 									MUIA_ScaDtpic_Name, (ULONG) "",
 									MUIA_ScaDtpic_FailIfUnavailable, FALSE,
 								End, //DataTypesMCC
@@ -7275,7 +7275,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 							End, //Pop
 						End, //HGroup
 
-						Child, app->Obj[STRING_TEXTMODEFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+						Child, app->Obj[STRING_TEXTMODEFONT_SAMPLE] = FontSampleObject,
 							TextFrame,
 							MUIA_Background, MUII_TextBack,
 							MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -7302,7 +7302,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 								MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TEXTWINDOWFONT_SHORTHELP),
 							End, //PopstringObject
 
-							Child, app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+							Child, app->Obj[MCC_TEXTWINDOW_TTTEXTWINDOWFONT_SAMPLE] = FontSampleObject,
 								TextFrame,
 								MUIA_Background, MUII_TextBack,
 								MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -7332,7 +7332,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 							MUIA_Listview_Input, TRUE,
 							MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
 							MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-							MUIA_NListview_NList, app->Obj[NLIST_STORAGE_FILEDISPLAY] = NewObject(TextWindowColumnsListClass->mcc_Class, 0,
+							MUIA_NListview_NList, app->Obj[NLIST_STORAGE_FILEDISPLAY] = TextWindowColumnsListObject,
 								InputListFrame,
 								MUIA_Background, MUII_ListBack,
 								//MUIA_NList_Format, "",
@@ -7353,7 +7353,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 							MUIA_Listview_Input, TRUE,
 							MUIA_Listview_MultiSelect, MUIV_Listview_MultiSelect_Shifted,
 							MUIA_Listview_DragType, MUIV_Listview_DragType_Immediate,
-							MUIA_NListview_NList, app->Obj[NLIST_USE_FILEDISPLAY] = NewObject(TextWindowColumnsListClass->mcc_Class, 0,
+							MUIA_NListview_NList, app->Obj[NLIST_USE_FILEDISPLAY] = TextWindowColumnsListObject,
 								InputListFrame,
 								MUIA_Background, MUII_ListBack,
 								//MUIA_NList_Format, "",
@@ -7437,7 +7437,7 @@ static Object *GenerateTextWindowPage(struct SCAModule *app)
 					GroupFrame,
 					MUIA_Background, MUII_GroupBack,
 
-					Child, app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE] = NewObject(SelectMarkSampleClass->mcc_Class, 0,
+					Child, app->Obj[MCC_TEXTWINDOWS_SELECTMARKER_SAMPLE] = SelectMarkSampleObject,
 						TextFrame,
 						MUIA_Background, MUII_TextBack,
 						TIHA_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -7532,7 +7532,7 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 
 				Child,	ColGroup(2),
 					Child, Label(GetLocString(MSGID_TTFONTSPAGE_GAMMA)),
-					Child, app->Obj[SLIDER_TTGAMMA] = NewObject(TTGammaSliderClass->mcc_Class, 0,
+					Child, app->Obj[SLIDER_TTGAMMA] = TTGammaSliderObject,
 						MUIA_CycleChain, TRUE,
 						MUIA_Numeric_Min, 100,
 						MUIA_Numeric_Max, 5000,
@@ -7572,7 +7572,7 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SCREENFONT_SHORTHELP),
 				End, //PopstringObject
 
-				Child, app->Obj[MCC_TTSCREENFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+				Child, app->Obj[MCC_TTSCREENFONT_SAMPLE] = FontSampleObject,
 					TextFrame,
 					MUIA_Background, MUII_TextBack,
 					MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -7611,7 +7611,7 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_ICONFONT_SHORTHELP),
 				End, //PopstringObject
 
-				Child, app->Obj[MCC_TTICONFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+				Child, app->Obj[MCC_TTICONFONT_SAMPLE] = FontSampleObject,
 					TextFrame,
 					MUIA_Background, MUII_TextBack,
 					MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -7649,7 +7649,7 @@ static Object *GenerateTrueTypeFontsPage(struct SCAModule *app)
 					MUIA_ShortHelp, (ULONG) GetLocString(MSGID_TTFONTSPAGE_TEXTWINDOWFONT_SHORTHELP),
 				End, //PopstringObject
 
-				Child, app->Obj[MCC_TTTEXTWINDOWFONT_SAMPLE] = NewObject(FontSampleClass->mcc_Class, 0,
+				Child, app->Obj[MCC_TTTEXTWINDOWFONT_SAMPLE] = FontSampleObject,
 					TextFrame,
 					MUIA_Background, MUII_TextBack,
 					MUIA_FontSample_DemoString, (ULONG) GetLocString(MSGID_TTFONTSPAGE_SAMPLETEXT),
@@ -7694,7 +7694,7 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 
 				Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_POPUP_SELECTED_HOTKEY)),
 				Child, HGroup,
-					Child, app->Obj[POPUP_SELECTED_HOTKEY] = PophotkeyObject,
+					Child, app->Obj[POPUP_SELECTED_HOTKEY] = HotkeyStringObject,
 						MUIA_String_Contents, "",
 					End, //Pophotkey
 				End, //HGroup
@@ -7773,7 +7773,7 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 
 			Child, app->Obj[GROUP_COPYBUFFERSIZE] = ColGroup(2),
 				Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_COPYBUFFERSIZE)),
-				Child, app->Obj[SLIDER_COPYBUFFERSIZE] = NewObject(BufferSizeSliderClass->mcc_Class, 0,
+				Child, app->Obj[SLIDER_COPYBUFFERSIZE] = BufferSizeSliderObject,
 					MUIA_CycleChain, TRUE,
 					MUIA_Slider_Horiz, TRUE,
 					MUIA_Slider_Level, 28 - 15,

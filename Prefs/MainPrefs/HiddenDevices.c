@@ -17,7 +17,7 @@
 #include <prefs/prefhdr.h>
 #include <prefs/font.h>
 #include <prefs/workbench.h>
-#include <MUI/NListview_mcc.h>
+#include <mui/NListview_mcc.h>
 
 #define	__USE_SYSBASE
 
@@ -120,7 +120,7 @@ BOOL ReadWorkbenchPrefs(CONST_STRPTR filename)
 
 		iff->iff_Stream = (ULONG) Open((STRPTR) filename, MODE_OLDFILE);
 		d1(KPrintF(__FILE__ "/%s/%ld: iff_Stream=%08lx\n", __FUNC__, __LINE__, iff->iff_Stream));
-		if ((BPTR)NULL == iff->iff_Stream)
+		if (0 == iff->iff_Stream)
 			break;
 
 		InitIFFasDOS( iff );
@@ -161,7 +161,7 @@ BOOL ReadWorkbenchPrefs(CONST_STRPTR filename)
 		if (IffOpened)
 			CloseIFF( iff );
 		if (iff->iff_Stream)
-			Close( iff->iff_Stream );
+			Close( (BPTR)iff->iff_Stream );
 		FreeIFF( iff );
 		}
 
@@ -211,8 +211,8 @@ LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+		if (0 == iff->iff_Stream)
 			{
 			// ... try to create missing directories here
 			STRPTR FilenameCopy;
@@ -239,8 +239,8 @@ LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 					if (dirLock)
 						UnLock(dirLock);
 
-					iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-				if ((BPTR)NULL == iff->iff_Stream)
+					iff->iff_Stream = (IPTR)Open(Filename, MODE_NEWFILE);
+				if (0 == iff->iff_Stream)
 						Result = IoErr();
 					else
 						Result = RETURN_OK;
@@ -359,8 +359,8 @@ LONG WriteWorkbenchPrefs(CONST_STRPTR Filename)
 
 		if (iff->iff_Stream)
 			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = (BPTR)NULL;
+			Close((BPTR)iff->iff_Stream);
+			iff->iff_Stream = 0;
 			}
 
 		FreeIFF(iff);
@@ -394,8 +394,8 @@ static LONG CollectUnknownPrefsChunks(struct List *ChunksList, CONST_STRPTR File
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
-		if ((BPTR) NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR)Open(Filename, MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			{
 			Result = IoErr();
 			break;
@@ -456,7 +456,7 @@ static LONG CollectUnknownPrefsChunks(struct List *ChunksList, CONST_STRPTR File
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR)iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -614,7 +614,7 @@ static void AddHiddenDeviceFromDosList(struct SCAModule *app, struct DosList *dl
 		d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 		if (dl->dol_Task &&
 			DoPkt(dl->dol_Task, ACTION_DISK_INFO,
-				MKBADDR(id),
+				(IPTR)MKBADDR(id),
 				0, 0, 0, 0))
 			{
 			InfoDataValid = TRUE;

@@ -33,7 +33,7 @@ LANG	=       french
 else
 
 ###############################################################################
-# AmigaOS
+# AmigaOS and AROS
 
 LANG	=       français
 
