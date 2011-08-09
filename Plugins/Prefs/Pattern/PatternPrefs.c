@@ -75,7 +75,7 @@
 #include "plugin.h"
 
 #define	ScalosPattern_NUMBERS
-#define	ScalosPattern_BLOCK
+#define	ScalosPattern_ARRAY
 #define	ScalosPattern_CODE
 #include STR(SCALOSLOCALE)
 

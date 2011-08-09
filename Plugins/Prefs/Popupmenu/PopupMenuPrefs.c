@@ -70,7 +70,7 @@
 #include "FrameButtonMCC.h"
 
 #define	ScalosPopupMenu_NUMBERS
-#define	ScalosPopupMenu_BLOCK
+#define	ScalosPopupMenu_ARRAY
 #define	ScalosPopupMenu_CODE
 #include STR(SCALOSLOCALE)
 

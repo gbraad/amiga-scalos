@@ -29,7 +29,7 @@
 #include "DrawerContents.h"
 
 #define	DrawerContentsPlugin_NUMBERS
-#define	DrawerContentsPlugin_BLOCK
+#define	DrawerContentsPlugin_ARRAY
 #define	DrawerContentsPlugin_CODE
 #include STR(SCALOSLOCALE)
 

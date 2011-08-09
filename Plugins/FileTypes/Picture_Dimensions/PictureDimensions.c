@@ -35,7 +35,7 @@
 #include "PictureDimensions.h"
 
 #define	PictureDimensionsPlugin_NUMBERS
-#define	PictureDimensionsPlugin_BLOCK
+#define	PictureDimensionsPlugin_ARRAY
 #define	PictureDimensionsPlugin_CODE
 #include STR(SCALOSLOCALE)
 

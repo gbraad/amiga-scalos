@@ -66,7 +66,7 @@
 #include "DataTypesMCC.h"
 
 #define	ScalosPalette_NUMBERS
-#define	ScalosPalette_BLOCK
+#define	ScalosPalette_ARRAY
 #define	ScalosPalette_CODE
 #include STR(SCALOSLOCALE)
 
