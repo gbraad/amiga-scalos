@@ -877,7 +877,7 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 	if (!CheckMCCVersion(MUIC_BetterString, 11, 0)
 		|| !CheckMCCVersion(MUIC_Lamp, 11, 0)
 		|| !CheckMCCVersion(MUIC_NFloattext, 19, 48)
-		|| !CheckMCCVersion(MUIC_HotkeyString, 17, 15)
+		|| !CheckMCCVersion(MUIC_HotkeyString, 12, 16)
 		|| !CheckMCCVersion(MUIC_Popplaceholder, 15, 4)
 		|| !CheckMCCVersion(MUIC_Urltext, 16, 1)
 		|| !CheckMCCVersion(MUIC_NListview, 19, 66)
