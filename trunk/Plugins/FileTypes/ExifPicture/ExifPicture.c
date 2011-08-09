@@ -42,7 +42,7 @@
 #include "ExifPicture_base.h"
 #include "ExifPicture.h"
 #define	ExifPicturePlugin_NUMBERS
-#define	ExifPicturePlugin_BLOCK
+#define	ExifPicturePlugin_ARRAY
 #define	ExifPicturePlugin_CODE
 #include STR(SCALOSLOCALE)
 
