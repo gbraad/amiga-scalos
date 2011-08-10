@@ -72,12 +72,12 @@
 struct %b_ArrayType
 {
     LONG   cca_ID;
-    STRPTR cca_Str;
+    CONST_STRPTR cca_Str;
 };
 
 static const struct %b_ArrayType %b_Array[] =
 {
-    { %i, (STRPTR)%i_STR },
+    { %i, %i_STR },
 };
 
 
@@ -136,15 +136,15 @@ CONST_STRPTR Get%bString(struct %b_LocaleInfo *li, LONG stringNum)
 #ifndef __amigaos4__
     if (LocaleBase)
     {
-        return GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+        return GetCatalogStr(li->li_Catalog, stringNum, (STRPTR)builtIn);
     }
 #else
     if (ILocale)
     {
 #ifdef __USE_INLINE__
-        return GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+        return GetCatalogStr(li->li_Catalog, stringNum, (STRPTR)builtIn);
 #else
-        return ILocale->GetCatalogStr(li->li_Catalog, stringNum, builtIn);
+        return ILocale->GetCatalogStr(li->li_Catalog, stringNum, (STRPTR)builtIn);
 #endif
     }
 #endif
