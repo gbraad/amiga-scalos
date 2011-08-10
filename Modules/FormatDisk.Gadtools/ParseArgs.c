@@ -23,6 +23,7 @@
 // Other headers
 #include "Format.h"
 #include "GUI.h"
+#include <defs.h>
 
 extern IPTR args[];
 
