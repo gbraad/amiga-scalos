@@ -28,7 +28,7 @@
 #include <defs.h>
 
 #include "Format.h"
-#define	CATCOMP_NUMBERS
+#define	FormatDisk_NUMBERS
 #include STR(SCALOSLOCALE)
 
 #include "GUI.h"
@@ -126,11 +126,11 @@ prepResult getPrepInput(void)
 			switch(class)
 				{
 			// User clicked on close gadget.  Treat it as a click on 'Cancel'
-			case CLOSEWINDOW:
+			case IDCMP_CLOSEWINDOW:
 				return(eQuit);
 
 			// User pressed a gadget
-			case GADGETUP:
+			case IDCMP_GADGETUP:
 				switch(gadget->GadgetID)
 					{
 				// Checkbox gadgets
@@ -176,7 +176,7 @@ prepResult getPrepInput(void)
 				break;
 
 			// Keypress (gadget equivalents)
-			case VANILLAKEY:
+			case IDCMP_VANILLAKEY:
 				if (code == Name_key)
 					ActivateGadget(PrepGadgets[GD_NameGadget], PrepWnd,NULL);
 				else if( code == FFS_key )

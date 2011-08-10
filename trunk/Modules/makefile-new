@@ -21,9 +21,9 @@ SUBDIRS	=	WindowProperties.MUI \
 		Find.MUI \
 		Delete.MUI \
 		Empty_Trashcan.MUI \
+		FormatDisk.Gadtools \
 		# Rename.MUI \
 		# Updater.MUI \
-		# FormatDisk.Gadtools \
 		#
 
 else

@@ -95,9 +95,9 @@
 
 
 #include <proto/locale.h>
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_ARRAY
-#define	CATCOMP_CODE
+#define	FormatDisk_NUMBERS
+#define	FormatDisk_ARRAY
+#define	FormatDisk_CODE
 #include STR(SCALOSLOCALE)
 
 #include <libraries/asl.h>
@@ -764,7 +764,7 @@ int main(int argc, char *argv[])
 
 CONST_STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct FormatDisk_LocaleInfo li;
 
 	li.li_Catalog = FormatDiskCatalog;
 #ifndef __amigaos4__
@@ -773,7 +773,7 @@ CONST_STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return GetString(&li, MsgId);
+	return GetFormatDiskString(&li, MsgId);
 }
 
 //-----------------------------------------------------------------------------
@@ -1086,6 +1086,15 @@ BOOL updateStatWindow(char *string,UWORD percent)
 static void BtoCstring(BSTR bstr, STRPTR Buffer, size_t BuffLen)
 {
 	size_t Len;
+
+#ifdef __AROS__
+	// AROS needs special handling because it uses NULL-terminated
+	// strings on some platforms.
+	Len = AROS_BSTR_strlen(bstr);
+	if (Len >= BuffLen)
+		Len = BuffLen  - 2;
+	strncpy(Buffer, AROS_BSTR_ADDR(bstr), Len);
+#else
 	const char *bString = BADDR(bstr);
 
 	*Buffer = '\0';
@@ -1095,6 +1104,7 @@ static void BtoCstring(BSTR bstr, STRPTR Buffer, size_t BuffLen)
 		Len = BuffLen  - 2;
 
 	strncpy(Buffer, bString + 1, Len);
+#endif
 	Buffer[Len] = '\0';
 }
 
@@ -1289,7 +1299,7 @@ static void GetDeviceName(BPTR dLock, STRPTR DeviceName, size_t MaxLen)
 
 				sprintf(TextDeviceHandler, "%s %ld.%ld",
 					FseHandler,
-					FseVersion, FseRevision);
+					(long)FseVersion, (long)FseRevision);
 
 				d1(KPrintF("%s/%s/%ld: FseHandler=%s FseVersion/FseRevision=%ld.%ld\n", __FILE__, __FUNC__, __LINE__, FseHandler, FseVersion, FseRevision));
 

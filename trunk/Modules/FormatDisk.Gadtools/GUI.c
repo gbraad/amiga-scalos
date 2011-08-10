@@ -31,7 +31,7 @@
 #include <defs.h>
 
 #include "Format.h"
-#define	CATCOMP_NUMBERS
+#define	FormatDisk_NUMBERS
 #include STR(SCALOSLOCALE)
 
 #include "GUI.h"
