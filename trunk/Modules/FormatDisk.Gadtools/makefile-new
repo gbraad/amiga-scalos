@@ -95,7 +95,7 @@ clean:
         	$(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
 		*.dump *_str.* \
-		$(OBJDIR)/Format_Disk_Locale.h
+		$(OBJDIR)/FormatDisk_Locale.h
 
 clean:	clean_subdirs
 
