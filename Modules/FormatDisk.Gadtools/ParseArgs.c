@@ -24,7 +24,7 @@
 #include "Format.h"
 #include "GUI.h"
 
-extern LONG args[];
+extern IPTR args[];
 
 // Get the command-line arguments given by the user, by using ReadArgs()
 void parseArgs(char *drive,char *newName,BOOL *ffs,BOOL *intl, BOOL *icons, char *TrashName, BOOL *quick, BOOL *verify)

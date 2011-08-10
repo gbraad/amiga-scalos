@@ -117,6 +117,15 @@ extern BOOL fromcli;
 extern int kprintf(CONST_STRPTR, ...);
 extern int KPrintF(CONST_STRPTR, ...);
 
+//----------------------------------------------------------------------------
+
+struct FormatDisk_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
+
 //-----------------------------------------------------------------------------
 
 #endif /* FORMAT_H */

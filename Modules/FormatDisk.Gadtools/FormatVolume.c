@@ -29,7 +29,7 @@
 #include <defs.h>
 
 #include "Format.h"
-#define	CATCOMP_NUMBERS
+#define	FormatDisk_NUMBERS
 #include STR(SCALOSLOCALE)
 
 //----
@@ -184,7 +184,7 @@ void formatVolume(BPTR *volumeLock, CONST_STRPTR volumeName,
 
 
 							// Something failed try "ACTION_FORMAT" via Dopkt2() ??
-							result = DoPkt2(devPort, ACTION_FORMAT, MKBADDR(mybuf), Parms->ffs);
+							result = DoPkt2(devPort, ACTION_FORMAT, (IPTR)MKBADDR(mybuf), Parms->ffs);
 							
 							updateStatWindow((STRPTR) GetLocString(MSGID_SECOND_INITIALIZING_DISK),1000);
 							if (result)

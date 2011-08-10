@@ -33,7 +33,7 @@ LANG	=       german
 else
 
 ###############################################################################
-# AmigaOS
+# AmigaOS and AROS
 
 LANG	=       deutsch
 
