@@ -22,4 +22,13 @@ int vsnprintf(char *, size_t, const char *, va_list ap);
 
 //----------------------------------------------------------------------------
 
+struct Updater_LocaleInfo
+{
+	APTR li_LocaleBase;
+	APTR li_Catalog;
+	struct LocaleIFace *li_ILocale;
+};
+
+//----------------------------------------------------------------------------
+
 #endif	/* UPDATER_MODULE_H */

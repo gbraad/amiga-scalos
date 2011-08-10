@@ -2,6 +2,10 @@
 // $Date$
 // $Revision$
 
+#ifdef __AROS__
+#define MUIMASTER_YES_INLINE_STDARG
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -23,8 +27,12 @@
 #include <workbench/workbench.h>
 #include <intuition/intuition.h>
 #include <intuition/classusr.h>
+
+#ifndef STATIC_SSL
 #include <libraries/amisslmaster.h>
 #include <libraries/amissl.h>
+#endif
+
 #include <openssl/pem.h>
 #include <scalos/scalos.h>
 
@@ -48,8 +56,13 @@
 #include <proto/scalos.h>
 #include <proto/timer.h>
 #include <proto/socket.h>
+
+#ifdef STATIC_SSL
+#include <openssl/err.h>
+#else
 #include <proto/amissl.h>
 #include <proto/amisslmaster.h>
+#endif
 
 #include <DefIcons.h>
 #include <defs.h>
@@ -58,9 +71,9 @@
 #include "Updater.h"
 #include "debug.h"
 
-#define	CATCOMP_NUMBERS
-#define	CATCOMP_ARRAY
-#define	CATCOMP_CODE
+#define	Updater_NUMBERS
+#define	Updater_ARRAY
+#define	Updater_CODE
 #include STR(SCALOSLOCALE)
 
 //----------------------------------------------------------------------------
@@ -208,8 +221,11 @@ extern struct Library *SocketBase;
 T_LOCALEBASE LocaleBase = NULL;
 T_TIMERBASE TimerBase;
 struct Library *IconBase = NULL;
+
+#ifndef STATIC_SSL
 struct Library *AmiSSLMasterBase;
 struct Library *AmiSSLBase;
+#endif
 
 #if defined(__GNUC__) && defined(M68K)
 extern T_UTILITYBASE __UtilityBase;
@@ -303,7 +319,7 @@ static ULONG fShowAllComponents = FALSE;	// Flag: show all components
 static ULONG fAskEveryUpdate = FALSE;		// Flag: ask user for every updated component
 static ULONG fQuiet = FALSE;			// FLag: skip requester telling there are no updates
 static CONST_STRPTR ProxyAddr = "proxy-host.com";
-static USHORT ProxyPort = 8080;
+static UWORD ProxyPort = 8080;
 static CONST_STRPTR ProxyUser = "user";
 static CONST_STRPTR ProxyPasswd = "password";
 
@@ -312,6 +328,12 @@ static CONST_STRPTR VersTag = "\0$VER: Scalos Updater.module V" VERS_MAJOR "." V
 DISPATCHER_PROTO(myComponentsNList);
 
 static struct MUI_CustomClass *myComponentsNListClass;
+
+#ifdef __AROS__
+#define myComponentsNListObject BOOPSIOBJMACRO_START(myComponentsNListClass->mcc_Class)
+#else
+#define myComponentsNListObject NewObject(myComponentsNListClass->mcc_Class, 0
+#endif
 
 static RSA *ScalosPubKeyRSA;		// Scalos Public key for signature verification
 
@@ -400,7 +422,7 @@ int main(int argc, char *argv[])
 						MUIA_Background, MUII_RegisterBack,
 
 						Child, NListviewObject,
-							MUIA_NListview_NList, NListComponents = NewObject(myComponentsNListClass->mcc_Class, 0,
+							MUIA_NListview_NList, NListComponents = myComponentsNListObject,
 								MUIA_NList_Format, ",BAR,BAR,BAR,BAR,BAR",
 								MUIA_Background, MUII_ListBack,
 								MUIA_NList_ConstructHook2, &ComponentsConstructHook,
@@ -418,7 +440,7 @@ int main(int argc, char *argv[])
 
 						Child, NListviewObject,
 							MUIA_ShowMe, FALSE,
-							MUIA_NListview_NList, NListHiddenComponents = NewObject(myComponentsNListClass->mcc_Class, 0,
+							MUIA_NListview_NList, NListHiddenComponents = myComponentsNListObject,
 								MUIA_NList_Format, ",BAR,BAR,BAR,BAR,BAR",
 								MUIA_Background, MUII_ListBack,
 								MUIA_NList_ConstructHook2, &ComponentsConstructHook,
@@ -956,12 +978,15 @@ static BOOL MyInitAmiSSL(void)
 	ULONG ErrMsgID;
 
 	do	{
+#ifndef STATIC_SSL
 		AmiSSLMasterBase = OpenLibrary("amisslmaster.library", AMISSLMASTER_MIN_VERSION);
 		if (NULL == AmiSSLMasterBase)
 			{
 			ErrMsgID = MSGID_AMISSL_LIBOPEN_FAIL_AMISSLMASTER;
 			break;
 			}
+#endif
+
 #ifdef __amigaos4__
 		IAmiSSLMaster = (struct AmiSSLMasterIFace *)GetInterface(AmiSSLMasterBase, "main", 1, NULL);
 		if (NULL == IAmiSSLMaster)
@@ -971,6 +996,7 @@ static BOOL MyInitAmiSSL(void)
 			}
 #endif //__amigaos4__
 
+#ifndef STATIC_SSL
 		if (!InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
 			{
 			ErrMsgID = MSGID_AMISSL_FAIL_INITAMISSLMASTER;
@@ -983,6 +1009,7 @@ static BOOL MyInitAmiSSL(void)
 			ErrMsgID = MSGID_AMISSL_FAIL_OPENAMISSL;
 			break;
 			}
+#endif
 
 #ifdef __amigaos4__
 		IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase, "main", 1, NULL);
@@ -993,12 +1020,14 @@ static BOOL MyInitAmiSSL(void)
 			}
 #endif //__amigaos4__
 
+#ifndef STATIC_SSL
 		if (0 != InitAmiSSL(AmiSSL_ErrNoPtr, (ULONG) &errno,
 				    TAG_END))
 			{
 			ErrMsgID = MSGID_AMISSL_FAIL_INITAMISSL;
 			break;
 			}
+#endif
 
 		Success = TRUE;
 		} while (0);
@@ -1148,6 +1177,7 @@ static void CloseLibraries(void)
 		IconBase = NULL;
 		}
 
+#ifndef STATIC_SSL
 	if (AmiSSLBase)
 		{
 #ifdef __amigaos4__
@@ -1172,6 +1202,8 @@ static void CloseLibraries(void)
 
 	CloseLibrary(AmiSSLMasterBase);
 	AmiSSLMasterBase = NULL;
+#endif //STATIC_SSL
+
 	if (TimerIO)
 		{
 #ifdef __amigaos4__
@@ -1285,7 +1317,7 @@ static void CloseLibraries(void)
 
 static STRPTR GetLocString(ULONG MsgId)
 {
-	struct LocaleInfo li;
+	struct Updater_LocaleInfo li;
 
 	li.li_Catalog = FindCatalog;  
 #ifndef __amigaos4__
@@ -1294,7 +1326,7 @@ static STRPTR GetLocString(ULONG MsgId)
 	li.li_ILocale = ILocale;
 #endif
 
-	return (STRPTR)GetString(&li, MsgId);
+	return (STRPTR)GetUpdaterString(&li, MsgId);
 }
 
 //----------------------------------------------------------------------------
@@ -1333,7 +1365,7 @@ static SAVEDS(APTR) INTERRUPT OpenAboutMUIFunc(struct Hook *hook, Object *o, Msg
 		WIN_AboutMUI = MUI_NewObject(MUIC_Aboutmui,
 			MUIA_Window_RefWindow, WIN_Main,
 			MUIA_Aboutmui_Application, APP_Main,
-			End;
+			TAG_END);
 		}
 
 	if (WIN_AboutMUI)
@@ -2598,7 +2630,7 @@ static void SaveLogHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 		BOOL Result;
 		struct Window *win = NULL;
 
-		get(WIN_Main, MUIA_Window_Window, (APTR) &win);
+		get(WIN_Main, MUIA_Window_Window, &win);
 
 		//MUI_AslRequest(
 		Result = MUI_AslRequestTags(SaveLogAslRequest,
@@ -2671,7 +2703,7 @@ static void UpdateSelectedCount(void)
 
 //----------------------------------------------------------------------------
 
-#if !defined(__amigaos4__)
+#if !defined(__amigaos4__) && !defined(__AROS__)
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 	struct timeval *timeout)
 {
@@ -3299,7 +3331,7 @@ static void ParseArguments(void)
 			"AUTO/S,PROXY/K,PROXYPORT/N,PROXYUSER/K,PROXYPASSWORD/K,"
 			"TEMPFILEPATH/K,SCALOSHTTP/K,QUIET/S";
 		struct RDArgs *ReadArgs;
-		LONG Args[ARG_LAST];
+		IPTR Args[ARG_LAST];
 
 		memset(Args, 0, sizeof(Args));
 

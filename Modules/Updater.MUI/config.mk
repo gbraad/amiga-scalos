@@ -44,7 +44,22 @@ LFLAGS	+=	-lauto \
 		-lz \
 
 else
+ifeq ($(MACHINE), i386-aros)
 
+###############################################################################
+# i386-aros
+
+INCLUDES	+=      -I$(ICONOBJMCC_DIR) \
+
+DEFINES	+= -DSTATIC_SSL -D__BSD_VISIBLE -DMUI_OBSOLETE
+
+LFLAGS	+=	 \
+		-lcurl \
+		-lssl \
+		-lcrypto \
+		-lz \
+
+else
 
 ###############################################################################
 # AmigaOS
@@ -67,4 +82,4 @@ CFLAGS		+=	-Dfd_set=APTR
 
 endif
 endif
-
+endif
