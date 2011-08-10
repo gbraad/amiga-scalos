@@ -4010,6 +4010,15 @@ M68KFUNC_END
 
 static void BtoCstring(BSTR bstr, STRPTR Buffer, size_t BuffLen)
 {
+#ifdef __AROS__
+	// AROS needs special handling because it uses NULL-terminated
+	// strings on some platforms.
+	size_t Len = AROS_BSTR_strlen(bstr);
+	if (Len >= BuffLen)
+		Len = BuffLen  - 2;
+	strncpy(Buffer, AROS_BSTR_ADDR(bstr), Len);
+	Buffer[Len] = '\0';
+#else
 	const char *bString = BADDR(bstr);
 
 	*Buffer = '\0';
@@ -4024,6 +4033,7 @@ static void BtoCstring(BSTR bstr, STRPTR Buffer, size_t BuffLen)
 		strncpy(Buffer, bString + 1, Len);
 		Buffer[Len] = '\0';
 		}
+#endif
 }
 
 //----------------------------------------------------------------------------
