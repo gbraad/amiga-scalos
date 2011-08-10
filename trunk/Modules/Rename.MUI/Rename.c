@@ -12,7 +12,7 @@
 #include <intuition/classusr.h>
 #include <libraries/mui.h>
 #include <mui/BetterString_mcc.h>
-#include <mui/textinput_mcc.h>
+#include <mui/TextInput_mcc.h>
 #include <workbench/startup.h>
 #include <scalos/scalos.h>
 #include <scalos/undo.h>
@@ -165,13 +165,13 @@ int main(int argc, char *argv[])
 		if (!OpenLibraries())
 			break;
 
-		if (!CheckMCCVersion(MUIC_BetterString, 11, 0) ||
-			!CheckMCCVersion(MUIC_Textinput, MCC_Textinput_Version, MCC_Textinput_Revision))
+		if (!CheckMCCVersion(MUIC_BetterString, 11, 0))
 			break;
 
 		gb_Catalog = OpenCatalogA(NULL, "Scalos/Rename.catalog",NULL);
 
-		if (GetVar("Scalos/RENAMEINPLACE", EnvBuff, sizeof(EnvBuff), 0) >= 0)
+		if ((GetVar("Scalos/RENAMEINPLACE", EnvBuff, sizeof(EnvBuff), 0) >= 0) &&
+			(CheckMCCVersion(MUIC_Textinput, MCC_Textinput_Version, MCC_Textinput_Revision)))
 			{
 			RenameInPlace = TRUE;
 			}
@@ -534,7 +534,7 @@ static BOOL OpenLibraries(void)
 #endif //__amigaos4__
 
 #ifndef __amigaos4__
-	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library.", 39);
+	UtilityBase = (T_UTILITYBASE) OpenLibrary("utility.library", 39);
 	if (NULL == UtilityBase)
 		{
 		puts("Can't open utility.library.");

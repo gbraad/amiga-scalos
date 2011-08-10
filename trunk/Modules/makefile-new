@@ -10,24 +10,6 @@ include		config.mk
 # Project subdirectories
 #
 
-ifeq ($(MACHINE), i386-aros)
-
-SUBDIRS	=	WindowProperties.MUI \
-		IconProperties.MUI \
-		Information.MUI \
-		NewDrawer.MUI \
-		Execute_Command.MUI \
-		Exchange.MUI \
-		Find.MUI \
-		Delete.MUI \
-		Empty_Trashcan.MUI \
-		Updater.MUI \
-		FormatDisk.Gadtools \
-		# Rename.MUI \
-		#
-
-else
-
 SUBDIRS	=	WindowProperties.MUI \
 		IconProperties.MUI \
 		Information.MUI \
@@ -41,8 +23,6 @@ SUBDIRS	=	WindowProperties.MUI \
 		Updater.MUI \
 		FormatDisk.Gadtools \
 		#
-
-endif
 
 # 		Delete.Gadtools \
 #		Rename.Reaction \
