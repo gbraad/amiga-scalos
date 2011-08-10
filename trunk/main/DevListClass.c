@@ -364,7 +364,7 @@ static STRPTR AllocCopyBString(BPTR bString)
 	// AROS needs special handling because it uses NULL-terminated
 	// strings on some platforms.
 	CONST_STRPTR Src = AROS_BSTR_ADDR(bString);
-	size_t Len = AROS_BSTR_strlen(Src);
+	size_t Len = AROS_BSTR_strlen(bString);
 	STRPTR Name, lp;
 
 	Name = lp = ScalosAlloc(Len + 3);

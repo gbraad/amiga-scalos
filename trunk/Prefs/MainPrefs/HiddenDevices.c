@@ -671,6 +671,15 @@ static void AddHiddenDeviceFromDosList(struct SCAModule *app, struct DosList *dl
 
 static void BtoCString(BPTR bstring, STRPTR Buffer, size_t Length)
 {
+#ifdef __AROS__
+	// AROS needs special handling because it uses NULL-terminated
+	// strings on some platforms.
+	size_t Len = AROS_BSTR_strlen(bstring);
+	if (Len >= Length)
+		Len = Length - 1;
+	strncpy(Buffer, AROS_BSTR_ADDR(bstring), Len);
+	Buffer[Len] = '\0';
+#else
 	CONST_STRPTR Src = BADDR(bstring);
 	size_t bLength;
 
@@ -681,6 +690,7 @@ static void BtoCString(BPTR bstring, STRPTR Buffer, size_t Length)
 		*Buffer++ = *Src++;
 
 	*Buffer = '\0';
+#endif
 }
 
 //-----------------------------------------------------------------
