@@ -653,6 +653,10 @@ static SAVEDS(ULONG) INTERRUPT ARGBRectMultHookFunc(struct Hook *hook, Object *o
 
 		UnLockBitMap(handle);
 		}
+	else
+		{
+		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
+		}
 
 	return 0;
 }
@@ -2571,6 +2575,10 @@ static SAVEDS(ULONG) INTERRUPT BlitARGBKTHookFunc(struct Hook *hook, Object *o, 
 			}
 		UnLockBitMap(handle);
 		}
+	else
+		{
+		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
+		}
 
 	return 0;
 }
@@ -3075,6 +3083,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentKHookFunc(struct Hook *hook, Objec
 			}
 		UnLockBitMap(handle);
 		}
+	else
+		{
+		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
+		}
 
 	return 0;
 }
@@ -3435,6 +3447,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentHookFunc(struct Hook *hook, Object
 			break;
 			}
 		UnLockBitMap(handle);
+		}
+	else
+		{
+		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
 		}
 
 	return 0;
@@ -4040,6 +4056,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentAlphaHookFunc(struct Hook *hook, O
 			break;
 			}
 		UnLockBitMap(handle);
+		}
+	else
+		{
+		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
 		}
 
 	return 0;
@@ -4667,6 +4687,10 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentAlphaKHookFunc(struct Hook *hook, 
 			break;
 			}
 		UnLockBitMap(handle);
+		}
+	else
+		{
+		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
 		}
 
 	return 0;

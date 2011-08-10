@@ -643,6 +643,10 @@ void FillARGBFromBitMap(struct ARGBHeader *argbh, struct BitMap *srcBM,
 		if (MaskPlane)
 			ARGBSetAlphaFromMask(argbh, MaskPlane);
 		}
+	else
+		{
+		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
+		}
 }
 
 //-----------------------------------------------------------------------

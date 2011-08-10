@@ -14,6 +14,8 @@
 
 #include "scalosgfx.h"
 
+struct Library *aroscbase;
+
 //----------------------------------------------------------------------------
 // Standard library functions
 
@@ -131,7 +133,9 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	ScalosGfxLibBase->sgb_Initialized = FALSE;
 
-	if (!ScalosGfxInit(ScalosGfxLibBase))
+	aroscbase = OpenLibrary("arosc.library", 0);
+
+	if (!ScalosGfxInit(ScalosGfxLibBase) || !aroscbase)
 		{
 		ScalosGfx_3_Expungelib(NULL, &ScalosGfxLibBase->sgb_LibNode);
 		ScalosGfxLibBase = NULL;
@@ -214,6 +218,8 @@ static AROS_LH1(struct SegList *, Expungelib,
 		Remove((struct Node *) ScalosGfxLibBase);
 		ScalosGfxCleanup(ScalosGfxLibBase);
 		FreeMem(ptr,size);
+
+		CloseLibrary(aroscbase);
 
 		return libseglist;
 		}
