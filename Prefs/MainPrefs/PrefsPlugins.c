@@ -16,12 +16,10 @@
 #include <scalos/scalos.h>
 #include <scalos/scalosprefsplugin.h>
 #include <mui/BetterString_mcc.h>
-//#include <mui/TransferAnim_mcc.h>
 #include <mui/Popplaceholder_mcc.h>
 #include <mui/Urltext_mcc.h>
 #include <mui/NFloattext_mcc.h>
 #include <mui/NList_mcc.h>
-//#include <mui/Pophotkey_mcc.h>
 #include <mui/HotkeyString_mcc.h>
 
 #define	__USE_SYSBASE
