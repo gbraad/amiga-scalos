@@ -36,7 +36,6 @@
 #include <mui/NListtree_mcc.h>
 #include <mui/Lamp_mcc.h>
 #include <mui/NFloattext_mcc.h>
-//#include <mui/Pophotkey_mcc.h>
 #include <mui/HotkeyString_mcc.h>
 #include <mui/TextEditor_mcc.h>
 
@@ -98,6 +97,19 @@
 		End
 
 #define	THEME_CONTROLBAR	"THEME:Window/ControlBar/"
+
+#define ScanButton\
+	MUI_NewObject(MUIC_Text,\
+		ButtonFrame,\
+		MUIA_Font,           MUIV_Font_Button,\
+		MUIA_Text_HiCharIdx, '_',\
+		MUIA_Text_Contents,  "Scan",\
+		MUIA_Text_PreParse,  "\33c",\
+		MUIA_InputMode,      MUIV_InputMode_Toggle,\
+		MUIA_Background,     MUII_ButtonBack,\
+		MUIA_CycleChain,     1,\
+		MUIA_Weight,         0,\
+		TAG_DONE)
 
 //-----------------------------------------------------------------
 
@@ -206,6 +218,7 @@ static void TranslateStringArray(CONST_STRPTR *stringArray);
 static void EnableIconFontPrefs(struct SCAModule *app);
 static void SetupNewPrefsPages(struct SCAModule *app);
 static void InitControlBarGadgets(struct SCAModule *app);
+static void SetHotkeyNotifications(Object *hotkey, Object *scan);
 
 static Object *GenerateAboutPage(struct SCAModule *app, CONST_STRPTR cVersion, CONST_STRPTR urlSubject);
 static Object *GeneratePathsPage(struct SCAModule *app);
@@ -846,6 +859,22 @@ static struct Hook UpdateSelectMarkerSampleHook = { { NULL, NULL }, HOOKFUNC_DEF
 
 struct Hook AslIntuiMsgHook = { { NULL, NULL }, HOOKFUNC_DEF(AslIntuiMsgHookFunc), NULL };
 struct Hook CalculateMaxRadiusHook = { { NULL, NULL }, HOOKFUNC_DEF(CalculateMaxRadiusHookFunc), NULL };
+
+//-----------------------------------------------------------------
+
+// set notifications for a HotkeyString/ScanButton combo
+static void SetHotkeyNotifications(Object *hotkey, Object *scan)
+{
+	DoMethod(scan, MUIM_Notify, MUIA_Selected, TRUE,
+		MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject,
+		hotkey);
+
+	DoMethod(scan, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, hotkey,
+		3, MUIM_Set, MUIA_HotkeyString_Snoop, MUIV_TriggerValue);
+
+	//DoMethod(hotkey, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime,
+	//	scan, 3, MUIM_Set, MUIA_Selected, FALSE);
+}
 
 //-----------------------------------------------------------------
 
@@ -2018,6 +2047,13 @@ static BOOL BuildApp(LONG Action, struct SCAModule *app, struct DiskObject *icon
 		MUIV_Notify_Application, 2, MUIM_CallHook, &UpdateSelectMarkerSampleHook);
 	DoMethod(app->Obj[COLORADJUST_TEXTWINDOWS_SELECTIONMARK], MUIM_Notify, MUIA_Coloradjust_RGB, MUIV_EveryTime,
 		MUIV_Notify_Application, 2, MUIM_CallHook, &UpdateSelectMarkerSampleHook);
+
+	// Set notifications for HotkeyStrings
+	SetHotkeyNotifications(app->Obj[SINGLE_WINDOW_LASSO_HOTKEY], app->Obj[SINGLE_WINDOW_LASSO_HOTKEY_SCAN]);
+	SetHotkeyNotifications(app->Obj[POPUP_SELECTED_HOTKEY], app->Obj[POPUP_SELECTED_HOTKEY_SCAN]);
+	SetHotkeyNotifications(app->Obj[COPY_HOTKEY], app->Obj[COPY_HOTKEY_SCAN]);
+	SetHotkeyNotifications(app->Obj[MAKELINK_HOTKEY], app->Obj[MAKELINK_HOTKEY_SCAN]);
+	SetHotkeyNotifications(app->Obj[MOVE_HOTKEY], app->Obj[MOVE_HOTKEY_SCAN]);
 
 	d1(KPrintF(__FILE__ "/%s/%ld: \n", __FUNC__, __LINE__));
 
@@ -5313,8 +5349,11 @@ static Object *GenerateDesktopPage(struct SCAModule *app)
 						Child, Label1((ULONG) GetLocString(MSGID_DESKTOPPAGE_SINGLEWINDOW_LASSO)),
 						Child, HGroup,
 							Child, app->Obj[SINGLE_WINDOW_LASSO_HOTKEY] = HotkeyStringObject,
+								StringFrame,
 								MUIA_String_Contents, "",
-							End, //Pophotkey
+								MUIA_HotkeyString_Snoop, FALSE,
+							End, //HotkeyString
+							Child, app->Obj[SINGLE_WINDOW_LASSO_HOTKEY_SCAN] = ScanButton,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DESKTOPPAGE_SINGLEWINDOW_LASSO_SHORTHELP),
 							End, //HGroup
 						End, //ColGroup
@@ -6335,24 +6374,33 @@ static Object *GenerateDragNDropPage(struct SCAModule *app)
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCECOPY)),
 						Child, HGroup,
 							Child, app->Obj[COPY_HOTKEY] = HotkeyStringObject,
+								StringFrame,
 								MUIA_String_Contents, "",
-							End, //Pophotkey
+								MUIA_HotkeyString_Snoop, FALSE,
+							End, //HotkeyString
+							Child, app->Obj[COPY_HOTKEY_SCAN] = ScanButton,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCECOPY_SHORTHELP),
 						End, //HGroup
 
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMAKELINK)),
 						Child, HGroup,
 							Child, app->Obj[MAKELINK_HOTKEY] = HotkeyStringObject,
+								StringFrame,
 								MUIA_String_Contents, "",
-							End, //Pophotkey
+								MUIA_HotkeyString_Snoop, FALSE,
+							End, //HotkeyString
+							Child, app->Obj[MAKELINK_HOTKEY_SCAN] = ScanButton,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMAKELINK_SHORTHELP),
 						End, //HGroup
 
 						Child, Label1((ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMOVE)),
 						Child, HGroup,
 							Child, app->Obj[MOVE_HOTKEY] = HotkeyStringObject,
+								StringFrame,
 								MUIA_String_Contents, "",
-							End, //Pophotkey
+								MUIA_HotkeyString_Snoop, FALSE,
+							End, //HotkeyString
+							Child, app->Obj[MOVE_HOTKEY_SCAN] = ScanButton,
 							MUIA_ShortHelp, (ULONG) GetLocString(MSGID_DRAGNDROPPAGE_FORCEMOVE_SHORTHELP),
 						End, //HGroup
 					End, //ColGroup
@@ -7695,8 +7743,11 @@ static Object *GenerateMiscPage(struct SCAModule *app)
 				Child, Label1((ULONG) GetLocString(MSGID_MISCPAGE_POPUP_SELECTED_HOTKEY)),
 				Child, HGroup,
 					Child, app->Obj[POPUP_SELECTED_HOTKEY] = HotkeyStringObject,
+						StringFrame,
 						MUIA_String_Contents, "",
-					End, //Pophotkey
+						MUIA_HotkeyString_Snoop, FALSE,
+					End, //HotkeyString
+					Child, app->Obj[POPUP_SELECTED_HOTKEY_SCAN] = ScanButton,
 				End, //HGroup
 				MUIA_ShortHelp, (ULONG) GetLocString(MSGID_MISCPAGE_POPUP_SELECTED_HOTKEY_SHORTHELP),
 			End, //ColGroup

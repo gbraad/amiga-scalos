@@ -19,7 +19,6 @@
 #include <prefs/font.h>
 #include <prefs/workbench.h>
 #include <mui/NListview_mcc.h>
-//#include <mui/Pophotkey_mcc.h>
 #include <mui/HotkeyString_mcc.h>
 #include <mui/Popplaceholder_mcc.h>
 #include <mui/TextEditor_mcc.h>
