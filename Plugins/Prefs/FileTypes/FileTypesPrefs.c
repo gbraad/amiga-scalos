@@ -7114,7 +7114,10 @@ static LONG ReadScalosPrefs(struct FileTypesPrefsInst *inst, CONST_STRPTR PrefsF
 		ReadPrefsHandle(p_MyPrefsHandle, PrefsFileName);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TTfAntialiasing, &inst->fpb_TTfAntialias, sizeof(inst->fpb_TTfAntialias) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TTfGamma, &inst->fpb_TTfGamma, sizeof(inst->fpb_TTfGamma) );
+		inst->fpb_TTfGamma = SCA_BE2WORD(inst->fpb_TTfGamma);
 
 		prefDefIconPath = GetPrefsConfigString(p_MyPrefsHandle, SCP_PathsDefIcons, "ENV:sys");
 		stccpy(inst->fpb_DefIconPath, prefDefIconPath, sizeof(inst->fpb_DefIconPath));

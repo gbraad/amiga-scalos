@@ -437,23 +437,25 @@ static void AddTypeNodeToFileTypesList(struct FileTypesPrefsInst *inst, struct T
 
 BOOL WriteDefIconsPrefs(struct FileTypesPrefsInst *inst, CONST_STRPTR FileName)
 {
-	static const ULONG DefIconHeader[] =
-		{
-		HUNK_HEADER,
-		0, 1, 0, 0,
-		0,		// HunkLength must be written here
-		HUNK_DATA,
-		0,		// HunkLength must be written here
-		};
-	static const ULONG DefIconTrailer[] =
-		{
-                HUNK_END
-		};
+	static ULONG DefIconHeader[8];
+	DefIconHeader[0] = SCA_LONG2BE(HUNK_HEADER);
+	DefIconHeader[1] = 0;
+	DefIconHeader[2] = SCA_LONG2BE(1);
+	DefIconHeader[3] = 0;
+	DefIconHeader[4] = 0;
+	DefIconHeader[5] = 0;		// HunkLength must be written here
+	DefIconHeader[6] = SCA_LONG2BE(HUNK_DATA);
+	DefIconHeader[7] = 0;		// HunkLength must be written here
+
+	static ULONG DefIconTrailer[1];
+	DefIconTrailer[0] = SCA_LONG2BE(HUNK_END);
+
 	BPTR fh;
 	BOOL Success = FALSE;
 
 	do	{
 		ULONG HunkLength = 0;
+		ULONG HunkLengthBE = 0; // Hunk length in big endian
 		struct MUI_NListtree_TreeNode *ln;
 
 		fh = Open(FileName, MODE_NEWFILE);
@@ -508,13 +510,15 @@ BOOL WriteDefIconsPrefs(struct FileTypesPrefsInst *inst, CONST_STRPTR FileName)
 		// Write hunk length in H_HEADER
 		Seek(fh, 5 * sizeof(ULONG), OFFSET_BEGINNING);
 
-		if (1 != FWrite(fh, &HunkLength, sizeof(HunkLength), 1))
+		HunkLengthBE = SCA_LONG2BE(HunkLength);
+		if (1 != FWrite(fh, &HunkLengthBE, sizeof(HunkLengthBE), 1))
 			break;
 
 		// Write hunk length in H_DATA
 		Seek(fh, 7 * sizeof(ULONG), OFFSET_BEGINNING);
 
-		if (1 != FWrite(fh, &HunkLength, sizeof(HunkLength), 1))
+		HunkLengthBE = SCA_LONG2BE(HunkLength);
+		if (1 != FWrite(fh, &HunkLengthBE, sizeof(HunkLengthBE), 1))
 			break;
 
 		Success = TRUE;
