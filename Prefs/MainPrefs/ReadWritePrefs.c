@@ -2335,6 +2335,9 @@ void ReadIconFontPrefs(struct SCAModule *app)
 
 			d1(kprintf(__FILE__ "/%s/%ld: ReadChunkBytes OK\n", __FUNC__, __LINE__));
 
+			FontChunk->fp_Type = SCA_BE2WORD(FontChunk->fp_Type);
+			FontChunk->fp_TextAttr.ta_YSize = SCA_BE2WORD(FontChunk->fp_TextAttr.ta_YSize);
+
 			switch (FontChunk->fp_Type)
 				{
 			case FP_WBFONT:
@@ -2384,6 +2387,7 @@ void WriteFontPrefs(struct SCAModule *app, CONST_STRPTR FontPrefsName)
 {
 	struct IFFHandle *iff;
 	BOOL IffOpened = FALSE;
+	struct FontPrefs FontChunk;
 
 	do	{
 		size_t Length;
@@ -2437,7 +2441,10 @@ void WriteFontPrefs(struct SCAModule *app, CONST_STRPTR FontPrefsName)
 			break;
 
 		Length = GetFontPrefsSize(&SysFontPrefs);
-		if (Length != WriteChunkBytes(iff, (APTR) &SysFontPrefs, Length))
+		FontChunk = SysFontPrefs;
+		FontChunk.fp_Type = SCA_WORD2BE(FontChunk.fp_Type);
+		FontChunk.fp_TextAttr.ta_YSize = SCA_WORD2BE(FontChunk.fp_TextAttr.ta_YSize);
+		if (Length != WriteChunkBytes(iff, (APTR) &FontChunk, Length))
 			{
 			Result = IoErr();
 			break;
@@ -2453,7 +2460,10 @@ void WriteFontPrefs(struct SCAModule *app, CONST_STRPTR FontPrefsName)
 			break;
 
 		Length = GetFontPrefsSize(&ScreenFontPrefs);
-		if (Length != WriteChunkBytes(iff, (APTR) &ScreenFontPrefs, Length))
+		FontChunk = ScreenFontPrefs;
+		FontChunk.fp_Type = SCA_WORD2BE(FontChunk.fp_Type);
+		FontChunk.fp_TextAttr.ta_YSize = SCA_WORD2BE(FontChunk.fp_TextAttr.ta_YSize);
+		if (Length != WriteChunkBytes(iff, (APTR) &FontChunk, Length))
 			{
 			Result = IoErr();
 			break;
@@ -2514,6 +2524,8 @@ static LONG WriteIconFontPrefs(struct SCAModule *app, struct IFFHandle *iff)
 			break;
 
 		Length = GetFontPrefsSize(&FontChunk);
+		FontChunk.fp_Type = SCA_WORD2BE(FontChunk.fp_Type);
+		FontChunk.fp_TextAttr.ta_YSize = SCA_WORD2BE(FontChunk.fp_TextAttr.ta_YSize);
 		if (Length != WriteChunkBytes(iff, (APTR) &FontChunk, Length))
 			{
 			Result = IoErr();
