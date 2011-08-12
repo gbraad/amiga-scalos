@@ -829,12 +829,12 @@ This is the file offset where matching shall start.
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_MATCH (//)
 This is the string that filetype is being compared to.\n\
-Non-printable characters can be entered via their hexadecimal codes, e.g. \\x00.
+Non-printable characters can be entered via their hexadecimal codes, e.g. \\\\x00.
 ;
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_SEARCH (//)
 This is the string the filetype is being searched for.\n\
-Non-printable characters can be entered via their hexadecimal codes, e.g. \\x00.
+Non-printable characters can be entered via their hexadecimal codes, e.g. \\\\x00.
 ;
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_FILESIZE (//)
@@ -904,7 +904,7 @@ This is a matching pattern for the contents of a volume.
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_DOSTYPE (//)
 This is the match string for the DOS type (e.g. \"SFS\\0\") of a volume.\n\
-Use hex notation like \"\\x1f\" for non-printable characters.
+Use hex notation like \"\\\\x1f\" for non-printable characters.
 ;
 ;-----------------------------------------------------------
 ;

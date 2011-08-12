@@ -1023,7 +1023,7 @@ MSGID_SHORTHELP_STRING_FILETYPEACTION_MATCH
 C'est la chaîne de caractères qui est comparé\n\
 avec le type de fichier.\n\
 Les caractères non transcriptibles peuvent être\n\
-entrés via leurs codes hexadécimaux, ex: \\x00.
+entrés via leurs codes hexadécimaux, ex: \\\\x00.
 ;This is the string that filetype is being compared to.\n\
 ;Non-printable characters can be entered via their hexadecimal codes, e.g. \\x00.
 ;
@@ -1031,7 +1031,7 @@ MSGID_SHORTHELP_STRING_FILETYPEACTION_SEARCH
 Ceci est la chaîne de caractères à partir de laquelle\n\
 le type de fichier est recherché.\n\
 Les caractères non transcriptibles peuvent être entrés\n\
-via leur codes hexadecimaux, ex: \\x00.
+via leur codes hexadecimaux, ex: \\\\x00.
 ;This is the string the filetype is being searched for.\n\
 ;Non-printable characters can be entered via their hexadecimal codes, e.g. \\x00.
 ;
@@ -1103,7 +1103,7 @@ C'est le motif de recherche pour le contenu d'un volume.
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_DOSTYPE
 C'est la chaine de recherche pour le type DOS (ex : \"SFS\\0\") d'un volume.\n\
-UTilisez une notation hexadécimale comme \"\\x1f\" pour les charactères spéciaux.
+UTilisez une notation hexadécimale comme \"\\\\x1f\" pour les charactères spéciaux.
 ;This is the match string for the DOS type (e.g. \"SFS\\0\") of a volume.\n\
 ;Use hex notation like \"\\x1f\" for non-printable characters.
 ;

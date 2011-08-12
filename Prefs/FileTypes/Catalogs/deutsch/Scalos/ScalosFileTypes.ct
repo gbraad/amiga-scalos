@@ -1049,14 +1049,14 @@ Dies ist der Abstand vom Dateiabstand, ab dem verglichen wird.
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_MATCH
 Mit dem Inhalt dieses Textes wird verglichen.\n\
-Nicht darstellbare Zeichen können als hexadezimaler Code eingeben werden, z.B. \\x00.
+Nicht darstellbare Zeichen können als hexadezimaler Code eingeben werden, z.B. \\\\x00.
 ;This is the string that filetype is being compared to.\n\
 ;Non-printable characters can be entered via their hexadecimal codes, e.g. \\x00.
 ;
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_SEARCH
 Nach diesem Text wird in der zu prüfenden Datei gesucht.\n\
-Nicht darstellbare Zeichen können als hexadezimaler Code eingeben werden, z.B. \\x00.
+Nicht darstellbare Zeichen können als hexadezimaler Code eingeben werden, z.B. \\\\x00.
 ;This is the string the filetype is being searched for.\n\
 ;Non-printable characters can be entered via their hexadecimal codes, e.g. \\x00.
 ;
@@ -1155,7 +1155,7 @@ Verzeichnis(se)) des Datenträgers.
 ;
 MSGID_SHORTHELP_STRING_FILETYPEACTION_DOSTYPE
 Das ist der Vergleichstext für den DOS-Typ (z.B. \"SFS\\0\") eines Datenträgers.\n\
-Nichtdarstellbare Zeichen können als Hex  \"\\x1f\" eingegeben werden.
+Nichtdarstellbare Zeichen können als Hex  \"\\\\x1f\" eingegeben werden.
 ;This is the match string for the DOS type (e.g. \"SFS\\0\") of a volume.\n\
 ;Use hex notation like \"\\x1f\" for non-printable characters.
 ;
