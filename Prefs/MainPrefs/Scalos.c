@@ -83,6 +83,10 @@
 
 //-----------------------------------------------------------------
 
+#if !defined(MUIA_Text_HiCharIdx)
+#define MUIA_Text_HiCharIdx   0x804214f5
+#endif //!defined(MUIA_Text_HiCharIdx)
+
 #define CheckMarkHelp(selected, HelpTextID)\
 	ImageObject,\
 		ImageButtonFrame,\
