@@ -2143,6 +2143,10 @@ static LONG ReadPrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename, 
 					break;
 					}
 
+				ptrn.wbp_Which = SCA_BE2WORD(ptrn.wbp_Which);
+				ptrn.wbp_Flags = SCA_BE2WORD(ptrn.wbp_Flags);
+				ptrn.wbp_DataLength = SCA_BE2WORD(ptrn.wbp_DataLength);
+
 				if (ptrn.wbp_Flags & WBPF_PATTERN)
 					{
 					ULONG nEntries = 0;
@@ -2169,6 +2173,13 @@ static LONG ReadPrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename, 
 					Result = IoErr();
 					break;
 					}
+
+				pDefs.scd_Flags = SCA_BE2WORD(pDefs.scd_Flags);
+				pDefs.scd_WorkbenchPattern = SCA_BE2WORD(pDefs.scd_WorkbenchPattern);
+				pDefs.scd_ScreenPattern = SCA_BE2WORD(pDefs.scd_ScreenPattern);
+				pDefs.scd_WindowPattern = SCA_BE2WORD(pDefs.scd_WindowPattern);
+				pDefs.scd_TextModePattern = SCA_BE2WORD(pDefs.scd_TextModePattern);
+
 				set(inst->ppb_Objects[OBJNDX_SliderWB], MUIA_Numeric_Value, (ULONG) pDefs.scd_WorkbenchPattern);
 				set(inst->ppb_Objects[OBJNDX_SliderScreen], MUIA_Numeric_Value, (ULONG) pDefs.scd_ScreenPattern);
 				set(inst->ppb_Objects[OBJNDX_SliderWin], MUIA_Numeric_Value, (ULONG) pDefs.scd_WindowPattern);
@@ -2202,6 +2213,14 @@ static LONG ReadPrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename, 
 						break;
 						}
 					}
+
+				scp->ple_PatternPrefs.scxp_PatternPrefs.scp_Number = SCA_BE2WORD(scp->ple_PatternPrefs.scxp_PatternPrefs.scp_Number);
+				scp->ple_PatternPrefs.scxp_PatternPrefs.scp_RenderType = SCA_BE2WORD(scp->ple_PatternPrefs.scxp_PatternPrefs.scp_RenderType);
+				scp->ple_PatternPrefs.scxp_PatternPrefs.scp_Flags = SCA_BE2WORD(scp->ple_PatternPrefs.scxp_PatternPrefs.scp_Flags);
+				scp->ple_PatternPrefs.scxp_PatternPrefs.scp_NumColors = SCA_BE2WORD(scp->ple_PatternPrefs.scxp_PatternPrefs.scp_NumColors);
+				scp->ple_PatternPrefs.scxp_PatternPrefs.scp_DitherMode = SCA_BE2WORD(scp->ple_PatternPrefs.scxp_PatternPrefs.scp_DitherMode);
+				scp->ple_PatternPrefs.scxp_PatternPrefs.scp_DitherAmount = SCA_BE2WORD(scp->ple_PatternPrefs.scxp_PatternPrefs.scp_DitherAmount);
+
 				}
 			else if (ID_TCOL == cn->cn_ID)
 				{
@@ -2229,6 +2248,8 @@ static LONG ReadPrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename, 
 							Result = IoErr();
 							break;
 							}
+
+						NumColors = SCA_BE2WORD(NumColors);
 
 						d1(KPrintF("%s/%s/%ld: NumColors=%ld\n", __FILE__, __FUNC__, __LINE__, NumColors));
 						Length = NumColors * 3;
@@ -2327,6 +2348,9 @@ static LONG ReadPrefsBitMap(struct PatternPrefsInst *inst, struct IFFHandle *iff
 			Result = IoErr();
 			break;
 			}
+
+		spb.spb_Width = SCA_BE2WORD(spb.spb_Width);
+		spb.spb_Height = SCA_BE2WORD(spb.spb_Height);
 
 		d1(KPrintF("%s/%s/%ld: screen BitMap=%08lx\n", __FILE__, __FUNC__, __LINE__, inst->ppb_WBScreen->RastPort.BitMap));
 
@@ -2522,20 +2546,22 @@ static LONG WritePrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename)
 		if (Value)
 			pDefs.scd_Flags |= SCDF_RANDOM;
 
+		pDefs.scd_Flags = SCA_WORD2BE(pDefs.scd_Flags);
+
 		get(inst->ppb_Objects[OBJNDX_SliderWB], MUIA_Numeric_Value, &Value);
-		pDefs.scd_WorkbenchPattern = Value;
+		pDefs.scd_WorkbenchPattern = SCA_WORD2BE(Value);
 
 		get(inst->ppb_Objects[OBJNDX_SliderScreen], MUIA_Numeric_Value, &Value);
-		pDefs.scd_ScreenPattern = Value;
+		pDefs.scd_ScreenPattern = SCA_WORD2BE(Value);
 
 		get(inst->ppb_Objects[OBJNDX_SliderWin], MUIA_Numeric_Value, &Value);
-		pDefs.scd_WindowPattern = Value;
+		pDefs.scd_WindowPattern = SCA_WORD2BE(Value);
 
 		get(inst->ppb_Objects[OBJNDX_SliderText], MUIA_Numeric_Value, &Value);
-		pDefs.scd_TextModePattern = Value;
+		pDefs.scd_TextModePattern = SCA_WORD2BE(Value);
 
 		get(inst->ppb_Objects[OBJNDX_SliderTaskPri], MUIA_Numeric_Value, &Value);
-		pDefs.scd_TaskPriority= Value;
+		pDefs.scd_TaskPriority = Value; // BYTE
 
 		if (WriteChunkBytes(iff, &pDefs, sizeof(pDefs)) != sizeof(pDefs))
 			{
@@ -2552,6 +2578,7 @@ static LONG WritePrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename)
 			{
 			size_t Length;
 			struct PatternListEntry *scp = NULL;
+			struct ScaExtPatternPrefs sepp;
 
 			DoMethod(inst->ppb_Objects[OBJNDX_MainList], MUIM_List_GetEntry, n, &scp);
 			if (NULL == scp)
@@ -2563,7 +2590,16 @@ static LONG WritePrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename)
 
 			Length = offsetof(struct ScaExtPatternPrefs, scxp_Name) + strlen(scp->ple_PatternPrefs.scxp_Name) + 1;
 
-			if (WriteChunkBytes(iff, &scp->ple_PatternPrefs, Length) != Length)
+			sepp = scp->ple_PatternPrefs;
+
+			sepp.scxp_PatternPrefs.scp_Number = SCA_WORD2BE(sepp.scxp_PatternPrefs.scp_Number);
+			sepp.scxp_PatternPrefs.scp_RenderType = SCA_WORD2BE(sepp.scxp_PatternPrefs.scp_RenderType);
+			sepp.scxp_PatternPrefs.scp_Flags = SCA_WORD2BE(sepp.scxp_PatternPrefs.scp_Flags);
+			sepp.scxp_PatternPrefs.scp_NumColors = SCA_WORD2BE(sepp.scxp_PatternPrefs.scp_NumColors);
+			sepp.scxp_PatternPrefs.scp_DitherMode = SCA_WORD2BE(sepp.scxp_PatternPrefs.scp_DitherMode);
+			sepp.scxp_PatternPrefs.scp_DitherAmount = SCA_WORD2BE(sepp.scxp_PatternPrefs.scp_DitherAmount);
+
+			if (WriteChunkBytes(iff, &sepp, Length) != Length)
 				{
 				Result = IoErr();
 				break;
@@ -2646,7 +2682,7 @@ static LONG WritePrefsColorTable(struct IFFHandle *iff, const struct PatternList
 		if (RETURN_OK != Result)
 			break;
 
-		Value = scp->ple_SAC->sac_NumColors;
+		Value = SCA_WORD2BE(scp->ple_SAC->sac_NumColors);
 		if (WriteChunkBytes(iff, &Value, sizeof(Value)) != sizeof(Value))
 			{
 			Result = IoErr();
@@ -2724,6 +2760,9 @@ static LONG WritePrefsBitMap(struct IFFHandle *iff,
 		if (RETURN_OK != Result)
 			break;
 
+		spb.spb_Width = SCA_WORD2BE(spb.spb_Width);
+		spb.spb_Height = SCA_WORD2BE(spb.spb_Height);
+
 		Length = sizeof(struct ScaPatternPrefsBitMap);
 
 		if (WriteChunkBytes(iff, &spb, Length) != Length)
@@ -2755,38 +2794,38 @@ static LONG SaveIcon(struct PatternPrefsInst *inst, CONST_STRPTR IconName)
 {
 	struct DiskObject *icon, *allocIcon;
 
-	static UWORD ImageData[] =
+	static UBYTE ImageData[] =
 		{
-		0x0000, 0x0000, 0x0004, 0x0000, 0x0000, 0x0000, 0x0001, 0x0000,
-		0x0000, 0x07FF, 0x8000, 0x4000, 0x0000, 0x1800, 0x6000, 0x1000,
-		0x0000, 0x20FC, 0x1000, 0x0800, 0x0000, 0x4102, 0x0800, 0x0C00, 
-		0x0000, 0x4082, 0x0800, 0x0C00, 0x0000, 0x4082, 0x0800, 0x0C00, 
-		0x0000, 0x2104, 0x0800, 0x0C00, 0x0000, 0x1E18, 0x1000, 0x0C00,
-		0x0000, 0x0060, 0x2000, 0x0C00, 0x0000, 0x0080, 0xC000, 0x0C00, 
-		0x0000, 0x0103, 0x0000, 0x0C00, 0x0000, 0x021C, 0x0000, 0x0C00, 
-		0x0000, 0x0108, 0x0000, 0x0C00, 0x0000, 0x00F0, 0x0000, 0x0C00, 
-		0x0000, 0x0108, 0x0000, 0x0C00, 0x0000, 0x0108, 0x0000, 0x0C00, 
-		0x4000, 0x00F0, 0x0000, 0x0C00, 0x1000, 0x0000, 0x0000, 0x0C00,
-		0x0400, 0x0000, 0x0000, 0x0C00, 0x01FF, 0xFFFF, 0xFFFF, 0xFC00, 
-		0x0000, 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFF8, 0x0000, 
-		0xD555, 0x5555, 0x5556, 0x0000, 0xD555, 0x5000, 0x5555, 0x8000, 
-		0xD555, 0x47FF, 0x9555, 0x6000, 0xD555, 0x5F03, 0xE555, 0x5000, 
-		0xD555, 0x3E55, 0xF555, 0x5000, 0xD555, 0x3F55, 0xF555, 0x5000,
-		0xD555, 0x3F55, 0xF555, 0x5000, 0xD555, 0x5E53, 0xF555, 0x5000, 
-		0xD555, 0x4147, 0xE555, 0x5000, 0xD555, 0x551F, 0xD555, 0x5000, 
-		0xD555, 0x557F, 0x1555, 0x5000, 0xD555, 0x54FC, 0x5555, 0x5000, 
-		0xD555, 0x55E1, 0x5555, 0x5000, 0xD555, 0x54F5, 0x5555, 0x5000, 
-		0xD555, 0x5505, 0x5555, 0x5000, 0xD555, 0x54F5, 0x5555, 0x5000,
-		0xD555, 0x54F5, 0x5555, 0x5000, 0x3555, 0x5505, 0x5555, 0x5000, 
-		0x0D55, 0x5555, 0x5555, 0x5000, 0x0355, 0x5555, 0x5555, 0x5000, 
-		0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
+		0x00, 0x00, 0x07, 0xFF, 0x80, 0x00, 0x40, 0x00, 0x00, 0x00, 0x18, 0x00, 0x60, 0x00, 0x10, 0x00,
+		0x00, 0x00, 0x20, 0xFC, 0x10, 0x00, 0x08, 0x00, 0x00, 0x00, 0x41, 0x02, 0x08, 0x00, 0x0C, 0x00, 
+		0x00, 0x00, 0x40, 0x82, 0x08, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x40, 0x82, 0x08, 0x00, 0x0C, 0x00, 
+		0x00, 0x00, 0x21, 0x04, 0x08, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x1E, 0x18, 0x10, 0x00, 0x0C, 0x00,
+		0x00, 0x00, 0x00, 0x60, 0x20, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x80, 0xC0, 0x00, 0x0C, 0x00, 
+		0x00, 0x00, 0x01, 0x03, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x02, 0x1C, 0x00, 0x00, 0x0C, 0x00, 
+		0x00, 0x00, 0x01, 0x08, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x00, 0x00, 0x0C, 0x00, 
+		0x00, 0x00, 0x01, 0x08, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x08, 0x00, 0x00, 0x0C, 0x00, 
+		0x40, 0x00, 0x00, 0xF0, 0x00, 0x00, 0x0C, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x00,
+		0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFC, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xF8, 0x00, 0x00, 
+		0xD5, 0x55, 0x55, 0x55, 0x55, 0x56, 0x00, 0x00, 0xD5, 0x55, 0x50, 0x00, 0x55, 0x55, 0x80, 0x00, 
+		0xD5, 0x55, 0x47, 0xFF, 0x95, 0x55, 0x60, 0x00, 0xD5, 0x55, 0x5F, 0x03, 0xE5, 0x55, 0x50, 0x00, 
+		0xD5, 0x55, 0x3E, 0x55, 0xF5, 0x55, 0x50, 0x00, 0xD5, 0x55, 0x3F, 0x55, 0xF5, 0x55, 0x50, 0x00,
+		0xD5, 0x55, 0x3F, 0x55, 0xF5, 0x55, 0x50, 0x00, 0xD5, 0x55, 0x5E, 0x53, 0xF5, 0x55, 0x50, 0x00, 
+		0xD5, 0x55, 0x41, 0x47, 0xE5, 0x55, 0x50, 0x00, 0xD5, 0x55, 0x55, 0x1F, 0xD5, 0x55, 0x50, 0x00, 
+		0xD5, 0x55, 0x55, 0x7F, 0x15, 0x55, 0x50, 0x00, 0xD5, 0x55, 0x54, 0xFC, 0x55, 0x55, 0x50, 0x00, 
+		0xD5, 0x55, 0x55, 0xE1, 0x55, 0x55, 0x50, 0x00, 0xD5, 0x55, 0x54, 0xF5, 0x55, 0x55, 0x50, 0x00, 
+		0xD5, 0x55, 0x55, 0x05, 0x55, 0x55, 0x50, 0x00, 0xD5, 0x55, 0x54, 0xF5, 0x55, 0x55, 0x50, 0x00,
+		0xD5, 0x55, 0x54, 0xF5, 0x55, 0x55, 0x50, 0x00, 0x35, 0x55, 0x55, 0x05, 0x55, 0x55, 0x50, 0x00, 
+		0x0D, 0x55, 0x55, 0x55, 0x55, 0x55, 0x50, 0x00, 0x03, 0x55, 0x55, 0x55, 0x55, 0x55, 0x50, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 		};
 
 	static struct Image NormalImage =
 		{
 		0, 0, 54, 23,
 		2,
-		ImageData,
+		(UWORD *)ImageData,
 		3, 0,
 		NULL
 		};
@@ -3802,11 +3841,11 @@ static Object *CreateEmptyThumbnailImage(struct PatternPrefsInst *inst)
 		BitMapObj = BitmapObject,
 			MUIA_Bitmap_Width, inst->ppb_ThumbnailWidth,
 			MUIA_Bitmap_Height, inst->ppb_ThumbnailHeight,
-			MUIA_Bitmap_Bitmap, bm,
+			MUIA_Bitmap_Bitmap, (IPTR)bm,
 			MUIA_Bitmap_Transparent, 0,
 			MUIA_Bitmap_UseFriend, TRUE,
 			MUIA_Bitmap_Precision, PRECISION_ICON,
-			MUIA_Bitmap_SourceColors, ThumbnailImageColors,
+			MUIA_Bitmap_SourceColors, (IPTR)ThumbnailImageColors,
 			End;
 
 		d1(kprintf("%s/%s/%ld: BitMapObj=%08lx\n", __FILE__, __FUNC__, __LINE__, BitMapObj));
@@ -4020,12 +4059,12 @@ static void CreateThumbnailImage(struct PatternPrefsInst *inst, struct PatternLi
 			if (CyberGfxBase && ScreenDepth > 8)
 				{
 				scp->ple_MUI_ImageObject = BitMapPicObject,
-					MUIA_ScaBitMappic_BitMap, scp->ple_SAC->sac_BitMap,
-					MUIA_ScaBitMappic_ColorTable, scp->ple_SAC->sac_ColorTable,
+					MUIA_ScaBitMappic_BitMap, (IPTR)scp->ple_SAC->sac_BitMap,
+					MUIA_ScaBitMappic_ColorTable, (IPTR)scp->ple_SAC->sac_ColorTable,
 					MUIA_ScaBitMappic_Width, scp->ple_SAC->sac_Width,
 					MUIA_ScaBitMappic_Height, scp->ple_SAC->sac_Height,
-					MUIA_ScaBitMappic_Screen, inst->ppb_WBScreen,
-					MUIA_ScaBitmappic_BitMapArray, BitMapArray,
+					MUIA_ScaBitMappic_Screen, (IPTR)inst->ppb_WBScreen,
+					MUIA_ScaBitmappic_BitMapArray, (IPTR)BitMapArray,
 					End;
 				}
 			else
@@ -4033,8 +4072,8 @@ static void CreateThumbnailImage(struct PatternPrefsInst *inst, struct PatternLi
 				scp->ple_MUI_ImageObject = BitmapObject,
 					MUIA_Bitmap_Width, scp->ple_SAC->sac_Width,
 					MUIA_Bitmap_Height, scp->ple_SAC->sac_Height,
-					MUIA_Bitmap_Bitmap, scp->ple_SAC->sac_BitMap,
-					MUIA_Bitmap_SourceColors, scp->ple_SAC->sac_ColorTable,
+					MUIA_Bitmap_Bitmap, (IPTR)scp->ple_SAC->sac_BitMap,
+					MUIA_Bitmap_SourceColors, (IPTR)scp->ple_SAC->sac_ColorTable,
 					MUIA_Bitmap_UseFriend, TRUE,
 					MUIA_Bitmap_Precision, PRECISION_ICON,
 					End;
