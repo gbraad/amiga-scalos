@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
 		}
 	else
 		{
-		IPTR ArgArray[7];
+		SIPTR ArgArray[7];
 
 		ProgramName = argv[0];
 

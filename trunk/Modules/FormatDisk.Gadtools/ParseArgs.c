@@ -25,7 +25,7 @@
 #include "GUI.h"
 #include <defs.h>
 
-extern IPTR args[];
+extern SIPTR args[];
 
 // Get the command-line arguments given by the user, by using ReadArgs()
 void parseArgs(char *drive,char *newName,BOOL *ffs,BOOL *intl, BOOL *icons, char *TrashName, BOOL *quick, BOOL *verify)

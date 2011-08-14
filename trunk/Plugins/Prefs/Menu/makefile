@@ -3,7 +3,7 @@
 # $Revision$
 #############################################################
 
-SDPATH		= /
+SDPATH		= //
 
 SUBDIRMAKE 	= $(MAKE) -s -C
 FLEXCAT		= FlexCat
