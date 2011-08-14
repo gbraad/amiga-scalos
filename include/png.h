@@ -1073,8 +1073,10 @@ PNG_EXPORT(31, void, png_set_gray_to_rgb, (png_structp png_ptr));
 
 #ifdef PNG_READ_RGB_TO_GRAY_SUPPORTED
 /* Reduce RGB to grayscale. */
+#if !defined(__SASC)
 PNG_FP_EXPORT(32, void, png_set_rgb_to_gray, (png_structp png_ptr,
     int error_action, double red, double green));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(33, void, png_set_rgb_to_gray_fixed, (png_structp png_ptr, 
     int error_action, png_fixed_point red, png_fixed_point green));
 
@@ -1152,9 +1154,11 @@ PNG_EXPORT(46, void, png_set_invert_mono, (png_structp png_ptr));
 
 #ifdef PNG_READ_BACKGROUND_SUPPORTED
 /* Handle alpha and tRNS by replacing with a background color. */
+#if !defined(__SASC)
 PNG_FP_EXPORT(47, void, png_set_background, (png_structp png_ptr, 
     png_const_color_16p background_color, int background_gamma_code, 
     int need_expand, double background_gamma));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(215, void, png_set_background_fixed, (png_structp png_ptr,
     png_const_color_16p background_color, int background_gamma_code, 
     int need_expand, png_fixed_point background_gamma));
@@ -1188,9 +1192,11 @@ PNG_EXPORT(49, void, png_set_quantize,
 #define PNG_GAMMA_THRESHOLD (PNG_GAMMA_THRESHOLD_FIXED*.00001)
 
 /* Handle gamma correction. Screen_gamma=(display_exponent) */
+#if !defined(__SASC)
 PNG_FP_EXPORT(50, void, png_set_gamma,
     (png_structp png_ptr, double screen_gamma, 
     double default_file_gamma));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(208, void, png_set_gamma_fixed, (png_structp png_ptr, 
     png_fixed_point screen_gamma, png_fixed_point default_file_gamma));
 #endif
@@ -1350,9 +1356,11 @@ PNG_EXPORT(67, void, png_set_filter,
  * the weights and costs are set to 1.0, this degenerates the WEIGHTED method
  * to the UNWEIGHTED method, but with added encoding time/computation.
  */
+#if !defined(__SASC)
 PNG_FP_EXPORT(68, void, png_set_filter_heuristics, (png_structp png_ptr, 
     int heuristic_method, int num_weights, png_const_doublep filter_weights, 
     png_const_doublep filter_costs));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(209, void, png_set_filter_heuristics_fixed,
     (png_structp png_ptr, 
     int heuristic_method, int num_weights, png_const_fixed_point_p
@@ -1703,8 +1711,10 @@ PNG_EXPORT(124, png_uint_32, png_get_y_pixels_per_meter,
     (png_const_structp png_ptr, png_const_infop info_ptr));
 
 /* Returns pixel aspect ratio, computed from pHYs chunk data.  */
+#if !defined(__SASC)
 PNG_FP_EXPORT(125, float, png_get_pixel_aspect_ratio,
     (png_const_structp png_ptr, png_const_infop info_ptr));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(210, png_fixed_point, png_get_pixel_aspect_ratio_fixed, 
     (png_const_structp png_ptr, png_const_infop info_ptr));
 
@@ -1736,10 +1746,12 @@ PNG_EXPORT(132, void, png_set_bKGD, (png_structp png_ptr, png_infop info_ptr,
 #endif
 
 #ifdef PNG_cHRM_SUPPORTED
+#if !defined(__SASC)
 PNG_FP_EXPORT(133, png_uint_32, png_get_cHRM, (png_const_structp png_ptr, 
    png_const_infop info_ptr, double *white_x, double *white_y, double *red_x, 
     double *red_y, double *green_x, double *green_y, double *blue_x, 
     double *blue_y));
+#endif //!defined(__SASC)
 #ifdef PNG_FIXED_POINT_SUPPORTED /* Otherwise not implemented */
 PNG_FIXED_EXPORT(134, png_uint_32, png_get_cHRM_fixed,
     (png_const_structp png_ptr, 
@@ -1752,10 +1764,12 @@ PNG_FIXED_EXPORT(134, png_uint_32, png_get_cHRM_fixed,
 #endif
 
 #ifdef PNG_cHRM_SUPPORTED
+#if !defined(__SASC)
 PNG_FP_EXPORT(135, void, png_set_cHRM,
     (png_structp png_ptr, png_infop info_ptr, 
     double white_x, double white_y, double red_x, double red_y, double green_x, 
     double green_y, double blue_x, double blue_y));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(136, void, png_set_cHRM_fixed, (png_structp png_ptr, 
     png_infop info_ptr, png_fixed_point int_white_x, 
     png_fixed_point int_white_y, png_fixed_point int_red_x, 
@@ -1765,17 +1779,21 @@ PNG_FIXED_EXPORT(136, void, png_set_cHRM_fixed, (png_structp png_ptr,
 #endif
 
 #ifdef PNG_gAMA_SUPPORTED
+#if !defined(__SASC)
 PNG_FP_EXPORT(137, png_uint_32, png_get_gAMA,
     (png_const_structp png_ptr, png_const_infop info_ptr, 
     double *file_gamma));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(138, png_uint_32, png_get_gAMA_fixed,
     (png_const_structp png_ptr, png_const_infop info_ptr,
     png_fixed_point *int_file_gamma));
 #endif
 
 #ifdef PNG_gAMA_SUPPORTED
+#if !defined(__SASC)
 PNG_FP_EXPORT(139, void, png_set_gAMA, (png_structp png_ptr,
     png_infop info_ptr, double file_gamma));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(140, void, png_set_gAMA_fixed, (png_structp png_ptr, 
     png_infop info_ptr, png_fixed_point int_file_gamma));
 #endif
@@ -1941,9 +1959,11 @@ PNG_EXPORT(167, void, png_set_tRNS,
 #endif
 
 #ifdef PNG_sCAL_SUPPORTED
+#if !defined(__SASC)
 PNG_FP_EXPORT(168, png_uint_32, png_get_sCAL,
     (png_const_structp png_ptr, png_const_infop info_ptr, 
     int *unit, double *width, double *height));
+#endif //!defined(__SASC)
 #ifdef PNG_FLOATING_ARITHMETIC_SUPPORTED
 /* NOTE: this API is currently implemented using floating point arithmetic, 
  * consequently it can only be used on systems with floating point support.
@@ -1959,9 +1979,11 @@ PNG_EXPORT(169, png_uint_32, png_get_sCAL_s,
     (png_const_structp png_ptr, png_const_infop info_ptr,
     int *unit, png_charpp swidth, png_charpp sheight));
 
+#if !defined(__SASC)
 PNG_FP_EXPORT(170, void, png_set_sCAL,
     (png_structp png_ptr, png_infop info_ptr, 
     int unit, double width, double height));
+#endif //!defined(__SASC)
 PNG_FIXED_EXPORT(213, void, png_set_sCAL_fixed, (png_structp png_ptr, 
    png_infop info_ptr, int unit, png_fixed_point width, 
    png_fixed_point height));
@@ -2070,15 +2092,19 @@ PNG_EXPORT(194, png_uint_32, png_get_x_pixels_per_inch,
 PNG_EXPORT(195, png_uint_32, png_get_y_pixels_per_inch,
     (png_const_structp png_ptr, png_const_infop info_ptr));
 
+#if !defined(__SASC)
 PNG_FP_EXPORT(196, float, png_get_x_offset_inches,
     (png_const_structp png_ptr, png_const_infop info_ptr));
+#endif //!defined(__SASC)
 #ifdef PNG_FIXED_POINT_SUPPORTED /* otherwise not implemented. */
 PNG_FIXED_EXPORT(211, png_fixed_point, png_get_x_offset_inches_fixed, 
     (png_structp png_ptr, png_const_infop info_ptr));
 #endif
 
+#if !defined(__SASC)
 PNG_FP_EXPORT(197, float, png_get_y_offset_inches, (png_const_structp png_ptr, 
     png_const_infop info_ptr));
+#endif //!defined(__SASC)
 #ifdef PNG_FIXED_POINT_SUPPORTED /* otherwise not implemented. */
 PNG_FIXED_EXPORT(212, png_fixed_point, png_get_y_offset_inches_fixed, 
     (png_structp png_ptr, png_const_infop info_ptr));

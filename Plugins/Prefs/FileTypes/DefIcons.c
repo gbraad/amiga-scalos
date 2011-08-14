@@ -438,6 +438,10 @@ static void AddTypeNodeToFileTypesList(struct FileTypesPrefsInst *inst, struct T
 BOOL WriteDefIconsPrefs(struct FileTypesPrefsInst *inst, CONST_STRPTR FileName)
 {
 	static ULONG DefIconHeader[8];
+	static ULONG DefIconTrailer[1];
+	BPTR fh;
+	BOOL Success = FALSE;
+
 	DefIconHeader[0] = SCA_LONG2BE(HUNK_HEADER);
 	DefIconHeader[1] = 0;
 	DefIconHeader[2] = SCA_LONG2BE(1);
@@ -447,11 +451,7 @@ BOOL WriteDefIconsPrefs(struct FileTypesPrefsInst *inst, CONST_STRPTR FileName)
 	DefIconHeader[6] = SCA_LONG2BE(HUNK_DATA);
 	DefIconHeader[7] = 0;		// HunkLength must be written here
 
-	static ULONG DefIconTrailer[1];
 	DefIconTrailer[0] = SCA_LONG2BE(HUNK_END);
-
-	BPTR fh;
-	BOOL Success = FALSE;
 
 	do	{
 		ULONG HunkLength = 0;

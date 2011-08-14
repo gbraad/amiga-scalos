@@ -547,7 +547,7 @@ ULONG AdjustBackdropRenamed(BPTR oLock, struct ScaIconNode *in)
 
 		siw.ui_iw_Lock = NewParentDir;
 		siw.ui_iw_Name = FilePart(NewPath);
-		siw.ui_IconType = ICONTYPE_NONE;
+		//siw.ui_IconType = ICONTYPE_NONE;
 
 		d1(KPrintF("%s/%s/%ld: Lock=%08lx  Name=<%s>\n", __FILE__, __FUNC__, __LINE__, siw.ui_iw_Lock, siw.ui_iw_Name));
 
