@@ -1586,7 +1586,10 @@ static LONG ReadPrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filename
 		GetPreferences(myPrefsHandle, lID, PMP_SubMenuDelay, &inst->mpb_PMPrefs.pmp_SubMenuDelay, sizeof(inst->mpb_PMPrefs.pmp_SubMenuDelay) );
 		GetPreferences(myPrefsHandle, lID, PMP_AnimationType, &inst->mpb_PMPrefs.pmp_Animation, sizeof(inst->mpb_PMPrefs.pmp_Animation) );
 		GetPreferences(myPrefsHandle, lID, PMP_PullDownMenuPos, &inst->mpb_PMPrefs.pmp_PulldownPos, sizeof(inst->mpb_PMPrefs.pmp_PulldownPos) );
-		GetPreferences(myPrefsHandle, lID, PMP_Sticky, &inst->mpb_PMPrefs.pmp_Sticky, sizeof(inst->mpb_PMPrefs.pmp_Sticky) );
+		if (GetPreferences(myPrefsHandle, lID, PMP_Sticky, &inst->mpb_PMPrefs.pmp_Sticky, sizeof(inst->mpb_PMPrefs.pmp_Sticky) ))
+		{
+			inst->mpb_PMPrefs.pmp_Sticky = SCA_BE2WORD(inst->mpb_PMPrefs.pmp_Sticky);
+		}
 		GetPreferences(myPrefsHandle, lID, PMP_MenuBorderType, &inst->mpb_PMPrefs.pmp_MenuBorder, sizeof(inst->mpb_PMPrefs.pmp_MenuBorder) );
 		GetPreferences(myPrefsHandle, lID, PMP_SelItemBorderType, &inst->mpb_PMPrefs.pmp_SelItemBorder, sizeof(inst->mpb_PMPrefs.pmp_SelItemBorder) );
 		GetPreferences(myPrefsHandle, lID, PMP_SeparatorBarStyle, &inst->mpb_PMPrefs.pmp_SeparatorBar, sizeof(inst->mpb_PMPrefs.pmp_SeparatorBar) );
@@ -1634,6 +1637,7 @@ static LONG WritePrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filenam
 {
 	APTR myPrefsHandle;
 	LONG Result = RETURN_OK;
+	WORD wValue;
 
 	GUItoPrefs(inst, &inst->mpb_PMPrefs);
 
@@ -1646,7 +1650,10 @@ static LONG WritePrefsFile(struct PopupMenuPrefsInst *inst, CONST_STRPTR Filenam
 		SetPreferences(myPrefsHandle, lID, PMP_SubMenuDelay, &inst->mpb_PMPrefs.pmp_SubMenuDelay, sizeof(inst->mpb_PMPrefs.pmp_SubMenuDelay) );
 		SetPreferences(myPrefsHandle, lID, PMP_AnimationType, &inst->mpb_PMPrefs.pmp_Animation, sizeof(inst->mpb_PMPrefs.pmp_Animation) );
 		SetPreferences(myPrefsHandle, lID, PMP_PullDownMenuPos, &inst->mpb_PMPrefs.pmp_PulldownPos, sizeof(inst->mpb_PMPrefs.pmp_PulldownPos) );
-		SetPreferences(myPrefsHandle, lID, PMP_Sticky, &inst->mpb_PMPrefs.pmp_Sticky, sizeof(inst->mpb_PMPrefs.pmp_Sticky) );
+
+		wValue = SCA_WORD2BE(inst->mpb_PMPrefs.pmp_Sticky);
+		SetPreferences(myPrefsHandle, lID, PMP_Sticky, &wValue, sizeof(wValue) );
+
 		SetPreferences(myPrefsHandle, lID, PMP_MenuBorderType, &inst->mpb_PMPrefs.pmp_MenuBorder, sizeof(inst->mpb_PMPrefs.pmp_MenuBorder) );
 		SetPreferences(myPrefsHandle, lID, PMP_SelItemBorderType, &inst->mpb_PMPrefs.pmp_SelItemBorder, sizeof(inst->mpb_PMPrefs.pmp_SelItemBorder) );
 		SetPreferences(myPrefsHandle, lID, PMP_SeparatorBarStyle, &inst->mpb_PMPrefs.pmp_SeparatorBar, sizeof(inst->mpb_PMPrefs.pmp_SeparatorBar) );
@@ -2325,6 +2332,8 @@ static LONG ReadOldPrefsFile(CONST_STRPTR Filename, struct oldPopupMenuPrefs *pr
 				if (Actual != cn->cn_Size)
 					break;
 				}
+				prefs->pmp_Sticky = SCA_BE2WORD(prefs->pmp_Sticky);
+				prefs->pmp_SameHeight = SCA_BE2WORD(prefs->pmp_SameHeight);
 			}
 
 		d1(KPrintF(__FILE__ "%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
@@ -2409,7 +2418,10 @@ static void ConvertPmPrefs(CONST_STRPTR prefsFileOld, CONST_STRPTR prefsFileNew)
 			SetPreferences(myPrefsHandle, lID, PMP_SubMenuDelay, &LoadedPrefs.pmp_SubMenuDelay, sizeof(LoadedPrefs.pmp_SubMenuDelay) );
 			SetPreferences(myPrefsHandle, lID, PMP_AnimationType, &LoadedPrefs.pmp_Animation, sizeof(LoadedPrefs.pmp_Animation) );
 			SetPreferences(myPrefsHandle, lID, PMP_PullDownMenuPos, &LoadedPrefs.pmp_PulldownPos, sizeof(LoadedPrefs.pmp_PulldownPos) );
+
+			LoadedPrefs.pmp_Sticky = SCA_WORD2BE(LoadedPrefs.pmp_Sticky);
 			SetPreferences(myPrefsHandle, lID, PMP_Sticky, &LoadedPrefs.pmp_Sticky, sizeof(LoadedPrefs.pmp_Sticky) );
+
 			SetPreferences(myPrefsHandle, lID, PMP_MenuBorderType, &LoadedPrefs.pmp_MenuBorder, sizeof(LoadedPrefs.pmp_MenuBorder) );
 			SetPreferences(myPrefsHandle, lID, PMP_SelItemBorderType, &LoadedPrefs.pmp_SelItemBorder, sizeof(LoadedPrefs.pmp_SelItemBorder) );
 			SetPreferences(myPrefsHandle, lID, PMP_SeparatorBarStyle, &LoadedPrefs.pmp_SeparatorBar, sizeof(LoadedPrefs.pmp_SeparatorBar) );
