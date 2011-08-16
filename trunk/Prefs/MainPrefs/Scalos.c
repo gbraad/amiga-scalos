@@ -4792,7 +4792,7 @@ static Object *GenerateAboutPage(struct SCAModule *app, CONST_STRPTR cVersion, C
 
 			Child, VGroup,
 				Child, DataTypesImageObject,
-					MUIA_ScaDtpic_Name,  (ULONG) "THEME:ScalosLogo",
+					MUIA_ScaDtpic_Name,  (ULONG) "THEME:ScalosSplashLogo",
 					End, //DataTypesMCCObject
 
 				Child, TextObject,
