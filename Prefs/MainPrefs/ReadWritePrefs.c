@@ -102,6 +102,8 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 static void CleanupControlBarGadgetsList(struct List *CbGadgetsList);
 static void CreateDefaultControlBarGadgets(void);
 static ULONG GetLog2(ULONG value);
+static void SetWordPreferences(APTR prefsHandle, ULONG iD, ULONG prefsTag, CONST UWORD *arg, ULONG struct_Size);
+static void SetLongPreferences(APTR prefsHandle, ULONG iD, ULONG prefsTag, CONST ULONG *arg, ULONG struct_Size);
 
 //-----------------------------------------------------------------
 
@@ -1337,6 +1339,10 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 	APTR p_MyPrefsHandle;
 //	STRPTR PrefsFileName = "ram:scalos.prefs";
 
+	// temp variables for big endian writes
+	struct IBox ibox;
+	struct Rectangle rect;
+
 	FillPrefsStructures(app);
 
 	p_MyPrefsHandle = AllocPrefsHandle("ScalosPrefs");
@@ -1344,100 +1350,202 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 
 	if(p_MyPrefsHandle)
 		{
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconOffsets, &currentPrefs.Icons.ig_IconOffsets, sizeof(currentPrefs.Icons.ig_IconOffsets) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconNormFrame, &currentPrefs.Icons.ig_wNormFrame, sizeof(currentPrefs.Icons.ig_wNormFrame) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSelFrame, &currentPrefs.Icons.ig_wSelFrame, sizeof(currentPrefs.Icons.ig_wSelFrame) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconNormThumbnailFrame, &currentPrefs.Icons.ig_wNormThumbnailFrame, sizeof(currentPrefs.Icons.ig_wNormThumbnailFrame) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSelThumbnailFrame, &currentPrefs.Icons.ig_wSelThumbnailFrame, sizeof(currentPrefs.Icons.ig_wSelThumbnailFrame) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.TextWindows.fd_wLabelStyle, sizeof(currentPrefs.TextWindows.fd_wLabelStyle) );
+		ibox.Left = SCA_WORD2BE(currentPrefs.Icons.ig_IconOffsets.Left);
+		ibox.Top = SCA_WORD2BE(currentPrefs.Icons.ig_IconOffsets.Top);
+		ibox.Width = SCA_WORD2BE(currentPrefs.Icons.ig_IconOffsets.Width);
+		ibox.Height = SCA_WORD2BE(currentPrefs.Icons.ig_IconOffsets.Height);
+		SetPreferences(p_MyPrefsHandle, lID, SCP_IconOffsets, &ibox, sizeof(ibox) );
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_IconNormFrame, &currentPrefs.Icons.ig_wNormFrame, sizeof(currentPrefs.Icons.ig_wNormFrame) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_IconSelFrame, &currentPrefs.Icons.ig_wSelFrame, sizeof(currentPrefs.Icons.ig_wSelFrame) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_IconNormThumbnailFrame, &currentPrefs.Icons.ig_wNormThumbnailFrame, sizeof(currentPrefs.Icons.ig_wNormThumbnailFrame) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_IconSelThumbnailFrame, &currentPrefs.Icons.ig_wSelThumbnailFrame, sizeof(currentPrefs.Icons.ig_wSelThumbnailFrame) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.TextWindows.fd_wLabelStyle, sizeof(currentPrefs.TextWindows.fd_wLabelStyle) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSecLine, &currentPrefs.Icons.ig_wMultipleLines, sizeof(currentPrefs.Icons.ig_wMultipleLines) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &currentPrefs.Icons.ig_SizeConstraints, sizeof(currentPrefs.Icons.ig_SizeConstraints) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconNominalSize, &currentPrefs.Icons.ig_NominalSize, sizeof(currentPrefs.Icons.ig_NominalSize) );
+		// BYTE
+
+		rect.MinX = SCA_WORD2BE(currentPrefs.Icons.ig_SizeConstraints.MinX);
+		rect.MinY = SCA_WORD2BE(currentPrefs.Icons.ig_SizeConstraints.MinY);
+		rect.MaxX = SCA_WORD2BE(currentPrefs.Icons.ig_SizeConstraints.MaxX);
+		rect.MaxY = SCA_WORD2BE(currentPrefs.Icons.ig_SizeConstraints.MaxY);
+		SetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &rect, sizeof(rect) );
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_IconNominalSize, &currentPrefs.Icons.ig_NominalSize, sizeof(currentPrefs.Icons.ig_NominalSize) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconHiliteUnderMouse, &currentPrefs.Icons.ig_HighlightUnderMouse, sizeof(currentPrefs.Icons.ig_HighlightUnderMouse) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) );
+		// BYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnails, &currentPrefs.Icons.ig_ShowThumbnails, sizeof(currentPrefs.Icons.ig_ShowThumbnails) );
+		// UBYTE
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnailsAsDefault, &currentPrefs.Icons.ig_ShowThumbnailsAsDefault, sizeof(currentPrefs.Icons.ig_ShowThumbnailsAsDefault) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailsSquare, &currentPrefs.Icons.ig_bSquareThumbnails, sizeof(currentPrefs.Icons.ig_bSquareThumbnails) );
+		// BYTE
 
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailSize, &currentPrefs.Icons.ig_ThumbnailSize, sizeof(currentPrefs.Icons.ig_ThumbnailSize) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMaxAge, &currentPrefs.Icons.ig_ThumbnailMaxAge, sizeof(currentPrefs.Icons.ig_ThumbnailMaxAge) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMinSizeLimit, &currentPrefs.Icons.ig_ThumbnailMinSizeLimit, sizeof(currentPrefs.Icons.ig_ThumbnailMinSizeLimit) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailQuality, &currentPrefs.Icons.ig_ThumbnailQuality, sizeof(currentPrefs.Icons.ig_ThumbnailQuality) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailOffsets, &currentPrefs.Icons.ig_ThumbnailOffsets, sizeof(currentPrefs.Icons.ig_ThumbnailOffsets) );
+		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailsSquare, &currentPrefs.Icons.ig_bSquareThumbnails, sizeof(currentPrefs.Icons.ig_bSquareThumbnails) );
+		// BYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailSize, &currentPrefs.Icons.ig_ThumbnailSize, sizeof(currentPrefs.Icons.ig_ThumbnailSize) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMaxAge, &currentPrefs.Icons.ig_ThumbnailMaxAge, sizeof(currentPrefs.Icons.ig_ThumbnailMaxAge) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMinSizeLimit, &currentPrefs.Icons.ig_ThumbnailMinSizeLimit, sizeof(currentPrefs.Icons.ig_ThumbnailMinSizeLimit) );
+
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailQuality, &currentPrefs.Icons.ig_ThumbnailQuality, sizeof(currentPrefs.Icons.ig_ThumbnailQuality) );
+
+		ibox.Left = SCA_WORD2BE(currentPrefs.Icons.ig_ThumbnailOffsets.Left);
+		ibox.Top = SCA_WORD2BE(currentPrefs.Icons.ig_ThumbnailOffsets.Top);
+		ibox.Width = SCA_WORD2BE(currentPrefs.Icons.ig_ThumbnailOffsets.Width);
+		ibox.Height = SCA_WORD2BE(currentPrefs.Icons.ig_ThumbnailOffsets.Height);
+		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailOffsets, &ibox, sizeof(ibox) );
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailsFillBackground, &currentPrefs.Icons.ig_ThumbnailsBackfill, sizeof(currentPrefs.Icons.ig_ThumbnailsBackfill) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyThumbnailsBack, &currentPrefs.Icons.ig_ThumbnailBackgroundTransparency, sizeof(currentPrefs.Icons.ig_ThumbnailBackgroundTransparency) );
+		// UBYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_TransparencyThumbnailsBack, &currentPrefs.Icons.ig_ThumbnailBackgroundTransparency, sizeof(currentPrefs.Icons.ig_ThumbnailBackgroundTransparency) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectedTextRectangle, &currentPrefs.Icons.ig_SelectedTextRectangle, sizeof(currentPrefs.Icons.ig_SelectedTextRectangle) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderX, &currentPrefs.Icons.ig_SelTextRectBorderX, sizeof(currentPrefs.Icons.ig_SelTextRectBorderX) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderY, &currentPrefs.Icons.ig_SelTextRectBorderY, sizeof(currentPrefs.Icons.ig_SelTextRectBorderY) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectRadius, &currentPrefs.Icons.ig_SelTextRectRadius, sizeof(currentPrefs.Icons.ig_SelTextRectRadius) );
-	    
+		// UBYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderX, &currentPrefs.Icons.ig_SelTextRectBorderX, sizeof(currentPrefs.Icons.ig_SelTextRectBorderX) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderY, &currentPrefs.Icons.ig_SelTextRectBorderY, sizeof(currentPrefs.Icons.ig_SelTextRectBorderY) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectRadius, &currentPrefs.Icons.ig_SelTextRectRadius, sizeof(currentPrefs.Icons.ig_SelTextRectRadius) );
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_DeviceWinIconLayout, currentPrefs.Icons.ig_DeviceWindowLayoutModes, sizeof(currentPrefs.Icons.ig_DeviceWindowLayoutModes));
+		// UBYTE[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_IconWinIconLayout, currentPrefs.Icons.ig_IconWindowLayoutModes, sizeof(currentPrefs.Icons.ig_IconWindowLayoutModes));
+		// UBYTE[]
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_BobsType, &currentPrefs.DragNDrop.ddg_bBobStyle, sizeof(currentPrefs.DragNDrop.ddg_bBobStyle) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_BobsMethod, &currentPrefs.DragNDrop.ddg_bBobMethod, sizeof(currentPrefs.DragNDrop.ddg_bBobMethod) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_BobsTranspMode, &currentPrefs.DragNDrop.ddg_bBobLook, sizeof(currentPrefs.DragNDrop.ddg_bBobLook) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_BobsTranspType, &currentPrefs.DragNDrop.ddg_bTranspType, sizeof(currentPrefs.DragNDrop.ddg_bTranspType) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_BobsTransp, &currentPrefs.DragNDrop.ddg_lTriggers, sizeof(currentPrefs.DragNDrop.ddg_lTriggers) );
+		// BYTE
+
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_BobsTransp, &currentPrefs.DragNDrop.ddg_lTriggers, sizeof(currentPrefs.DragNDrop.ddg_lTriggers) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ScreenTitle, currentPrefs.Desktop.dg_pScreen, 1 + strlen(currentPrefs.Desktop.dg_pScreen) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_RootWinTitle, currentPrefs.Windows.wg_pRootWin, 1 + strlen(currentPrefs.Windows.wg_pRootWin) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_WindowTitle, currentPrefs.Windows.wg_pWindow, 1 + strlen(currentPrefs.Windows.wg_pWindow) );
+		// char[]
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TTfAntialiasing, &currentPrefs.TrueTypeFonts.ttg_Antialias, sizeof(currentPrefs.TrueTypeFonts.ttg_Antialias) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_TTfGamma, &currentPrefs.TrueTypeFonts.ttg_Gamma, sizeof(currentPrefs.TrueTypeFonts.ttg_Gamma) );
+		// BYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_TTfGamma, &currentPrefs.TrueTypeFonts.ttg_Gamma, sizeof(currentPrefs.TrueTypeFonts.ttg_Gamma) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TTScreenFontDesc, currentPrefs.TrueTypeFonts.ttg_ScreenTTFontDesc, 1 + strlen(currentPrefs.TrueTypeFonts.ttg_ScreenTTFontDesc) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TTIconFontDesc, currentPrefs.TrueTypeFonts.ttg_IconTTFontDesc, 1 + strlen(currentPrefs.TrueTypeFonts.ttg_IconTTFontDesc) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TTTextWindowFontDesc, currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc, 1 + strlen(currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_UseTTScreenFont, &currentPrefs.TrueTypeFonts.ttg_UseScreenTTFont, sizeof(currentPrefs.TrueTypeFonts.ttg_UseScreenTTFont) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_UseTTIconFont, &currentPrefs.TrueTypeFonts.ttg_UseIconTTFont, sizeof(currentPrefs.TrueTypeFonts.ttg_UseIconTTFont) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_UseTTTextWindowFont, &currentPrefs.TrueTypeFonts.ttg_UseTextWindowTTFont, sizeof(currentPrefs.TrueTypeFonts.ttg_UseTextWindowTTFont) );
+		// BYTE
 
 		//SetPreferences(p_MyPrefsHandle, lID, SCP_Seperator, , sizeof() );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TitleRefresh, &currentPrefs.Desktop.dg_bTitleRefresh, sizeof(currentPrefs.Desktop.dg_bTitleRefresh) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_RefreshOnMemoryChange, &currentPrefs.Desktop.dg_bMemoryRefresh, sizeof(currentPrefs.Desktop.dg_bMemoryRefresh) );
+		// BYTE
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_WinTitleRefresh, &currentPrefs.Desktop.dg_bWinTitleRefresh, sizeof(currentPrefs.Desktop.dg_bWinTitleRefresh) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_WinRefreshOnMemoryChange, &currentPrefs.Desktop.dg_bWinMemoryRefresh, sizeof(currentPrefs.Desktop.dg_bWinMemoryRefresh) );
+		// BYTE
 
+		SetPreferences(p_MyPrefsHandle, lID, SCP_WinRefreshOnMemoryChange, &currentPrefs.Desktop.dg_bWinMemoryRefresh, sizeof(currentPrefs.Desktop.dg_bWinMemoryRefresh) );
+		// BYTE
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ConsoleName, currentPrefs.Desktop.dg_ConsoleName, 1 + strlen(currentPrefs.Desktop.dg_ConsoleName) );
+		// char[]
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsDefIcons, &currentPrefs.Paths.pg_pDefaultIcons, 1 + strlen(currentPrefs.Paths.pg_pDefaultIcons) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsDiskCopy, &currentPrefs.Paths.pg_pDiskCopy, 1 + strlen(currentPrefs.Paths.pg_pDiskCopy) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsTheme, &currentPrefs.Paths.pg_pThemes, 1 + strlen(currentPrefs.Paths.pg_pThemes) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsImagecache, &currentPrefs.Paths.pg_pImageCache, 1 + strlen(currentPrefs.Paths.pg_pImageCache) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsThumbnailDb, &currentPrefs.Paths.pg_pThumbnailDb, 1 + strlen(currentPrefs.Paths.pg_pThumbnailDb) );
-                SetPreferences(p_MyPrefsHandle, lID, SCP_PathsWBStartup, &currentPrefs.Startup.sg_pWBStartup, 1 + strlen(currentPrefs.Startup.sg_pWBStartup) );
+		// char[]
+
+		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsWBStartup, &currentPrefs.Startup.sg_pWBStartup, 1 + strlen(currentPrefs.Startup.sg_pWBStartup) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsHome, &currentPrefs.Paths.pg_pHome, 1 + strlen(currentPrefs.Paths.pg_pHome) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PathsSQLiteTempDir, &currentPrefs.Paths.pg_SQLiteTempDir, 1 + strlen(currentPrefs.Paths.pg_SQLiteTempDir) );
+		// char[]
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscAutoRemove, &currentPrefs.DragNDrop.ddg_bAutoRemoveIcons, sizeof(currentPrefs.DragNDrop.ddg_bAutoRemoveIcons) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscClickTransp, &currentPrefs.Icons.ig_bClickAreaMask, sizeof(currentPrefs.Icons.ig_bClickAreaMask) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscHardEmulation, &currentPrefs.Miscellaneous.mg_bHardEmulation, sizeof(currentPrefs.Miscellaneous.mg_bHardEmulation) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscUseExAll, &currentPrefs.Miscellaneous.mg_bUseExAll, sizeof(currentPrefs.Miscellaneous.mg_bUseExAll) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_CreateSoftLinks, &currentPrefs.Miscellaneous.mg_bCreateSoftLinks, sizeof(currentPrefs.Miscellaneous.mg_bCreateSoftLinks) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_CopyBuffLen, &currentPrefs.Miscellaneous.mg_CopyBuffSize, sizeof(currentPrefs.Miscellaneous.mg_CopyBuffSize) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_MaxUndoSteps, &currentPrefs.Miscellaneous.mg_MaxUndoSteps, sizeof(currentPrefs.Miscellaneous.mg_MaxUndoSteps) );
+		// BYTE
+
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_CopyBuffLen, &currentPrefs.Miscellaneous.mg_CopyBuffSize, sizeof(currentPrefs.Miscellaneous.mg_CopyBuffSize) );
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_MaxUndoSteps, &currentPrefs.Miscellaneous.mg_MaxUndoSteps, sizeof(currentPrefs.Miscellaneous.mg_MaxUndoSteps) );
+
 		if (WorkbenchBase->lib_Version < 45)
-			SetPreferences(p_MyPrefsHandle, lID, SCP_DefaultStackSize, &currentPrefs.Miscellaneous.mg_DefaultStackSize, sizeof(currentPrefs.Miscellaneous.mg_DefaultStackSize) );
+			SetLongPreferences(p_MyPrefsHandle, lID, SCP_DefaultStackSize, &currentPrefs.Miscellaneous.mg_DefaultStackSize, sizeof(currentPrefs.Miscellaneous.mg_DefaultStackSize) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscWindowType, &currentPrefs.Windows.wg_bType, sizeof(currentPrefs.Windows.wg_bType) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscDoWaitDelay, &currentPrefs.Startup.sg_bWBStartupDelay, sizeof(currentPrefs.Startup.sg_bWBStartupDelay) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscDiskiconsRefresh, &currentPrefs.Desktop.dg_bDiskRefresh, sizeof(currentPrefs.Desktop.dg_bDiskRefresh) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MiscMenuCurrentDir, &currentPrefs.Miscellaneous.mg_bMenuCurrentDir, sizeof(currentPrefs.Miscellaneous.mg_bMenuCurrentDir) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_DragDropCopyQualifier, &currentPrefs.DragNDrop.ddg_pCopyQualifier, sizeof(currentPrefs.DragNDrop.ddg_pCopyQualifier) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_PopupApplySelectedQualifier, &currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier, sizeof(currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier) );
+		// BYTE
+
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_DragDropCopyQualifier, &currentPrefs.DragNDrop.ddg_pCopyQualifier, sizeof(currentPrefs.DragNDrop.ddg_pCopyQualifier) );
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_PopupApplySelectedQualifier, &currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier, sizeof(currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PopupApplySelectedAlways, &currentPrefs.Miscellaneous.mp_PopupApplySelectedAlways, sizeof(currentPrefs.Miscellaneous.mp_PopupApplySelectedAlways) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_DragDropMakeLinkQualifier, &currentPrefs.DragNDrop.ddg_pMakeLinkQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMakeLinkQualifier) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_DragDropMoveQualifier, &currentPrefs.DragNDrop.ddg_pMoveQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMoveQualifier) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SingleWindowLassoQualifier, &currentPrefs.Desktop.dg_SingleWindowLassoQualifier, sizeof(currentPrefs.Desktop.dg_SingleWindowLassoQualifier) );
+		// BYTE
+
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_DragDropMakeLinkQualifier, &currentPrefs.DragNDrop.ddg_pMakeLinkQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMakeLinkQualifier) );
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_DragDropMoveQualifier, &currentPrefs.DragNDrop.ddg_pMoveQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMoveQualifier) );
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_SingleWindowLassoQualifier, &currentPrefs.Desktop.dg_SingleWindowLassoQualifier, sizeof(currentPrefs.Desktop.dg_SingleWindowLassoQualifier) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_NewIconsTransparent, &currentPrefs.Icons.ig_bNewIconTransparent, sizeof(currentPrefs.Icons.ig_bNewIconTransparent) );
+		// BYTE
+
 		WriteNewIconsPrecision(p_MyPrefsHandle, lID);
 
 		//SetPreferences(p_MyPrefsHandle, lID, SCP_TextModeDateFormat, , sizeof() );
@@ -1451,51 +1559,118 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 			NLIST_CONTROLBARGADGETS_BROWSER_ACTIVE, SCP_ControlBarGadgetsBr, SCP_ControlBarGadgetStringsBr);
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_MMB_Move, &currentPrefs.Windows.wg_bMMBMove, sizeof(currentPrefs.Windows.wg_bMMBMove) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_WindowPopupTitleOnly, &currentPrefs.Windows.wg_bPopTitleOnly, sizeof(currentPrefs.Windows.wg_bPopTitleOnly) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_DefaultWindowSize, &currentPrefs.Windows.wg_DefaultSize, sizeof(currentPrefs.Windows.wg_DefaultSize) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_IconCleanupSpace, &currentPrefs.Windows.wg_CleanupSpaces, sizeof(currentPrefs.Windows.wg_CleanupSpaces) );
+		// BYTE
+
+		ibox.Left = SCA_WORD2BE(currentPrefs.Windows.wg_DefaultSize.Left);
+		ibox.Top = SCA_WORD2BE(currentPrefs.Windows.wg_DefaultSize.Top);
+		ibox.Width = SCA_WORD2BE(currentPrefs.Windows.wg_DefaultSize.Width);
+		ibox.Height = SCA_WORD2BE(currentPrefs.Windows.wg_DefaultSize.Height);
+		SetPreferences(p_MyPrefsHandle, lID, SCP_DefaultWindowSize, &ibox, sizeof(ibox) );
+
+		ibox.Left = SCA_WORD2BE(currentPrefs.Windows.wg_CleanupSpaces.Left);
+		ibox.Top = SCA_WORD2BE(currentPrefs.Windows.wg_CleanupSpaces.Top);
+		ibox.Width = SCA_WORD2BE(currentPrefs.Windows.wg_CleanupSpaces.Width);
+		ibox.Height = SCA_WORD2BE(currentPrefs.Windows.wg_CleanupSpaces.Height);
+		SetPreferences(p_MyPrefsHandle, lID, SCP_IconCleanupSpace, &ibox, sizeof(ibox) );
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_FullBench, &currentPrefs.Desktop.dg_bHideTitleBar, sizeof(currentPrefs.Desktop.dg_bHideTitleBar) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_LoadDefIconsFirst, &currentPrefs.Icons.ig_bLoadDefIconsFirst, sizeof(currentPrefs.Icons.ig_bLoadDefIconsFirst) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_DefaultIconsSaveable, &currentPrefs.Icons.ig_bIconsSaveable, sizeof(currentPrefs.Icons.ig_bIconsSaveable) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_EasyMultiSelect, &currentPrefs.DragNDrop.ddg_bEasyMultiSelect, sizeof(currentPrefs.DragNDrop.ddg_bEasyMultiSelect) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_EasyMultiDrag, &currentPrefs.DragNDrop.ddg_bEasyMultiDrag, sizeof(currentPrefs.DragNDrop.ddg_bEasyMultiDrag) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_DropStart, &currentPrefs.Desktop.dg_bDropStart, sizeof(currentPrefs.Desktop.dg_bDropStart) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_AutoLeaveOut, &currentPrefs.Desktop.dg_AutoLeaveOut, sizeof(currentPrefs.Desktop.dg_AutoLeaveOut));
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_HideHiddenFiles, &currentPrefs.Windows.wg_bHideHiddenFiles, sizeof(currentPrefs.Windows.wg_bHideHiddenFiles) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_HideProtectHiddenFiles, &currentPrefs.Windows.wg_bHideProtectHiddenFiles, sizeof(currentPrefs.Windows.wg_bHideProtectHiddenFiles) ); // JMC
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ShowAllDefault, &currentPrefs.Windows.wg_ShowAllByDefault, sizeof(currentPrefs.Windows.wg_ShowAllByDefault) );
+		// UBYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ViewByDefault, &currentPrefs.Windows.wg_ViewByDefault, sizeof(currentPrefs.Windows.wg_ViewByDefault) );
+		// UBYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_CheckOverlappingIcons, &currentPrefs.Windows.wg_CheckOverlappingIcons, sizeof(currentPrefs.Windows.wg_CheckOverlappingIcons) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ActiveWindowTransparency, &currentPrefs.Windows.wg_TransparencyActiveWindow, sizeof(currentPrefs.Windows.wg_TransparencyActiveWindow) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_InactiveWindowTransparency, &currentPrefs.Windows.wg_wTransparencyInactiveWindow, sizeof(currentPrefs.Windows.wg_wTransparencyInactiveWindow) );
+		// UBYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_ActiveWindowTransparency, &currentPrefs.Windows.wg_TransparencyActiveWindow, sizeof(currentPrefs.Windows.wg_TransparencyActiveWindow) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_InactiveWindowTransparency, &currentPrefs.Windows.wg_wTransparencyInactiveWindow, sizeof(currentPrefs.Windows.wg_wTransparencyInactiveWindow) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TextModeFont, &currentPrefs.TextWindows.fd_TextWindowFontDescr, 1 + strlen(currentPrefs.TextWindows.fd_TextWindowFontDescr) );
+		// char[]
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_UnderSoftLinkNames, &currentPrefs.TextWindows.fd_bShowSoftLinks, sizeof(currentPrefs.TextWindows.fd_bShowSoftLinks) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_PopScreenTitle, &currentPrefs.Desktop.dg_bPopTitleBar, sizeof(currentPrefs.Desktop.dg_bPopTitleBar) );
+		// BYTE
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowEnable, &currentPrefs.Startup.sg_bShowSplash, sizeof(currentPrefs.Startup.sg_bShowSplash) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowHoldTime, &currentPrefs.Startup.sg_bSplashCloseDelay, sizeof(currentPrefs.Startup.sg_bSplashCloseDelay) );
+		// BYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowHoldTime, &currentPrefs.Startup.sg_bSplashCloseDelay, sizeof(currentPrefs.Startup.sg_bSplashCloseDelay) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_StatusBarEnable, &currentPrefs.Windows.wg_bStatusBar, sizeof(currentPrefs.Windows.wg_bStatusBar) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_CleanupOnResize, &currentPrefs.Windows.wg_bCleanupOnResize, sizeof(currentPrefs.Windows.wg_bCleanupOnResize) );
+		// BYTE
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipsEnable, &currentPrefs.Icons.ig_bShowTooltips, sizeof(currentPrefs.Icons.ig_bShowTooltips) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipPopupDelay, &currentPrefs.Icons.ig_bTooltipDelay, sizeof(currentPrefs.Icons.ig_bTooltipDelay) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipTransparency, &currentPrefs.Icons.ig_TransparencyTooltips, sizeof(currentPrefs.Icons.ig_TransparencyTooltips) );
+		// BYTE
+
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_ToolTipPopupDelay, &currentPrefs.Icons.ig_bTooltipDelay, sizeof(currentPrefs.Icons.ig_bTooltipDelay) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_ToolTipTransparency, &currentPrefs.Icons.ig_TransparencyTooltips, sizeof(currentPrefs.Icons.ig_TransparencyTooltips) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_ShowDragDropObjCount, &currentPrefs.DragNDrop.ddg_bShowObjectCount, sizeof(currentPrefs.DragNDrop.ddg_bShowObjectCount) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_DragDropIconsSingle, &currentPrefs.DragNDrop.ddg_bGroupDrag, sizeof(currentPrefs.DragNDrop.ddg_bGroupDrag) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_DropMarkMode, &currentPrefs.DragNDrop.ddg_bDropMarkMode, sizeof(currentPrefs.DragNDrop.ddg_bDropMarkMode) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconDrag, &currentPrefs.DragNDrop.ddg_TransparencyIconDrag, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconDrag) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconShadow, &currentPrefs.DragNDrop.ddg_TransparencyIconShadow, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconShadow) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyDefaultIcon, &currentPrefs.Icons.ig_TransparencyDefaultIcons, sizeof(currentPrefs.Icons.ig_TransparencyDefaultIcons) );
+		// BYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconDrag, &currentPrefs.DragNDrop.ddg_TransparencyIconDrag, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconDrag) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconShadow, &currentPrefs.DragNDrop.ddg_TransparencyIconShadow, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconShadow) );
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_TransparencyDefaultIcon, &currentPrefs.Icons.ig_TransparencyDefaultIcons, sizeof(currentPrefs.Icons.ig_TransparencyDefaultIcons) );
 		SetPreferences(p_MyPrefsHandle, lID, SCP_EnableDropMenu, &currentPrefs.DragNDrop.ddg_bEnableDropMenu, sizeof(currentPrefs.DragNDrop.ddg_bEnableDropMenu) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) );
+		// UBYTE
+
+		SetWordPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) );
 
 		SetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.TextWindows.fd_bShowStripes, sizeof(currentPrefs.TextWindows.fd_bShowStripes) );
+		// BYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.TextWindows.fd_SelectTextIconName, sizeof(currentPrefs.TextWindows.fd_SelectTextIconName) );
+		// UBYTE
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.TextWindows.fd_SelectMarkerBaseColor, sizeof(currentPrefs.TextWindows.fd_SelectMarkerBaseColor) );
+		// struct ARGB
+
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.TextWindows.fd_SelectMarkerTransparency, sizeof(currentPrefs.TextWindows.fd_SelectMarkerTransparency) );
-		SetPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) );
+		// UBYTE
+
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) );
+		// enum
 
 		WritePrefsHandle(p_MyPrefsHandle, PrefsFileName);
 
@@ -1524,91 +1699,216 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 		{
 		ReadPrefsHandle(p_MyPrefsHandle, PrefsFileName);
 
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconOffsets, &currentPrefs.Icons.ig_IconOffsets, sizeof(currentPrefs.Icons.ig_IconOffsets) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconNormFrame, &currentPrefs.Icons.ig_wNormFrame, sizeof(currentPrefs.Icons.ig_wNormFrame) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSelFrame, &currentPrefs.Icons.ig_wSelFrame, sizeof(currentPrefs.Icons.ig_wSelFrame) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconNormThumbnailFrame, &currentPrefs.Icons.ig_wNormThumbnailFrame, sizeof(currentPrefs.Icons.ig_wNormThumbnailFrame) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSelThumbnailFrame, &currentPrefs.Icons.ig_wSelThumbnailFrame, sizeof(currentPrefs.Icons.ig_wSelThumbnailFrame) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.TextWindows.fd_wLabelStyle, sizeof(currentPrefs.TextWindows.fd_wLabelStyle) );
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconOffsets, &currentPrefs.Icons.ig_IconOffsets, sizeof(currentPrefs.Icons.ig_IconOffsets) ))
+			{
+			currentPrefs.Icons.ig_IconOffsets.Left = SCA_BE2WORD(currentPrefs.Icons.ig_IconOffsets.Left);
+			currentPrefs.Icons.ig_IconOffsets.Top = SCA_BE2WORD(currentPrefs.Icons.ig_IconOffsets.Left);
+			currentPrefs.Icons.ig_IconOffsets.Width = SCA_BE2WORD(currentPrefs.Icons.ig_IconOffsets.Left);
+			currentPrefs.Icons.ig_IconOffsets.Height = SCA_BE2WORD(currentPrefs.Icons.ig_IconOffsets.Left);
+			}
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconNormFrame, &currentPrefs.Icons.ig_wNormFrame, sizeof(currentPrefs.Icons.ig_wNormFrame) ))
+			currentPrefs.Icons.ig_wNormFrame = SCA_BE2WORD(currentPrefs.Icons.ig_wNormFrame);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconSelFrame, &currentPrefs.Icons.ig_wSelFrame, sizeof(currentPrefs.Icons.ig_wSelFrame) ))
+			currentPrefs.Icons.ig_wSelFrame = SCA_BE2WORD(currentPrefs.Icons.ig_wSelFrame);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconNormThumbnailFrame, &currentPrefs.Icons.ig_wNormThumbnailFrame, sizeof(currentPrefs.Icons.ig_wNormThumbnailFrame) ))
+			currentPrefs.Icons.ig_wNormThumbnailFrame = SCA_BE2WORD(currentPrefs.Icons.ig_wNormThumbnailFrame);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconSelThumbnailFrame, &currentPrefs.Icons.ig_wSelThumbnailFrame, sizeof(currentPrefs.Icons.ig_wSelThumbnailFrame) ))
+			currentPrefs.Icons.ig_wSelThumbnailFrame = SCA_BE2WORD(currentPrefs.Icons.ig_wSelThumbnailFrame);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextMode, &currentPrefs.TextWindows.fd_wLabelStyle, sizeof(currentPrefs.TextWindows.fd_wLabelStyle) ))
+			currentPrefs.TextWindows.fd_wLabelStyle = SCA_BE2WORD(currentPrefs.TextWindows.fd_wLabelStyle);
 
 		d1(KPrintF(__FUNC__ "/%ld:  Icon offset  left=%ld  top=%ld  right=%ld  bottom=%ld\n", \
 			__FUNC__, __LINE__, currentPrefs.Icons.ig_IconOffsets.Left, currentPrefs.Icons.ig_IconOffsets.Top, \
 			currentPrefs.Icons.ig_IconOffsets.Width, currentPrefs.Icons.ig_IconOffsets.Height));
 
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSecLine, &currentPrefs.Icons.ig_wMultipleLines, sizeof(currentPrefs.Icons.ig_wMultipleLines) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &currentPrefs.Icons.ig_SizeConstraints, sizeof(currentPrefs.Icons.ig_SizeConstraints) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconNominalSize, &currentPrefs.Icons.ig_NominalSize, sizeof(currentPrefs.Icons.ig_NominalSize) );
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconSecLine, &currentPrefs.Icons.ig_wMultipleLines, sizeof(currentPrefs.Icons.ig_wMultipleLines) ))
+			currentPrefs.Icons.ig_wMultipleLines = SCA_BE2WORD(currentPrefs.Icons.ig_wMultipleLines);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconSizeConstraints, &currentPrefs.Icons.ig_SizeConstraints, sizeof(currentPrefs.Icons.ig_SizeConstraints) ))
+			{
+			currentPrefs.Icons.ig_SizeConstraints.MinX = SCA_BE2WORD(currentPrefs.Icons.ig_SizeConstraints.MinX);
+			currentPrefs.Icons.ig_SizeConstraints.MinY = SCA_BE2WORD(currentPrefs.Icons.ig_SizeConstraints.MinY);
+			currentPrefs.Icons.ig_SizeConstraints.MaxX = SCA_BE2WORD(currentPrefs.Icons.ig_SizeConstraints.MaxX);
+			currentPrefs.Icons.ig_SizeConstraints.MaxY = SCA_BE2WORD(currentPrefs.Icons.ig_SizeConstraints.MaxY);
+			}
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconNominalSize, &currentPrefs.Icons.ig_NominalSize, sizeof(currentPrefs.Icons.ig_NominalSize) ))
+			currentPrefs.Icons.ig_NominalSize = SCA_BE2WORD(currentPrefs.Icons.ig_NominalSize);
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconHiliteUnderMouse, &currentPrefs.Icons.ig_HighlightUnderMouse, sizeof(currentPrefs.Icons.ig_HighlightUnderMouse) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconTextSkip, &currentPrefs.TextWindows.fd_wTextSkip, sizeof(currentPrefs.TextWindows.fd_wTextSkip) ))
+			currentPrefs.TextWindows.fd_wTextSkip = SCA_BE2WORD(currentPrefs.TextWindows.fd_wTextSkip);
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnails, &currentPrefs.Icons.ig_ShowThumbnails, sizeof(currentPrefs.Icons.ig_ShowThumbnails) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailOffsets, &currentPrefs.Icons.ig_ThumbnailOffsets, sizeof(currentPrefs.Icons.ig_ThumbnailOffsets) );
+		// UBYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailOffsets, &currentPrefs.Icons.ig_ThumbnailOffsets, sizeof(currentPrefs.Icons.ig_ThumbnailOffsets) ))
+			{
+			currentPrefs.Icons.ig_ThumbnailOffsets.Left = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailOffsets.Left);
+			currentPrefs.Icons.ig_ThumbnailOffsets.Top = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailOffsets.Top);
+			currentPrefs.Icons.ig_ThumbnailOffsets.Width = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailOffsets.Width);
+			currentPrefs.Icons.ig_ThumbnailOffsets.Height = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailOffsets.Height);
+			}
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailsFillBackground, &currentPrefs.Icons.ig_ThumbnailsBackfill, sizeof(currentPrefs.Icons.ig_ThumbnailsBackfill) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyThumbnailsBack, &currentPrefs.Icons.ig_ThumbnailBackgroundTransparency, sizeof(currentPrefs.Icons.ig_ThumbnailBackgroundTransparency) );
+		// UBYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyThumbnailsBack, &currentPrefs.Icons.ig_ThumbnailBackgroundTransparency, sizeof(currentPrefs.Icons.ig_ThumbnailBackgroundTransparency) ))
+			currentPrefs.Icons.ig_ThumbnailBackgroundTransparency = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailBackgroundTransparency);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectedTextRectangle, &currentPrefs.Icons.ig_SelectedTextRectangle, sizeof(currentPrefs.Icons.ig_SelectedTextRectangle) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderX, &currentPrefs.Icons.ig_SelTextRectBorderX, sizeof(currentPrefs.Icons.ig_SelTextRectBorderX) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderY, &currentPrefs.Icons.ig_SelTextRectBorderY, sizeof(currentPrefs.Icons.ig_SelTextRectBorderY) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectRadius, &currentPrefs.Icons.ig_SelTextRectRadius, sizeof(currentPrefs.Icons.ig_SelTextRectRadius) );
+		// UBYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderX, &currentPrefs.Icons.ig_SelTextRectBorderX, sizeof(currentPrefs.Icons.ig_SelTextRectBorderX) ))
+			currentPrefs.Icons.ig_SelTextRectBorderX = SCA_BE2WORD(currentPrefs.Icons.ig_SelTextRectBorderX);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectBorderY, &currentPrefs.Icons.ig_SelTextRectBorderY, sizeof(currentPrefs.Icons.ig_SelTextRectBorderY) ))
+			currentPrefs.Icons.ig_SelTextRectBorderY = SCA_BE2WORD(currentPrefs.Icons.ig_SelTextRectBorderY);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_SelTextRectRadius, &currentPrefs.Icons.ig_SelTextRectRadius, sizeof(currentPrefs.Icons.ig_SelTextRectRadius) ))
+			currentPrefs.Icons.ig_SelTextRectRadius = SCA_BE2WORD(currentPrefs.Icons.ig_SelTextRectRadius);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ShowThumbnailsAsDefault, &currentPrefs.Icons.ig_ShowThumbnailsAsDefault, sizeof(currentPrefs.Icons.ig_ShowThumbnailsAsDefault) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailsSquare, &currentPrefs.Icons.ig_bSquareThumbnails, sizeof(currentPrefs.Icons.ig_bSquareThumbnails) );
+		// BYTE
 
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailSize, &currentPrefs.Icons.ig_ThumbnailSize, sizeof(currentPrefs.Icons.ig_ThumbnailSize) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMaxAge, &currentPrefs.Icons.ig_ThumbnailMaxAge, sizeof(currentPrefs.Icons.ig_ThumbnailMaxAge) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMinSizeLimit, &currentPrefs.Icons.ig_ThumbnailMinSizeLimit, sizeof(currentPrefs.Icons.ig_ThumbnailMinSizeLimit) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailQuality, &currentPrefs.Icons.ig_ThumbnailQuality, sizeof(currentPrefs.Icons.ig_ThumbnailQuality) );
+		GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailsSquare, &currentPrefs.Icons.ig_bSquareThumbnails, sizeof(currentPrefs.Icons.ig_bSquareThumbnails) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailSize, &currentPrefs.Icons.ig_ThumbnailSize, sizeof(currentPrefs.Icons.ig_ThumbnailSize) ))
+			currentPrefs.Icons.ig_ThumbnailSize = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailSize);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMaxAge, &currentPrefs.Icons.ig_ThumbnailMaxAge, sizeof(currentPrefs.Icons.ig_ThumbnailMaxAge) ))
+			currentPrefs.Icons.ig_ThumbnailMaxAge = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailMaxAge);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailMinSizeLimit, &currentPrefs.Icons.ig_ThumbnailMinSizeLimit, sizeof(currentPrefs.Icons.ig_ThumbnailMinSizeLimit) ))
+			currentPrefs.Icons.ig_ThumbnailMinSizeLimit = SCA_BE2WORD(currentPrefs.Icons.ig_ThumbnailMinSizeLimit);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ThumbnailQuality, &currentPrefs.Icons.ig_ThumbnailQuality, sizeof(currentPrefs.Icons.ig_ThumbnailQuality) ))
+			currentPrefs.Icons.ig_ThumbnailQuality = SCA_BE2LONG(currentPrefs.Icons.ig_ThumbnailQuality);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_DeviceWinIconLayout, currentPrefs.Icons.ig_DeviceWindowLayoutModes, sizeof(currentPrefs.Icons.ig_DeviceWindowLayoutModes));
+		// UBYTE *
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_IconWinIconLayout, currentPrefs.Icons.ig_IconWindowLayoutModes, sizeof(currentPrefs.Icons.ig_IconWindowLayoutModes));
+		// UBYTE *
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_BobsType, &currentPrefs.DragNDrop.ddg_bBobStyle, sizeof(currentPrefs.DragNDrop.ddg_bBobStyle) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_BobsMethod, &currentPrefs.DragNDrop.ddg_bBobMethod, sizeof(currentPrefs.DragNDrop.ddg_bBobMethod) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_BobsTranspMode, &currentPrefs.DragNDrop.ddg_bBobLook, sizeof(currentPrefs.DragNDrop.ddg_bBobLook) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_BobsTranspType, &currentPrefs.DragNDrop.ddg_bTranspType, sizeof(currentPrefs.DragNDrop.ddg_bTranspType) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_BobsTransp, &currentPrefs.DragNDrop.ddg_lTriggers, sizeof(currentPrefs.DragNDrop.ddg_lTriggers) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_BobsTransp, &currentPrefs.DragNDrop.ddg_lTriggers, sizeof(currentPrefs.DragNDrop.ddg_lTriggers) ))
+			currentPrefs.DragNDrop.ddg_lTriggers = SCA_BE2LONG(currentPrefs.DragNDrop.ddg_lTriggers);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ScreenTitle, currentPrefs.Desktop.dg_pScreen, sizeof(currentPrefs.Desktop.dg_pScreen) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_RootWinTitle, currentPrefs.Windows.wg_pRootWin, sizeof(currentPrefs.Windows.wg_pRootWin) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_WindowTitle, currentPrefs.Windows.wg_pWindow, sizeof(currentPrefs.Windows.wg_pWindow) );
+		// char[]
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TTfAntialiasing, &currentPrefs.TrueTypeFonts.ttg_Antialias, sizeof(currentPrefs.TrueTypeFonts.ttg_Antialias) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_TTfGamma, &currentPrefs.TrueTypeFonts.ttg_Gamma, sizeof(currentPrefs.TrueTypeFonts.ttg_Gamma) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_TTfGamma, &currentPrefs.TrueTypeFonts.ttg_Gamma, sizeof(currentPrefs.TrueTypeFonts.ttg_Gamma) ))
+			currentPrefs.TrueTypeFonts.ttg_Gamma = SCA_BE2WORD(currentPrefs.TrueTypeFonts.ttg_Gamma);
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TTScreenFontDesc, currentPrefs.TrueTypeFonts.ttg_ScreenTTFontDesc, sizeof(currentPrefs.TrueTypeFonts.ttg_ScreenTTFontDesc) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TTIconFontDesc, currentPrefs.TrueTypeFonts.ttg_IconTTFontDesc, sizeof(currentPrefs.TrueTypeFonts.ttg_IconTTFontDesc) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TTTextWindowFontDesc, currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc, sizeof(currentPrefs.TrueTypeFonts.ttg_TextWindowTTFontDesc) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_UseTTScreenFont, &currentPrefs.TrueTypeFonts.ttg_UseScreenTTFont, sizeof(currentPrefs.TrueTypeFonts.ttg_UseScreenTTFont) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_UseTTIconFont, &currentPrefs.TrueTypeFonts.ttg_UseIconTTFont, sizeof(currentPrefs.TrueTypeFonts.ttg_UseIconTTFont) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_UseTTTextWindowFont, &currentPrefs.TrueTypeFonts.ttg_UseTextWindowTTFont, sizeof(currentPrefs.TrueTypeFonts.ttg_UseTextWindowTTFont) );
+		// BYTE
 
 		//GetPreferences(p_MyPrefsHandle, lID, SCP_Seperator, , sizeof() );
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TitleRefresh, &currentPrefs.Desktop.dg_bTitleRefresh, sizeof(currentPrefs.Desktop.dg_bTitleRefresh) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_RefreshOnMemoryChange, &currentPrefs.Desktop.dg_bMemoryRefresh, sizeof(currentPrefs.Desktop.dg_bMemoryRefresh) );
+		// BYTE
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_WinTitleRefresh, &currentPrefs.Desktop.dg_bWinTitleRefresh, sizeof(currentPrefs.Desktop.dg_bWinTitleRefresh) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_WinRefreshOnMemoryChange, &currentPrefs.Desktop.dg_bWinMemoryRefresh, sizeof(currentPrefs.Desktop.dg_bWinMemoryRefresh) );
+		// BYTE
 
+		GetPreferences(p_MyPrefsHandle, lID, SCP_WinRefreshOnMemoryChange, &currentPrefs.Desktop.dg_bWinMemoryRefresh, sizeof(currentPrefs.Desktop.dg_bWinMemoryRefresh) );
+		// BYTE
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ConsoleName, currentPrefs.Desktop.dg_ConsoleName, sizeof(currentPrefs.Desktop.dg_ConsoleName) );
+		// char[]
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsDefIcons, &currentPrefs.Paths.pg_pDefaultIcons, sizeof(currentPrefs.Paths.pg_pDefaultIcons) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsDiskCopy, &currentPrefs.Paths.pg_pDiskCopy, sizeof(currentPrefs.Paths.pg_pDiskCopy) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsTheme, &currentPrefs.Paths.pg_pThemes, sizeof(currentPrefs.Paths.pg_pThemes) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsImagecache, &currentPrefs.Paths.pg_pImageCache, sizeof(currentPrefs.Paths.pg_pImageCache) );
-                GetPreferences(p_MyPrefsHandle, lID, SCP_PathsThumbnailDb, &currentPrefs.Paths.pg_pThumbnailDb, sizeof(currentPrefs.Paths.pg_pThumbnailDb) );
+		// char[]
+
+		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsThumbnailDb, &currentPrefs.Paths.pg_pThumbnailDb, sizeof(currentPrefs.Paths.pg_pThumbnailDb) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsWBStartup, &currentPrefs.Startup.sg_pWBStartup, sizeof(currentPrefs.Startup.sg_pWBStartup) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsHome, &currentPrefs.Paths.pg_pHome, sizeof(currentPrefs.Paths.pg_pHome) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PathsSQLiteTempDir, &currentPrefs.Paths.pg_SQLiteTempDir, sizeof(currentPrefs.Paths.pg_SQLiteTempDir) );
+		// char[]
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscAutoRemove, &currentPrefs.DragNDrop.ddg_bAutoRemoveIcons, sizeof(currentPrefs.DragNDrop.ddg_bAutoRemoveIcons) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscClickTransp, &currentPrefs.Icons.ig_bClickAreaMask, sizeof(currentPrefs.Icons.ig_bClickAreaMask) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscHardEmulation, &currentPrefs.Miscellaneous.mg_bHardEmulation, sizeof(currentPrefs.Miscellaneous.mg_bHardEmulation) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscUseExAll, &currentPrefs.Miscellaneous.mg_bUseExAll, sizeof(currentPrefs.Miscellaneous.mg_bUseExAll) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_CreateSoftLinks, &currentPrefs.Miscellaneous.mg_bCreateSoftLinks, sizeof(currentPrefs.Miscellaneous.mg_bCreateSoftLinks) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_CopyBuffLen, &currentPrefs.Miscellaneous.mg_CopyBuffSize, sizeof(currentPrefs.Miscellaneous.mg_CopyBuffSize) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_MaxUndoSteps, &currentPrefs.Miscellaneous.mg_MaxUndoSteps, sizeof(currentPrefs.Miscellaneous.mg_MaxUndoSteps) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_CopyBuffLen, &currentPrefs.Miscellaneous.mg_CopyBuffSize, sizeof(currentPrefs.Miscellaneous.mg_CopyBuffSize) ))
+			currentPrefs.Miscellaneous.mg_CopyBuffSize = SCA_BE2LONG(currentPrefs.Miscellaneous.mg_CopyBuffSize);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_MaxUndoSteps, &currentPrefs.Miscellaneous.mg_MaxUndoSteps, sizeof(currentPrefs.Miscellaneous.mg_MaxUndoSteps) ))
+			currentPrefs.Miscellaneous.mg_MaxUndoSteps = SCA_BE2LONG(currentPrefs.Miscellaneous.mg_MaxUndoSteps);
+
 		if (WorkbenchBase->lib_Version < 45)
-			GetPreferences(p_MyPrefsHandle, lID, SCP_DefaultStackSize, &currentPrefs.Miscellaneous.mg_DefaultStackSize, sizeof(currentPrefs.Miscellaneous.mg_DefaultStackSize) );
+			if (GetPreferences(p_MyPrefsHandle, lID, SCP_DefaultStackSize, &currentPrefs.Miscellaneous.mg_DefaultStackSize, sizeof(currentPrefs.Miscellaneous.mg_DefaultStackSize) ))
+				currentPrefs.Miscellaneous.mg_DefaultStackSize = SCA_BE2LONG(currentPrefs.Miscellaneous.mg_DefaultStackSize);
 		else
 			{
 			// starting with WB 45, stack size is changed via "Workbench" prefs.
@@ -1618,17 +1918,38 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 				TAG_END);
 			}
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscWindowType, &currentPrefs.Windows.wg_bType, sizeof(currentPrefs.Windows.wg_bType) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscDoWaitDelay, &currentPrefs.Startup.sg_bWBStartupDelay, sizeof(currentPrefs.Startup.sg_bWBStartupDelay) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscDiskiconsRefresh, &currentPrefs.Desktop.dg_bDiskRefresh, sizeof(currentPrefs.Desktop.dg_bDiskRefresh) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MiscMenuCurrentDir, &currentPrefs.Miscellaneous.mg_bMenuCurrentDir, sizeof(currentPrefs.Miscellaneous.mg_bMenuCurrentDir) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_DragDropCopyQualifier, &currentPrefs.DragNDrop.ddg_pCopyQualifier, sizeof(currentPrefs.DragNDrop.ddg_pCopyQualifier) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_PopupApplySelectedQualifier, &currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier, sizeof(currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_DragDropCopyQualifier, &currentPrefs.DragNDrop.ddg_pCopyQualifier, sizeof(currentPrefs.DragNDrop.ddg_pCopyQualifier) ))
+			currentPrefs.DragNDrop.ddg_pCopyQualifier = SCA_BE2LONG(currentPrefs.DragNDrop.ddg_pCopyQualifier);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_PopupApplySelectedQualifier, &currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier, sizeof(currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier) ))
+			currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier = SCA_BE2LONG(currentPrefs.Miscellaneous.mg_PopupApplySelectedQualifier);
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PopupApplySelectedAlways, &currentPrefs.Miscellaneous.mp_PopupApplySelectedAlways, sizeof(currentPrefs.Miscellaneous.mp_PopupApplySelectedAlways) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_DragDropMakeLinkQualifier, &currentPrefs.DragNDrop.ddg_pMakeLinkQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMakeLinkQualifier) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_DragDropMoveQualifier, &currentPrefs.DragNDrop.ddg_pMoveQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMoveQualifier) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SingleWindowLassoQualifier, &currentPrefs.Desktop.dg_SingleWindowLassoQualifier, sizeof(currentPrefs.Desktop.dg_SingleWindowLassoQualifier) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_DragDropMakeLinkQualifier, &currentPrefs.DragNDrop.ddg_pMakeLinkQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMakeLinkQualifier) ))
+			currentPrefs.DragNDrop.ddg_pMakeLinkQualifier = SCA_BE2LONG(currentPrefs.DragNDrop.ddg_pMakeLinkQualifier);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_DragDropMoveQualifier, &currentPrefs.DragNDrop.ddg_pMoveQualifier, sizeof(currentPrefs.DragNDrop.ddg_pMoveQualifier) ))
+			currentPrefs.DragNDrop.ddg_pMoveQualifier = SCA_BE2LONG(currentPrefs.DragNDrop.ddg_pMoveQualifier);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_SingleWindowLassoQualifier, &currentPrefs.Desktop.dg_SingleWindowLassoQualifier, sizeof(currentPrefs.Desktop.dg_SingleWindowLassoQualifier) ))
+			currentPrefs.Desktop.dg_SingleWindowLassoQualifier = SCA_BE2LONG(currentPrefs.Desktop.dg_SingleWindowLassoQualifier);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_NewIconsTransparent, &currentPrefs.Icons.ig_bNewIconTransparent, sizeof(currentPrefs.Icons.ig_bNewIconTransparent) );
+		// BYTE
+
 		ReadNewIconsPrecision(p_MyPrefsHandle, lID);
 
 		//GetPreferences(p_MyPrefsHandle, lID, SCP_TextModeDateFormat, , sizeof() );
@@ -1641,52 +1962,135 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 			&ControlBarGadgetListBrowser, SCP_ControlBarGadgetsBr, SCP_ControlBarGadgetStringsBr);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_MMB_Move, &currentPrefs.Windows.wg_bMMBMove, sizeof(currentPrefs.Windows.wg_bMMBMove) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_WindowPopupTitleOnly, &currentPrefs.Windows.wg_bPopTitleOnly, sizeof(currentPrefs.Windows.wg_bPopTitleOnly) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_DefaultWindowSize, &currentPrefs.Windows.wg_DefaultSize, sizeof(currentPrefs.Windows.wg_DefaultSize) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_IconCleanupSpace, &currentPrefs.Windows.wg_CleanupSpaces, sizeof(currentPrefs.Windows.wg_CleanupSpaces) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_DefaultWindowSize, &currentPrefs.Windows.wg_DefaultSize, sizeof(currentPrefs.Windows.wg_DefaultSize) ))
+			{
+			currentPrefs.Windows.wg_DefaultSize.Left = SCA_BE2WORD(currentPrefs.Windows.wg_DefaultSize.Left);
+			currentPrefs.Windows.wg_DefaultSize.Top = SCA_BE2WORD(currentPrefs.Windows.wg_DefaultSize.Top);
+			currentPrefs.Windows.wg_DefaultSize.Width = SCA_BE2WORD(currentPrefs.Windows.wg_DefaultSize.Width);
+			currentPrefs.Windows.wg_DefaultSize.Height = SCA_BE2WORD(currentPrefs.Windows.wg_DefaultSize.Height);
+			}
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_IconCleanupSpace, &currentPrefs.Windows.wg_CleanupSpaces, sizeof(currentPrefs.Windows.wg_CleanupSpaces) ))
+			{
+			currentPrefs.Windows.wg_CleanupSpaces.Left = SCA_BE2WORD(currentPrefs.Windows.wg_CleanupSpaces.Left);
+			currentPrefs.Windows.wg_CleanupSpaces.Top = SCA_BE2WORD(currentPrefs.Windows.wg_CleanupSpaces.Top);
+			currentPrefs.Windows.wg_CleanupSpaces.Width = SCA_BE2WORD(currentPrefs.Windows.wg_CleanupSpaces.Width);
+			currentPrefs.Windows.wg_CleanupSpaces.Height = SCA_BE2WORD(currentPrefs.Windows.wg_CleanupSpaces.Height);
+			}
 		GetPreferences(p_MyPrefsHandle, lID, SCP_FullBench, &currentPrefs.Desktop.dg_bHideTitleBar, sizeof(currentPrefs.Desktop.dg_bHideTitleBar) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_LoadDefIconsFirst, &currentPrefs.Icons.ig_bLoadDefIconsFirst, sizeof(currentPrefs.Icons.ig_bLoadDefIconsFirst) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_DefaultIconsSaveable, &currentPrefs.Icons.ig_bIconsSaveable, sizeof(currentPrefs.Icons.ig_bIconsSaveable) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_EasyMultiSelect, &currentPrefs.DragNDrop.ddg_bEasyMultiSelect, sizeof(currentPrefs.DragNDrop.ddg_bEasyMultiSelect) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_EasyMultiDrag, &currentPrefs.DragNDrop.ddg_bEasyMultiDrag, sizeof(currentPrefs.DragNDrop.ddg_bEasyMultiDrag) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_DropStart, &currentPrefs.Desktop.dg_bDropStart, sizeof(currentPrefs.Desktop.dg_bDropStart) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_AutoLeaveOut, &currentPrefs.Desktop.dg_AutoLeaveOut, sizeof(currentPrefs.Desktop.dg_AutoLeaveOut));
+		// BYTE
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_HideHiddenFiles, &currentPrefs.Windows.wg_bHideHiddenFiles, sizeof(currentPrefs.Windows.wg_bHideHiddenFiles) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_HideProtectHiddenFiles, &currentPrefs.Windows.wg_bHideProtectHiddenFiles, sizeof(currentPrefs.Windows.wg_bHideProtectHiddenFiles) ); // JMC
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ShowAllDefault, &currentPrefs.Windows.wg_ShowAllByDefault, sizeof(currentPrefs.Windows.wg_ShowAllByDefault) );
+		// UBYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ViewByDefault, &currentPrefs.Windows.wg_ViewByDefault, sizeof(currentPrefs.Windows.wg_ViewByDefault) );
+		// UBYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_CheckOverlappingIcons, &currentPrefs.Windows.wg_CheckOverlappingIcons, sizeof(currentPrefs.Windows.wg_CheckOverlappingIcons) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ActiveWindowTransparency, &currentPrefs.Windows.wg_TransparencyActiveWindow, sizeof(currentPrefs.Windows.wg_TransparencyActiveWindow) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_InactiveWindowTransparency, &currentPrefs.Windows.wg_wTransparencyInactiveWindow, sizeof(currentPrefs.Windows.wg_wTransparencyInactiveWindow) );
+		// UBYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ActiveWindowTransparency, &currentPrefs.Windows.wg_TransparencyActiveWindow, sizeof(currentPrefs.Windows.wg_TransparencyActiveWindow) ))
+			currentPrefs.Windows.wg_TransparencyActiveWindow = SCA_BE2WORD(currentPrefs.Windows.wg_TransparencyActiveWindow);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_InactiveWindowTransparency, &currentPrefs.Windows.wg_wTransparencyInactiveWindow, sizeof(currentPrefs.Windows.wg_wTransparencyInactiveWindow) ))
+			currentPrefs.Windows.wg_wTransparencyInactiveWindow = SCA_BE2WORD(currentPrefs.Windows.wg_wTransparencyInactiveWindow);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TextModeFont, &currentPrefs.TextWindows.fd_TextWindowFontDescr, sizeof(currentPrefs.TextWindows.fd_TextWindowFontDescr) );
+		// char[]
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_UnderSoftLinkNames, &currentPrefs.TextWindows.fd_bShowSoftLinks, sizeof(currentPrefs.TextWindows.fd_bShowSoftLinks) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_PopScreenTitle, &currentPrefs.Desktop.dg_bPopTitleBar, sizeof(currentPrefs.Desktop.dg_bPopTitleBar) );
+		// BYTE
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowEnable, &currentPrefs.Startup.sg_bShowSplash, sizeof(currentPrefs.Startup.sg_bShowSplash) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowHoldTime, &currentPrefs.Startup.sg_bSplashCloseDelay, sizeof(currentPrefs.Startup.sg_bSplashCloseDelay) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_SplashWindowHoldTime, &currentPrefs.Startup.sg_bSplashCloseDelay, sizeof(currentPrefs.Startup.sg_bSplashCloseDelay) ))
+			currentPrefs.Startup.sg_bSplashCloseDelay = SCA_BE2WORD(currentPrefs.Startup.sg_bSplashCloseDelay);
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_StatusBarEnable, &currentPrefs.Windows.wg_bStatusBar, sizeof(currentPrefs.Windows.wg_bStatusBar) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_CleanupOnResize, &currentPrefs.Windows.wg_bCleanupOnResize, sizeof(currentPrefs.Windows.wg_bCleanupOnResize) );
+		// BYTE
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipsEnable, &currentPrefs.Icons.ig_bShowTooltips, sizeof(currentPrefs.Icons.ig_bShowTooltips) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipPopupDelay, &currentPrefs.Icons.ig_bTooltipDelay, sizeof(currentPrefs.Icons.ig_bTooltipDelay) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipTransparency, &currentPrefs.Icons.ig_TransparencyTooltips, sizeof(currentPrefs.Icons.ig_TransparencyTooltips) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipPopupDelay, &currentPrefs.Icons.ig_bTooltipDelay, sizeof(currentPrefs.Icons.ig_bTooltipDelay) ))
+			currentPrefs.Icons.ig_bTooltipDelay = SCA_BE2LONG(currentPrefs.Icons.ig_bTooltipDelay);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_ToolTipTransparency, &currentPrefs.Icons.ig_TransparencyTooltips, sizeof(currentPrefs.Icons.ig_TransparencyTooltips) ))
+			currentPrefs.Icons.ig_TransparencyTooltips = SCA_BE2WORD(currentPrefs.Icons.ig_TransparencyTooltips);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_ShowDragDropObjCount, &currentPrefs.DragNDrop.ddg_bShowObjectCount, sizeof(currentPrefs.DragNDrop.ddg_bShowObjectCount) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_DragDropIconsSingle, &currentPrefs.DragNDrop.ddg_bGroupDrag, sizeof(currentPrefs.DragNDrop.ddg_bGroupDrag) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_DropMarkMode, &currentPrefs.DragNDrop.ddg_bDropMarkMode, sizeof(currentPrefs.DragNDrop.ddg_bDropMarkMode) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconDrag, &currentPrefs.DragNDrop.ddg_TransparencyIconDrag, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconDrag) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconShadow, &currentPrefs.DragNDrop.ddg_TransparencyIconShadow, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconShadow) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyDefaultIcon, &currentPrefs.Icons.ig_TransparencyDefaultIcons, sizeof(currentPrefs.Icons.ig_TransparencyDefaultIcons) );
+		// BYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconDrag, &currentPrefs.DragNDrop.ddg_TransparencyIconDrag, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconDrag) ))
+			currentPrefs.DragNDrop.ddg_TransparencyIconDrag = SCA_BE2WORD(currentPrefs.DragNDrop.ddg_TransparencyIconDrag);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyIconShadow, &currentPrefs.DragNDrop.ddg_TransparencyIconShadow, sizeof(currentPrefs.DragNDrop.ddg_TransparencyIconShadow) ))
+			currentPrefs.DragNDrop.ddg_TransparencyIconShadow = SCA_BE2WORD(currentPrefs.DragNDrop.ddg_TransparencyIconShadow);
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_TransparencyDefaultIcon, &currentPrefs.Icons.ig_TransparencyDefaultIcons, sizeof(currentPrefs.Icons.ig_TransparencyDefaultIcons) ))
+			currentPrefs.Icons.ig_TransparencyDefaultIcons = SCA_BE2WORD(currentPrefs.Icons.ig_TransparencyDefaultIcons);
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_EnableDropMenu, &currentPrefs.DragNDrop.ddg_bEnableDropMenu, sizeof(currentPrefs.DragNDrop.ddg_bEnableDropMenu) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) );
+		// UBYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_PopupWindowsDelay, &currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds, sizeof(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds) ))
+			currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds = SCA_BE2WORD(currentPrefs.DragNDrop.ddg_PopupWindowDelaySeconds);
 
 		GetPreferences(p_MyPrefsHandle, lID, SCP_TextWindowsStriped, &currentPrefs.TextWindows.fd_bShowStripes, sizeof(currentPrefs.TextWindows.fd_bShowStripes) );
+		// BYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectTextIconName, &currentPrefs.TextWindows.fd_SelectTextIconName, sizeof(currentPrefs.TextWindows.fd_SelectTextIconName) );
+		// UBYTE
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerBaseColor, &currentPrefs.TextWindows.fd_SelectMarkerBaseColor, sizeof(currentPrefs.TextWindows.fd_SelectMarkerBaseColor) );
+		// struct ARGB
+
 		GetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.TextWindows.fd_SelectMarkerTransparency, sizeof(currentPrefs.TextWindows.fd_SelectMarkerTransparency) );
-		GetPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) );
+		// UBYTE
+
+		if (GetPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) ))
+			currentPrefs.TextWindows.fd_DrawerSortMode = SCA_BE2LONG(currentPrefs.TextWindows.fd_DrawerSortMode);
 
 		FreePrefsHandle(p_MyPrefsHandle);
 		}
@@ -1697,9 +2101,9 @@ LONG ReadScalosPrefs(CONST_STRPTR PrefsFileName)
 
 IPTR mui_getv(APTR obj, ULONG attr)
 {
-    IPTR v;
-    GetAttr(attr, obj, &v);
-    return (v);
+	IPTR v;
+	GetAttr(attr, obj, &v);
+	return (v);
 }
 
 
@@ -1725,9 +2129,9 @@ static void ReadPluginList(APTR p_MyPrefsHandle, LONG lID)
 			struct ScalosPluginIFace *IScalosPlugin;
 #endif
 
-			pd->plug_priority = pey->pey_Priority;
-			pd->plug_instsize = pey->pey_InstSize;
-			pd->plug_NeededVersion = pey->pey_NeededVersion;
+			pd->plug_priority = SCA_BE2WORD(pey->pey_Priority);
+			pd->plug_instsize = SCA_BE2WORD(pey->pey_InstSize);
+			pd->plug_NeededVersion = SCA_BE2WORD(pey->pey_NeededVersion);
 
 			d1(KPrintF(__FILE__ "/%s/%ld: priority=%ld  instsize=%ld\n", __FUNC__, __LINE__, pd->plug_priority, pd->plug_instsize));
 
@@ -1745,7 +2149,7 @@ static void ReadPluginList(APTR p_MyPrefsHandle, LONG lID)
 
 			d1(KPrintF(__FILE__ "/%s/%ld: superclassname=<%s>\n", __FUNC__, __LINE__, pd->plug_superclassname));
 
-			if (NULL == ScalosBase || pey->pey_NeededVersion <= ScalosBase->scb_LibNode.lib_Version)
+			if (NULL == ScalosBase || pd->plug_NeededVersion <= ScalosBase->scb_LibNode.lib_Version)
 				{
 				ScalosPluginBase = (struct ScaOOPPluginBase *) OpenLibrary(pd->plug_filename, 0);
 
@@ -1841,9 +2245,9 @@ static void WritePluginList(APTR p_MyPrefsHandle, LONG lID)
 
 		memset(PluginArray, 0, sizeof(PluginArray));
 
-		pey->pey_Priority = pd->plug_priority;
-		pey->pey_InstSize = pd->plug_instsize;
-		pey->pey_NeededVersion = pd->plug_NeededVersion;
+		pey->pey_Priority = SCA_WORD2BE(pd->plug_priority);
+		pey->pey_InstSize = SCA_WORD2BE(pd->plug_instsize);
+		pey->pey_NeededVersion = SCA_WORD2BE(pd->plug_NeededVersion);
 		pey->pey_unused = 0;
 
 		d1(kprintf(__FILE__ "/%s/%ld: priority=%ld  instsize=%ld\n", __FUNC__, __LINE__, pl->plug_priority, pl->plug_instsize));
@@ -2119,9 +2523,12 @@ void ResetToDefaults(struct SCAModule *app)
 
 static void ReadNewIconsPrecision(APTR p_MyPrefsHandle, LONG lID)
 {
-	LONG x;
+	LONG x = 0;
 
-	GetPreferences(p_MyPrefsHandle, lID, SCP_NewIconsPrecision, &x, sizeof(x) );
+	if (GetPreferences(p_MyPrefsHandle, lID, SCP_NewIconsPrecision, &x, sizeof(x) ))
+		{
+		x = SCA_BE2LONG(x);
+		}
 
 	switch (x)
 		{
@@ -2162,6 +2569,8 @@ static void WriteNewIconsPrecision(APTR p_MyPrefsHandle, LONG lID)
 		x = PRECISION_GUI;
 		break;
 		}
+
+	x = SCA_LONG2BE(x);
 
 	SetPreferences(p_MyPrefsHandle, lID, SCP_NewIconsPrecision, &x, sizeof(x) );
 }
@@ -2577,7 +2986,10 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 			Entry = 0;
 
 			// first determine required size of prefsIDStrings
-			GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, &gseTemp, sizeof(gseTemp) );
+			if (GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, &gseTemp, sizeof(gseTemp) ))
+				{
+				gseTemp.gse_Length = SCA_BE2LONG(gseTemp.gse_Length);
+				}
 			size = sizeof(struct SCP_GadgetStringEntry) + gseTemp.gse_Length;
 			d1(KPrintF("%s/%s/%ld: gse_Length=%lu  size=%lu\n", __FILE__, __FUNC__, __LINE__, gseTemp.gse_Length, size));
 
@@ -2587,7 +2999,10 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 				break;
 
 			// now read complete prefsIDStrings
-			GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, gse, size );
+			if (GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, gse, size ))
+				{
+				gse->gse_Length = SCA_BE2LONG(gse->gse_Length);
+				}
 
 			// read array of SCP_ControlBarGadgets
 			while ((size = GetEntry(p_MyPrefsHandle, lID, prefsIDGadgets, &sgy, sizeof(sgy), Entry)) > 0)
@@ -2606,12 +3021,12 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 					break;
 
 				// create ControlBarGadgetEntry from SCP_GadgetEntry
-				cgy->cgy_GadgetType = sgy.sgy_GadgetType;
+				cgy->cgy_GadgetType = SCA_BE2WORD(sgy.sgy_GadgetType);
 				stccpy(cgy->cgy_Action, sgy.sgy_Action, sizeof(cgy->cgy_Action));
-				cgy->cgy_NormalImage = strdup(&gse->gse_Strings[sgy.sgy_NormalImageIndex]);
-				cgy->cgy_SelectedImage = strdup(&gse->gse_Strings[sgy.sgy_SelectedImageIndex]);
-				cgy->cgy_DisabledImage = strdup(&gse->gse_Strings[sgy.sgy_DisabledImageIndex]);
-				cgy->cgy_HelpText = strdup(&gse->gse_Strings[sgy.sgy_HelpTextIndex]);
+				cgy->cgy_NormalImage = strdup(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_NormalImageIndex)]);
+				cgy->cgy_SelectedImage = strdup(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_SelectedImageIndex)]);
+				cgy->cgy_DisabledImage = strdup(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_DisabledImageIndex)]);
+				cgy->cgy_HelpText = strdup(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_HelpTextIndex)]);
 
 				// add new ControlBarGadgetEntry to CbGadgetsList
 				AddTail(CbGadgetsList, &cgy->cgy_Node);
@@ -2672,7 +3087,7 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 		if (NULL == gse)
 			break;
 
-		gse->gse_Length = StringLength;
+		gse->gse_Length = SCA_LONG2BE(StringLength);
 		Entry = 0;
 
 		// start with empty string
@@ -2687,24 +3102,24 @@ static void WriteControlBarGadgetList(struct SCAModule *app, APTR p_MyPrefsHandl
 
 			memset(&sgy, 0, sizeof(sgy));
 
-			sgy.sgy_GadgetType = cgy->cgy_GadgetType;
+			sgy.sgy_GadgetType = SCA_WORD2BE(cgy->cgy_GadgetType);
 			stccpy(sgy.sgy_Action, cgy->cgy_Action, sizeof(sgy.sgy_Action));
 
 			if (SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
 				{
-				sgy.sgy_NormalImageIndex = StringIndex;
+				sgy.sgy_NormalImageIndex = SCA_LONG2BE(StringIndex);
 				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_NormalImage);
 				StringIndex += 1 + strlen(cgy->cgy_NormalImage);
 
-				sgy.sgy_SelectedImageIndex = StringIndex;
+				sgy.sgy_SelectedImageIndex = SCA_LONG2BE(StringIndex);
 				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_SelectedImage);
 				StringIndex += 1 + strlen(cgy->cgy_SelectedImage);
 
-				sgy.sgy_DisabledImageIndex = StringIndex;
+				sgy.sgy_DisabledImageIndex = SCA_LONG2BE(StringIndex);
 				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_DisabledImage);
 				StringIndex += 1 + strlen(cgy->cgy_DisabledImage);
 
-				sgy.sgy_HelpTextIndex = StringIndex;
+				sgy.sgy_HelpTextIndex = SCA_LONG2BE(StringIndex);
 				strcpy(gse->gse_Strings + StringIndex,  cgy->cgy_HelpText);
 				StringIndex += 1 + strlen(cgy->cgy_HelpText);
 				}
@@ -2794,3 +3209,24 @@ static ULONG GetLog2(ULONG value)
 	return Result;
 }
 
+
+// write WORD/UWORD in big endian
+static void SetWordPreferences(APTR prefsHandle, ULONG iD, ULONG prefsTag, CONST UWORD *arg, ULONG struct_Size)
+{
+	if (struct_Size == 2)
+		{
+		UWORD value = SCA_WORD2BE(*arg);
+		SetPreferences(prefsHandle, iD, prefsTag, &value, struct_Size );
+		}
+}
+
+
+// write LONG/ULONG in big endian
+static void SetLongPreferences(APTR prefsHandle, ULONG iD, ULONG prefsTag, CONST ULONG *arg, ULONG struct_Size)
+{
+	if (struct_Size == 4)
+		{
+		ULONG value = SCA_LONG2BE(*arg);
+		SetPreferences(prefsHandle, iD, prefsTag, &value, struct_Size );
+		}
+}
