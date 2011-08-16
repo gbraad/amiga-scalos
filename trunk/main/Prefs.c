@@ -1474,15 +1474,15 @@ BOOL ReadScalosPrefs(void)
 
 			d1(kprintf("%s/%s/%ld: MinVersion=%ld\n", __FILE__, __FUNC__, __LINE__, pey->pey_NeededVersion));
 
-			if (pey->pey_NeededVersion <= ScalosBase->scb_LibNode.lib_Version)
+			if (SCA_BE2WORD(pey->pey_NeededVersion) <= ScalosBase->scb_LibNode.lib_Version)
 				{
 				STRPTR lp;
 				struct PluginClass *pl = (struct PluginClass *) SCA_AllocStdNode((struct ScalosNodeList *)(APTR) &ScalosPluginList, NTYP_PluginNode);
 
 				if (pl)
 					{
-					pl->plug_priority = pey->pey_Priority;
-					pl->plug_instsize = pey->pey_InstSize;
+					pl->plug_priority = SCA_BE2WORD(pey->pey_Priority);
+					pl->plug_instsize = SCA_BE2WORD(pey->pey_InstSize);
 
 					d1(kprintf("%s/%s/%ld: priority=%ld  instsize=%ld\n", __FILE__, __FUNC__, __LINE__, pl->plug_priority, pl->plug_instsize));
 
@@ -2449,6 +2449,7 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 
 		// first determine required size of prefsIDStrings
 		GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, &gseTemp, sizeof(gseTemp) );
+		gseTemp.gse_Length = SCA_BE2LONG(gseTemp.gse_Length);
 		size = sizeof(struct SCP_GadgetStringEntry) + gseTemp.gse_Length;
 		d1(KPrintF("%s/%s/%ld: gse_Length=%lu  size=%lu\n", __FILE__, __FUNC__, __LINE__, gseTemp.gse_Length, size));
 
@@ -2459,6 +2460,7 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 
 		// now read complete prefsIDStrings
 		GetPreferences(p_MyPrefsHandle, lID, prefsIDStrings, gse, size );
+		gse->gse_Length = SCA_BE2LONG(gse->gse_Length);
 
 		// read array of prefsIDGadgets
 		while ((size = GetEntry(p_MyPrefsHandle, lID, prefsIDGadgets, &sgy, sizeof(sgy), Entry)) > 0)
@@ -2477,12 +2479,12 @@ static void ReadControlBarGadgetList(APTR p_MyPrefsHandle, LONG lID, struct List
 				break;
 
 			// create ControlBarGadgetEntry from SCP_GadgetEntry
-			cgy->cgy_GadgetType = sgy.sgy_GadgetType;
+			cgy->cgy_GadgetType = SCA_BE2WORD(sgy.sgy_GadgetType);
 			stccpy(cgy->cgy_Action, sgy.sgy_Action, sizeof(cgy->cgy_Action));
-			cgy->cgy_NormalImage = AllocCopyString(&gse->gse_Strings[sgy.sgy_NormalImageIndex]);
-			cgy->cgy_SelectedImage = AllocCopyString(&gse->gse_Strings[sgy.sgy_SelectedImageIndex]);
-			cgy->cgy_DisabledImage = AllocCopyString(&gse->gse_Strings[sgy.sgy_DisabledImageIndex]);
-			cgy->cgy_HelpText = AllocCopyString(&gse->gse_Strings[sgy.sgy_HelpTextIndex]);
+			cgy->cgy_NormalImage = AllocCopyString(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_NormalImageIndex)]);
+			cgy->cgy_SelectedImage = AllocCopyString(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_SelectedImageIndex)]);
+			cgy->cgy_DisabledImage = AllocCopyString(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_DisabledImageIndex)]);
+			cgy->cgy_HelpText = AllocCopyString(&gse->gse_Strings[SCA_BE2LONG(sgy.sgy_HelpTextIndex)]);
 
 			// add new ControlBarGadgetEntry to CbGadgetsList
 			AddTail(CbGadgetsList, &cgy->cgy_Node);
