@@ -634,8 +634,12 @@ static void ScaFlush(void)
  */
 static void ScaReboot(struct Window *win_Parent)
 {
-#if defined(__MORPHOS__) && defined(ShutdownA)
+#if (defined(__MORPHOS__) && defined(ShutdownA)) || defined(__AROS__)
+#if defined(__MORPHOS__)
 	if (DOSBase->dl_lib.lib_Version >= 51)
+#elif defined(__AROS__)
+	if (1)
+#endif
 		{
 		// On MorphOS 2.x, there is an API to shutdown the machine, so we support both shutdown and reboot
 		switch (UseRequest(win_Parent, MSGID_ABOUT_SHUTDOWN_REBOOT_CONFIRM,
@@ -652,7 +656,7 @@ static void ScaReboot(struct Window *win_Parent)
 			break;
 			}
 		}
-#endif /* __MORPHOS__ */
+#endif /* __MORPHOS__ || __AROS__*/
 	if (UseRequest(win_Parent, MSGID_SUREREBOOTNAME, MSGID_OKCANCELNAME, NULL))
 		{
 		ColdReboot();
