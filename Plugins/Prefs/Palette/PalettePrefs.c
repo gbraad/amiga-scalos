@@ -415,14 +415,14 @@ static const struct PenListInit PenListContents[] =
 
 static const struct PensListEntry DefaultPaletteEntries[] =
 	{
-	{ 0x95959595, 0x95959595, 0x95959595 },
-	{ 0x00000000, 0x00000000, 0x00000000 },
-	{ 0xffffffff, 0xffffffff, 0xffffffff },
-	{ 0x56565656, 0x7e7e7e7e, 0xa2a2a2a2 },
-	{ 0x7b7b7b7b, 0x7b7b7b7b, 0x7b7b7b7b },
-	{ 0xafafafaf, 0xafafafaf, 0xafafafaf },
-	{ 0xaaaaaaaa, 0x90909090, 0x7c7c7c7c },
-	{ 0xffffffff, 0xa9a9a9a9, 0x97979797 },
+	{ 0x95959595, 0x95959595, 0x95959595, 0 },
+	{ 0x00000000, 0x00000000, 0x00000000, 1 },
+	{ 0xffffffff, 0xffffffff, 0xffffffff, 2 },
+	{ 0x56565656, 0x7e7e7e7e, 0xa2a2a2a2, 3 },
+	{ 0x7b7b7b7b, 0x7b7b7b7b, 0x7b7b7b7b, 4 },
+	{ 0xafafafaf, 0xafafafaf, 0xafafafaf, 5 },
+	{ 0xaaaaaaaa, 0x90909090, 0x7c7c7c7c, 6 },
+	{ 0xffffffff, 0xa9a9a9a9, 0x97979797, 7 },
 	};
 
 //---------------------------------------------------------------
@@ -2291,6 +2291,8 @@ static APTR ResetToDefaultsFunc(struct Hook *hook, Object *o, Msg msg)
 
 	DoMethod(inst->ppb_Objects[OBJNDX_ScalosPenList], MUIM_NList_Redraw, MUIV_NList_Redraw_All);
 
+	SetChangedFlag(inst, TRUE);
+
 	return NULL;
 }
 
@@ -2364,6 +2366,8 @@ static APTR LastSavedFunc(struct Hook *hook, Object *o, Msg msg)
 
 	ReadPrefsFile(inst, "ENVARC:Scalos/Palette13.prefs", FALSE);
 
+	SetChangedFlag(inst, TRUE);
+
 	return 0;
 }
 
@@ -2374,6 +2378,8 @@ static APTR RestoreFunc(struct Hook *hook, Object *o, Msg msg)
 	DoMethod(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIM_NList_Clear);
 
 	ReadPrefsFile(inst, "ENV:Scalos/Palette13.prefs", FALSE);
+
+	SetChangedFlag(inst, TRUE);
 
 	return 0;
 }
