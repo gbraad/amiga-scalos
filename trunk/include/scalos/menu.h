@@ -29,7 +29,7 @@
 #endif /* __GNUC__ */
 
 // This is the exact structure that stores menu information in menu preferences files
-// !!! BE VERY CAREFUL TO KEEP OREFS COMPTIBLE IF YOU EVER CHANGE THIS STRUCTURE !!!
+// !!! BE VERY CAREFUL TO KEEP PREFS COMPATIBLE IF YOU EVER CHANGE THIS STRUCTURE !!!
 struct ScalosMenuTree
 	{
 	struct	ScalosMenuTree *mtre_Next;
