@@ -3141,8 +3141,8 @@ static LONG SaveMenuNode(struct MenuPrefsInst *inst, struct IFFHandle *iff,
 
 		StringSpace = (STRPTR) &mChunk->smch_Menu[nodeCount];
 
-		mChunk->smch_MenuID = ChunkID;
-		mChunk->smch_Entries = nodeCount;
+		mChunk->smch_MenuID = SCA_WORD2BE(ChunkID);
+		mChunk->smch_Entries = SCA_WORD2BE(nodeCount);
 
 		d1(kprintf("%s/%s/%ld: ChunkID=%ld  Count=%ld  StringSpaceSize=%lu\n", \
 			__FILE__, __FUNC__, __LINE__, mChunk->smch_MenuID, mChunk->smch_Entries, StringSpaceSize));
@@ -3333,15 +3333,25 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 		if (SCAMENUTYPE_Command == MenuTree->mtre_type)
 			{
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
+				{
 				MenuTree->MenuCombo.MenuCommand.mcom_name -= (ULONG) BaseAddr;
+				MenuTree->MenuCombo.MenuCommand.mcom_name = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_name);
+				}
+			MenuTree->MenuCombo.MenuCommand.mcom_stack = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_stack);
 			}
 		else
 			{
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
+				{
 				MenuTree->MenuCombo.MenuTree.mtre_name -= (ULONG) BaseAddr;
+				MenuTree->MenuCombo.MenuTree.mtre_name = SCA_LONG2BE(MenuTree->MenuCombo.MenuTree.mtre_name);
+				}
 
 			if ((MenuTree->mtre_flags & MTREFLGF_IconNames) && MenuTree->MenuCombo.MenuTree.mtre_iconnames)
+				{
 				MenuTree->MenuCombo.MenuTree.mtre_iconnames -= (ULONG) BaseAddr;
+				MenuTree->MenuCombo.MenuTree.mtre_iconnames = SCA_LONG2BE(MenuTree->MenuCombo.MenuTree.mtre_iconnames);
+				}
 
 			d1(KPrintF("%s/%s/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
 				__FILE__, __FUNC__, __LINE__, MenuTree->MenuCombo.MenuTree.mtre_name, \
@@ -3351,10 +3361,12 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 			{
 			RemoveAddresses(MenuTree->mtre_tree, BaseAddr);
 			MenuTree->mtre_tree = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_tree) - (ULONG) BaseAddr);
+			MenuTree->mtre_tree = SCA_LONG2BE(MenuTree->mtre_tree);
 			}
 		if (MenuTree->mtre_Next)
 			{
 			MenuTree->mtre_Next = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_Next) - (ULONG) BaseAddr);
+			MenuTree->mtre_Next = SCA_LONG2BE(MenuTree->mtre_Next);
 			}
 
 		MenuTree = MenuTreeNext;
