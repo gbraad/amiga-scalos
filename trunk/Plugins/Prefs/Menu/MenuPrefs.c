@@ -1689,7 +1689,7 @@ static SAVEDS(APTR) INTERRUPT TreeConstructFunc(struct Hook *hook, APTR obj, str
 				__FILE__, __FUNC__, __LINE__, mle->llist_name, mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name));
 
 			stccpy(mle->llist_name,
-				mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name,
+				mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name ? mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_name : (STRPTR) "",
 				sizeof(mle->llist_name));
 
 			mle->llist_Priority = mie->mie_TreeEntry->MenuCombo.MenuCommand.mcom_pri;
