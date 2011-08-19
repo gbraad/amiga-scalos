@@ -259,7 +259,10 @@ struct InstanceData
 /* ------------------------------------------------- */
 
 // from debug.lib
-#if !defined(__AROS__)
+#if defined(__AROS__)
+#include <clib/arossupport_protos.h>
+#define KPrintF kprintf
+#else
 extern int kprintf(const char *fmt, ...);
 extern int KPrintF(const char *fmt, ...);
 #endif

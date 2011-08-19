@@ -3,9 +3,10 @@
 // $Revision$
 
 
+#include <clib/arossupport_protos.h>
+
 #include <exec/types.h>
 #include <exec/initializers.h>
-
 #include <exec/resident.h>
 
 #include <proto/exec.h>
@@ -103,14 +104,14 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	struct PngIconObjectDtLibBase *PngDtLibBase = (struct PngIconObjectDtLibBase *) libbase;
 
-	d1(kprintf("%s/%s/%ld: libbase=%08lx\n", __FILE__, __FUNC__, __LINE__, libbase));
-
 	SysBase = sysbase;
 	PngDtLibBase->nib_ClassLibrary.cl_Lib.lib_Revision = LIB_REVISION;
 	PngDtLibBase->nib_ClassLibrary.cl_Lib.lib_Node.ln_Pri = 12;
 	PngDtLibBase->nib_SegList = seglist;
 
 	aroscbase = OpenLibrary("arosc.library", 0);
+
+	d1(kprintf("%s/%s/%ld: libbase=%08lx\n", __FILE__, __FUNC__, __LINE__, libbase));
 
 	if (!aroscbase && !InitDatatype(PngDtLibBase))
 		{
