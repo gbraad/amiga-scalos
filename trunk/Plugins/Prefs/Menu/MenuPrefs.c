@@ -2931,11 +2931,6 @@ static LONG ReadPrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename, BOO
 
 static LONG WritePrefsFile(struct MenuPrefsInst *inst, CONST_STRPTR Filename)
 {
-#ifdef __AROS__
-	// FIXME
-	return FALSE;
-#endif
-
 	struct IFFHandle *iff;
 	LONG Result;
 	BOOL IffOpen = FALSE;
