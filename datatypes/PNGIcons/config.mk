@@ -46,6 +46,7 @@ ifeq ($(MACHINE), i386-aros)
 
 LFLAGS	+=      -nostartfiles \
 		-lrom \
+		-larossupport \
 		-lpng \
 		-lz \
 		-lm

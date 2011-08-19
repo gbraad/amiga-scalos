@@ -17,6 +17,8 @@
 
 extern struct ExecBase *SysBase;
 
+struct Library *aroscbase;
+
 //----------------------------------------------------------------------------
 
 // Standard library functions
@@ -102,7 +104,9 @@ static AROS_UFH3(struct Library *, Initlib,
 	dtLib->nib_ClassLibrary.cl_Lib.lib_Revision = LIB_REVISION;
 	dtLib->nib_SegList = seglist;
 
-	if (!InitDatatype(dtLib))
+	aroscbase = OpenLibrary("arosc.library", 0);
+
+	if (!aroscbase || !InitDatatype(dtLib))
 		{
 		AmigaIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
@@ -180,6 +184,8 @@ static AROS_LH1(struct SegList *, Expungelib,
 		Remove((struct Node *) dtLib);
 		CloseDatatype(dtLib);
 		FreeMem(ptr,size);
+
+		CloseLibrary(aroscbase);
 
 		return libseglist;
 		}

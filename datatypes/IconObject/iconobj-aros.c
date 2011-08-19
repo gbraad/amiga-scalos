@@ -193,7 +193,6 @@ static AROS_LH0(ULONG, Extfunclib,
 {
 	AROS_LIBFUNC_INIT
 
-	d1(kprintf(__FUNC__ "/%ld: libbase=%08lx\n", __LINE__, libbase));
 	return 0;
 
 	AROS_LIBFUNC_EXIT

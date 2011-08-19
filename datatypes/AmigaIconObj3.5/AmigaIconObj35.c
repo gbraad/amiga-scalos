@@ -524,7 +524,7 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 			if (0 != DefIconType)
 				{
 				// Get default icon
-				d1(kprintf("%s/%ld:  o=%08lx  IIcon=%08lx\n", __FUNC__, __LINE__, o, IIcon));
+				d1(kprintf("%s/%ld:  o=%08lx\n", __FUNC__, __LINE__, o));
 				inst->aio_DiskObject = GetIconTags(IconName,
 					ICONGETA_RemapIcon, FALSE,
 					ICONGETA_GetDefaultType, DefIconType,
@@ -1263,9 +1263,9 @@ static ULONG DtClone(Class *cl, Object *o, struct iopCloneIconObject *iocio)
 {
 //	struct InstanceData *inst = INST_DATA(cl, o);
 
-	d1(KPrintF("%s/%ld:  START o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
+	d1(KPrintF("%s/%ld:  START o=%08lx\n", __FUNC__, __LINE__, o));
 
-	d1(KPrintF("%s/%ld:  END o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
+	d1(KPrintF("%s/%ld:  END o=%08lx\n", __FUNC__, __LINE__, o));
 
 	return 0;
 }
@@ -1628,7 +1628,7 @@ static void WriteARGBArray(const struct ARGB *SrcImgData,
 	DestHeight = GetCyberMapAttr(DestBM, CYBRMATTR_HEIGHT);
 
 	d1(KPrintF("%s/%ld:  DestX=%ld  DestY=%ld  SizeX=%ld  SizeY=%ld\n", __FUNC__, __LINE__, DestX, DestY, SizeX, SizeY));
-	d1(KPrintF("%s/%ld:  SrcBytesPerRow=%ld\n", __FUNC__, __LINE__, SrcBytesPerRow, DestPixelFormat));
+	d1(KPrintF("%s/%ld:  SrcBytesPerRow=%ld\n", __FUNC__, __LINE__, SrcBytesPerRow));
 
 	if (DestX + SizeX > DestWidth)
 		SizeX = DestWidth - DestX;

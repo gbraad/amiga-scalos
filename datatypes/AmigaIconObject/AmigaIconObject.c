@@ -131,7 +131,7 @@ LIBFUNC_END
 // return 0 if error occurred
 ULONG InitDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 {
-	d1(kprintf(__FUNC__ "/%ld:\n", __LINE__));
+	d1(kprintf("%s/%ld:\n", __FUNC__, __LINE__));
 
 	dtLib->nib_Initialized = FALSE;
 
@@ -141,11 +141,11 @@ ULONG InitDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 // return 0 if error occurred
 ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 {
-	d1(kprintf(__FUNC__ "/%ld:  OpenCnt=%ld\n", __LINE__, dtLib->nib_ClassLibrary.cl_Lib.lib_OpenCnt));
+	d1(kprintf("%s/%ld:  OpenCnt=%ld\n", __FUNC__, __LINE__, dtLib->nib_ClassLibrary.cl_Lib.lib_OpenCnt));
 
 	if (!dtLib->nib_Initialized)
 		{
-		d1(kprintf(__FUNC__ "/%ld: \n", __LINE__));
+		d1(kprintf("%s/%ld: \n", __FUNC__, __LINE__));
 
 		dtLib->nib_Initialized = TRUE;
 
@@ -163,7 +163,7 @@ ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 				}
 			}
 #endif /* __amigaos4__ */
-		d1(KPrintF(__FUNC__ "/%ld: DOSBase=%08lx\n", __LINE__, IntuitionBase));
+		d1(KPrintF("%s/%ld: DOSBase=%08lx\n", __FUNC__, __LINE__, IntuitionBase));
 		if (NULL == DOSBase)
 			return 0;
 
@@ -179,7 +179,7 @@ ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 				}
 			}
 #endif /* __amigaos4__ */
-		d1(kprintf(__FUNC__ "/%ld: IntuitionBase=%08lx\n", __LINE__, IntuitionBase));
+		d1(kprintf("%s/%ld: IntuitionBase=%08lx\n", __FUNC__, __LINE__, IntuitionBase));
 		if (NULL == IntuitionBase)
 			return 0;
 
@@ -195,7 +195,7 @@ ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 				}
 			}
 #endif /* __amigaos4__ */
-		d1(kprintf(__FUNC__ "/%ld: UtilityBase=%08lx\n", __LINE__, UtilityBase));
+		d1(kprintf("%s/%ld: UtilityBase=%08lx\n", __FUNC__, __LINE__, UtilityBase));
 		if (NULL == UtilityBase)
 			return 0;
 
@@ -211,7 +211,7 @@ ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 				}
 			}
 #endif /* __amigaos4__ */
-		d1(kprintf(__FUNC__ "/%ld: IconBase=%08lx\n", __LINE__, IconBase));
+		d1(kprintf("%s/%ld: IconBase=%08lx\n", __FUNC__, __LINE__, IconBase));
 		if (NULL == IconBase)
 			return 0;
 
@@ -227,7 +227,7 @@ ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 				}
 			}
 #endif /* __amigaos4__ */
-		d1(kprintf(__FUNC__ "/%ld: GfxBase=%08lx\n", __LINE__, GfxBase));
+		d1(kprintf("%s/%ld: GfxBase=%08lx\n", __FUNC__, __LINE__, GfxBase));
 		if (NULL == GfxBase)
 			return 0;
 
@@ -252,13 +252,13 @@ ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 			return 0;
 
 		MemPool = CreatePool(MEMPOOL_MEMFLAGS, MEMPOOL_PUDDLESIZE, MEMPOOL_THRESHSIZE);
-		d1(kprintf(__FUNC__ "/%ld: MemPool=%08lx\n", __LINE__, MemPool));
+		d1(kprintf("%s/%ld: MemPool=%08lx\n", __FUNC__, __LINE__, MemPool));
 		if (NULL == MemPool)
 			return 0;
 		
 		AmigaIconObjectClass = dtLib->nib_ClassLibrary.cl_Class = MakeClass(libName, 
 			"iconobject.datatype", NULL, sizeof(struct InstanceData), 0);
-		d1(kprintf(__FUNC__ "/%ld:  AmigaIconObjectClass=%08lx\n", __LINE__, AmigaIconObjectClass));
+		d1(kprintf("%s/%ld:  AmigaIconObjectClass=%08lx\n", __FUNC__, __LINE__, AmigaIconObjectClass));
 		if (NULL == AmigaIconObjectClass)
 			return 0;
 
@@ -269,7 +269,7 @@ ULONG OpenDatatype(struct AmigaIconObjectDtLibBase *dtLib)
 		AddClass(AmigaIconObjectClass);
 		}		
 
-	d1(kprintf(__FUNC__ "/%ld:  Open Success!\n", __LINE__));
+	d1(kprintf("%s/%ld:  Open Success!\n", __FUNC__, __LINE__));
 
 	return 1;
 }
@@ -377,10 +377,10 @@ static SAVEDS(ULONG) INTERRUPT AmigaIconObjectDispatcher(Class *cl, Object *o, M
 		{
 	case OM_NEW:
 		o = (Object *) DoSuperMethodA(cl, o, msg);
-		d1(kprintf(__FUNC__ "/%ld:  OM_NEW  o=%08lx\n", __LINE__, o));
+		d1(kprintf("%s/%ld:  OM_NEW  o=%08lx\n", __FUNC__, __LINE__, o));
 		if (o)
 			{
-			d1(kprintf(__FUNC__ "/%ld:  OM_NEW  o=%08lx\n", __LINE__, o));
+			d1(kprintf("%s/%ld:  OM_NEW  o=%08lx\n", __FUNC__, __LINE__, o));
 			if (!DtNew(cl, o, (struct opSet *) msg))
 				{
 				DoMethod(o, OM_DISPOSE);
@@ -449,20 +449,20 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 			struct Image *img;
 
 			DefIconType = GetTagData(IDTA_DefType,  0,  ops->ops_AttrList);
-			d1(kprintf(__FUNC__ "/%ld:  o=%08lx  DefIconType=%lu\n", __LINE__, o, DefIconType));
+			d1(kprintf("%s/%ld:  o=%08lx  DefIconType=%lu\n", __FUNC__, __LINE__, o, DefIconType));
 
 			if (0 != DefIconType)
 				{
 				// Get default icon
 				inst->aio_DiskObject = GetDefDiskObject(DefIconType);
-				d1(kprintf(__FUNC__ "/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __LINE__, o, inst->aio_DiskObject));
+				d1(kprintf("%s/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __FUNC__, __LINE__, o, inst->aio_DiskObject));
 				}
 			else
 				{
 				STRPTR IconName;
 
 				inst->aio_DiskObject = (struct DiskObject *) GetTagData(AIDTA_Icon, (ULONG) NULL, ops->ops_AttrList);
-				d1(kprintf(__FUNC__ "/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __LINE__, o, inst->aio_DiskObject));
+				d1(kprintf("%s/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __FUNC__, __LINE__, o, inst->aio_DiskObject));
 				if (inst->aio_DiskObject)
 					{
 					inst->aio_DoNotFreeDiskObject = TRUE;
@@ -470,18 +470,18 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				else
 					{
 					GetAttr(DTA_Name, o, (APTR) &IconName);
-					d1(kprintf(__FUNC__ "/%ld:  o=%08lx  IconName=<%s>\n", __LINE__, o, IconName ? IconName : (STRPTR) ""));
+					d1(kprintf("%s/%ld:  o=%08lx  IconName=<%s>\n", __FUNC__, __LINE__, o, IconName ? IconName : (STRPTR) ""));
 
 					// Get named icon
 					if (NULL == IconName)
 						break;
 
 					inst->aio_DiskObject = GetDiskObject(IconName);
-					d1(kprintf(__FUNC__ "/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __LINE__, o, inst->aio_DiskObject));
+					d1(kprintf("%s/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __FUNC__, __LINE__, o, inst->aio_DiskObject));
 					}
 				}
 
-			d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __LINE__, o, inst->aio_DiskObject));
+			d1(KPrintF("%s/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __FUNC__, __LINE__, o, inst->aio_DiskObject));
 			if (NULL == inst->aio_DiskObject)
 				break;
 
@@ -490,7 +490,7 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				GA_Width, img->Width,
 				GA_Height, img->Height,
 				TAG_END);
-			d1(kprintf(__FUNC__ "/%ld:  o=%08lx  Width=%ld  Height=%ld\n", __LINE__, o, gg->Width, gg->Height));
+			d1(kprintf("%s/%ld:  o=%08lx  Width=%ld  Height=%ld\n", __FUNC__, __LINE__, o, gg->Width, gg->Height));
 
 			if (NO_ICON_POSITION == inst->aio_DiskObject->do_CurrentX)
 				{
@@ -502,7 +502,7 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				gg->TopEdge = inst->aio_DiskObject->do_CurrentY;
 				}
 
-			d1(kprintf(__FUNC__ "/%ld:  o=%08lx  Left=%ld  Top=%ld\n", __LINE__, o, gg->LeftEdge, gg->TopEdge));
+			d1(kprintf("%s/%ld:  o=%08lx  Left=%ld  Top=%ld\n", __FUNC__, __LINE__, o, gg->LeftEdge, gg->TopEdge));
 
 			if (WBDISK == inst->aio_DiskObject->do_Type
 				|| WBDRAWER == inst->aio_DiskObject->do_Type)
@@ -535,13 +535,13 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				TAG_END);
 			}
 
-		d1(kprintf(__FUNC__ "/%ld:  o=%08lx  GadgetRender=%08lx\n", __LINE__, o, gg->GadgetRender));
+		d1(kprintf("%s/%ld:  o=%08lx  GadgetRender=%08lx\n", __FUNC__, __LINE__, o, gg->GadgetRender));
 
 		Success = TRUE;
 		} while (0);
 
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __LINE__, o, inst->aio_DiskObject));
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  Success=%ld\n", __LINE__, o, Success));
+	d1(KPrintF("%s/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __FUNC__, __LINE__, o, inst->aio_DiskObject));
+	d1(KPrintF("%s/%ld:  o=%08lx  Success=%ld\n", __FUNC__, __LINE__, o, Success));
 
 	return Success;
 }
@@ -553,8 +553,8 @@ static ULONG DtDispose(Class *cl, Object *o, Msg msg)
 	struct InstanceData *inst = INST_DATA(cl, o);
 //	struct ExtGadget *gg = (struct ExtGadget *) o;
 
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  inst=%08lx\n", __LINE__, o, inst));
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  aio_myDrawerData=%08lx\n", __LINE__, o, inst->aio_myDrawerData));
+	d1(KPrintF("%s/%ld:  o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
+	d1(KPrintF("%s/%ld:  o=%08lx  aio_myDrawerData=%08lx\n", __FUNC__, __LINE__, o, inst->aio_myDrawerData));
 
 	if (inst->aio_myDrawerData)
 		{
@@ -564,7 +564,7 @@ static ULONG DtDispose(Class *cl, Object *o, Msg msg)
 			inst->aio_DiskObject->do_DrawerData = NULL;
 		}
 
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __LINE__, o, inst->aio_DiskObject));
+	d1(KPrintF("%s/%ld:  o=%08lx  aio_DiskObject=%08lx\n", __FUNC__, __LINE__, o, inst->aio_DiskObject));
 	if (inst->aio_DiskObject)
 		{
 		if (!inst->aio_DoNotFreeDiskObject)
@@ -572,7 +572,7 @@ static ULONG DtDispose(Class *cl, Object *o, Msg msg)
 		inst->aio_DiskObject = NULL;
 		}
 
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  inst=%08lx\n", __LINE__, o, inst));
+	d1(KPrintF("%s/%ld:  o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
 
 	return DoSuperMethodA(cl, o, msg);
 }
@@ -583,7 +583,7 @@ static ULONG DtSet(Class *cl, Object *o, struct opSet *ops)
 {
 	struct InstanceData *inst = INST_DATA(cl, o);
 
-	d1(kprintf(__FUNC__ "/%ld:  o=%08lx  inst=%08lx\n", __LINE__, o, inst));
+	d1(kprintf("%s/%ld:  o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
 
 	if (inst->aio_DoNotFreeDiskObject)
 		{
@@ -604,7 +604,7 @@ static ULONG DtGet(Class *cl, Object *o, struct opGet *opg)
 	struct InstanceData *inst = INST_DATA(cl, o);
 	ULONG result = 1;
 
-	d1(KPrintF(__FUNC__ "/%ld:  o=%08lx  inst=%08lx  AttrID=%08lx\n", __LINE__, o, inst, opg->opg_AttrID));
+	d1(KPrintF("%s/%ld:  o=%08lx  inst=%08lx  AttrID=%08lx\n", __FUNC__, __LINE__, o, inst, opg->opg_AttrID));
 
 	switch (opg->opg_AttrID)
 		{
@@ -629,7 +629,7 @@ static ULONG DtGet(Class *cl, Object *o, struct opGet *opg)
 		break;
 		}
 
-	d1(kprintf(__FUNC__ "/%ld:  o=%08lx  GadgetRender=%08lx\n", __LINE__, o, ((struct ExtGadget *) o)->GadgetRender));
+	d1(kprintf("%s/%ld:  o=%08lx  GadgetRender=%08lx\n", __FUNC__, __LINE__, o, ((struct ExtGadget *) o)->GadgetRender));
 
 	return result;
 }
@@ -643,14 +643,14 @@ static ULONG DtLayout(Class *cl, Object *o, struct iopLayout *iopl)
 	struct Image *NormImg = (struct Image *) inst->aio_DiskObject->do_Gadget.GadgetRender;
 	struct Image *SelImg = (struct Image *) inst->aio_DiskObject->do_Gadget.SelectRender;
 
-	d1(kprintf(__FUNC__ "/%ld:  o=%08lx  inst=%08lx\n", __LINE__, o, inst));
+	d1(kprintf("%s/%ld:  o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
 
 	DoSuperMethodA(cl, o, (Msg) iopl);
 
-	d1(kprintf(__FUNC__ "/%ld:  o=%08lx  Screen=%08lx\n", __LINE__, o, iopl->iopl_Screen));
-	d1(kprintf(__FUNC__ "/%ld:  o=%08lx  Width=%ld  Height=%ld\n", __LINE__, o, gg->Width, gg->Height));
-	d1(kprintf(__FUNC__ "/%ld:  o=%08lx  GadgetRender=%08lx  SelectRender=%08lx  Flags=%08lx\n", \
-		__LINE__, o, gg->GadgetRender, gg->SelectRender, iopl->iopl_Flags));
+	d1(kprintf("%s/%ld:  o=%08lx  Screen=%08lx\n", __FUNC__, __LINE__, o, iopl->iopl_Screen));
+	d1(kprintf("%s/%ld:  o=%08lx  Width=%ld  Height=%ld\n", __FUNC__, __LINE__, o, gg->Width, gg->Height));
+	d1(kprintf("%s/%ld:  o=%08lx  GadgetRender=%08lx  SelectRender=%08lx  Flags=%08lx\n", \
+		__FUNC__, __LINE__, o, gg->GadgetRender, gg->SelectRender, iopl->iopl_Flags));
 
 	inst->aio_Screen = iopl->iopl_Screen;
 
@@ -665,21 +665,21 @@ static ULONG DtLayout(Class *cl, Object *o, struct iopLayout *iopl)
 		struct RastPort *rp = (struct RastPort *) gg->SelectRender;
 		UWORD HighLight = inst->aio_DiskObject->do_Gadget.Flags & GFLG_GADGHIGHBITS;
 
-		d1(kprintf(__FUNC__ "/%ld:  o=%08lx  Flags=%08lx\n", __LINE__, o, inst->aio_DiskObject->do_Gadget.Flags));
+		d1(kprintf("%s/%ld:  o=%08lx  Flags=%08lx\n", __FUNC__, __LINE__, o, inst->aio_DiskObject->do_Gadget.Flags));
 
 		if (GFLG_GADGHIMAGE == HighLight)
 			{
-			d1(kprintf(__FUNC__ "/%ld:  o=%08lx  GFLG_GADGHIMAGE\n", __LINE__, o));
+			d1(kprintf("%s/%ld:  o=%08lx  GFLG_GADGHIMAGE\n", __FUNC__, __LINE__, o));
 			DrawImage(rp, SelImg, inst->aio_ImageLeft, inst->aio_ImageTop);
 			}
 		else if (GFLG_GADGHNONE == HighLight)
 			{
-			d1(kprintf(__FUNC__ "/%ld:  o=%08lx  GFLG_GADGHNONE\n", __LINE__, o));
+			d1(kprintf("%s/%ld:  o=%08lx  GFLG_GADGHNONE\n", __FUNC__, __LINE__, o));
 			DrawImage(rp, NormImg, inst->aio_ImageLeft, inst->aio_ImageTop);
 			}
 		else if (GFLG_GADGHCOMP == HighLight)
 			{
-			d1(kprintf(__FUNC__ "/%ld:  o=%08lx  ?\n", __LINE__, o));
+			d1(kprintf("%s/%ld:  o=%08lx  ?\n", __FUNC__, __LINE__, o));
 
 			DrawImage(rp, NormImg, inst->aio_ImageLeft, inst->aio_ImageTop);
 
@@ -710,7 +710,7 @@ static ULONG DtLayout(Class *cl, Object *o, struct iopLayout *iopl)
 			if (SelImg)
 				SetWriteMask(rp, SelImg->PlanePick);
 
-			d1(kprintf(__FUNC__ "/%ld:  o=%08lx  GFLG_GADGHBOX\n", __LINE__, o));
+			d1(kprintf("%s/%ld:  o=%08lx  GFLG_GADGHBOX\n", __FUNC__, __LINE__, o));
 
 			do	{
 				struct RastPort TempRp;
@@ -725,7 +725,7 @@ static ULONG DtLayout(Class *cl, Object *o, struct iopLayout *iopl)
 				ImgSize = (2 + NormImg->Height) * ByteCount * sizeof(UWORD);
 
 				BlitMask = MyAllocVecPooled(ImgSize);
-				d1(kprintf(__FUNC__ "/%ld:  BlitMask=%08lx\n", __LINE__, BlitMask));
+				d1(kprintf("%s/%ld:  BlitMask=%08lx\n", __FUNC__, __LINE__, BlitMask));
 				if (NULL == BlitMask)
 					break;
 
@@ -737,7 +737,7 @@ static ULONG DtLayout(Class *cl, Object *o, struct iopLayout *iopl)
 				TempRp.BitMap = AllocBitMap((NormImg->Width + 0x2f) & 0xfff0,
 					NormImg->Height + 2, 2,
 					BMF_STANDARD | BMF_CLEAR, NULL);
-				d1(kprintf(__FUNC__ "/%ld:  TempRp.BitMap=%08lx\n", __LINE__, TempRp.BitMap));
+				d1(kprintf("%s/%ld:  TempRp.BitMap=%08lx\n", __FUNC__, __LINE__, TempRp.BitMap));
 				if (NULL == TempRp.BitMap)
 					break;
 
@@ -812,7 +812,7 @@ static ULONG DtWrite(Class *cl, Object *o, struct iopWrite *iopw)
 	ULONG NeedUpdateWB;
 	LONG Result = RETURN_OK;
 
-	d1(kprintf(__FUNC__ "/%ld:  o=%08lx  inst=%08lx\n", __LINE__, o, inst));
+	d1(kprintf("%s/%ld:  o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
 
 	memset(&wd, 0, sizeof(wd));
 
@@ -899,9 +899,9 @@ static ULONG DtNewImage(Class *cl, Object *o, struct iopNewImage *ioni)
 {
 //	struct InstanceData *inst = INST_DATA(cl, o);
 
-	d1(KPrintF("%s/%ld:  START o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
+	d1(KPrintF("%s/%ld:  START o=%08lx\n", __FUNC__, __LINE__, o));
 
-	d1(KPrintF("%s/%ld:  END o=%08lx  inst=%08lx\n", __FUNC__, __LINE__, o, inst));
+	d1(KPrintF("%s/%ld:  END o=%08lxlx\n", __FUNC__, __LINE__, o));
 
 	return 0;
 }
@@ -961,12 +961,12 @@ static APTR MyAllocVecPooled(size_t Size)
 
 			sptr[0] = Size;
 
-			d1(kprintf(__FUNC__ "/%ld:  MemPool=%08lx  Size=%lu  mem=%08lx\n", __LINE__, MemPool, Size, &sptr[1]));
+			d1(kprintf("%s/%ld:  MemPool=%08lx  Size=%lu  mem=%08lx\n", __FUNC__, __LINE__, MemPool, Size, &sptr[1]));
 			return (APTR)(&sptr[1]);
 			}
 		}
 
-	d1(kprintf(__FUNC__ "/%ld:  MemPool=%08lx  Size=%lu\n", __LINE__, MemPool, Size));
+	d1(kprintf("%s/%ld:  MemPool=%08lx  Size=%lu\n", __FUNC__, __LINE__, MemPool, Size));
 
 	return NULL;
 }
@@ -974,7 +974,7 @@ static APTR MyAllocVecPooled(size_t Size)
 
 static void MyFreeVecPooled(APTR mem)
 {
-	d1(kprintf(__FUNC__ "/%ld:  MemPool=%08lx  mem=%08lx\n", __LINE__, MemPool, mem));
+	d1(kprintf("%s/%ld:  MemPool=%08lx  mem=%08lx\n", __FUNC__, __LINE__, MemPool, mem));
 	if (MemPool && mem)
 		{
 		size_t size;

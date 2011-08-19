@@ -1200,9 +1200,8 @@ static void SetParentAttributes(Class *cl, Object *o)
 		GA_Height, inst->id_NormalImage.argb_Height,
 		TAG_END);
 
-	d1(KPrintF("%s/%s/%ld:  Left=%ld  Top=%ld  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__,\
-		gg->LeftEdge, gg->TopEdge, gg->Width, gg->Height));
-	d1(KPrintF("%s/%s/%ld: o: BoundsWidth=%ld  BoundsHeight=%ld\n", __FILE__, __FUNC__, __LINE__, gg->BoundsWidth, gg->BoundsHeight));
+	d1(KPrintF("%s/%s/%ld:  Width=%ld  Height=%ld\n", __FILE__, __FUNC__, __LINE__,\
+		inst->id_NormalImage.argb_Width, inst->id_NormalImage.argb_Height));
 	d1(KPrintF("%s/%s/%ld:  id_Type=%lu\n", __FILE__, __FUNC__, __LINE__, inst->id_Type));
 
 	SetAttrs(o,

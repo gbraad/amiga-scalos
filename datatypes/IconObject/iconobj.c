@@ -244,11 +244,9 @@ static BOOL ScaleARGB(Class *cl, Object *o, struct IconObjectARGB *img,
 static void EraseIconText(Class *cl, Object *o, struct RastPort *rp, WORD x, WORD y);
 static void DrawIconTextRect(Class *cl, Object *o, struct RastPort *rp, WORD x, WORD y);
 
-#if 0
 static void DumpMaskPlane(const struct IconObjectMask *Mask);
 static void DumpMask(const struct IconObjectMask *Mask);
 static void DumpMaskBM(const struct IconObjectMask *Mask);
-#endif
 
 //----------------------------------------------------------------------------
 
@@ -736,7 +734,7 @@ static ULONG DtHitTest(Class *cl, Object *o, struct gpHitTest *gpht)
 {
 	ULONG Result;
 
-	d1(kprintf("%s/%s/%ld:  o=%08lx  inst=%08lx\n", __FILE__, __FUNC__, __LINE__, o, inst));
+	d1(kprintf("%s/%s/%ld:  o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
 
 	Result = DoSuperMethodA(cl, o, (Msg) gpht);
 	if (GMR_GADGETHIT == Result)
@@ -758,7 +756,7 @@ static ULONG DtHitTest(Class *cl, Object *o, struct gpHitTest *gpht)
 			Result = 0;
 		}
 
-	d1(kprintf("%s/%s/%ld:  o=%08lx  inst=%08lx  Result=%ld\n", __FILE__, __FUNC__, __LINE__, o, inst, Result));
+	d1(kprintf("%s/%s/%ld:  o=%08lx  Result=%ld\n", __FILE__, __FUNC__, __LINE__, o, Result));
 
 	return Result;
 }
@@ -1623,7 +1621,6 @@ static ULONG DtScaleIcon(Class *cl, Object *o, struct iopScaleIcon *iops)
 	NewWidth = iops->iops_NewWidth;
 	NewHeight = iops->iops_NewHeight;
 
-	d1(KPrintF("%s/%s/%ld:  OldWidth=%lu  OldHeight=%lu\n", __FILE__, __FUNC__, __LINE__, gg->Width, gg->Height));
 	d1(KPrintF("%s/%s/%ld:  NewWidth=%lu  NewHeight=%lu\n", __FILE__, __FUNC__, __LINE__, NewWidth, NewHeight));
 
 	ObtainSemaphore(&inst->iobj_LayoutSemaphore);
@@ -2753,7 +2750,6 @@ static struct BitMap *GenMask(Class *cl, Object *o,
 		}
 
 	d1(KPrintF("%s/%s/%ld:  o=%08lx  <%s>  BmWidth=%lu  BmHeight=%lu\n", __FILE__, __FUNC__, __LINE__, o, inst->iobj_name, BmWidth, BmHeight));
-	d1(KPrintF("%s/%s/%ld:  BM Width=%lu  Height=%lu\n", __FILE__, __FUNC__, __LINE__, GetBitMapAttr(SrcBitMap, BMA_WIDTH), BmHeight));
 	d1(KPrintF("%s/%s/%ld:  MaskPlane=%08lx\n", __FILE__, __FUNC__, __LINE__, MaskPlane));
 	d1(KPrintF("%s/%s/%ld:  MaskWidth=%lu  MaskHeight=%lu\n", __FILE__, __FUNC__, __LINE__, MaskWidth, MaskHeight));
 	d1(KPrintF("%s/%s/%ld:  ImgMaskWidth=%lu  ImgMaskHeight=%lu\n", __FILE__, __FUNC__, __LINE__, ImgMaskWidth, ImgMaskHeight));
@@ -2777,7 +2773,6 @@ static struct BitMap *GenMask(Class *cl, Object *o,
 
 			d1(KPrintF("%s/%s/%ld:  MaskWidth=%lu  MaskHeight=%lu  BytesPerRow=%ld\n", __FILE__, __FUNC__, __LINE__, MaskWidth, MaskHeight, BYTESPERROW(MaskWidth)));
 			d1(KPrintF("%s/%s/%ld:  ImgMaskWidth=%lu  ImgMaskHeight=%lu\n", __FILE__, __FUNC__, __LINE__, ImgMaskWidth, ImgMaskHeight));
-			d1(KPrintF("%s/%s/%ld:  Width=%lu  Height=%lu\n", __FILE__, __FUNC__, __LINE__, gg->Width, gg->Height));
 			d1(KPrintF("%s/%s/%ld:  BmWidth=%lu  BmHeight=%lu\n", __FILE__, __FUNC__, __LINE__, BmWidth, BmHeight));
 
 			memset(&TempBM, 0, sizeof(TempBM));
@@ -3808,7 +3803,7 @@ static void DrawIconTextRect(Class *cl, Object *o, struct RastPort *rp, WORD x, 
 
 			AreaEnd(&myRp);
 
-			d1(KPrin tF("%s/%s/%ld:  iobj_TextPenBgSel=%ld\n", __FILE__, __FUNC__, __LINE__, inst->iobj_TextPenBgSel));
+			d1(KPrintF("%s/%s/%ld:  iobj_TextPenBgSel=%ld\n", __FILE__, __FUNC__, __LINE__, inst->iobj_TextPenBgSel));
 			} while (0);
 
 		if (myPlanePtr)
@@ -3821,7 +3816,6 @@ static void DrawIconTextRect(Class *cl, Object *o, struct RastPort *rp, WORD x, 
 }
 
 //-----------------------------------------------------------------------------
-#if 0
 static void DumpMaskPlane(const struct IconObjectMask *Mask)
 {
 	LONG x, y;
@@ -3842,9 +3836,7 @@ static void DumpMaskPlane(const struct IconObjectMask *Mask)
 		mp += BYTESPERROW(Mask->iom_Width);
 		}
 }
-#endif
 //-----------------------------------------------------------------------------
-#if 0
 static void DumpMask(const struct IconObjectMask *Mask)
 {
 	LONG x, y;
@@ -3892,7 +3884,6 @@ static void DumpMaskBM(const struct IconObjectMask *Mask)
 		mp += BYTESPERROW(Mask->iom_Width);
 		}
 }
-#endif
 //-----------------------------------------------------------------------------
 
 #if !defined(__SASC)
