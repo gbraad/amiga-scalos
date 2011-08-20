@@ -12,6 +12,14 @@ include		config.mk
 
 ##############################################################################
 #
+# Project subdirectories
+#
+
+SUBDIRS	=	OpenDrawer \
+		#
+
+##############################################################################
+#
 # Project Object files
 #
 
@@ -49,7 +57,8 @@ GETMSG	=	GenMsgIdNames
 
 .PHONY: all install clean bump dump
 
-all:	$(BINDIR)/$(CTRL) \
+all:	all_subdirs \
+	$(BINDIR)/$(CTRL) \
 	$(BINDIR)/$(SEMA) \
 	$(BINDIR)/$(LOADWB) \
 	$(BINDIR)/$(GETMSG) \
@@ -82,12 +91,12 @@ $(BINDIR)/$(GETMSG): $(OBJS_GETMSG)
 
 ##############################################################################
 
-install:
+install: install_subdirs
 	@copy $(BINDIR)/$(CTRL) Scalos:Tools/
 	@copy $(BINDIR)/$(LOADWB) c:LoadWB
 
 
-clean:
+clean: clean_subdirs
 	@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.i $(OBJDIR)/*.s \
 		$(BINDIR)/$(CTRL) $(BINDIR)/$(SEMA) \
 		$(BINDIR)/$(LOADWB) $(BINDIR)/$(GETMSG) \

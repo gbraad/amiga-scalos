@@ -41,8 +41,8 @@ int main(void)
 {
 	IPTR			argarray[] = {0,0,0,0};
 	BYTE			path[512];
-	BPTR			lock_Path = BNULL;
-	BPTR			lock_Parent = BNULL;
+	BPTR			lock_Path = (BPTR) NULL;
+	BPTR			lock_Parent = (BPTR) NULL;
 
 	LONG viewmodes = 0;
 	LONG showall = 0;
