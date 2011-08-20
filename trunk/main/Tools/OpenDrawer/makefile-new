@@ -1,58 +1,95 @@
-# ECX makefile for MorphOS opendrawer cli tool
 # $Date$
 # $Revision$
-# $Id$
-#############################################################
+##############################################################################
 
-CC      	= ECX:bin/ECX
+TOPLEVEL	=	$(shell pwd)/../../..
 
-CFLAGS  	= POWERPC MORPHOS VAR LINE SYM ICA
+# Native FlexCat doesn't like Linux paths
+ifeq ($(CROSS), )
+	SDPATH=/
+else
+	SDPATH=../..
+endif
 
-OPTFLAGS  	= EXENAME
+include		config.mk
 
-#############################################################
+##############################################################################
+#
+# Project Object files
+#
 
-NAME		= opendrawer.mos
+OBJS	=      	$(OBJDIR)/OpenDrawer.o \
 
-#############################################################
+##############################################################################
+#
+# Autodependencies
+#
+ifneq ($(MAKECMDGOALS),clean)
+	-include $(OBJS:.o=.d)
+endif
 
-SRC  		= opendrawer.e
+##############################################################################
+#
+# Subdirs
+#
 
-MODSRC		= verstag.e
+#SUBDIRS	=	$(filter-out Catalogs/sample/Scalos, $(wildcard Catalogs/*/Scalos))
 
-MOD		= verstag.m
+##############################################################################
+#
+# Targets
+#
 
-#############################################################
+NAME 	=	OpenDrawer
+NAME_DB	=	$(NAME).debug
 
-DESTTOOL	= Scalos:Tools/Opendrawer
+##############################################################################
 
-#############################################################
+.PHONY: all install clean bump dump nodebug
 
-All: 	$(MOD) $(NAME)
+all:	$(BINDIR)/$(NAME) \
+	$(BINDIR)/$(NAME_DB) \
+	all_subdirs
 
-#############################################################
+##############################################################################
 
+$(OBJDIR)/%.o: $(TOOLTYPE_DIR)/%.c
+	@$(run-cc)
 
-$(MOD):
-	@printf '\033[32mCompile: \033[31m\033[1m$@\033[0m\n'
-	@$(CC) $(MODSRC) $(CFLAGS)
+$(OBJDIR)/%.o: $(ICONOBJMCC_DIR)/%.c
+	@$(run-cc)
 
-$(NAME):
-	@printf '\033[32mCompile: \033[31m\033[1m$@\033[0m\n'
-	@$(CC) $(SRC) $(CFLAGS) $(OPTFLAGS) $@
+#OpenDrawer.c : $(OBJDIR)/OpenDrawer.h
 
-#############################################################
+#$(OBJDIR)/OpenDrawer_Locale.h : OpenDrawer.cd
+#	@$(ECHO) "FlexCat $@"
+#	$(FLEXCAT) $< $@=$(SDPATH)/CatComp_h.sd
 
-# A little something to clean it all up
-clean:
-	@printf '\033[32mDelete: \033[31m\033[1m'
-	@delete $(NAME) $(MOD)
-	@printf '\033[0m'
+##############################################################################
 
-#############################################################
+$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) : $(OBJS)
+	@$(ECHO) "Link $(NAME)"
+	@$(CC) $(OBJS) $(LFLAGS) $(DEFINES) -o$(BINDIR)/$(NAME_DB)
+	@$(STRIP) $(SFLAGS) $(BINDIR)/$(NAME_DB) -o $(BINDIR)/$(NAME)
+ifneq ($(MACHINE), ppc-amigaos)
+	-@chmod u+x $@
+endif
 
-# copy all generated file to their final destinations
+##############################################################################
+
 install:
-	@printf '\033[32mInstall:\033[31m\033[1m $(NAME) to $(DESTTOOL)\033[0m\n'
-	@copy $(NAME) $(DESTTOOL) clone
+	-@$(ECHO) "Installing $(NAME)"
+	@copy $(BINDIR)/$(NAME) Scalos:Tools/ clone
 
+install: install_subdirs
+
+clean:
+	-@$(RM) -frv $(OBJDIR)/*.o $(OBJDIR)/*.d $(OBJDIR)/*.d.* \
+        	$(OBJDIR)/*.i $(OBJDIR)/*.s \
+		$(BINDIR)/$(NAME) $(BINDIR)/$(NAME_DB) \
+		*.dump *_str.* \
+		$(OBJDIR)/OpenDrawer_Locale.h
+
+clean:	clean_subdirs
+
+##############################################################################
