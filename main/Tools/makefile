@@ -27,6 +27,11 @@ FS_DIR		= ../../common/Fs
 
 #############################################################
 
+SUBDIRS =	OpenDrawer  \
+		#
+
+#############################################################
+
 $(OBJDIR)::
 	@[ -d $(OBJDIR) ] || mkdir $(OBJDIR) > /dev/null 2>&1
 
@@ -50,6 +55,7 @@ all: 	$(CTRL) \
 	$(LWB) \
 	$(LWBDBG) \
 	$(GENMSGID)
+	@$(foreach subdir,$(SUBDIRS),$(call build_subdir,$(subdir)))
 # install
 # clean
 
@@ -119,6 +125,7 @@ install:
 	@copy $(CTRL) Scalos:Tools/
 	@printf '\033[32mInstall: \033[31m\033[1m$(LWB) \033[0mas \033[1mc:LoadWB \033[0m\n'
 	@copy $(LWB) c:LoadWB
+	@$(foreach subdir,$(SUBDIRS),$(call install_subdir,$(subdir)))
 
 #############################################################
 
@@ -128,6 +135,7 @@ clean:
 	@delete $(OBJS) $(OBJSSEMA) $(OBJSLWB) $(OBJSGENMSGID) \
 		 $(CTRL) $(CTRLDBG) $(LWB) $(LWBDBG) $(SEMA) $(SEMADBG) $(GENMSGID)
 	@printf '\033[0m'
+	@$(foreach subdir,$(SUBDIRS),$(call clean_subdir,$(subdir)))
 
 #############################################################
 #############################################################
