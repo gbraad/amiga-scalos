@@ -732,7 +732,7 @@ static ULONG DtDispose(Class *cl, Object *o, Msg msg)
 
 static ULONG DtHitTest(Class *cl, Object *o, struct gpHitTest *gpht)
 {
-	ULONG Result;
+	ULONG Result = 0;
 
 	d1(kprintf("%s/%s/%ld:  o=%08lx\n", __FILE__, __FUNC__, __LINE__, o));
 
@@ -741,19 +741,49 @@ static ULONG DtHitTest(Class *cl, Object *o, struct gpHitTest *gpht)
 		{
 		struct InstanceData *inst = INST_DATA(cl, o);
 		struct ExtGadget *gg = (struct ExtGadget *) o;
-		struct RastPort rp;
-
-		InitRastPort(&rp);
+		struct BitMap *MaskBM;
+		LONG x, y;
+		ULONG BmWidth, BmHeight;
 
 		if (gg->Flags & GFLG_SELECTED)
-			rp.BitMap = inst->iobj_SelectedMask.iom_MaskBM;
+			MaskBM = inst->iobj_SelectedMask.iom_MaskBM;
 		else
-			rp.BitMap = inst->iobj_NormalMask.iom_MaskBM;
+			MaskBM = inst->iobj_NormalMask.iom_MaskBM;
 
-		if (rp.BitMap && ReadPixel(&rp, gg->LeftEdge + gpht->gpht_Mouse.X, gg->TopEdge + gpht->gpht_Mouse.Y))
+		d1(kprintf("%s/%s/%ld:  MaskBM=%08lx\n", __FILE__, __FUNC__, __LINE__, MaskBM));
+
+		if (NULL == MaskBM)
+			{
 			Result = GMR_GADGETHIT;
+			}
 		else
-			Result = 0;
+			{
+			d1(kprintf("%s/%s/%ld:  iobj_imgleft=%ld  iobj_imgtop=%ld\n", __FILE__, __FUNC__, __LINE__, inst->iobj_imgleft, inst->iobj_imgtop));
+
+			x = gpht->gpht_Mouse.X - gg->LeftEdge - inst->iobj_imgleft;
+			y = gpht->gpht_Mouse.Y - gg->TopEdge - inst->iobj_imgtop;
+
+			BmWidth = GetBitMapAttr(MaskBM, BMA_WIDTH);
+			BmHeight = GetBitMapAttr(MaskBM, BMA_HEIGHT);
+
+			d1(kprintf("%s/%s/%ld:  x=%ld  y=%ld  BmWidth=%lu  BmHeight=%lu\n", __FILE__, __FUNC__, __LINE__, x, y, BmWidth, BmHeight));
+
+			if ( x >= 0 && y >= 0 && x < BmWidth && y < BmHeight)
+				{
+				struct RastPort rp;
+
+				InitRastPort(&rp);
+
+				rp.BitMap = MaskBM;
+
+				d1(kprintf("%s/%s/%ld:  ReadPixel()=%ld\n", __FILE__, __FUNC__, __LINE__, ReadPixel(&rp, x, y)));
+
+				if (ReadPixel(&rp, x, y))
+					Result = GMR_GADGETHIT;
+				else
+					Result = 0;
+				}
+			}
 		}
 
 	d1(kprintf("%s/%s/%ld:  o=%08lx  Result=%ld\n", __FILE__, __FUNC__, __LINE__, o, Result));
