@@ -689,15 +689,7 @@ static CONST_STRPTR GetFileNameForDefaultIcon(ULONG IconType)
 {
 	static const struct DefIconName DefIconNames[] =
 		{
-		{ WBDISK,	"ENV:sys/def_disk" 	},
-		{ WBDRAWER,	"ENV:sys/def_drawer" 	},
-		{ WBTOOL,	"ENV:sys/def_tool" 	},
-		{ WBPROJECT,	"ENV:sys/def_project" 	},
-		{ WBGARBAGE,	"ENV:sys/def_trashcan" 	},
-		{ WBDEVICE,	"ENV:sys/def_device" 	},
-		{ WBKICK,	"ENV:sys/def_kick" 	},
-		{ WBAPPICON,	"ENV:sys/def_appicon"	},
-
+#if defined(__AROS__)
 		{ WBDISK,	"ENVARC:sys/def_disk" 		},
 		{ WBDRAWER,	"ENVARC:sys/def_drawer" 	},
 		{ WBTOOL,	"ENVARC:sys/def_tool" 		},
@@ -706,6 +698,16 @@ static CONST_STRPTR GetFileNameForDefaultIcon(ULONG IconType)
 		{ WBDEVICE,	"ENVARC:sys/def_device" 	},
 		{ WBKICK,	"ENVARC:sys/def_kick" 		},
 		{ WBAPPICON,	"ENVARC:sys/def_appicon"	}
+#else
+		{ WBDISK,	"ENV:sys/def_disk" 	},
+		{ WBDRAWER,	"ENV:sys/def_drawer" 	},
+		{ WBTOOL,	"ENV:sys/def_tool" 	},
+		{ WBPROJECT,	"ENV:sys/def_project" 	},
+		{ WBGARBAGE,	"ENV:sys/def_trashcan" 	},
+		{ WBDEVICE,	"ENV:sys/def_device" 	},
+		{ WBKICK,	"ENV:sys/def_kick" 	},
+		{ WBAPPICON,	"ENV:sys/def_appicon"	}
+#endif
 		};
 
 	ULONG n;
