@@ -1290,7 +1290,7 @@ static struct PrefsListEntry *CreateNewPrefsListEntry(struct PreferencesBase *Pr
 {
 	struct PrefsListEntry *ple;
 
-	d1(KPrintF("%s/%s/%ld:   START  name=<%s>\n", __FILE__, __FUCN__, __LINE__, name));
+	d1(KPrintF("%s/%s/%ld:   START  name=<%s>\n", __FILE__, __FUNC__, __LINE__, name));
 
 	ple = MyAllocVecPooled(PreferencesBase, sizeof(struct PrefsListEntry));
 	if (ple)

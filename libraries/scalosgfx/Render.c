@@ -1283,8 +1283,8 @@ void DrawLineRastPort(struct RastPort *rp, LONG X0, LONG Y0, LONG X1, LONG Y1, s
 	grayl = FgColor.Red * 0.299 + FgColor.Green * 0.587 + FgColor.Blue * 0.114;
 	Color32 = COMBINE_RGB(FgColor.Red, FgColor.Green, FgColor.Blue);
 
-	d1(KPrintF("%s/%s/%ld: LinePen=%ld  r=%ld g=%ld b=%ld  Color32=%08lx\n", \
-		__FILE__, __FUNC__, __LINE__, LinePen, FgColor.Red, FgColor.Green, FgColor.Blue, Color32));
+	d1(KPrintF("%s/%s/%ld:  r=%ld g=%ld b=%ld  Color32=%08lx\n", \
+		__FILE__, __FUNC__, __LINE__, FgColor.Red, FgColor.Green, FgColor.Blue, Color32));
 
 	/* Make sure the line runs top to bottom */
 	if (Y0 > Y1)

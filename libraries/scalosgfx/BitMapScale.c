@@ -124,7 +124,7 @@ static struct ARGB ScaleARGBBicubic(const struct ARGB *src,
 	advy2 = (y + 2 >= SourceHeight) ? 0 : 2 * SourceWidth;
 
 	d1(KPrintF("%s/%ld:  SourceWidth=%lu  SourceHeight=%lu\n", __FUNC__, __LINE__, SourceWidth, SourceHeight));
-	d1(KPrintF("%s/%ld:  s=%08lx  advx=%lu  advy=%lu\n", __FUNC__, __LINE__, s, advx, advy));
+	d1(KPrintF("%s/%ld:  s=%08lx  advx1=%lu  advy1=%lu\n", __FUNC__, __LINE__, s, advx1, advy1));
 
 	s[0] = (( 2 * BcScale - 1 * BcFracX)  * BcFracX  / BcScale  - 1 * BcScale) * BcFracX / BcScale;	//   - 1
 	s[1] = ( -5 * BcScale + 3 * BcFracX ) * BcFracX2 / BcScale2 + 2 * BcScale;  			//   0
@@ -227,7 +227,7 @@ static struct ARGB ScaleARGBBilinear(const struct ARGB *src,
 	advy = (y + 1 >= SourceHeight) ? 0 : SourceWidth;
 
 	d1(KPrintF("%s/%ld:  SourceWidth=%lu  SourceHeight=%lu\n", __FUNC__, __LINE__, SourceWidth, SourceHeight));
-	d1(KPrintF("%s/%ld:  s=%08lx  advx=%lu  advy=%lu\n", __FUNC__, __LINE__, s, advx, advy));
+	d1(KPrintF("%s/%ld:  advx=%lu  advy=%lu\n", __FUNC__, __LINE__, advx, advy));
 
 	// copy pixel data to temp
 	temp[0][0] = src[0];
