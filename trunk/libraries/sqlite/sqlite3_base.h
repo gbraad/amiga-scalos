@@ -37,8 +37,13 @@ struct SQLite3Base
 #endif
 
 // aus debug.lib
+#ifdef __AROS__
+#include <clib/arossupport_protos.h>
+#define KPrintF kprintf
+#else
 extern int kprintf(const char *fmt, ...);
 extern int KPrintF(const char *fmt, ...);
+#endif
 
 //----------------------------------------------------------------------------
 

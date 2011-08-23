@@ -1818,7 +1818,7 @@ static int otherOpenSharedMemory(otherFile *pDbFd)
 	/* Make the new connection a child of the otherShmNode */
 	p->osh_pShmNode = pShmNode;
 #ifdef SQLITE_DEBUG
-	p->id = pShmNode->nextShmId++;
+	p->osh_id = pShmNode->nextShmId++;
 #endif
 	pShmNode->shn_nRef++;
 	pDbFd->pShm = p;
@@ -2106,7 +2106,7 @@ static int otherShmLock(
      
 	ReleaseSemaphore(&pShmNode->shn_Sema);
 	OSTRACE(("SHM-LOCK shmid-%d, pid-%d got %03x,%03x\n",
-		p->id, getpid(), p->sharedMask, p->exclMask));
+		p->osh_id, getpid(), p->osh_sharedMask, p->osh_exclMask));
 	d2(KPrintF(__FILE__ "/%s/%ld: END  rc=%ld\n", __FUNC__, __LINE__, rc));
 	return rc;
 }
