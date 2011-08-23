@@ -323,7 +323,11 @@ static const struct ScalosPrefsContainer defaultPrefs =
 {
 	{
 	// Paths
+#ifdef __AROS__
+		"ENVARC:sys",		// pg_pDefaultIcons[MAX_FILENAME];
+#else
 		"ENV:sys",		// pg_pDefaultIcons[MAX_FILENAME];
+#endif
 		"Sys:System/DiskCopy",	// pg_pDiskCopy[MAX_FILENAME];
 		"Scalos:",		// pg_pHome[MAX_FILENAME];
 		"Scalos:Themes",	// pg_pThemes[MAX_FILENAME];

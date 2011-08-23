@@ -206,7 +206,11 @@ static const struct ScalosPrefs DefaultPrefs =
 
 	{ 5, 4, 5, 3 },				// pref_CleanupSpace
 
+#ifdef __AROS__
+	"ENVARC:sys",				// pref_DefIconPath
+#else
 	"ENV:sys",				// pref_DefIconPath
+#endif
 
 	FALSE,					// pref_TextWindowStriped
 	TRUE,					// pref_ShowDDCountText
