@@ -696,8 +696,18 @@ static CONST_STRPTR GetFileNameForDefaultIcon(ULONG IconType)
 		{ WBGARBAGE,	"ENV:sys/def_trashcan" 	},
 		{ WBDEVICE,	"ENV:sys/def_device" 	},
 		{ WBKICK,	"ENV:sys/def_kick" 	},
-		{ WBAPPICON,	"ENV:sys/def_appicon"	}
+		{ WBAPPICON,	"ENV:sys/def_appicon"	},
+
+		{ WBDISK,	"ENVARC:sys/def_disk" 		},
+		{ WBDRAWER,	"ENVARC:sys/def_drawer" 	},
+		{ WBTOOL,	"ENVARC:sys/def_tool" 		},
+		{ WBPROJECT,	"ENVARC:sys/def_project" 	},
+		{ WBGARBAGE,	"ENVARC:sys/def_trashcan" 	},
+		{ WBDEVICE,	"ENVARC:sys/def_device" 	},
+		{ WBKICK,	"ENVARC:sys/def_kick" 		},
+		{ WBAPPICON,	"ENVARC:sys/def_appicon"	}
 		};
+
 	ULONG n;
 
 	for (n=0; n<Sizeof(DefIconNames); n++)
