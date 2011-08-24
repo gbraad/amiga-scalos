@@ -35,6 +35,10 @@ static struct RDArgs *rdargs;
 
 struct ScalosBase *ScalosBase;
 
+#ifdef __amigaos4__
+struct ScalosIFace *IScalos = NULL;
+#endif
+
 const char *vers = "$VER: OpenDrawer 42.0 (20.08.2011) © 2002-2011 - The Scalos team";
 
 int main(void)
@@ -65,6 +69,11 @@ int main(void)
 	// Open Scalos.library
 	if (NULL == (ScalosBase = (struct ScalosBase *)OpenLibrary(SCALOSNAME, 40)))
 		clean_exit("Can't open scalos.library v40");
+#ifdef __amigaos4__
+	IScalos = (struct ScalosIFace *)GetInterface((struct Library *)ScalosBase, "main", 1, NULL);
+	if (NULL == IScalos)
+		clean_exit("Failed to open scalos interface.");
+#endif /* __amigaos4__ */
 
 	if (argarray[1])
 		{
@@ -115,7 +124,18 @@ int main(void)
 
 static void clean_exit(CONST_STRPTR str)
 {
-	CloseLibrary((struct Library *)ScalosBase);
+#ifdef __amigaos4__
+	if (IScalos)
+		{
+		DropInterface((struct Interface *)IScalos);
+		IScalos = NULL;
+		}
+#endif /* __amigaos4__ */
+	if (ScalosBase)
+		{
+		CloseLibrary((struct Library *)ScalosBase);
+		ScalosBase = NULL;
+		}
 
 	if (rdargs)
 		{
