@@ -352,9 +352,6 @@ static ULONG GetIconHunkSize(struct InstanceData *inst)
 
 		d1(kprintf("%s/%s/%ld:  Length=%lu\n", __FILE__, __FUNC__, __LINE__, Length));
 
-		// Write out sort mode
-		Length += sizeof(ULONG) + sizeof(tag);
-
 		// Write out drawer size and position
 		Length += 4 * (sizeof(ULONG) + sizeof(tag));
 
