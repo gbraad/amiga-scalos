@@ -1673,7 +1673,7 @@ LONG WriteScalosPrefs(struct SCAModule *app, CONST_STRPTR PrefsFileName)
 		SetPreferences(p_MyPrefsHandle, lID, SCP_SelectMarkerTransparency, &currentPrefs.TextWindows.fd_SelectMarkerTransparency, sizeof(currentPrefs.TextWindows.fd_SelectMarkerTransparency) );
 		// UBYTE
 
-		SetLongPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) );
+		SetLongPreferences(p_MyPrefsHandle, lID, SCP_DrawerSortMode, (ULONG *) &currentPrefs.TextWindows.fd_DrawerSortMode, sizeof(currentPrefs.TextWindows.fd_DrawerSortMode) );
 		// enum
 
 		WritePrefsHandle(p_MyPrefsHandle, PrefsFileName);
