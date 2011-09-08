@@ -908,6 +908,9 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 				if (!UndoFindWindowAndIcon(ucmed->ucmed_srcDirName, ucmed->ucmed_srcName, &iwt, &in))
 					break;
 
+				if (NULL == in)
+					break;
+
 				gg = (struct ExtGadget *) in->in_Icon;
 
 				uev->uev_OldPosX = gg->LeftEdge;
