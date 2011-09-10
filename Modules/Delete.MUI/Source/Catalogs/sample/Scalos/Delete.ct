@@ -251,6 +251,11 @@ MSGID_UNDO_NOT_POSSIBLE
 Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
 ;Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
 ;
+;+++translateme+++
+MSG_GAD_OK_ABORT
+*_Ok|Abort
+;*_Ok|Abort
+;
 ;-----------------------------------------------------------
 ;
 MSGID_MENU_PROJECT

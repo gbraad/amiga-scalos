@@ -242,7 +242,6 @@ BOOL ListFiles(struct WBStartup *WBStart)
 	struct WBArg         *lf_Args       = WBStart->sm_ArgList;
 	struct FileInfoBlock *lf_Fib        = NULL;
 	LONG           lf_Num        = 0;
-	BPTR           lf_Old        = (BPTR)NULL;
 	BPTR           lf_File       = (BPTR)NULL;
 
 	ULONG          lf_FileCount  = 0;
@@ -274,11 +273,14 @@ BOOL ListFiles(struct WBStartup *WBStart)
 
 	for(lf_Num = 1; lf_Num < WBStart->sm_NumArgs; lf_Num ++)
 		{
-		d1(KPrintF("ListFiles(): Checking entry %ld. Lock 0x%08lX Name %s\n", lf_Args[lf_Num].wa_Lock, lf_Args[lf_Num].wa_Name);)
+		d1(KPrintF("ListFiles(): Checking entry %ld. Lock 0x%08lX Name <%s>\n", \
+			lf_Num, lf_Args[lf_Num].wa_Lock, lf_Args[lf_Num].wa_Name);)
 
 		// If got a lock, change to it
 		if(lf_Args[lf_Num].wa_Lock)
 			{
+			BPTR lf_Old;
+
 			lf_Old = CurrentDir(lf_Args[lf_Num].wa_Lock);
 
 			// Got a filename?
@@ -591,7 +593,7 @@ LONG FileDelete(STRPTR FileName, BOOL Trash, APTR UndoStep)
 	if(Trash)
 		{
 		d1(KPrintF("%s/%s/%ld: Attempting to copy to trashcan\n", __FILE__, __FUNC__, __LINE__));
-		d2(KPrintF("%s/%s/%ld: FileBuffer=<%s>  FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, FileBuffer, FileName));
+		d1(KPrintF("%s/%s/%ld: FileBuffer=<%s>  FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, FileBuffer, FileName));
 
 	        CurrentPos = strlen(FileBuffer);
 		if(!AddPart(FileBuffer, FilePart(FileName), MAX_FILENAME_LEN))
@@ -675,6 +677,10 @@ LONG FileDelete(STRPTR FileName, BOOL Trash, APTR UndoStep)
 			}
 	        UnLock(FileLk);
 		}
+	else
+		{
+		d1(KPrintF("%s/%s/%ld: Lock(%s) failed, IoErr=%ld\n", __FILE__, __FUNC__, __LINE__, FileName, IoErr()));
+		}
 
 	d1(KPrintF("%s/%s/%ld: protection stage passed, checking for abort and exiting\n", __FILE__, __FUNC__, __LINE__));
 
@@ -713,11 +719,14 @@ LONG DeleteIcon(STRPTR FileName, BOOL Trash, APTR UndoStep)
 			if(!DeleteFile(FileName))
 				{
 				Fault(IoErr(), (char *) GetLocString(MSG_BODY_NOICON), TextBuffer, sizeof(TextBuffer) - 1);
-				MUI_Request(MUI_App, WI_Delete, 0,
+				if ( !MUI_Request(MUI_App, WI_Delete, 0,
 					(char *) GetLocString(MSG_ERROR_TITLE),
-					(char *) GetLocString(MSG_GAD_OK),
+					(char *) GetLocString(MSG_GAD_OK_ABORT),
 					TextBuffer,
-		                        FileName);
+					FileName))
+					{
+					Result = RESULT_HALT;
+					}
 				}
 			}
 	        DoneSize += GlobalFIB->fib_Size;
@@ -748,10 +757,11 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 	LONG              TempSig   = 0;
 	BPTR              TrashLock = (BPTR)NULL;
 	BPTR              DirLock   = (BPTR)NULL;
-	BPTR              OldDir    = (BPTR)NULL;
 	IPTR              Confirm   = 0;
 
-	d1(kprintf("DirDelete(): Trying to delete %s\n", DirName);)
+	d1(kprintf("%s()/%ld: Trying to delete %s\n", __FUNCTION__, __LINE__, DirName);)
+
+	DEBUG_CURRENTDIR;
 
 	snprintf(TextBuffer, sizeof(TextBuffer),
 		GetLocString(MSG_BODY_REMOVE), FilePart(DirName));
@@ -770,7 +780,7 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 			}
 		}
 
-	d1(kprintf("DirDelete(): Confirm stage passed\n");)
+	d1(kprintf("%s()/%ld: Confirm stage passed\n", __FUNCTION__, __LINE__);)
 
 	if(Trash)
 		{
@@ -798,7 +808,7 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 			UnLock(TrashLock);
 		}
 
-	d1(kprintf("DirDelete(): Trashcan stage passed\n");)
+	d1(kprintf("%s()/%ld: Trashcan stage passed\n", __FUNCTION__, __LINE__);)
 
 	if(!(ExFIB = AllocDosObject(DOS_FIB, NULL)))
 		{
@@ -811,15 +821,19 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 		return(RESULT_FAIL);
 		}
 
-	d1(kprintf("DirDelete(): Obtained FIB, locking and examining\n");)
+	d1(kprintf("%s()/%ld: Obtained FIB, locking and examining, DirName=<%s>\n", __FUNCTION__, __LINE__, DirName);)
 
 	if(DirLock = Lock(DirName, SHARED_LOCK))
 		{
+		BPTR OldDir;
+
 		OldDir = CurrentDir(DirLock);
+
+		DEBUG_CURRENTDIR;
 
 		if(Examine(DirLock, ExFIB))
 			{
-		        d1(kprintf("DirDelete(): Examined, checking protection\n");)
+		        d1(kprintf("%s()/%ld: Examined, checking protection\n", __FUNCTION__, __LINE__);)
 
 		        // protected?
 			if(ExFIB->fib_Protection & FIBF_DELETE)
@@ -842,33 +856,83 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 					}
 				}
 
-		        d1(kprintf("DirDelete(): Protection stage complete, checking contents\n");)
+			d1(kprintf("%s()/%ld: Protection stage complete, checking contents\n", __FUNCTION__, __LINE__);)
+
+			DEBUG_CURRENTDIR;
 
 			if(ExNext(DirLock, ExFIB))
 				{
 				do 	{
+					DEBUG_CURRENTDIR;
+
 			                DoMethod(MUI_App, MUIM_Application_InputBuffered);
 
 			                // Copy and jump to next entry (allows delete).
-			                CopyMem(ExFIB, &OldFIB, sizeof(struct FileInfoBlock));
-			                ExNextRtn = ExNext(DirLock, ExFIB);
+					OldFIB = *ExFIB;
+					ExNextRtn = ExNext(DirLock, ExFIB);
 
-			                // It's a file!
-					if(OldFIB.fib_DirEntryType < 0)
-						{
-				                d1(kprintf("DirDelete(): %s is a file, removing it\n", OldFIB.fib_FileName);)
+					DEBUG_CURRENTDIR;
+					d1(kprintf("%s()/%ld: fib_DirEntryType=%ld\n", __FUNCTION__, __LINE__, OldFIB.fib_DirEntryType);)
+
+					if (ST_SOFTLINK == OldFIB.fib_DirEntryType)
+					{
+						// It's a softlink!
+						d1(kprintf("%s()/%ld: <%s> is a softlink, removing it\n", __FUNCTION__, __LINE__, OldFIB.fib_FileName);)
 
 						Result = FileDelete(OldFIB.fib_FileName, Trash, UndoStep);
+						d1(kprintf("%s()/%ld: FileDelete() returned %ld\n", __FUNCTION__, __LINE__, Result);)
 						if(Result == RESULT_OK)
 							{
+							d1(kprintf("%s()/%ld: calling DeleteFile(%s)\n", __FUNCTION__, __LINE__, OldFIB.fib_FileName);)
 							if(!DeleteFile(OldFIB.fib_FileName))
 								{
 								Fault(IoErr(), (char *) GetLocString(MSG_BODY_NODEL), TextBuffer, sizeof(TextBuffer) - 1);
-								MUI_Request(MUI_App, WI_Delete, 0,
+								if (!MUI_Request(MUI_App, WI_Delete, 0,
 									(char *) GetLocString(MSG_ERROR_TITLE),
-									(char *) GetLocString(MSG_GAD_OK),
+									(char *) GetLocString(MSG_GAD_OK_ABORT),
 									TextBuffer,
-					                                OldFIB.fib_FileName);
+									OldFIB.fib_FileName))
+									{
+									CurrentDir(OldDir);
+									UnLock(DirLock);
+									return RESULT_HALT;
+									}
+								}
+							}
+
+				                DoneSize += OldFIB.fib_Size;
+					}
+					else if(OldFIB.fib_DirEntryType < 0)
+						{
+						// It's a file!
+						d1(kprintf("%s()/%ld: <%s> is a file, removing it\n", __FUNCTION__, __LINE__, OldFIB.fib_FileName);)
+
+						{
+						BPTR fLock = Lock(OldFIB.fib_FileName, ACCESS_READ);
+						if (fLock)
+							UnLock(fLock);
+						else
+							d1(KPrintF("%s/%s/%ld: Lock(%s) failed, IoErr=%ld\n", __FILE__, __FUNC__, __LINE__, OldFIB.fib_FileName, IoErr()));
+						}
+
+						Result = FileDelete(OldFIB.fib_FileName, Trash, UndoStep);
+						d1(kprintf("%s()/%ld: FileDelete() returned %ld\n", __FUNCTION__, __LINE__, Result);)
+						if(Result == RESULT_OK)
+							{
+							d1(kprintf("%s()/%ld: calling DeleteFile(%s)\n", __FUNCTION__, __LINE__, OldFIB.fib_FileName);)
+							if(!DeleteFile(OldFIB.fib_FileName))
+								{
+								Fault(IoErr(), (char *) GetLocString(MSG_BODY_NODEL), TextBuffer, sizeof(TextBuffer) - 1);
+								if (!MUI_Request(MUI_App, WI_Delete, 0,
+									(char *) GetLocString(MSG_ERROR_TITLE),
+									(char *) GetLocString(MSG_GAD_OK_ABORT),
+									TextBuffer,
+									OldFIB.fib_FileName))
+									{
+									CurrentDir(OldDir);
+									UnLock(DirLock);
+									return RESULT_HALT;
+									}
 								}
 							}
 
@@ -876,7 +940,7 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 						}
 					else
 						{
-				                d1(kprintf("DirDelete(): %s is a directory, removing it\n", OldFIB.fib_FileName);)
+						d1(kprintf("%s()/%ld: %s is a directory, removing it\n", __FUNCTION__, __LINE__, OldFIB.fib_FileName);)
 
 				                Result = DirDelete(OldFIB.fib_FileName, Trash, UndoStep);
 						if(Result == RESULT_OK)
@@ -884,20 +948,26 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 							if(!DeleteFile(OldFIB.fib_FileName))
 								{
 								Fault(IoErr(), (char *) GetLocString(MSG_BODY_NODEL), TextBuffer, sizeof(TextBuffer) - 1);
-								MUI_Request(MUI_App, WI_Delete, 0,
+								if (!MUI_Request(MUI_App, WI_Delete, 0,
 									(char *) GetLocString(MSG_ERROR_TITLE),
-									(char *) GetLocString(MSG_GAD_OK),
+									(char *) GetLocString(MSG_GAD_OK_ABORT),
 									TextBuffer,
-					                                OldFIB.fib_FileName);
+									OldFIB.fib_FileName))
+									{
+									CurrentDir(OldDir);
+									UnLock(DirLock);
+									return RESULT_HALT;
+									}
+
 								}
 							}
 						}
 
-			                d1(kprintf("DirDelete(): Updating directory window\n");)
+					d1(kprintf("%s()/%ld: Updating directory window\n", __FUNCTION__, __LINE__);)
 
 			                // Update the window. This must be done as the window for the
 			                // directory could, in theory, be opened already...
-			                Update.ui_iw_Lock = DirLock;
+					Update.ui_iw_Lock = DirLock;
 			                Update.ui_iw_Name = OldFIB.fib_FileName;
 			                SCA_UpdateIcon(WSV_Type_IconWindow, &Update, sizeof(struct ScaUpdateIcon_IW));
 
@@ -910,15 +980,17 @@ LONG DirDelete(STRPTR DirName, BOOL Trash, APTR UndoStep)
 					} while(ExNextRtn && (Result != RESULT_HALT));
 				}
 			}
-		UnLock(DirLock);
-
 		CurrentDir(OldDir);
+		UnLock(DirLock);
 		}
 
-	d1(kprintf("DirDelete(): Finished working\n");)
+	d1(kprintf("%s()/%ld: Finished working\n", __FUNCTION__, __LINE__);)
 
 	FreeDosObject(DOS_FIB, ExFIB);
-	if(Trash) FileBuffer[Position] = '\0';
+	if(Trash)
+		FileBuffer[Position] = '\0';
+
+	DEBUG_CURRENTDIR;
 
 	if(Result == RESULT_HALT)
 		return(RESULT_HALT);
@@ -941,7 +1013,6 @@ void KillFiles(struct WBStartup *WBStart)
 	struct WBArg            *kf_Args   = WBStart->sm_ArgList;
 	struct FileInfoBlock    *kf_Fib    = NULL;
 	LONG              kf_Num    = 0;
-	BPTR              kf_Old    = (BPTR)NULL;
 	BPTR              kf_File   = (BPTR)NULL;
 	LONG              kf_Result = 0;
 	IPTR              Trash     = FALSE;
@@ -1028,6 +1099,8 @@ void KillFiles(struct WBStartup *WBStart)
 		// If got a lock, change to it
 		if(kf_Args[kf_Num].wa_Lock)
 		        {
+			BPTR  kf_Old;
+			
 			kf_Old = CurrentDir(kf_Args[kf_Num].wa_Lock);
 
 			d1(KPrintF("%s/%s/%ld: Filename: %s Lock: 0x%08lX\n", __FILE__, __FUNC__, __LINE__, kf_Args[kf_Num].wa_Name, kf_Args[kf_Num].wa_Lock));
@@ -1199,7 +1272,6 @@ void DirCount(STRPTR DirName, struct DetailStats *Stats)
 	struct FileInfoBlock   OldFIB          ;
 	LONG            ExNextRtn = 0;
 	BPTR            DirLock   = (BPTR)NULL;
-	BPTR            OldDir    = (BPTR)NULL;
 
 	snprintf(TextBuffer, sizeof(TextBuffer),
 		GetLocString(MSG_BODY_SCAN), FilePart(DirName));
@@ -1218,6 +1290,8 @@ void DirCount(STRPTR DirName, struct DetailStats *Stats)
 	// Lock and change to the directory....
 	if(DirLock = Lock(DirName, SHARED_LOCK))
 		{
+		BPTR OldDir;
+		
 		OldDir = CurrentDir(DirLock);
 
 		if(Examine(DirLock, ExFIB))
@@ -1247,9 +1321,8 @@ void DirCount(STRPTR DirName, struct DetailStats *Stats)
 					} while(ExNextRtn);
 				}
 			}
-		UnLock(DirLock);
-
 		CurrentDir(OldDir);
+		UnLock(DirLock);
 		}
 
 	FreeDosObject(DOS_FIB, ExFIB);
@@ -1272,7 +1345,6 @@ BOOL GetDetails(struct WBStartup *WBStart)
 	struct FileInfoBlock *gd_Fib        = NULL;
 	struct DetailStats    gd_Details    = { 0, 0, 0 };
 	LONG           gd_Num        = 0;
-	BPTR           gd_Old        = (BPTR)NULL;
 	BPTR           gd_File       = (BPTR)NULL;
 
 
@@ -1297,7 +1369,9 @@ BOOL GetDetails(struct WBStartup *WBStart)
 		        // If got a lock, change to it
 			if(gd_Args[gd_Num].wa_Lock)
 				{
-		                gd_Old = CurrentDir(gd_Args[gd_Num].wa_Lock);
+				BPTR gd_Old;
+				
+				gd_Old = CurrentDir(gd_Args[gd_Num].wa_Lock);
 
 		                // Got a filename?
 				if(estrlen(gd_Args[gd_Num].wa_Name))

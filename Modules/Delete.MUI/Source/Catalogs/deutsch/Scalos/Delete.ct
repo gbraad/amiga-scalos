@@ -83,7 +83,7 @@ HALT!
 ;
 MSG_BUTTON_AMUI
 Über MUI...
-;About MUI
+;About MUI...
 ;
 MSG_BUTTON_SAVE
 Speichern
@@ -368,6 +368,11 @@ Kann Rückgängig gemacht werden, da \033bPapierkorb benutzen\033n eingeschaltet
 MSGID_UNDO_NOT_POSSIBLE
 Rückgängigmachen \033inicht\033n möglich solange \033bPapierkorb benutzen\033n ausgeschaltet
 ;Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
+;
+;
+MSG_GAD_OK_ABORT
+*_Ok|Abbrechen
+;*_Ok|Abort
 ;
 ;-----------------------------------------------------------
 ;

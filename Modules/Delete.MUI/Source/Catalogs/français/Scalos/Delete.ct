@@ -21,7 +21,7 @@ Effacer
 ;Delete
 ;
 MSG_ASL_TITLE
-Choix de l'emplacement de la corbeille 
+Choix de l'emplacement de la corbeille
 ;Select Trashcan directory
 ;
 MSG_PAGES_FILES
@@ -57,7 +57,7 @@ MSG_LABEL_INFO
 ;Done %ld%%
 ;
 MSG_LABEL_PROG
-Sélectionnés : %ld fichiers [%ld bytes], %ld répertoires 
+Sélectionnés : %ld fichiers [%ld bytes], %ld répertoires
 ;Selected: %ld files [%ld bytes], %ld directories
 ;
 MSG_LABEL_VERS
@@ -77,8 +77,8 @@ Effacer
 ;Delete
 ;
 MSG_BUTTON_ABT
-A propos
-;About
+A propos...
+;About...
 ;
 MSG_BUTTON_CAN
 Annuler
@@ -89,8 +89,8 @@ Interrompre !
 ;STOP!
 ;
 MSG_BUTTON_AMUI
-A propos de MUI
-;About MUI
+A propos de MUI...
+;About MUI...
 ;
 MSG_BUTTON_SAVE
 Sauver
@@ -351,6 +351,11 @@ Undo possible since \033bUtiliser la corbeille\033n is enabled
 MSGID_UNDO_NOT_POSSIBLE
 Undo \033inot\033n possible unless \033bUtiliser la corbeille\033n is enabled
 ;Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
+;
+;+++translateme+++
+MSG_GAD_OK_ABORT
+*_Ok|Abort
+;*_Ok|Abort
 ;
 ;-----------------------------------------------------------
 ;
