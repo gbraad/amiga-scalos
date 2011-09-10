@@ -61,7 +61,7 @@ MSG_BUTTON_DEL      (//)
 Delete
 ;
 MSG_BUTTON_ABT      (//)
-About
+About...
 ;
 MSG_BUTTON_CAN      (//)
 Cancel
@@ -70,7 +70,7 @@ MSG_BUTTON_STOP     (//)
 STOP!
 ;
 MSG_BUTTON_AMUI     (//)
-About MUI
+About MUI...
 ;
 MSG_BUTTON_SAVE     (//)
 Save
@@ -253,6 +253,10 @@ Undo possible since \033bUse trashcan\033n is enabled
 ;
 MSGID_UNDO_NOT_POSSIBLE (//)
 Undo \033inot\033n possible unless \033bUse trashcan\033n is enabled
+;
+;
+MSG_GAD_OK_ABORT (//)
+*_Ok|Abort
 ;
 ;-----------------------------------------------------------
 ;

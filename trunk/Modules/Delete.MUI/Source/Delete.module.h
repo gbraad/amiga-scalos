@@ -67,6 +67,15 @@
 #include "Delete.module_rev.h"
 
 
+#define	DEBUG_CURRENTDIR	{\
+	char xxName[200];\
+	BPTR oldDir = CurrentDir(NULL);\
+	strcpy(xxName, "");\
+	NameFromLock(oldDir, xxName, sizeof(xxName));\
+	KPrintF("%s/%s/%ld: CurrentDir=%08lx <%s>\n", __FILE__, __FUNC__, __LINE__, oldDir, xxName);\
+	CurrentDir(oldDir);\
+	}
+
 struct Delete_LocaleInfo
 {
 	APTR li_LocaleBase;

@@ -437,6 +437,10 @@ static struct Hook EnableTrashcanHook = { { NULL, NULL }, HOOKFUNC_DEF(EnableTra
 		        GetDetails((struct WBStartup *)argv);
 		        break;
 		case DELETE_IT:
+			set(BT_Details, MUIA_Disabled, TRUE);
+			set(BT_Delete, MUIA_Disabled, TRUE);
+			set(BT_About, MUIA_Disabled, TRUE);
+			set(BT_Cancel, MUIA_Disabled, TRUE);
 		        KillFiles((struct WBStartup *)argv);
 			Running = FALSE;
 		        break;
