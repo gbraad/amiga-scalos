@@ -3849,11 +3849,12 @@ static void DrawIconTextRect(Class *cl, Object *o, struct RastPort *rp, WORD x, 
 static void DumpMaskPlane(const struct IconObjectMask *Mask)
 {
 	LONG x, y;
+	const UBYTE *mp;
 
 	if (!Mask || !Mask->iom_MaskBM || !Mask->iom_MaskBM->Planes[0])
 		return;
 
-	const UBYTE *mp = Mask->iom_MaskBM->Planes[0];
+	mp = Mask->iom_MaskBM->Planes[0];
 
 	for (y = 0; y < Mask->iom_Height; y++)
 		{
@@ -3874,11 +3875,12 @@ static void DumpMaskPlane(const struct IconObjectMask *Mask)
 static void DumpMask(const struct IconObjectMask *Mask)
 {
 	LONG x, y;
+	const UBYTE *mp;
 
 	if (!Mask || !Mask->iom_Mask)
 		return;
 
-	const UBYTE *mp = Mask->iom_Mask;
+	mp = Mask->iom_Mask;
 
 	for (y = 0; y < Mask->iom_Height; y++)
 		{
@@ -3901,12 +3903,13 @@ static void DumpMask(const struct IconObjectMask *Mask)
 static void DumpMaskBM(const struct IconObjectMask *Mask)
 {
 	LONG x, y;
+	const UBYTE *mp;
+	struct RastPort rp;
 
 	if (!Mask || !Mask->iom_Mask)
 		return;
 
-	const UBYTE *mp = Mask->iom_Mask;
-	struct RastPort rp;
+	mp = Mask->iom_Mask;
 
 	InitRastPort(&rp);
 	rp.BitMap = Mask->iom_MaskBM;
