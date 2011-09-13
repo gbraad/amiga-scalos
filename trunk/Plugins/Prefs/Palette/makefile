@@ -17,6 +17,7 @@ LIBS 		= LIB:scm.lib LIB:sc.lib LIB:mempools.lib \
 LDFLAGS		= quiet batch noicons 
 PRECOMP 	= Include:all.gst
 OBJDIR		= .sasobj
+BINDIR		= .bin_os3
 PREFSPATH	= ../../../Prefs/Palette
 DATATYPESMCC_DIR = ../../../common/DataTypesMCC
 COMMON_DIR	= ../../../common/Plugin
@@ -71,8 +72,8 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
-All:	$(PLUGIN) \
-	$(PLUGINDBG) \
+All:	$(BINDIR)/$(PLUGIN) \
+	$(BINDIR)/$(PLUGINDBG) \
 	allcatalogs
 # install
 # clean
@@ -109,11 +110,11 @@ $(CATCOMPHEADER) : $(PREFSPATH)/ScalosPalette.cd
 	@printf '\033[32mMake CatComp header: \033[31m\033[1m$@ \033[32mfrom \033[31m$<\033[0m\n'
 	$(FLEXCAT) $(subst ../,/,$<) $@=$(SDPATH)/CatComp_h.sd
 
-$(PLUGIN) : $(OBJS)
+$(BINDIR)/$(PLUGIN) : $(OBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
 	@$(LD) to $@ FROM $(OBJS) lib $(LIBS) $(LDFLAGS) STRIPDEBUG
 
-$(PLUGINDBG) : $(OBJS)
+$(BINDIR)/$(PLUGINDBG) : $(OBJS)
 	@printf '\033[32mLink: \033[31m\033[1m$@\033[0m\n'
 	@$(LD) to $@ FROM $(OBJS) lib $(LIBS) $(LDFLAGS) ADDSYM
 
@@ -122,7 +123,7 @@ $(PLUGINDBG) : $(OBJS)
 install:
 	@avail flush
 	@printf '\033[32mInstall: \033[31m\033[1m$(PLUGIN)\033[0m\n'
-	@copy $(PLUGIN) "$(DESTTOOL)"
+	@copy $(BINDIR)/$(PLUGIN) "$(DESTTOOL)"
 	@printf '\033[32mInstall: \033[31m\033[1m$(CAT_FILE)\033[0m\n'
 	-@$(foreach cat,$(CATS),copy "$(SRCCAT)/catalogs/$(cat)/$(CAT_FILE)" "$(DESTCAT)/$(cat)/Scalos" clone;)
 
@@ -130,7 +131,7 @@ install:
 
 clean:
 	@printf '\033[32mCleanup: \033[31m\033[1m'
-	-@delete $(PLUGIN) $(PLUGINDBG) $(OBJS) $(subst ../,/,$(CATCOMPHEADER)) $(ALLCATS)
+	-@delete $(BINDIR)/$(PLUGIN) $(BINDIR)/$(PLUGINDBG) $(OBJS) $(subst ../,/,$(CATCOMPHEADER)) $(ALLCATS)
 	@printf '\033[0m'
 
 #############################################################
