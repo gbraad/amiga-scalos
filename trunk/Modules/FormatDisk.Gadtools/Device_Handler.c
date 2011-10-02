@@ -265,6 +265,8 @@ STRPTR BtoCString(BPTR bString, STRPTR Buffer, size_t MaxLen)
 		Len = MaxLen - 1;
 	strncpy(Buffer, AROS_BSTR_ADDR(bString), Len);
 	Buffer[Len] = '\0';
+
+	return Buffer;
 #else
 	UBYTE *bStringAddr = BADDR(bString);
 	size_t Length = bStringAddr[0];
