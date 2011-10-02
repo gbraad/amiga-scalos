@@ -3681,7 +3681,7 @@ static SAVEDS(APTR) INTERRUPT ImportTDHookFunc(struct Hook *hook, Object *o, Msg
 				MenuNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, lp,
 					&mie,
-					inst->mpb_MainMenuNode, 
+					&inst->mpb_MainMenuNode, 
 					MenuNode ? MenuNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Tail, 
 					MUIV_NListtree_Insert_Flag_Active | TNF_OPEN | TNF_LIST);
 
@@ -4041,7 +4041,7 @@ static SAVEDS(APTR) INTERRUPT ImportPHookFunc(struct Hook *hook, Object *o, Msg 
 				MenuNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 					MUIM_NListtree_Insert, ItemName,
 					&mie,
-					inst->mpb_MainMenuNode, 
+					&inst->mpb_MainMenuNode, 
 					MenuNode ? MenuNode : (struct MUI_NListtree_TreeNode *) MUIV_NListtree_Insert_PrevNode_Head, 
 					TNF_OPEN | TNF_LIST);
 
