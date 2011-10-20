@@ -1080,6 +1080,24 @@ MSGID_OPENERRORGADGETS2
 Retry|Select different Tool|Use Standard Tool|Cancel
 ; Retry|Select different Tool|Use Standard Tool|Cancel
 ;
+;+++translateme+++
+; File transfer dialog window
+MSGID_FILETRANSFER_MINUTE
+Minute
+;Minute
+;
+;+++translateme+++
+; File transfer dialog window
+MSGID_FILETRANSFER_HOURS
+Hours
+;Hours
+;
+;+++translateme+++
+; File transfer dialog window
+MSGID_FILETRANSFER_HOUR
+Hour
+;Hour
+;
 ; ==============================================
 ;+++translateme+++
 MSGID_DROPMENU_DROPMENUTITLE

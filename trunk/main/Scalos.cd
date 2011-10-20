@@ -1016,6 +1016,20 @@ Proceed anyway|Abort
 MSGID_OPENERRORGADGETS2 (//)
 Retry|Select different Tool|Use Standard Tool|Cancel
 ;
+; File transfer dialog window
+MSGID_FILETRANSFER_MINUTE (//15)
+Minute
+;
+;
+; File transfer dialog window
+MSGID_FILETRANSFER_HOURS (//15)
+Hours
+;
+;
+; File transfer dialog window
+MSGID_FILETRANSFER_HOUR (//15)
+Hour
+;
 ; ==============================================
 ;
 MSGID_DROPMENU_DROPMENUTITLE (10000//)
