@@ -1329,6 +1329,21 @@ MSGID_OPENERRORGADGETS2
 Nochmal versuchen|Anderes Werkzeug wählen|Standardwerkzeug|Abbruch
 ; Retry|Select different Tool|Use Standard Tool|Cancel
 ;
+; File transfer dialog window
+MSGID_FILETRANSFER_MINUTE
+Minute
+;Minute
+;
+; File transfer dialog window
+MSGID_FILETRANSFER_HOURS
+Stunden
+;Hours
+;
+; File transfer dialog window
+MSGID_FILETRANSFER_HOUR
+Stunde
+;Hour
+;
 ; ==============================================
 ;
 MSGID_DROPMENU_DROPMENUTITLE

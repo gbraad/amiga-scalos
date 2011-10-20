@@ -1556,8 +1556,23 @@ static ULONG FileTransClass_UpdateWindow(Class *cl, Object *o, Msg msg)
 				{
 				LONG RemainingSeconds = RemainingTime / 1000;
 				LONG RemainingMinutes = RemainingSeconds / 60;
+				LONG RemainingHours   = RemainingMinutes / 60;
 
-				if (RemainingMinutes > 1)
+				if (RemainingHours > 1)
+					{
+					RemainingMinutes -= RemainingHours * 60;
+
+					ScaFormatStringMaxLength(inst->ftci_Line3Buffer, sizeof(inst->ftci_Line3Buffer),
+						"%s %ld %s %ld %s",
+						(ULONG) GetLocString(MSGID_FILETRANSFER_REMAININGTIME),
+						RemainingHours,
+						(ULONG) GetLocString(RemainingHours > 1 ?
+							MSGID_FILETRANSFER_HOURS : MSGID_FILETRANSFER_HOUR),
+						RemainingMinutes,
+						(ULONG) GetLocString(RemainingMinutes > 1 ?
+							MSGID_FILETRANSFER_MINUTES : MSGID_FILETRANSFER_MINUTE));
+					}
+				else if (RemainingMinutes > 1)
 					{
 					ScaFormatStringMaxLength(inst->ftci_Line3Buffer, sizeof(inst->ftci_Line3Buffer),
 						"%s %ld %s", 
