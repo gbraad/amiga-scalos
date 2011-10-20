@@ -138,6 +138,10 @@
 # include <sys/mount.h>
 #endif
 
+#ifdef HAVE_UTIME
+# include <utime.h>
+#endif
+
 /*
 ** Allowed values of unixFile.fsFlags
 */
@@ -204,7 +208,6 @@ struct unixFile {
   sqlite3_io_methods const *pMethod;  /* Always the first entry */
   unixInodeInfo *pInode;              /* Info about locks on this inode */
   int h;                              /* The file descriptor */
-  int dirfd;                          /* File descriptor for the directory */
   unsigned char eFileLock;            /* The type of lock held on this fd */
   unsigned char ctrlFlags;            /* Behavioral bits.  UNIXFILE_* flags */
   int lastErrno;                      /* The unix errno from last I/O error */
@@ -246,8 +249,14 @@ struct unixFile {
 /*
 ** Allowed values for the unixFile.ctrlFlags bitmask:
 */
-#define UNIXFILE_EXCL   0x01     /* Connections from one process only */
-#define UNIXFILE_RDONLY 0x02     /* Connection is read only */
+#define UNIXFILE_EXCL        0x01     /* Connections from one process only */
+#define UNIXFILE_RDONLY      0x02     /* Connection is read only */
+#define UNIXFILE_PERSIST_WAL 0x04     /* Persistent WAL mode */
+#ifndef SQLITE_DISABLE_DIRSYNC
+# define UNIXFILE_DIRSYNC    0x08     /* Directory sync needed */
+#else
+# define UNIXFILE_DIRSYNC    0x00
+#endif
 
 /*
 ** Include code that is common to all os_*.c files
@@ -282,6 +291,21 @@ struct unixFile {
 #endif
 
 /*
+** Different Unix systems declare open() in different ways.  Same use
+** open(const char*,int,mode_t).  Others use open(const char*,int,...).
+** The difference is important when using a pointer to the function.
+**
+** The safest way to deal with the problem is to always use this wrapper
+** which always has the same well-defined interface.
+*/
+static int posixOpen(const char *zFile, int flags, int mode){
+  return open(zFile, flags, mode);
+}
+
+/* Forward reference */
+static int openDirectory(const char*, int*);
+
+/*
 ** Many system calls are accessed through pointer-to-functions so that
 ** they may be overridden at runtime to facilitate fault injection during
 ** testing and sandboxing.  The following array holds the names and pointers
@@ -292,8 +316,8 @@ static struct unix_syscall {
   sqlite3_syscall_ptr pCurrent; /* Current value of the system call */
   sqlite3_syscall_ptr pDefault; /* Default value */
 } aSyscall[] = {
-  { "open",         (sqlite3_syscall_ptr)open,       0  },
-#define osOpen      ((int(*)(const char*,int,...))aSyscall[0].pCurrent)
+  { "open",         (sqlite3_syscall_ptr)posixOpen,  0  },
+#define osOpen      ((int(*)(const char*,int,int))aSyscall[0].pCurrent)
 
   { "close",        (sqlite3_syscall_ptr)close,      0  },
 #define osClose     ((int(*)(int))aSyscall[1].pCurrent)
@@ -330,7 +354,7 @@ static struct unix_syscall {
   { "read",         (sqlite3_syscall_ptr)read,       0  },
 #define osRead      ((ssize_t(*)(int,void*,size_t))aSyscall[8].pCurrent)
 
-#if defined(USE_PREAD) || defined(SQLITE_ENABLE_LOCKING_STYLE)
+#if defined(USE_PREAD) || SQLITE_ENABLE_LOCKING_STYLE
   { "pread",        (sqlite3_syscall_ptr)pread,      0  },
 #else
   { "pread",        (sqlite3_syscall_ptr)0,          0  },
@@ -347,7 +371,7 @@ static struct unix_syscall {
   { "write",        (sqlite3_syscall_ptr)write,      0  },
 #define osWrite     ((ssize_t(*)(int,const void*,size_t))aSyscall[11].pCurrent)
 
-#if defined(USE_PREAD) || defined(SQLITE_ENABLE_LOCKING_STYLE)
+#if defined(USE_PREAD) || SQLITE_ENABLE_LOCKING_STYLE
   { "pwrite",       (sqlite3_syscall_ptr)pwrite,     0  },
 #else
   { "pwrite",       (sqlite3_syscall_ptr)0,          0  },
@@ -376,6 +400,12 @@ static struct unix_syscall {
   { "fallocate",    (sqlite3_syscall_ptr)0,                0 },
 #endif
 #define osFallocate ((int(*)(int,off_t,off_t))aSyscall[15].pCurrent)
+
+  { "unlink",       (sqlite3_syscall_ptr)unlink,           0 },
+#define osUnlink    ((int(*)(const char*))aSyscall[16].pCurrent)
+
+  { "openDirectory",    (sqlite3_syscall_ptr)openDirectory,      0 },
+#define osOpenDirectory ((int(*)(const char*,int*))aSyscall[17].pCurrent)
 
 }; /* End of the overrideable system calls */
 
@@ -661,7 +691,9 @@ static int sqliteErrorFromPosixError(int posixError, int sqliteIOErr) {
   case ENODEV:
   case ENXIO:
   case ENOENT:
+#ifdef ESTALE                     /* ESTALE is not defined on Interix systems */
   case ESTALE:
+#endif
   case ENOSYS:
     /* these should force the client to close the file and reconnect */
     
@@ -933,7 +965,7 @@ struct unixInodeInfo {
   UnixUnusedFd *pUnused;          /* Unused file descriptors to close */
   unixInodeInfo *pNext;           /* List of all unixInodeInfo objects */
   unixInodeInfo *pPrev;           /*    .... doubly linked */
-#if defined(SQLITE_ENABLE_LOCKING_STYLE)
+#if SQLITE_ENABLE_LOCKING_STYLE
   unsigned long long sharedByte;  /* for AFP simulated shared lock */
 #endif
 #if OS_VXWORKS
@@ -1731,10 +1763,6 @@ static int unixUnlock(sqlite3_file *id, int eFileLock){
 */
 static int closeUnixFile(sqlite3_file *id){
   unixFile *pFile = (unixFile*)id;
-  if( pFile->dirfd>=0 ){
-    robust_close(pFile, pFile->dirfd, __LINE__);
-    pFile->dirfd=-1;
-  }
   if( pFile->h>=0 ){
     robust_close(pFile, pFile->h, __LINE__);
     pFile->h = -1;
@@ -1742,7 +1770,7 @@ static int closeUnixFile(sqlite3_file *id){
 #if OS_VXWORKS
   if( pFile->pId ){
     if( pFile->isDelete ){
-      unlink(pFile->pId->zCanonicalName);
+      osUnlink(pFile->pId->zCanonicalName);
     }
     vxworksReleaseFileId(pFile->pId);
     pFile->pId = 0;
@@ -1927,8 +1955,10 @@ static int dotlockLock(sqlite3_file *id, int eFileLock) {
   */
   if( pFile->eFileLock > NO_LOCK ){
     pFile->eFileLock = eFileLock;
-#if !OS_VXWORKS
     /* Always update the timestamp on the old file */
+#ifdef HAVE_UTIME
+    utime(zLockFile, NULL);
+#else
     utimes(zLockFile, NULL);
 #endif
     return SQLITE_OK;
@@ -1989,7 +2019,7 @@ static int dotlockUnlock(sqlite3_file *id, int eFileLock) {
   
   /* To fully unlock the database, delete the lock file */
   assert( eFileLock==NO_LOCK );
-  if( unlink(zLockFile) ){
+  if( osUnlink(zLockFile) ){
     int rc = 0;
     int tErrno = errno;
     if( ENOENT != tErrno ){
@@ -2495,11 +2525,12 @@ static int afpCheckReservedLock(sqlite3_file *id, int *pResOut){
   int rc = SQLITE_OK;
   int reserved = 0;
   unixFile *pFile = (unixFile*)id;
+  afpLockingContext *context;
   
   SimulateIOError( return SQLITE_IOERR_CHECKRESERVEDLOCK; );
   
   assert( pFile );
-  afpLockingContext *context = (afpLockingContext *) pFile->lockingContext;
+  context = (afpLockingContext *) pFile->lockingContext;
   if( context->reserved ){
     *pResOut = 1;
     return SQLITE_OK;
@@ -2639,7 +2670,7 @@ static int afpLock(sqlite3_file *id, int eFileLock){
   ** operating system calls for the specified lock.
   */
   if( eFileLock==SHARED_LOCK ){
-    int lrc1, lrc2, lrc1Errno;
+    int lrc1, lrc2, lrc1Errno = 0;
     long lk, mask;
     
     assert( pInode->nShared==0 );
@@ -3013,17 +3044,19 @@ static int seekAndWrite(unixFile *id, i64 offset, const void *pBuf, int cnt){
 #elif defined(USE_PREAD64)
   do{ got = osPwrite64(id->h, pBuf, cnt, offset);}while( got<0 && errno==EINTR);
 #else
-  newOffset = lseek(id->h, offset, SEEK_SET);
-  SimulateIOError( newOffset-- );
-  if( newOffset!=offset ){
-    if( newOffset == -1 ){
-      ((unixFile*)id)->lastErrno = errno;
-    }else{
-      ((unixFile*)id)->lastErrno = 0;			
+  do{
+    newOffset = lseek(id->h, offset, SEEK_SET);
+    SimulateIOError( newOffset-- );
+    if( newOffset!=offset ){
+      if( newOffset == -1 ){
+        ((unixFile*)id)->lastErrno = errno;
+      }else{
+        ((unixFile*)id)->lastErrno = 0;			
+      }
+      return -1;
     }
-    return -1;
-  }
-  do{ got = osWrite(id->h, pBuf, cnt); }while( got<0 && errno==EINTR );
+    got = osWrite(id->h, pBuf, cnt);
+  }while( got<0 && errno==EINTR );
 #endif
   TIMER_END;
   if( got<0 ){
@@ -3090,7 +3123,7 @@ static int unixWrite(
   SimulateDiskfullError(( wrote=0, amt=1 ));
 
   if( amt>0 ){
-    if( wrote<0 ){
+    if( wrote<0 && pFile->lastErrno!=ENOSPC ){
       /* lastErrno set by seekAndWrite */
       return SQLITE_IOERR_WRITE;
     }else{
@@ -3113,11 +3146,11 @@ int sqlite3_fullsync_count = 0;
 
 /*
 ** We do not trust systems to provide a working fdatasync().  Some do.
-** Others do no.  To be safe, we will stick with the (slower) fsync().
-** If you know that your system does support fdatasync() correctly,
+** Others do no.  To be safe, we will stick with the (slightly slower)
+** fsync(). If you know that your system does support fdatasync() correctly,
 ** then simply compile with -Dfdatasync=fdatasync
 */
-#if !defined(fdatasync) && !defined(__linux__)
+#if !defined(fdatasync)
 # define fdatasync fsync
 #endif
 
@@ -3226,6 +3259,50 @@ static int full_fsync(int fd, int fullSync, int dataOnly){
 }
 
 /*
+** Open a file descriptor to the directory containing file zFilename.
+** If successful, *pFd is set to the opened file descriptor and
+** SQLITE_OK is returned. If an error occurs, either SQLITE_NOMEM
+** or SQLITE_CANTOPEN is returned and *pFd is set to an undefined
+** value.
+**
+** The directory file descriptor is used for only one thing - to
+** fsync() a directory to make sure file creation and deletion events
+** are flushed to disk.  Such fsyncs are not needed on newer
+** journaling filesystems, but are required on older filesystems.
+**
+** This routine can be overridden using the xSetSysCall interface.
+** The ability to override this routine was added in support of the
+** chromium sandbox.  Opening a directory is a security risk (we are
+** told) so making it overrideable allows the chromium sandbox to
+** replace this routine with a harmless no-op.  To make this routine
+** a no-op, replace it with a stub that returns SQLITE_OK but leaves
+** *pFd set to a negative number.
+**
+** If SQLITE_OK is returned, the caller is responsible for closing
+** the file descriptor *pFd using close().
+*/
+static int openDirectory(const char *zFilename, int *pFd){
+  int ii;
+  int fd = -1;
+  char zDirname[MAX_PATHNAME+1];
+
+  sqlite3_snprintf(MAX_PATHNAME, zDirname, "%s", zFilename);
+  for(ii=(int)strlen(zDirname); ii>1 && zDirname[ii]!='/'; ii--);
+  if( ii>0 ){
+    zDirname[ii] = '\0';
+    fd = robust_open(zDirname, O_RDONLY|O_BINARY, 0);
+    if( fd>=0 ){
+#ifdef FD_CLOEXEC
+      osFcntl(fd, F_SETFD, osFcntl(fd, F_GETFD, 0) | FD_CLOEXEC);
+#endif
+      OSTRACE(("OPENDIR %-3d %s\n", fd, zDirname));
+    }
+  }
+  *pFd = fd;
+  return (fd>=0?SQLITE_OK:unixLogError(SQLITE_CANTOPEN_BKPT, "open", zDirname));
+}
+
+/*
 ** Make sure all writes to a particular file are committed to disk.
 **
 ** If dataOnly==0 then both the file itself and its metadata (file
@@ -3265,28 +3342,23 @@ static int unixSync(sqlite3_file *id, int flags){
     pFile->lastErrno = errno;
     return unixLogError(SQLITE_IOERR_FSYNC, "full_fsync", pFile->zPath);
   }
-  if( pFile->dirfd>=0 ){
-    OSTRACE(("DIRSYNC %-3d (have_fullfsync=%d fullsync=%d)\n", pFile->dirfd,
+
+  /* Also fsync the directory containing the file if the DIRSYNC flag
+  ** is set.  This is a one-time occurrance.  Many systems (examples: AIX)
+  ** are unable to fsync a directory, so ignore errors on the fsync.
+  */
+  if( pFile->ctrlFlags & UNIXFILE_DIRSYNC ){
+    int dirfd;
+    OSTRACE(("DIRSYNC %s (have_fullfsync=%d fullsync=%d)\n", pFile->zPath,
             HAVE_FULLFSYNC, isFullsync));
-#ifndef SQLITE_DISABLE_DIRSYNC
-    /* The directory sync is only attempted if full_fsync is
-    ** turned off or unavailable.  If a full_fsync occurred above,
-    ** then the directory sync is superfluous.
-    */
-    if( (!HAVE_FULLFSYNC || !isFullsync) && full_fsync(pFile->dirfd,0,0) ){
-       /*
-       ** We have received multiple reports of fsync() returning
-       ** errors when applied to directories on certain file systems.
-       ** A failed directory sync is not a big deal.  So it seems
-       ** better to ignore the error.  Ticket #1657
-       */
-       /* pFile->lastErrno = errno; */
-       /* return SQLITE_IOERR; */
+    rc = osOpenDirectory(pFile->zPath, &dirfd);
+    if( rc==SQLITE_OK && dirfd>=0 ){
+      full_fsync(dirfd, 0, 0);
+      robust_close(pFile, dirfd, __LINE__);
+    }else if( rc==SQLITE_CANTOPEN ){
+      rc = SQLITE_OK;
     }
-#endif
-    /* Only need to sync once, so close the  directory when we are done */
-    robust_close(pFile, pFile->dirfd, __LINE__);
-    pFile->dirfd = -1;
+    pFile->ctrlFlags &= ~UNIXFILE_DIRSYNC;
   }
   return rc;
 }
@@ -3368,14 +3440,12 @@ static int proxyFileControl(sqlite3_file*,int,void*);
 
 /* 
 ** This function is called to handle the SQLITE_FCNTL_SIZE_HINT 
-** file-control operation.
-**
-** If the user has configured a chunk-size for this file, it could be
-** that the file needs to be extended at this point. Otherwise, the
-** SQLITE_FCNTL_SIZE_HINT operation is a no-op for Unix.
+** file-control operation.  Enlarge the database to nBytes in size
+** (rounded up to the next chunk-size).  If the database is already
+** nBytes or larger, this routine is a no-op.
 */
 static int fcntlSizeHint(unixFile *pFile, i64 nByte){
-  if( pFile->szChunk ){
+  if( pFile->szChunk>0 ){
     i64 nSize;                    /* Required file size */
     struct stat buf;              /* Used to hold return values of fstat() */
    
@@ -3424,21 +3494,37 @@ static int fcntlSizeHint(unixFile *pFile, i64 nByte){
 ** Information and control of an open file handle.
 */
 static int unixFileControl(sqlite3_file *id, int op, void *pArg){
+  unixFile *pFile = (unixFile*)id;
   switch( op ){
     case SQLITE_FCNTL_LOCKSTATE: {
-      *(int*)pArg = ((unixFile*)id)->eFileLock;
+      *(int*)pArg = pFile->eFileLock;
       return SQLITE_OK;
     }
     case SQLITE_LAST_ERRNO: {
-      *(int*)pArg = ((unixFile*)id)->lastErrno;
+      *(int*)pArg = pFile->lastErrno;
       return SQLITE_OK;
     }
     case SQLITE_FCNTL_CHUNK_SIZE: {
-      ((unixFile*)id)->szChunk = *(int *)pArg;
+      pFile->szChunk = *(int *)pArg;
       return SQLITE_OK;
     }
     case SQLITE_FCNTL_SIZE_HINT: {
-      return fcntlSizeHint((unixFile *)id, *(i64 *)pArg);
+      int rc;
+      SimulateIOErrorBenign(1);
+      rc = fcntlSizeHint(pFile, *(i64 *)pArg);
+      SimulateIOErrorBenign(0);
+      return rc;
+    }
+    case SQLITE_FCNTL_PERSIST_WAL: {
+      int bPersist = *(int*)pArg;
+      if( bPersist<0 ){
+        *(int*)pArg = (pFile->ctrlFlags & UNIXFILE_PERSIST_WAL)!=0;
+      }else if( bPersist==0 ){
+        pFile->ctrlFlags &= ~UNIXFILE_PERSIST_WAL;
+      }else{
+        pFile->ctrlFlags |= UNIXFILE_PERSIST_WAL;
+      }
+      return SQLITE_OK;
     }
 #ifndef NDEBUG
     /* The pager calls this method to signal that it has done
@@ -3525,7 +3611,8 @@ struct unixShmNode {
   char *zFilename;           /* Name of the mmapped file */
   int h;                     /* Open file descriptor */
   int szRegion;              /* Size of shared-memory regions */
-  int nRegion;               /* Size of array apRegion */
+  u16 nRegion;               /* Size of array apRegion */
+  u8 isReadonly;             /* True if read-only */
   char **apRegion;           /* Array of mapped shared-memory regions */
   int nRef;                  /* Number of unixShm objects pointing to this */
   unixShm *pFirst;           /* All unixShm objects pointing to this */
@@ -3553,11 +3640,9 @@ struct unixShm {
   unixShmNode *pShmNode;     /* The underlying unixShmNode object */
   unixShm *pNext;            /* Next unixShm with the same unixShmNode */
   u8 hasMutex;               /* True if holding the unixShmNode mutex */
+  u8 id;                     /* Id of this connection within its unixShmNode */
   u16 sharedMask;            /* Mask of shared locks held */
   u16 exclMask;              /* Mask of exclusive locks held */
-#ifdef SQLITE_DEBUG
-  u8 id;                     /* Id of this connection within its unixShmNode */
-#endif
 };
 
 /*
@@ -3653,7 +3738,7 @@ static void unixShmPurge(unixFile *pFd){
   if( p && p->nRef==0 ){
     int i;
     assert( p->pInode==pFd->pInode );
-    if( p->mutex ) sqlite3_mutex_free(p->mutex);
+    sqlite3_mutex_free(p->mutex);
     for(i=0; i<p->nRegion; i++){
       if( p->h>=0 ){
         munmap(p->apRegion[i], p->szRegion);
@@ -3757,6 +3842,7 @@ static int unixOpenSharedMemory(unixFile *pDbFd){
                      (u32)sStat.st_ino, (u32)sStat.st_dev);
 #else
     sqlite3_snprintf(nShmFilename, zShmFilename, "%s-shm", pDbFd->zPath);
+    sqlite3FileSuffix3(pDbFd->zPath, zShmFilename);
 #endif
     pShmNode->h = -1;
     pDbFd->pInode->pShmNode = pShmNode;
@@ -3771,8 +3857,17 @@ static int unixOpenSharedMemory(unixFile *pDbFd){
       pShmNode->h = robust_open(zShmFilename, O_RDWR|O_CREAT,
                                (sStat.st_mode & 0777));
       if( pShmNode->h<0 ){
-        rc = unixLogError(SQLITE_CANTOPEN_BKPT, "open", zShmFilename);
-        goto shm_open_err;
+        const char *zRO;
+        zRO = sqlite3_uri_parameter(pDbFd->zPath, "readonly_shm");
+        if( zRO && sqlite3GetBoolean(zRO) ){
+          pShmNode->h = robust_open(zShmFilename, O_RDONLY,
+                                    (sStat.st_mode & 0777));
+          pShmNode->isReadonly = 1;
+        }
+        if( pShmNode->h<0 ){
+          rc = unixLogError(SQLITE_CANTOPEN_BKPT, "open", zShmFilename);
+          goto shm_open_err;
+        }
       }
   
       /* Check to see if another process is holding the dead-man switch.
@@ -3911,11 +4006,12 @@ static int unixShmMap(
     while(pShmNode->nRegion<=iRegion){
       void *pMem;
       if( pShmNode->h>=0 ){
-        pMem = mmap(0, szRegion, PROT_READ|PROT_WRITE, 
+        pMem = mmap(0, szRegion,
+            pShmNode->isReadonly ? PROT_READ : PROT_READ|PROT_WRITE, 
             MAP_SHARED, pShmNode->h, pShmNode->nRegion*szRegion
         );
         if( pMem==MAP_FAILED ){
-          rc = SQLITE_IOERR;
+          rc = unixLogError(SQLITE_IOERR_SHMMAP, "mmap", pShmNode->zFilename);
           goto shmpage_out;
         }
       }else{
@@ -3937,6 +4033,7 @@ shmpage_out:
   }else{
     *pp = 0;
   }
+  if( pShmNode->isReadonly && rc==SQLITE_OK ) rc = SQLITE_READONLY;
   sqlite3_mutex_leave(pShmNode->mutex);
   return rc;
 }
@@ -4110,7 +4207,7 @@ static int unixShmUnmap(
   assert( pShmNode->nRef>0 );
   pShmNode->nRef--;
   if( pShmNode->nRef==0 ){
-    if( deleteFlag && pShmNode->h>=0 ) unlink(pShmNode->zFilename);
+    if( deleteFlag && pShmNode->h>=0 ) osUnlink(pShmNode->zFilename);
     unixShmPurge(pDbFd);
   }
   unixLeaveMutex();
@@ -4423,7 +4520,7 @@ typedef const sqlite3_io_methods *(*finder_type)(const char*,unixFile*);
 static int fillInUnixFile(
   sqlite3_vfs *pVfs,      /* Pointer to vfs object */
   int h,                  /* Open file descriptor of file being opened */
-  int dirfd,              /* Directory file descriptor */
+  int syncDir,            /* True to sync directory on first sync */
   sqlite3_file *pId,      /* Write to the unixFile structure here */
   const char *zFilename,  /* Name of the file being opened */
   int noLock,             /* Omit locking if true */
@@ -4454,7 +4551,6 @@ static int fillInUnixFile(
 
   OSTRACE(("OPEN    %-3d %s\n", h, zFilename));
   pNew->h = h;
-  pNew->dirfd = dirfd;
   pNew->zPath = zFilename;
   if( memcmp(pVfs->zName,"unix-excl",10)==0 ){
     pNew->ctrlFlags = UNIXFILE_EXCL;
@@ -4463,6 +4559,9 @@ static int fillInUnixFile(
   }
   if( isReadOnly ){
     pNew->ctrlFlags |= UNIXFILE_RDONLY;
+  }
+  if( syncDir ){
+    pNew->ctrlFlags |= UNIXFILE_DIRSYNC;
   }
 
 #if OS_VXWORKS
@@ -4590,50 +4689,18 @@ static int fillInUnixFile(
   if( rc!=SQLITE_OK ){
     if( h>=0 ) robust_close(pNew, h, __LINE__);
     h = -1;
-    unlink(zFilename);
+    osUnlink(zFilename);
     isDelete = 0;
   }
   pNew->isDelete = isDelete;
 #endif
   if( rc!=SQLITE_OK ){
-    if( dirfd>=0 ) robust_close(pNew, dirfd, __LINE__);
     if( h>=0 ) robust_close(pNew, h, __LINE__);
   }else{
     pNew->pMethod = pLockingStyle;
     OpenCounter(+1);
   }
   return rc;
-}
-
-/*
-** Open a file descriptor to the directory containing file zFilename.
-** If successful, *pFd is set to the opened file descriptor and
-** SQLITE_OK is returned. If an error occurs, either SQLITE_NOMEM
-** or SQLITE_CANTOPEN is returned and *pFd is set to an undefined
-** value.
-**
-** If SQLITE_OK is returned, the caller is responsible for closing
-** the file descriptor *pFd using close().
-*/
-static int openDirectory(const char *zFilename, int *pFd){
-  int ii;
-  int fd = -1;
-  char zDirname[MAX_PATHNAME+1];
-
-  sqlite3_snprintf(MAX_PATHNAME, zDirname, "%s", zFilename);
-  for(ii=(int)strlen(zDirname); ii>1 && zDirname[ii]!='/'; ii--);
-  if( ii>0 ){
-    zDirname[ii] = '\0';
-    fd = robust_open(zDirname, O_RDONLY|O_BINARY, 0);
-    if( fd>=0 ){
-#ifdef FD_CLOEXEC
-      osFcntl(fd, F_SETFD, osFcntl(fd, F_GETFD, 0) | FD_CLOEXEC);
-#endif
-      OSTRACE(("OPENDIR %-3d %s\n", fd, zDirname));
-    }
-  }
-  *pFd = fd;
-  return (fd>=0?SQLITE_OK:unixLogError(SQLITE_CANTOPEN_BKPT, "open", zDirname));
 }
 
 /*
@@ -4750,7 +4817,7 @@ static UnixUnusedFd *findReusableFd(const char *zPath, int flags){
   **
   ** Even if a subsequent open() call does succeed, the consequences of
   ** not searching for a resusable file descriptor are not dire.  */
-  if( 0==stat(zPath, &sStat) ){
+  if( 0==osStat(zPath, &sStat) ){
     unixInodeInfo *pInode;
 
     unixEnterMutex();
@@ -4790,6 +4857,11 @@ static UnixUnusedFd *findReusableFd(const char *zPath, int flags){
 ** corresponding database file and sets *pMode to this value. Whenever 
 ** possible, WAL and journal files are created using the same permissions 
 ** as the associated database file.
+**
+** If the SQLITE_ENABLE_8_3_NAMES option is enabled, then the
+** original filename is unavailable.  But 8_3_NAMES is only used for
+** FAT filesystems and permissions do not matter there, so just use
+** the default permissions.
 */
 static int findCreateFileMode(
   const char *zPath,              /* Path of file (possibly) being created */
@@ -4797,6 +4869,7 @@ static int findCreateFileMode(
   mode_t *pMode                   /* OUT: Permissions to open file with */
 ){
   int rc = SQLITE_OK;             /* Return Code */
+  *pMode = SQLITE_DEFAULT_FILE_PERMISSIONS;
   if( flags & (SQLITE_OPEN_WAL|SQLITE_OPEN_MAIN_JOURNAL) ){
     char zDb[MAX_PATHNAME+1];     /* Database file path */
     int nDb;                      /* Number of valid bytes in zDb */
@@ -4808,27 +4881,25 @@ static int findCreateFileMode(
     **
     **   "<path to db>-journal"
     **   "<path to db>-wal"
-    **   "<path to db>-journal-NNNN"
-    **   "<path to db>-wal-NNNN"
+    **   "<path to db>-journalNN"
+    **   "<path to db>-walNN"
     **
-    ** where NNNN is a 4 digit decimal number. The NNNN naming schemes are 
+    ** where NN is a 4 digit decimal number. The NN naming schemes are 
     ** used by the test_multiplex.c module.
     */
     nDb = sqlite3Strlen30(zPath) - 1; 
-    while( nDb>0 && zPath[nDb]!='l' ) nDb--;
-    nDb -= ((flags & SQLITE_OPEN_WAL) ? 3 : 7);
+    while( nDb>0 && zPath[nDb]!='-' ) nDb--;
+    if( nDb==0 ) return SQLITE_OK;
     memcpy(zDb, zPath, nDb);
     zDb[nDb] = '\0';
 
-    if( 0==stat(zDb, &sStat) ){
+    if( 0==osStat(zDb, &sStat) ){
       *pMode = sStat.st_mode & 0777;
     }else{
       rc = SQLITE_IOERR_FSTAT;
     }
   }else if( flags & SQLITE_OPEN_DELETEONCLOSE ){
     *pMode = 0600;
-  }else{
-    *pMode = SQLITE_DEFAULT_FILE_PERMISSIONS;
   }
   return rc;
 }
@@ -4864,7 +4935,6 @@ static int unixOpen(
 ){
   unixFile *p = (unixFile *)pFile;
   int fd = -1;                   /* File descriptor returned by open() */
-  int dirfd = -1;                /* Directory file descriptor */
   int openFlags = 0;             /* Flags to pass to open() */
   int eType = flags&0xFFFFFF00;  /* Type of file to open */
   int noLock;                    /* True to omit locking primitives */
@@ -4878,12 +4948,15 @@ static int unixOpen(
 #if SQLITE_ENABLE_LOCKING_STYLE
   int isAutoProxy  = (flags & SQLITE_OPEN_AUTOPROXY);
 #endif
+#if defined(__APPLE__) || SQLITE_ENABLE_LOCKING_STYLE
+  struct statfs fsInfo;
+#endif
 
   /* If creating a master or main-file journal, this function will open
   ** a file-descriptor on the directory too. The first time unixSync()
   ** is called the directory file descriptor will be fsync()ed and close()d.
   */
-  int isOpenDirectory = (isCreate && (
+  int syncDir = (isCreate && (
         eType==SQLITE_OPEN_MASTER_JOURNAL 
      || eType==SQLITE_OPEN_MAIN_JOURNAL 
      || eType==SQLITE_OPEN_WAL
@@ -4937,7 +5010,7 @@ static int unixOpen(
     p->pUnused = pUnused;
   }else if( !zName ){
     /* If zName is NULL, the upper layer is requesting a temp file. */
-    assert(isDelete && !isOpenDirectory);
+    assert(isDelete && !syncDir);
     rc = unixGetTempname(MAX_PATHNAME+1, zTmpname);
     if( rc!=SQLITE_OK ){
       return rc;
@@ -4993,7 +5066,7 @@ static int unixOpen(
 #if OS_VXWORKS
     zPath = zName;
 #else
-    unlink(zName);
+    osUnlink(zName);
 #endif
   }
 #if SQLITE_ENABLE_LOCKING_STYLE
@@ -5001,19 +5074,6 @@ static int unixOpen(
     p->openFlags = openFlags;
   }
 #endif
-
-  if( isOpenDirectory ){
-    rc = openDirectory(zPath, &dirfd);
-    if( rc!=SQLITE_OK ){
-      /* It is safe to close fd at this point, because it is guaranteed not
-      ** to be open on a database file. If it were open on a database file,
-      ** it would not be safe to close as this would release any locks held
-      ** on the file by this process.  */
-      assert( eType!=SQLITE_OPEN_MAIN_DB );
-      robust_close(p, fd, __LINE__);
-      goto open_finished;
-    }
-  }
 
 #ifdef FD_CLOEXEC
   osFcntl(fd, F_SETFD, osFcntl(fd, F_GETFD, 0) | FD_CLOEXEC);
@@ -5023,10 +5083,8 @@ static int unixOpen(
 
   
 #if defined(__APPLE__) || SQLITE_ENABLE_LOCKING_STYLE
-  struct statfs fsInfo;
   if( fstatfs(fd, &fsInfo) == -1 ){
     ((unixFile*)pFile)->lastErrno = errno;
-    if( dirfd>=0 ) robust_close(p, dirfd, __LINE__);
     robust_close(p, fd, __LINE__);
     return SQLITE_IOERR_ACCESS;
   }
@@ -5048,7 +5106,6 @@ static int unixOpen(
     if( envforce!=NULL ){
       useProxy = atoi(envforce)>0;
     }else{
-      struct statfs fsInfo;
       if( statfs(zPath, &fsInfo) == -1 ){
         /* In theory, the close(fd) call is sub-optimal. If the file opened
         ** with fd is a database file, and there are other connections open
@@ -5058,9 +5115,6 @@ static int unixOpen(
         ** not while other file descriptors opened by the same process on
         ** the same file are working.  */
         p->lastErrno = errno;
-        if( dirfd>=0 ){
-          robust_close(p, dirfd, __LINE__);
-        }
         robust_close(p, fd, __LINE__);
         rc = SQLITE_IOERR_ACCESS;
         goto open_finished;
@@ -5068,7 +5122,7 @@ static int unixOpen(
       useProxy = !(fsInfo.f_flags&MNT_LOCAL);
     }
     if( useProxy ){
-      rc = fillInUnixFile(pVfs, fd, dirfd, pFile, zPath, noLock,
+      rc = fillInUnixFile(pVfs, fd, syncDir, pFile, zPath, noLock,
                           isDelete, isReadonly);
       if( rc==SQLITE_OK ){
         rc = proxyTransformUnixFile((unixFile*)pFile, ":auto:");
@@ -5086,7 +5140,7 @@ static int unixOpen(
   }
 #endif
   
-  rc = fillInUnixFile(pVfs, fd, dirfd, pFile, zPath, noLock,
+  rc = fillInUnixFile(pVfs, fd, syncDir, pFile, zPath, noLock,
                       isDelete, isReadonly);
 open_finished:
   if( rc!=SQLITE_OK ){
@@ -5108,13 +5162,13 @@ static int unixDelete(
   int rc = SQLITE_OK;
   UNUSED_PARAMETER(NotUsed);
   SimulateIOError(return SQLITE_IOERR_DELETE);
-  if( unlink(zPath)==(-1) && errno!=ENOENT ){
+  if( osUnlink(zPath)==(-1) && errno!=ENOENT ){
     return unixLogError(SQLITE_IOERR_DELETE, "unlink", zPath);
   }
 #ifndef SQLITE_DISABLE_DIRSYNC
   if( dirSync ){
     int fd;
-    rc = openDirectory(zPath, &fd);
+    rc = osOpenDirectory(zPath, &fd);
     if( rc==SQLITE_OK ){
 #if OS_VXWORKS
       if( fsync(fd)==-1 )
@@ -5125,6 +5179,8 @@ static int unixDelete(
         rc = unixLogError(SQLITE_IOERR_DIR_FSYNC, "fsync", zPath);
       }
       robust_close(0, fd, __LINE__);
+    }else if( rc==SQLITE_CANTOPEN ){
+      rc = SQLITE_OK;
     }
   }
 #endif
@@ -5167,7 +5223,7 @@ static int unixAccess(
   *pResOut = (osAccess(zPath, amode)==0);
   if( flags==SQLITE_ACCESS_EXISTS && *pResOut ){
     struct stat buf;
-    if( 0==stat(zPath, &buf) && buf.st_size==0 ){
+    if( 0==osStat(zPath, &buf) && buf.st_size==0 ){
       *pResOut = 0;
     }
   }
@@ -5686,7 +5742,6 @@ static int proxyCreateUnixFile(
     int islockfile           /* if non zero missing dirs will be created */
 ) {
   int fd = -1;
-  int dirfd = -1;
   unixFile *pNew;
   int rc = SQLITE_OK;
   int openFlags = O_RDWR | O_CREAT;
@@ -5751,7 +5806,7 @@ static int proxyCreateUnixFile(
   pUnused->flags = openFlags;
   pNew->pUnused = pUnused;
   
-  rc = fillInUnixFile(&dummyVfs, fd, dirfd, (sqlite3_file*)pNew, path, 0, 0, 0);
+  rc = fillInUnixFile(&dummyVfs, fd, 0, (sqlite3_file*)pNew, path, 0, 0, 0);
   if( rc==SQLITE_OK ){
     *ppFile = pNew;
     return SQLITE_OK;
@@ -5791,6 +5846,8 @@ static int proxyGetHostID(unsigned char *pHostID, int *pError){
       return SQLITE_IOERR;
     }
   }
+#else
+  UNUSED_PARAMETER(pError);
 #endif
 #ifdef SQLITE_TEST
   /* simulate multiple hosts by creating unique hostid file paths */
@@ -5865,7 +5922,7 @@ static int proxyBreakConchLock(unixFile *pFile, uuid_t myHostID){
 end_breaklock:
   if( rc ){
     if( fd>=0 ){
-      unlink(tPath);
+      osUnlink(tPath);
       robust_close(pFile, fd, __LINE__);
     }
     fprintf(stderr, "failed to break stale lock on %s, %s\n", cPath, errmsg);
@@ -5883,6 +5940,7 @@ static int proxyConchLock(unixFile *pFile, uuid_t myHostID, int lockType){
   int nTries = 0;
   struct timespec conchModTime;
   
+  memset(&conchModTime, 0, sizeof(conchModTime));
   do {
     rc = conchFile->pMethod->xLock((sqlite3_file*)conchFile, lockType);
     nTries ++;
@@ -6114,11 +6172,12 @@ static int proxyTakeConch(unixFile *pFile){
     end_takeconch:
       OSTRACE(("TRANSPROXY: CLOSE  %d\n", pFile->h));
       if( rc==SQLITE_OK && pFile->openFlags ){
+        int fd;
         if( pFile->h>=0 ){
           robust_close(pFile, pFile->h, __LINE__);
         }
         pFile->h = -1;
-        int fd = robust_open(pCtx->dbPath, pFile->openFlags,
+        fd = robust_open(pCtx->dbPath, pFile->openFlags,
                       SQLITE_DEFAULT_FILE_PERMISSIONS);
         OSTRACE(("TRANSPROXY: OPEN  %d\n", fd));
         if( fd>=0 ){
@@ -6688,7 +6747,7 @@ int sqlite3_os_init(void){
 
   /* Double-check that the aSyscall[] array has been constructed
   ** correctly.  See ticket [bb3a86e890c8e96ab] */
-  assert( ArraySize(aSyscall)==16 );
+  assert( ArraySize(aSyscall)==18 );
 
   /* Register all VFSes defined in the aVfs[] array */
   for(i=0; i<(sizeof(aVfs)/sizeof(sqlite3_vfs)); i++){

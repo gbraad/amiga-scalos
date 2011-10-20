@@ -555,53 +555,53 @@ void sqlite3ExprAssignVarNumber(Parse *pParse, Expr *pExpr){
     /* Wildcard of the form "?".  Assign the next variable number */
     assert( z[0]=='?' );
     pExpr->iColumn = (ynVar)(++pParse->nVar);
-  }else if( z[0]=='?' ){
-    /* Wildcard of the form "?nnn".  Convert "nnn" to an integer and
-    ** use it as the variable number */
-    i64 i;
-    int bOk = 0==sqlite3Atoi64(&z[1], &i, sqlite3Strlen30(&z[1]), SQLITE_UTF8);
-    pExpr->iColumn = (ynVar)i;
-    testcase( i==0 );
-    testcase( i==1 );
-    testcase( i==db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER]-1 );
-    testcase( i==db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER] );
-    if( bOk==0 || i<1 || i>db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER] ){
-      sqlite3ErrorMsg(pParse, "variable number must be between ?1 and ?%d",
-          db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER]);
-    }
-    if( i>pParse->nVar ){
-      pParse->nVar = (int)i;
-    }
   }else{
-    /* Wildcards like ":aaa", "$aaa" or "@aaa".  Reuse the same variable
-    ** number as the prior appearance of the same name, or if the name
-    ** has never appeared before, reuse the same variable number
-    */
-    int i;
-    u32 n;
-    n = sqlite3Strlen30(z);
-    for(i=0; i<pParse->nVarExpr; i++){
-      Expr *pE = pParse->apVarExpr[i];
-      assert( pE!=0 );
-      if( memcmp(pE->u.zToken, z, n)==0 && pE->u.zToken[n]==0 ){
-        pExpr->iColumn = pE->iColumn;
-        break;
+    ynVar x = 0;
+    u32 n = sqlite3Strlen30(z);
+    if( z[0]=='?' ){
+      /* Wildcard of the form "?nnn".  Convert "nnn" to an integer and
+      ** use it as the variable number */
+      i64 i;
+      int bOk = 0==sqlite3Atoi64(&z[1], &i, n-1, SQLITE_UTF8);
+      pExpr->iColumn = x = (ynVar)i;
+      testcase( i==0 );
+      testcase( i==1 );
+      testcase( i==db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER]-1 );
+      testcase( i==db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER] );
+      if( bOk==0 || i<1 || i>db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER] ){
+        sqlite3ErrorMsg(pParse, "variable number must be between ?1 and ?%d",
+            db->aLimit[SQLITE_LIMIT_VARIABLE_NUMBER]);
+        x = 0;
       }
+      if( i>pParse->nVar ){
+        pParse->nVar = (int)i;
+      }
+    }else{
+      /* Wildcards like ":aaa", "$aaa" or "@aaa".  Reuse the same variable
+      ** number as the prior appearance of the same name, or if the name
+      ** has never appeared before, reuse the same variable number
+      */
+      ynVar i;
+      for(i=0; i<pParse->nzVar; i++){
+        if( pParse->azVar[i] && memcmp(pParse->azVar[i],z,n+1)==0 ){
+          pExpr->iColumn = x = (ynVar)i+1;
+          break;
+        }
+      }
+      if( x==0 ) x = pExpr->iColumn = (ynVar)(++pParse->nVar);
     }
-    if( i>=pParse->nVarExpr ){
-      pExpr->iColumn = (ynVar)(++pParse->nVar);
-      if( pParse->nVarExpr>=pParse->nVarExprAlloc-1 ){
-        pParse->nVarExprAlloc += pParse->nVarExprAlloc + 10;
-        pParse->apVarExpr =
-            sqlite3DbReallocOrFree(
-              db,
-              pParse->apVarExpr,
-              pParse->nVarExprAlloc*sizeof(pParse->apVarExpr[0])
-            );
+    if( x>0 ){
+      if( x>pParse->nzVar ){
+        char **a;
+        a = sqlite3DbRealloc(db, pParse->azVar, x*sizeof(a[0]));
+        if( a==0 ) return;  /* Error reported through db->mallocFailed */
+        pParse->azVar = a;
+        memset(&a[pParse->nzVar], 0, (x-pParse->nzVar)*sizeof(a[0]));
+        pParse->nzVar = x;
       }
-      if( !db->mallocFailed ){
-        assert( pParse->apVarExpr!=0 );
-        pParse->apVarExpr[pParse->nVarExpr++] = pExpr;
+      if( z[0]!='?' || pParse->azVar[x-1]==0 ){
+        sqlite3DbFree(db, pParse->azVar[x-1]);
+        pParse->azVar[x-1] = sqlite3DbStrNDup(db, z, n);
       }
     }
   } 
@@ -901,7 +901,9 @@ SrcList *sqlite3SrcListDup(sqlite3 *db, SrcList *p, int flags){
     pNewItem->zAlias = sqlite3DbStrDup(db, pOldItem->zAlias);
     pNewItem->jointype = pOldItem->jointype;
     pNewItem->iCursor = pOldItem->iCursor;
-    pNewItem->isPopulated = pOldItem->isPopulated;
+    pNewItem->addrFillSub = pOldItem->addrFillSub;
+    pNewItem->regReturn = pOldItem->regReturn;
+    pNewItem->isCorrelated = pOldItem->isCorrelated;
     pNewItem->zIndex = sqlite3DbStrDup(db, pOldItem->zIndex);
     pNewItem->notIndexed = pOldItem->notIndexed;
     pNewItem->pIndex = pOldItem->pIndex;
@@ -1460,8 +1462,7 @@ int sqlite3FindInIndex(Parse *pParse, Expr *pX, int *prNotFound){
       int iMem = ++pParse->nMem;
       int iAddr;
 
-      iAddr = sqlite3VdbeAddOp1(v, OP_If, iMem);
-      sqlite3VdbeAddOp2(v, OP_Integer, 1, iMem);
+      iAddr = sqlite3VdbeAddOp1(v, OP_Once, iMem);
 
       sqlite3OpenTable(pParse, iTab, iDb, pTab, OP_OpenRead);
       eType = IN_INDEX_ROWID;
@@ -1492,8 +1493,7 @@ int sqlite3FindInIndex(Parse *pParse, Expr *pX, int *prNotFound){
           char *pKey;
   
           pKey = (char *)sqlite3IndexKeyinfo(pParse, pIdx);
-          iAddr = sqlite3VdbeAddOp1(v, OP_If, iMem);
-          sqlite3VdbeAddOp2(v, OP_Integer, 1, iMem);
+          iAddr = sqlite3VdbeAddOp1(v, OP_Once, iMem);
   
           sqlite3VdbeAddOp4(v, OP_OpenRead, iTab, pIdx->tnum, iDb,
                                pKey,P4_KEYINFO_HANDOFF);
@@ -1574,7 +1574,7 @@ int sqlite3CodeSubselect(
   int rMayHaveNull,       /* Register that records whether NULLs exist in RHS */
   int isRowid             /* If true, LHS of IN operator is a rowid */
 ){
-  int testAddr = 0;                       /* One-time test address */
+  int testAddr = -1;                      /* One-time test address */
   int rReg = 0;                           /* Register storing resulting */
   Vdbe *v = sqlite3GetVdbe(pParse);
   if( NEVER(v==0) ) return 0;
@@ -1592,15 +1592,13 @@ int sqlite3CodeSubselect(
   */
   if( !ExprHasAnyProperty(pExpr, EP_VarSelect) && !pParse->pTriggerTab ){
     int mem = ++pParse->nMem;
-    sqlite3VdbeAddOp1(v, OP_If, mem);
-    testAddr = sqlite3VdbeAddOp2(v, OP_Integer, 1, mem);
-    assert( testAddr>0 || pParse->db->mallocFailed );
+    testAddr = sqlite3VdbeAddOp1(v, OP_Once, mem);
   }
 
 #ifndef SQLITE_OMIT_EXPLAIN
   if( pParse->explain==2 ){
     char *zMsg = sqlite3MPrintf(
-        pParse->db, "EXECUTE %s%s SUBQUERY %d", testAddr?"":"CORRELATED ",
+        pParse->db, "EXECUTE %s%s SUBQUERY %d", testAddr>=0?"":"CORRELATED ",
         pExpr->op==TK_IN?"LIST":"SCALAR", pParse->iNextSelectId
     );
     sqlite3VdbeAddOp4(v, OP_Explain, pParse->iSelectId, 0, 0, zMsg, P4_DYNAMIC);
@@ -1692,9 +1690,9 @@ int sqlite3CodeSubselect(
           ** this code only executes once.  Because for a non-constant
           ** expression we need to rerun this code each time.
           */
-          if( testAddr && !sqlite3ExprIsConstant(pE2) ){
-            sqlite3VdbeChangeToNoop(v, testAddr-1, 2);
-            testAddr = 0;
+          if( testAddr>=0 && !sqlite3ExprIsConstant(pE2) ){
+            sqlite3VdbeChangeToNoop(v, testAddr);
+            testAddr = -1;
           }
 
           /* Evaluate the expression and insert it into the temp table */
@@ -1763,8 +1761,8 @@ int sqlite3CodeSubselect(
     }
   }
 
-  if( testAddr ){
-    sqlite3VdbeJumpHere(v, testAddr-1);
+  if( testAddr>=0 ){
+    sqlite3VdbeJumpHere(v, testAddr);
   }
   sqlite3ExprCachePop(pParse, 1);
 
@@ -2286,7 +2284,7 @@ int sqlite3ExprCodeTarget(Parse *pParse, Expr *pExpr, int target){
         inReg = pCol->iMem;
         break;
       }else if( pAggInfo->useSortingIdx ){
-        sqlite3VdbeAddOp3(v, OP_Column, pAggInfo->sortingIdx,
+        sqlite3VdbeAddOp3(v, OP_Column, pAggInfo->sortingIdxPTab,
                               pCol->iSorterColumn, target);
         break;
       }
@@ -2345,7 +2343,9 @@ int sqlite3ExprCodeTarget(Parse *pParse, Expr *pExpr, int target){
       assert( pExpr->u.zToken[0]!=0 );
       sqlite3VdbeAddOp2(v, OP_Variable, pExpr->iColumn, target);
       if( pExpr->u.zToken[1]!=0 ){
-        sqlite3VdbeChangeP4(v, -1, pExpr->u.zToken, P4_TRANSIENT);
+        assert( pExpr->u.zToken[0]=='?' 
+             || strcmp(pExpr->u.zToken, pParse->azVar[pExpr->iColumn-1])==0 );
+        sqlite3VdbeChangeP4(v, -1, pParse->azVar[pExpr->iColumn-1], P4_STATIC);
       }
       break;
     }
