@@ -541,6 +541,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define MMAP_CLEARS 0
 #define SPIN_LOCKS_AVAILABLE 0
 #define LACKS_SCHED_H	1
+#define	LACKS_SYS_MMAN_H	1
 
 #define MUNMAP_DEFAULT(a, s)  	(FreeVec((a)), 0)
 #define MMAP_DEFAULT(s)       	AllocVec((s), MEMF_PUBLIC)
@@ -552,7 +553,6 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define ACQUIRE_LOCK(sl)      	(ObtainSemaphore(sl), 0)
 #define RELEASE_LOCK(sl)      	(ReleaseSemaphore(sl), 0)
 #define TRY_LOCK(sl)          	(!AttemptSemaphore(sl))
-
 
 #if !defined(__SASC)
 #define assert(x)		if (!(x)) kprintf("%s/%s/%ld: assert(%s) failed.\n", __FILE__, __FUNCTION__, __LINE__, x);
@@ -1549,7 +1549,8 @@ extern void*     sbrk(ptrdiff_t);
 
 /* Declarations for locking */
 #if USE_LOCKS
-#ifndef WIN32
+#if defined(AMIGA)
+#elif !defined(WIN32)
 #if defined (__SVR4) && defined (__sun)  /* solaris */
 #include <thread.h>
 #elif !defined(LACKS_SCHED_H)
@@ -2054,6 +2055,7 @@ static void init_malloc_global_mutex() {
   }
 }
 
+#elif defined(AMIGA)
 #else /* pthreads-based locks */
 #define MLOCK_T               pthread_mutex_t
 #define ACQUIRE_LOCK(lk)      pthread_mutex_lock(lk)
