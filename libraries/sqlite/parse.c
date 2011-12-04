@@ -3706,7 +3706,9 @@ void sqlite3Parser(
 ){
   YYMINORTYPE yyminorunion;
   int yyact;            /* The parser action. */
+#if !defined(YYERRORSYMBOL) && !defined(YYNOERRORRECOVERY)
   int yyendofinput;     /* True if we are at the end of input */
+#endif
 #ifdef YYERRORSYMBOL
   int yyerrorhit = 0;   /* True if yymajor has invoked an error */
 #endif
@@ -3729,7 +3731,9 @@ void sqlite3Parser(
     yypParser->yystack[0].major = 0;
   }
   yyminorunion.yy0 = yyminor;
+#if !defined(YYERRORSYMBOL) && !defined(YYNOERRORRECOVERY)
   yyendofinput = (yymajor==0);
+#endif
   sqlite3ParserARG_STORE;
 
 #ifndef NDEBUG
@@ -3741,7 +3745,6 @@ void sqlite3Parser(
   do{
     yyact = yy_find_shift_action(yypParser,(YYCODETYPE)yymajor);
     if( yyact<YYNSTATE ){
-      assert( !yyendofinput );  /* Impossible to shift the $ token */
       yy_shift(yypParser,yyact,yymajor,&yyminorunion);
       yypParser->yyerrcnt--;
       yymajor = YYNOCODE;
