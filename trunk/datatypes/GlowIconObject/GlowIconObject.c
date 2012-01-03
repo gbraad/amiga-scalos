@@ -2131,7 +2131,7 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 
 
 #if defined(__AROS__)
-			if (!ReadConvertImage(fd, &inst->aio_DoImage1))
+			if (!ReadConvertImage(fd, &inst->aio_DoImage2))
 				break;
 #else
 			if (sizeof(inst->aio_DoImage2) != FRead(fd, &inst->aio_DoImage2, 1, sizeof(inst->aio_DoImage2)))
