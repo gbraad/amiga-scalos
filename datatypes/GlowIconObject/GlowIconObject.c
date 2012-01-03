@@ -153,6 +153,15 @@ static struct NewImage *NewImageFromNormalImage(const struct InstanceData *inst,
 static SAVEDS(LONG) StreamHookDispatcher(struct Hook *hook, struct IFFHandle *iff, const struct IFFStreamCmd *cmd);
 static void SetParentAttributes(Class *cl, Object *o);
 
+#if defined(__AROS__)
+static BOOL ReadConvertStandardIcon(BPTR fd, struct DiskObject *dobj);
+static BOOL WriteConvertStandardIcon(BPTR fd, struct DiskObject *dobj);
+static BOOL ReadConvertDrawerData(BPTR fd, struct DrawerData *drawer);
+static BOOL WriteConvertDrawerData(BPTR fd, struct DrawerData *drawer);
+static BOOL ReadConvertImage(BPTR fd, struct Image *img);
+static BOOL WriteConvertImage(BPTR fd, struct Image *img);
+#endif
+
 //----------------------------------------------------------------------------
 
 static APTR MyAllocVecPooled(size_t Size);
@@ -1964,6 +1973,8 @@ static BOOL WriteIcon(Class *cl, Object *o,
 		PaletteSize = PaletteSize * 3 - 1;
 		fc.fc_MaxPaletteBytes = PaletteSize * sizeof(struct ColorRegister) - 1;
 
+		fc.fc_MaxPaletteBytes = SCA_WORD2BE(fc.fc_MaxPaletteBytes);
+
 		if (sizeof(struct FaceChunk) != WriteChunkBytes(iff,
 			&fc, sizeof(struct FaceChunk)))
 			break;
@@ -2032,8 +2043,13 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 		if (NULL == inst->aio_DiskObject)
 			break;
 
+#if defined(__AROS__)
+		if (!ReadConvertStandardIcon(fd, inst->aio_DiskObject))
+			break;
+#else
 		if (sizeof(struct DiskObject) != FRead(fd, inst->aio_DiskObject, 1, sizeof(struct DiskObject)))
 			break;
+#endif
 
 		d1(kprintf("%s/%s/%ld: DiskObject read Ok, size=%ld.\n", __FILE__, __FUNC__, __LINE__, sizeof(struct DiskObject)));
 
@@ -2062,16 +2078,26 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 			if (NULL == inst->aio_myDrawerData)
 				break;
 
+#if defined(__AROS__)
+			if (!ReadConvertDrawerData(fd, inst->aio_myDrawerData))
+				break;
+#else
 			if (OLDDRAWERDATAFILESIZE != FRead(fd, inst->aio_myDrawerData, 1, OLDDRAWERDATAFILESIZE))
 				break;
+#endif
 
 			d1(kprintf("%s/%s/%ld: OldDrawerData read Ok.\n", __FILE__, __FUNC__, __LINE__));
 			}
 
 		d1(kprintf("%s/%s/%ld: Image 1 expected, size=%ld\n", __FILE__, __FUNC__, __LINE__, sizeof(inst->aio_DoImage1)));
 
+#if defined(__AROS__)
+		if (!ReadConvertImage(fd, &inst->aio_DoImage1))
+			break;
+#else
 		if (sizeof(inst->aio_DoImage1) != FRead(fd, &inst->aio_DoImage1, 1, sizeof(inst->aio_DoImage1)))
 			break;
+#endif
 
 		d1(kprintf("%s/%s/%ld: Image 1 read Ok.\n", __FILE__, __FUNC__, __LINE__));
 
@@ -2103,8 +2129,14 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 			{
 			d1(kprintf("%s/%s/%ld: Image 2 expected, size=%ld\n", __FILE__, __FUNC__, __LINE__, sizeof(inst->aio_DoImage2)));
 
+
+#if defined(__AROS__)
+			if (!ReadConvertImage(fd, &inst->aio_DoImage1))
+				break;
+#else
 			if (sizeof(inst->aio_DoImage2) != FRead(fd, &inst->aio_DoImage2, 1, sizeof(inst->aio_DoImage2)))
 				break;
+#endif
 
 			d1(kprintf("%s/%s/%ld: Image 2 read Ok.\n", __FILE__, __FUNC__, __LINE__));
 
@@ -2142,6 +2174,8 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 			if (sizeof(len) != FRead(fd, &len, 1, sizeof(len)))
 				break;
 
+			len = SCA_BE2LONG(len);
+
 			d1(kprintf("%s/%s/%ld: DefaultTool length read Ok, length=%lu.\n", __FILE__, __FUNC__, __LINE__, len));
 
 			if (len)
@@ -2170,6 +2204,8 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 			if (sizeof(len) != FRead(fd, &len, 1, sizeof(len)))
 				break;
 
+			len = SCA_BE2LONG(len);
+
 			d1(KPrintF("%s/%s/%ld: Size of ToolTypes Array read Ok, %lu.\n", __FILE__, __FUNC__, __LINE__, len));
 			inst->aio_ToolTypesLength = len;
 			if (len)
@@ -2188,6 +2224,8 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 
 					if (sizeof(sLen) != FRead(fd, &sLen, 1, sizeof(sLen)))
 						break;
+
+					sLen = SCA_BE2LONG(sLen);
 
 					inst->aio_DiskObject->do_ToolTypes[n] = MyAllocVecPooled(sLen);
 					if (inst->aio_DiskObject->do_ToolTypes[n])
@@ -2212,6 +2250,8 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 			if (sizeof(len) != FRead(fd, &len, 1, sizeof(len)))
 				break;
 
+			len = SCA_BE2LONG(len);
+
 			inst->aio_ToolWindow = inst->aio_DiskObject->do_ToolWindow = MyAllocVecPooled(len);
 			if (NULL == inst->aio_DiskObject->do_ToolWindow)
 				break;
@@ -2227,10 +2267,12 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 		if (inst->aio_DiskObject->do_DrawerData && FileFormatRevision > 0 && FileFormatRevision <= WB_DISKREVISION)
 			{
 			UBYTE *RemainingDrawerData = ((UBYTE *) inst->aio_myDrawerData) + OLDDRAWERDATAFILESIZE;
-			ULONG ddSize = sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE;
+
+			ULONG ddSize = 6; // size of structs can be different on AROS
+			// sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE
 
 			d1(kprintf("%s/%s/%ld: remaining-drawerdata expected, size=%ld.\n", \
-				__FILE__, __FUNC__, __LINE__, sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE));
+				__FILE__, __FUNC__, __LINE__, 6 /* sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE */));
 
 			if (ddSize != FRead(fd, RemainingDrawerData, 1, ddSize))
 				break;
@@ -2254,13 +2296,19 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 	do	{
 		struct DiskObject wdo;
 		ULONG len;
+		ULONG val_be; // for storing values in BE order
 
 		wdo = *WriteDiskObject;
 
 		wdo.do_Gadget.UserData = (APTR) WB_DISKREVISION;
 
+#if defined(__AROS__)
+		if (!WriteConvertStandardIcon(fd, &wdo))
+			break;
+#else
 		if (sizeof(struct DiskObject) != FWrite(fd, &wdo, 1, sizeof(struct DiskObject)))
 			break;
+#endif
 
 		d1(KPrintF("%s/%s/%ld: DiskObject written Ok, size=%ld.\n", __FILE__, __FUNC__, __LINE__, sizeof(struct DiskObject)));
 
@@ -2268,16 +2316,26 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 			{
 			d1(KPrintF("%s/%s/%ld: write old-drawerdata, size=%ld.\n", __FILE__, __FUNC__, __LINE__, OLDDRAWERDATAFILESIZE));
 
+#if defined(__AROS__)
+			if (!WriteConvertDrawerData(fd, inst->aio_myDrawerData))
+				break;
+#else
 			if (OLDDRAWERDATAFILESIZE != FWrite(fd, inst->aio_myDrawerData, 1, OLDDRAWERDATAFILESIZE))
 				break;
+#endif
 
 			d1(KPrintF("%s/%s/%ld: OldDrawerData written Ok.\n", __FILE__, __FUNC__, __LINE__));
 			}
 
 		d1(KPrintF("%s/%s/%ld: write Image 1, size=%ld\n", __FILE__, __FUNC__, __LINE__, sizeof(inst->aio_DoImage1)));
 
+#if defined(__AROS__)
+		if (!WriteConvertImage(fd, &inst->aio_DoImage1))
+			break;
+#else
 		if (sizeof(inst->aio_DoImage1) != FWrite(fd, &inst->aio_DoImage1, 1, sizeof(inst->aio_DoImage1)))
 			break;
+#endif
 
 		d1(KPrintF("%s/%s/%ld: Image 1 written Ok.\n", __FILE__, __FUNC__, __LINE__));
 
@@ -2294,8 +2352,13 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 			{
 			d1(KPrintF("%s/%s/%ld: write Image 2, size=%ld\n", __FILE__, __FUNC__, __LINE__, sizeof(inst->aio_DoImage2)));
 
+#if defined(__AROS__)
+			if (!WriteConvertImage(fd, &inst->aio_DoImage2))
+				break;
+#else
 			if (sizeof(inst->aio_DoImage2) != FWrite(fd, &inst->aio_DoImage2, 1, sizeof(inst->aio_DoImage2)))
 				break;
+#endif
 
 			d1(KPrintF("%s/%s/%ld: Image 2 written Ok.\n", __FILE__, __FUNC__, __LINE__));
 
@@ -2314,10 +2377,11 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 			len = 1 + strlen(wdo.do_DefaultTool);
 
 			d1(KPrintF("%s/%s/%ld: write DefaultTool Length.\n", __FILE__, __FUNC__, __LINE__));
-			if (sizeof(len) != FWrite(fd, &len, 1, sizeof(len)))
+			val_be = SCA_LONG2BE(len);
+			if (sizeof(val_be) != FWrite(fd, &val_be, 1, sizeof(val_be)))
 				break;
 
-			d1(KPrintF("%s/%s/%ld: DefaultTool length written Ok, length=%lu.\n", __FILE__, __FUNC__, __LINE__, len));
+			d1(KPrintF("%s/%s/%ld: DefaultTool length written Ok, length=%lu.\n", __FILE__, __FUNC__, __LINE__, val_be));
 
 			if (len)
 				{
@@ -2339,7 +2403,8 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 			len = (1 + n) * sizeof(STRPTR);
 
 			d1(KPrintF("%s/%s/%ld: write size of ToolTypes Array = %ld.\n", __FILE__, __FUNC__, __LINE__, len));
-			if (sizeof(len) != FWrite(fd, &len, 1, sizeof(len)))
+			val_be = SCA_LONG2BE(len);
+			if (sizeof(val_be) != FWrite(fd, &val_be, 1, sizeof(val_be)))
 				break;
 
 			d1(KPrintF("%s/%s/%ld: Size of ToolTypes Array written Ok, %lu.\n", __FILE__, __FUNC__, __LINE__, len));
@@ -2347,11 +2412,12 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 
 			for (n=0; n<(len-1) / sizeof(STRPTR); n++)
 				{
-				size_t sLen;
+				ULONG sLen;
 
 				sLen = 1 + strlen(wdo.do_ToolTypes[n]);
 
-				if (sizeof(sLen) != FWrite(fd, &sLen, 1, sizeof(sLen)))
+				val_be = SCA_LONG2BE(sLen);
+				if (sizeof(val_be) != FWrite(fd, &val_be, 1, sizeof(val_be)))
 					break;
 
 				if (sLen != FWrite(fd, wdo.do_ToolTypes[n], 1, sLen))
@@ -2368,7 +2434,8 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 
 			d1(KPrintF("%s/%s/%ld: write ToolWindow.\n", __FILE__, __FUNC__, __LINE__));
 
-			if (sizeof(len) != FWrite(fd, &len, 1, sizeof(len)))
+			val_be = SCA_LONG2BE(len);
+			if (sizeof(val_be) != FWrite(fd, &val_be, 1, sizeof(val_be)))
 				break;
 
 			if (len != FWrite(fd, wdo.do_ToolWindow, 1, len))
@@ -2380,10 +2447,11 @@ static BOOL WriteStandardIcon(struct InstanceData *inst,
 		if (wdo.do_DrawerData)
 			{
 			UBYTE *RemainingDrawerData = ((UBYTE *) wdo.do_DrawerData) + OLDDRAWERDATAFILESIZE;
-			ULONG ddSize = sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE;
+			ULONG ddSize = 6; // size of structs can be different on AROS
+			// sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE;
 
 			d1(KPrintF("%s/%s/%ld: write remaining-drawerdata, size=%ld.\n", \
-				__FILE__, __FUNC__, __LINE__, sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE));
+				__FILE__, __FUNC__, __LINE__, 6 /* sizeof(struct DrawerData) - OLDDRAWERDATAFILESIZE */));
 
 			if (ddSize != FWrite(fd, RemainingDrawerData, 1, ddSize))
 				break;
@@ -2687,6 +2755,8 @@ static LONG WriteNewImage(struct IFFHandle *iff, const struct NewImage *ni)
 	do	{
 		struct ImageChunk SaveImageChunk;
 		ULONG Size;
+		UWORD NumImageBytesOld;
+		UWORD NumPaletteBytesOld;
 
 		SaveImageChunk = ni->nim_ImageChunk;
 
@@ -2757,6 +2827,11 @@ static LONG WriteNewImage(struct IFFHandle *iff, const struct NewImage *ni)
 		if (RETURN_OK != ErrorCode)
 			break;
 
+		NumImageBytesOld = SaveImageChunk.ic_NumImageBytes;
+		NumPaletteBytesOld = SaveImageChunk.ic_NumPaletteBytes;
+		SaveImageChunk.ic_NumImageBytes = SCA_WORD2BE(SaveImageChunk.ic_NumImageBytes);
+		SaveImageChunk.ic_NumPaletteBytes = SCA_WORD2BE(SaveImageChunk.ic_NumPaletteBytes);
+
 		if (sizeof(SaveImageChunk) != WriteChunkBytes(iff,
 			&SaveImageChunk, sizeof(SaveImageChunk)))
 			{
@@ -2764,6 +2839,9 @@ static LONG WriteNewImage(struct IFFHandle *iff, const struct NewImage *ni)
 			ErrorCode = IoErr();
 			break;
 			}
+
+		SaveImageChunk.ic_NumImageBytes = NumImageBytesOld;
+		SaveImageChunk.ic_NumPaletteBytes = NumPaletteBytesOld;
 
 		Size = SaveImageChunk.ic_NumImageBytes + 1;
 
@@ -2820,6 +2898,7 @@ static LONG WriteARGBImage(Class *cl, Object *o, struct IFFHandle *iff,
 		struct ImageChunk SaveImageChunk;
 		struct ARGBHeader *argbh = NULL;
 		ULONG Size;
+		UWORD NumImageBytesOld; // remember size before endian conversion
 		int zError;
 
 		memset(&argbh, 0, sizeof(argbh));
@@ -2886,6 +2965,9 @@ static LONG WriteARGBImage(Class *cl, Object *o, struct IFFHandle *iff,
 		if (RETURN_OK != ErrorCode)
 			break;
 
+		NumImageBytesOld = SaveImageChunk.ic_NumImageBytes;
+		SaveImageChunk.ic_NumImageBytes = SCA_WORD2BE(SaveImageChunk.ic_NumImageBytes);
+
 		if (sizeof(SaveImageChunk) != WriteChunkBytes(iff,
 			&SaveImageChunk, sizeof(SaveImageChunk)))
 			{
@@ -2894,6 +2976,7 @@ static LONG WriteARGBImage(Class *cl, Object *o, struct IFFHandle *iff,
 			break;
 			}
 
+		SaveImageChunk.ic_NumImageBytes = NumImageBytesOld;
 		Size = SaveImageChunk.ic_NumImageBytes + 1;
 
 		if (Size !=  WriteChunkBytes(iff, ImageDataCompressed, Size))
@@ -3722,6 +3805,226 @@ static void SetParentAttributes(Class *cl, Object *o)
 		IDTA_Borderless, inst->aio_Borderless,
 		TAG_END);
 }
+
+//----------------------------------------------------------------------------------------
+
+#if defined(__AROS__)
+static BOOL ReadConvertStandardIcon(BPTR fd, struct DiskObject *dobj)
+{
+	BOOL success = FALSE;
+
+	APTR block = MyAllocVecPooled(78); // sizeof struct DiskObject on 68k
+	if (NULL != block)
+		{
+		if (78 == FRead(fd, block, 1, 78))
+			{
+			dobj->do_Magic = SCA_BE2WORD(*(WORD *)block);
+			dobj->do_Version = SCA_BE2WORD(*(WORD *)(block + 2));
+			// Ignore 4
+			dobj->do_Gadget.LeftEdge = SCA_BE2WORD(*(WORD *)(block + 8));
+			dobj->do_Gadget.TopEdge = SCA_BE2WORD(*(WORD *)(block + 10));
+			dobj->do_Gadget.Width = SCA_BE2WORD(*(WORD *)(block + 12));
+			dobj->do_Gadget.Height = SCA_BE2WORD(*(WORD *)(block + 14));
+			dobj->do_Gadget.Flags = SCA_BE2WORD(*(WORD *)(block + 16));
+			dobj->do_Gadget.Activation = SCA_BE2WORD(*(WORD *)(block + 18));
+			dobj->do_Gadget.GadgetType = SCA_BE2WORD(*(WORD *)(block + 20));
+			dobj->do_Gadget.GadgetRender = (APTR)SCA_BE2LONG(*(LONG *)(block + 22));
+			dobj->do_Gadget.SelectRender = (APTR)SCA_BE2LONG(*(LONG *)(block + 26));
+			dobj->do_Gadget.GadgetText = (APTR)SCA_BE2LONG(*(LONG *)(block + 30));
+			dobj->do_Gadget.MutualExclude = SCA_BE2LONG(*(LONG *)(block + 34));
+			dobj->do_Gadget.SpecialInfo = (APTR)SCA_BE2LONG(*(LONG *)(block + 38));
+			dobj->do_Gadget.GadgetID = SCA_BE2WORD(*(WORD *)(block + 42));
+			dobj->do_Gadget.UserData = (APTR)SCA_BE2LONG(*(LONG *)(block + 44));
+			dobj->do_Type = *(BYTE *)(block + 48);
+			// Ignore 1
+			dobj->do_DefaultTool = (APTR)SCA_BE2LONG(*(LONG *)(block + 50));
+			dobj->do_ToolTypes = (APTR)SCA_BE2LONG(*(LONG *)(block + 54));
+			dobj->do_CurrentX = SCA_BE2LONG(*(LONG *)(block + 58));
+			dobj->do_CurrentY = SCA_BE2LONG(*(LONG *)(block + 62));
+			dobj->do_DrawerData = (APTR)SCA_BE2LONG(*(LONG *)(block + 66));
+			dobj->do_ToolWindow = (APTR)SCA_BE2LONG(*(LONG *)(block + 70));
+			dobj->do_StackSize = SCA_BE2LONG(*(LONG *)(block + 74));
+
+			success = TRUE;
+			}
+		MyFreeVecPooled(block);
+		}
+	return success;
+}
+
+//----------------------------------------------------------------------------------------
+
+static BOOL WriteConvertStandardIcon(BPTR fd, struct DiskObject *dobj)
+{
+	BOOL success = FALSE;
+
+	APTR block = MyAllocVecPooled(78); // sizeof struct DiskObject on 68k
+	if (NULL != block)
+		{
+		memset(block, 0, 78);
+		*(WORD *)block = SCA_WORD2BE(dobj->do_Magic);
+		*(WORD *)(block + 2) = SCA_WORD2BE(dobj->do_Version);
+		// Ignore 4
+		*(WORD *)(block + 8) = SCA_WORD2BE(dobj->do_Gadget.LeftEdge);
+		*(WORD *)(block + 10) = SCA_WORD2BE(dobj->do_Gadget.TopEdge);
+		*(WORD *)(block + 12) = SCA_WORD2BE(dobj->do_Gadget.Width);
+		*(WORD *)(block + 14) = SCA_WORD2BE(dobj->do_Gadget.Height);
+		*(WORD *)(block + 16) = SCA_WORD2BE(dobj->do_Gadget.Flags);
+		*(WORD *)(block + 18) = SCA_WORD2BE(dobj->do_Gadget.Activation);
+		*(WORD *)(block + 20) = SCA_WORD2BE(dobj->do_Gadget.GadgetType);
+		*(LONG *)(block + 22) = SCA_LONG2BE((LONG)dobj->do_Gadget.GadgetRender);
+		*(LONG *)(block + 26) = SCA_LONG2BE((LONG)dobj->do_Gadget.SelectRender);
+		*(LONG *)(block + 30) = SCA_LONG2BE((LONG)dobj->do_Gadget.GadgetText);
+		*(LONG *)(block + 34) = SCA_LONG2BE(dobj->do_Gadget.MutualExclude);
+		*(LONG *)(block + 38) = SCA_LONG2BE((LONG)dobj->do_Gadget.SpecialInfo);
+		*(WORD *)(block + 42) = SCA_WORD2BE(dobj->do_Gadget.GadgetID);
+		*(LONG *)(block + 44) = SCA_LONG2BE((LONG)dobj->do_Gadget.UserData);
+		*(BYTE *)(block + 48) = dobj->do_Type;
+		// Ignore 1
+		*(LONG *)(block + 50) = SCA_LONG2BE((LONG)dobj->do_DefaultTool);
+		*(LONG *)(block + 54) = SCA_LONG2BE((LONG)dobj->do_ToolTypes);
+		*(LONG *)(block + 58) = SCA_LONG2BE(dobj->do_CurrentX);
+		*(LONG *)(block + 62) = SCA_LONG2BE(dobj->do_CurrentY);
+		*(LONG *)(block + 66) = SCA_LONG2BE((LONG)dobj->do_DrawerData);
+		*(LONG *)(block + 70) = SCA_LONG2BE((LONG)dobj->do_ToolWindow);
+		*(LONG *)(block + 74) = SCA_LONG2BE(dobj->do_StackSize);
+
+		if (78 == FWrite(fd, block, 1, 78))
+			success = TRUE;
+
+		MyFreeVecPooled(block);
+		}
+	return success;
+}
+
+//----------------------------------------------------------------------------------------
+
+static BOOL ReadConvertDrawerData(BPTR fd, struct DrawerData *drawer)
+{
+	BOOL success = FALSE;
+
+	APTR block = MyAllocVecPooled(56); // sizeof struct OldDrawerData on 68k
+	if (NULL != block)
+		{
+		if (56 == FRead(fd, block, 1, 56))
+			{
+			drawer->dd_NewWindow.LeftEdge = SCA_BE2WORD(*(WORD *)block);
+			drawer->dd_NewWindow.TopEdge = SCA_BE2WORD(*(WORD *)(block + 2));
+			drawer->dd_NewWindow.Width = SCA_BE2WORD(*(WORD *)(block + 4));
+			drawer->dd_NewWindow.Height = SCA_BE2WORD(*(WORD *)(block + 6));
+			drawer->dd_NewWindow.DetailPen = *(BYTE *)(block + 8);
+			drawer->dd_NewWindow.BlockPen = *(BYTE *)(block + 9);
+			drawer->dd_NewWindow.IDCMPFlags = SCA_BE2LONG(*(LONG *)(block + 10));
+			drawer->dd_NewWindow.Flags = SCA_BE2LONG(*(LONG *)(block + 14));
+			// Ignore 20
+			drawer->dd_NewWindow.MinWidth = SCA_BE2WORD(*(WORD *)(block + 38));
+			drawer->dd_NewWindow.MinHeight = SCA_BE2WORD(*(WORD *)(block + 40));
+			drawer->dd_NewWindow.MaxWidth = SCA_BE2WORD(*(WORD *)(block + 42));
+			drawer->dd_NewWindow.MaxHeight = SCA_BE2WORD(*(WORD *)(block + 44));
+			drawer->dd_NewWindow.Type = SCA_BE2WORD(*(WORD *)(block + 46));
+			drawer->dd_CurrentX = SCA_BE2LONG(*(LONG *)(block + 48));
+			drawer->dd_CurrentY = SCA_BE2LONG(*(LONG *)(block + 52));
+
+			success = TRUE;
+			}
+		MyFreeVecPooled(block);
+		}
+	return success;
+}
+
+//----------------------------------------------------------------------------------------
+
+static BOOL WriteConvertDrawerData(BPTR fd, struct DrawerData *drawer)
+{
+	BOOL success = FALSE;
+
+	APTR block = MyAllocVecPooled(56); // sizeof struct OldDrawerData on 68k
+	if (NULL != block)
+		{
+		memset(block, 0, 56);
+		*(WORD *)block = SCA_WORD2BE(drawer->dd_NewWindow.LeftEdge);
+		*(WORD *)(block + 2) = SCA_WORD2BE(drawer->dd_NewWindow.TopEdge);
+		*(WORD *)(block + 4) = SCA_WORD2BE(drawer->dd_NewWindow.Width);
+		*(WORD *)(block + 6) = SCA_WORD2BE(drawer->dd_NewWindow.Height);
+		*(BYTE *)(block + 8) = drawer->dd_NewWindow.DetailPen;
+		*(BYTE *)(block + 9) = drawer->dd_NewWindow.BlockPen;
+		*(LONG *)(block + 10) = SCA_LONG2BE(drawer->dd_NewWindow.IDCMPFlags);
+		*(LONG *)(block + 14) = SCA_LONG2BE(drawer->dd_NewWindow.Flags);
+		// Ignore 20
+		*(WORD *)(block + 38) = SCA_WORD2BE(drawer->dd_NewWindow.MinWidth);
+		*(WORD *)(block + 40) = SCA_WORD2BE(drawer->dd_NewWindow.MinHeight);
+		*(WORD *)(block + 42) = SCA_WORD2BE(drawer->dd_NewWindow.MaxWidth);
+		*(WORD *)(block + 44) = SCA_WORD2BE(drawer->dd_NewWindow.MaxHeight);
+		*(WORD *)(block + 46) = SCA_WORD2BE(drawer->dd_NewWindow.Type);
+		*(LONG *)(block + 48) = SCA_LONG2BE(drawer->dd_CurrentX);
+		*(LONG *)(block + 52) = SCA_LONG2BE(drawer->dd_CurrentY);
+
+		if (56 == FWrite(fd, block, 1, 56))
+			success = TRUE;
+
+		MyFreeVecPooled(block);
+		}
+	return success;
+}
+
+//----------------------------------------------------------------------------------------
+
+static BOOL ReadConvertImage(BPTR fd, struct Image *img)
+{
+	BOOL success = FALSE;
+
+	APTR block = MyAllocVecPooled(20); // sizeof struct Image on 68k
+	if (NULL != block)
+		{
+		if (20 == FRead(fd, block, 1, 20))
+			{
+			img->LeftEdge = SCA_BE2WORD(*(WORD *)block);
+			img->TopEdge = SCA_BE2WORD(*(WORD *)(block + 2));
+			img->Width = SCA_BE2WORD(*(WORD *)(block + 4));
+			img->Height = SCA_BE2WORD(*(WORD *)(block + 6));
+			img->Depth = SCA_BE2WORD(*(WORD *)(block + 8));
+			img->ImageData = (APTR)SCA_BE2LONG(*(LONG *)(block + 10));
+			img->PlanePick = *(BYTE *)(block + 14);
+			img->PlaneOnOff = *(BYTE *)(block + 15);
+			img->NextImage = (APTR)SCA_BE2LONG(*(LONG *)(block + 16));
+
+			success = TRUE;
+			}
+
+		MyFreeVecPooled(block);
+		}
+
+	return success;
+}
+
+//----------------------------------------------------------------------------------------
+
+static BOOL WriteConvertImage(BPTR fd, struct Image *img)
+{
+	BOOL success = FALSE;
+
+	APTR block = MyAllocVecPooled(20); // sizeof struct Image on 68k
+	if (NULL != block)
+		{
+		memset(block, 0, 20);
+		*(WORD *)block = SCA_WORD2BE(img->LeftEdge);
+		*(WORD *)(block + 2) = SCA_WORD2BE(img->TopEdge) ;
+		*(WORD *)(block + 4) = SCA_WORD2BE(img->Width);
+		*(WORD *)(block + 6) = SCA_WORD2BE(img->Height);
+		*(WORD *)(block + 8) = SCA_WORD2BE(img->Depth);
+		*(LONG *)(block + 10) = SCA_LONG2BE((LONG)img->ImageData);
+		*(BYTE *)(block + 14) = img->PlanePick;
+		*(BYTE *)(block + 15) = img->PlaneOnOff;
+		*(LONG *)(block + 16) = SCA_LONG2BE((LONG)img->NextImage);
+
+		if (20 == FWrite(fd, block, 1, 20))
+			success = TRUE;
+
+		MyFreeVecPooled(block);
+		}
+	return success;
+}
+#endif
 
 //----------------------------------------------------------------------------------------
 

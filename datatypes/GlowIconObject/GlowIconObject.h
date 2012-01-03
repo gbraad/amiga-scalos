@@ -70,6 +70,10 @@ void CloseDatatype(struct GlowIconObjectDtLibBase *dtLib);
 
 /* ------------------------------------------------- */
 
+#if defined(__GNUC__) && !defined(mc68000)
+#pragma pack(2)
+#endif /* __GNUC__ */
+
 struct FaceChunk	/* 6 Bytes */
 	{
 	UBYTE fc_Width;		// Width - 1
@@ -85,7 +89,7 @@ struct FaceChunk	/* 6 Bytes */
 
 /* ------------------------------------------------- */
 
-struct ImageChunk	/* 8 Bytes */
+struct ImageChunk	/* 10 Bytes */
 	{
 	UBYTE ic_TransparentColor;		// index of transparent color
 	UBYTE ic_PaletteSize;			// number of palette entries - 1
@@ -101,6 +105,10 @@ struct ImageChunk	/* 8 Bytes */
 #define	ICF_IsTransparent	(1 << ICB_IsTransparent)
 #define	ICB_HasPalette		1
 #define	ICF_HasPalette		(1 << ICB_HasPalette)
+
+#if defined(__GNUC__) && !defined(mc68000)
+#pragma pack(2)
+#endif /* __GNUC__ */
 
 /* ------------------------------------------------- */
 
