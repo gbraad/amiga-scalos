@@ -2220,7 +2220,7 @@ static BOOL ReadStandardIcon(struct InstanceData *inst, BPTR fd)
 
 				for (n=0; n<(len-1)/sizeof(STRPTR); n++)
 					{
-					size_t sLen;
+					ULONG sLen;
 
 					if (sizeof(sLen) != FRead(fd, &sLen, 1, sizeof(sLen)))
 						break;
@@ -2688,7 +2688,6 @@ static struct NewImage *ReadARGBImage(struct IFFHandle *iff, const struct FaceCh
 			break;
 
 		BytesRead = ReadChunkBytes(iff, UnCompressBuffer, ImageSize);
-		ImageSize = SCA_BE2LONG(ImageSize);
 		d1(KPrintF("%s/%s/%ld: ReadLength=%lu  BytesRead=%lu\n", __FILE__, __FUNC__, __LINE__, ImageSize, BytesRead));
 		if (BytesRead != ImageSize)
 			break;
