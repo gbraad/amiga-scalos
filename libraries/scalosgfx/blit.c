@@ -3450,7 +3450,66 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentHookFunc(struct Hook *hook, Object
 		}
 	else
 		{
-		kprintf(__FILE__ "/%s/%ld: Can't lock bitmap\n", __FUNC__, __LINE__);
+		d1(KPrintF(__FILE__ "/%s/%ld: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FUNC__, __LINE__, dhcr->dhcr_Bounds.MinX, dhcr->dhcr_Bounds.MinY, dhcr->dhcr_Bounds.MaxX, dhcr->dhcr_Bounds.MaxY));
+		d1(KPrintF(__FILE__ "/%s/%ld: dhcr_OffsetX=%ld  dhcr_OffsetY=%ld\n", __FUNC__, __LINE__, dhcr->dhcr_OffsetX, dhcr->dhcr_OffsetY));
+		d1(KPrintF(__FILE__ "/%s/%ld: BytesPerPixel=%ld  BytesPerRow=%ld\n", __FUNC__, __LINE__, BytesPerPixel, BytesPerRow));
+
+		d1(KPrintF(__FILE__ "/%s/%ld: bt_BufferBg=%p\n", __FUNC__, __LINE__, bt->bt_BufferBg));
+		d1(KPrintF(__FILE__ "/%s/%ld: bt_a=%ld      bt_mla=%ld\n", __FUNC__, __LINE__, bt->bt_a, bt->bt_mla));
+		d1(KPrintF(__FILE__ "/%s/%ld: bt_Width=%ld  bt_Height=%ld\n", __FUNC__, __LINE__, bt->bt_Width, bt->bt_Height));
+
+		LONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
+		LONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
+		if (width > 0 && height > 0)
+			{
+			BytesPerPixel = 3;
+			BytesPerRow = BytesPerPixel * width;
+			Addr = AllocVec(BytesPerRow * height, MEMF_ANY);
+			if (Addr && width > 0 && height > 0)
+				{
+				ULONG a = bt->bt_a;
+				ULONG mla = bt->bt_mla;
+				ULONG y;
+				const struct ARGB *Src = bt->bt_BufferBg + dhcr->dhcr_OffsetY * bt->bt_Width;
+				UBYTE *pPixel = ((UBYTE *) Addr) + BytesPerRow * dhcr->dhcr_Bounds.MinY;
+
+				ReadPixelArray(Addr, 0, 0, BytesPerRow, rp,
+					0, 0,
+					width, height,
+					RECTFMT_RGB);
+
+				for (y = 0; y < height; y++)
+					{
+					ULONG x;
+					UBYTE *pLine = pPixel + dhcr->dhcr_Bounds.MinX * BytesPerPixel;
+					const struct ARGB *SrcPtr = Src + dhcr->dhcr_OffsetX;
+					UWORD Red, Green, Blue;
+
+					for (x = 0; x < width; x++)
+						{
+						Red   = pLine[0];
+						Green = pLine[1];
+						Blue  = pLine[2];
+						Red   = (SrcPtr->Red   * mla + Red   * a) >> 8;
+						Green = (SrcPtr->Green * mla + Green * a) >> 8 ;
+						Blue  = (SrcPtr->Blue  * mla + Blue  * a) >> 8;
+						pLine[0] = Red;
+						pLine[1] = Green;
+						pLine[2] = Blue;
+
+						pLine += BytesPerPixel;
+						SrcPtr++;
+						}
+					pPixel += BytesPerRow;
+					Src += bt->bt_Width;
+					}
+				WritePixelArray(Addr, 0, 0, BytesPerRow, rp, 
+					0, 0,
+					width, height,
+					RECTFMT_RGB);
+				FreeVec(Addr);
+				}
+			}
 		}
 
 	return 0;
