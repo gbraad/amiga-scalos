@@ -486,6 +486,10 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				break;
 
 			img = (struct Image *) inst->aio_DiskObject->do_Gadget.GadgetRender;
+
+			if (NULL == img)
+				break;
+
 			SetAttrs(o,
 				GA_Width, img->Width,
 				GA_Height, img->Height,
