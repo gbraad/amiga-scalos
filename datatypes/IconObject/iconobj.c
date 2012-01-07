@@ -2774,10 +2774,14 @@ static struct BitMap *GenMask(Class *cl, Object *o,
 	if (BmHeight < ImgMaskHeight)
 		BmHeight = ImgMaskHeight;
 
+#if !defined(__AROS__)
+	// XXX: is this really AROS specific?
+	// maybe it's better to remove BMF_INTERLEAVED at all
 	if (BmFlags & BMF_INTERLEAVED)
 		{
 		BmWidth *= BmDepth;
 		}
+#endif
 
 	d1(KPrintF("%s/%s/%ld:  o=%08lx  <%s>  BmWidth=%lu  BmHeight=%lu\n", __FILE__, __FUNC__, __LINE__, o, inst->iobj_name, BmWidth, BmHeight));
 	d1(KPrintF("%s/%s/%ld:  MaskPlane=%08lx\n", __FILE__, __FUNC__, __LINE__, MaskPlane));
