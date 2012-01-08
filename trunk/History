@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20111020	jl      - Improvement: File transfer class duration estimate now also displays hours.
+41.8    20111204	jl      - Improvement: Updated sqlite3.library to SQLite3 V3.7.9.
+	20111020	jl      - Improvement: File transfer class duration estimate now also displays hours.
 			        - Improvement: Updated memory allocator to dlmalloc 2.8.5.
 				- Improvement: Updated sqlite3.library to SQLite3 V3.7.8.
 	20110605	jl	- Improvement: Updated sqlite3.library to SQLite3 V3.7.6.3.
@@ -2219,7 +2220,9 @@ Additions/changes:
 
 --------------------Scalos Menu Preferences---------------------------------
 
- 40.20	20100404	jl	- Improvement: added preview of menu icon images to listview.
+ 40.20  20120108	jl	- Bugfix: "Reset to default" didn't generate submenus in
+				  window menu, e.g. "window/show" or "window/View by".
+	20100404	jl	- Improvement: added preview of menu icon images to listview.
  40.19	20100131	jl	- Improvement: redesigned layout for better overview.
 				- Improvement: added Workbench popup menu to
 				  default menu preferences.
