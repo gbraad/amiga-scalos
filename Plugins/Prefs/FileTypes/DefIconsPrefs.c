@@ -1828,12 +1828,15 @@ SAVEDS(void) INTERRUPT CreateNewFileTypesIconHookFunc(struct Hook *hook, APTR ob
 			DefIconFullName(inst, IconPath, sizeof(IconPath),
 				fte->fte_TypeNode.tn_Name);
 
+			struct TagItem ti[] = {
+				{ICONA_NoPosition, TRUE},
+				{TAG_END}};
+
 			DoMethod(inst->fpb_IconObject,
 				IDTM_Write,
 				IconPath,
 				NULL,
-				ICONA_NoPosition, TRUE,
-				TAG_END);
+				ti);
 
 			// Toggle selection of current entry to enforce re-evaluation of icon via HOOKNDX_SelectFileTypesEntry
 			set(inst->fpb_Objects[OBJNDX_NListtree_FileTypes],
