@@ -1311,7 +1311,7 @@ BOOL ReadScalosPrefs(void)
 			NewPrefs->pref_CleanupSpace.Left = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.Left);
 			NewPrefs->pref_CleanupSpace.Top = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.Top);
 			NewPrefs->pref_CleanupSpace.XSkip = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.XSkip);
-			NewPrefs->pref_CleanupSpace.XSkip = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.YSkip);
+			NewPrefs->pref_CleanupSpace.YSkip = SCA_BE2WORD(NewPrefs->pref_CleanupSpace.YSkip);
 			}
 
 		GetPreferences(NewPrefs->pref_Handle, ID_MAIN, SCP_SplashWindowEnable, &NewPrefs->pref_EnableSplash, sizeof(NewPrefs->pref_EnableSplash));
