@@ -2842,7 +2842,15 @@
 
 #if !defined(__AROS__) && !defined(__MORPHOS__)
 // IPTR is an integer type which is large enough to store a pointer
+#undef IPTR
+#undef SIPTR
+
+#if defined(__SASC)
+typedef LONG IPTR;
+#else //defined(__SASC)
 typedef ULONG IPTR;
+#endif //defined(__SASC)
+
 typedef LONG  SIPTR;
 #endif
 

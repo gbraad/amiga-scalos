@@ -1824,13 +1824,12 @@ SAVEDS(void) INTERRUPT CreateNewFileTypesIconHookFunc(struct Hook *hook, APTR ob
 			{
 			struct FileTypesEntry *fte = (struct FileTypesEntry *) ln->tn_User;
 			char IconPath[MAX_FILENAME];
-
-			DefIconFullName(inst, IconPath, sizeof(IconPath),
-				fte->fte_TypeNode.tn_Name);
-
 			struct TagItem ti[] = {
 				{ICONA_NoPosition, TRUE},
 				{TAG_END}};
+
+			DefIconFullName(inst, IconPath, sizeof(IconPath),
+				fte->fte_TypeNode.tn_Name);
 
 			DoMethod(inst->fpb_IconObject,
 				IDTM_Write,

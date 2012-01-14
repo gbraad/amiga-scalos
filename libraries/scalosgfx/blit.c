@@ -3450,6 +3450,9 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentHookFunc(struct Hook *hook, Object
 		}
 	else
 		{
+		LONG width;
+		LONG height;
+
 		d1(KPrintF(__FILE__ "/%s/%ld: MinX=%ld  MinY=%ld  MaxX=%ld  MaxY=%ld\n", __FUNC__, __LINE__, dhcr->dhcr_Bounds.MinX, dhcr->dhcr_Bounds.MinY, dhcr->dhcr_Bounds.MaxX, dhcr->dhcr_Bounds.MaxY));
 		d1(KPrintF(__FILE__ "/%s/%ld: dhcr_OffsetX=%ld  dhcr_OffsetY=%ld\n", __FUNC__, __LINE__, dhcr->dhcr_OffsetX, dhcr->dhcr_OffsetY));
 		d1(KPrintF(__FILE__ "/%s/%ld: BytesPerPixel=%ld  BytesPerRow=%ld\n", __FUNC__, __LINE__, BytesPerPixel, BytesPerRow));
@@ -3458,8 +3461,8 @@ static SAVEDS(ULONG) INTERRUPT BlitTransparentHookFunc(struct Hook *hook, Object
 		d1(KPrintF(__FILE__ "/%s/%ld: bt_a=%ld      bt_mla=%ld\n", __FUNC__, __LINE__, bt->bt_a, bt->bt_mla));
 		d1(KPrintF(__FILE__ "/%s/%ld: bt_Width=%ld  bt_Height=%ld\n", __FUNC__, __LINE__, bt->bt_Width, bt->bt_Height));
 
-		LONG width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
-		LONG height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
+		width = dhcr->dhcr_Bounds.MaxX - dhcr->dhcr_Bounds.MinX + 1;
+		height = dhcr->dhcr_Bounds.MaxY - dhcr->dhcr_Bounds.MinY + 1;
 		if (width > 0 && height > 0)
 			{
 			BytesPerPixel = 3;
