@@ -108,7 +108,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!aroscbase || !InitDatatype(dtLib))
 		{
-		AmigaIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+		AmigaIconObject_3_Expungelib(&dtLib->nib_ClassLibrary.cl_Lib, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
 		}
 
@@ -156,7 +156,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (dtLib->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return AmigaIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+			return AmigaIconObject_3_Expungelib(&dtLib->nib_ClassLibrary.cl_Lib, &dtLib->nib_ClassLibrary.cl_Lib);
 			}
 		}
 
