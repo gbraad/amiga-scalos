@@ -99,7 +99,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!InitDatatype(dtLib))
 		{
-		IconObj_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+		IconObj_3_Expungelib(&dtLib->nib_ClassLibrary.cl_Lib, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
 		}
 
@@ -147,7 +147,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (dtLib->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return IconObj_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+			return IconObj_3_Expungelib(&dtLib->nib_ClassLibrary.cl_Lib, &dtLib->nib_ClassLibrary.cl_Lib);
 			}
 		}
 

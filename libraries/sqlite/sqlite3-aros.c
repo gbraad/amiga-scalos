@@ -219,9 +219,9 @@ struct Resident ALIGNED romtag =
 
 	aroscbase = OpenLibrary("arosc.library", 0);
 
-	if (!aroscbase && !SQLite3Init(SQLite3LibBase))
+	if (!aroscbase || !SQLite3Init(SQLite3LibBase))
 		{
-		SQLite3_3_Expungelib(NULL, &SQLite3LibBase->sql3_LibNode);
+		SQLite3_3_Expungelib(&SQLite3LibBase->sql3_LibNode, &SQLite3LibBase->sql3_LibNode);
 		SQLite3LibBase = NULL;
 		}
 
@@ -274,7 +274,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (SQLite3LibBase->sql3_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			SQLite3_3_Expungelib(NULL, &SQLite3LibBase->sql3_LibNode);
+			SQLite3_3_Expungelib(&SQLite3LibBase->sql3_LibNode, &SQLite3LibBase->sql3_LibNode);
 			}
 		}
 

@@ -137,7 +137,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!ScalosGfxInit(ScalosGfxLibBase) || !aroscbase)
 		{
-		ScalosGfx_3_Expungelib(NULL, &ScalosGfxLibBase->sgb_LibNode);
+		ScalosGfx_3_Expungelib(&ScalosGfxLibBase->sgb_LibNode, &ScalosGfxLibBase->sgb_LibNode);
 		ScalosGfxLibBase = NULL;
 		}
 
@@ -190,7 +190,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (ScalosGfxLibBase->sgb_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			return ScalosGfx_3_Expungelib(NULL, &ScalosGfxLibBase->sgb_LibNode);
+			return ScalosGfx_3_Expungelib(&ScalosGfxLibBase->sgb_LibNode, &ScalosGfxLibBase->sgb_LibNode);
 			}
 		}
 

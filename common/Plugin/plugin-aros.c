@@ -202,7 +202,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (PluginBase->pl_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			return Plugin_3_Expungelib(NULL, &PluginBase->pl_LibNode);
+			return Plugin_3_Expungelib(&PluginBase->pl_LibNode, &PluginBase->pl_LibNode);
 			}
 		}
 

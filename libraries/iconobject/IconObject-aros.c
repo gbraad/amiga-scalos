@@ -108,7 +108,7 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	if (!IconObjectInit(IconObjLibBase))
 		{
-		IconObject_3_Expungelib(NULL, &IconObjLibBase->iob_LibNode);
+		IconObject_3_Expungelib(&IconObjLibBase->iob_LibNode, &IconObjLibBase->iob_LibNode);
 		IconObjLibBase = NULL;
 		}
 
@@ -155,7 +155,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (IconObjLibBase->iob_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			return IconObject_3_Expungelib(NULL, &IconObjLibBase->iob_LibNode);
+			return IconObject_3_Expungelib(&IconObjLibBase->iob_LibNode, &IconObjLibBase->iob_LibNode);
 			}
 		}
 

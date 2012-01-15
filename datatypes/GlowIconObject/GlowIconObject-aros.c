@@ -108,9 +108,9 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	aroscbase = OpenLibrary("arosc.library", 0);
 
-	if (!aroscbase && !InitDatatype(dtLib))
+	if (!aroscbase || !InitDatatype(dtLib))
 		{
-		GlowIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+		GlowIconObject_3_Expungelib(&dtLib->nib_ClassLibrary.cl_Lib, &dtLib->nib_ClassLibrary.cl_Lib);
 		dtLib = NULL;
 		}
 
@@ -158,7 +158,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (dtLib->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return GlowIconObject_3_Expungelib(NULL, &dtLib->nib_ClassLibrary.cl_Lib);
+			return GlowIconObject_3_Expungelib(&dtLib->nib_ClassLibrary.cl_Lib, &dtLib->nib_ClassLibrary.cl_Lib);
 			}
 		}
 

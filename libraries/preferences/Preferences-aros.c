@@ -118,7 +118,7 @@ struct Resident ALIGNED romtag =
 
 	if (!PreferencesInit(PrefsLibBase))
 		{
-		Preferences_3_Expungelib(NULL, &PrefsLibBase->prb_LibNode);
+		Preferences_3_Expungelib(&PrefsLibBase->prb_LibNode, &PrefsLibBase->prb_LibNode);
 		PrefsLibBase = NULL;
 		}
 
@@ -171,7 +171,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (PrefsLibBase->prb_LibNode.lib_Flags & LIBF_DELEXP)
 			{
-			return Preferences_3_Expungelib(NULL, &PrefsLibBase->prb_LibNode);
+			return Preferences_3_Expungelib(&PrefsLibBase->prb_LibNode, &PrefsLibBase->prb_LibNode);
 			}
 		}
 

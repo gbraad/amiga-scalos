@@ -113,9 +113,9 @@ static AROS_UFH3(struct Library *, Initlib,
 
 	d1(kprintf("%s/%s/%ld: libbase=%08lx\n", __FILE__, __FUNC__, __LINE__, libbase));
 
-	if (!aroscbase && !InitDatatype(PngDtLibBase))
+	if (!aroscbase || !InitDatatype(PngDtLibBase))
 		{
-		PNGIconObject_3_Expungelib(NULL, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
+		PNGIconObject_3_Expungelib(&PngDtLibBase->nib_ClassLibrary.cl_Lib, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
 		PngDtLibBase = NULL;
 		}
 
@@ -167,7 +167,7 @@ static AROS_LH0(struct SegList *, Closelib,
 		{
 		if (PngDtLibBase->nib_ClassLibrary.cl_Lib.lib_Flags & LIBF_DELEXP)
 			{
-			return PNGIconObject_3_Expungelib(NULL, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
+			return PNGIconObject_3_Expungelib(&PngDtLibBase->nib_ClassLibrary.cl_Lib, &PngDtLibBase->nib_ClassLibrary.cl_Lib);
 			}
 		}
 
