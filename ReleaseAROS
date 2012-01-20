@@ -25,7 +25,7 @@ mkdir -p $targetdir/S
 
 echo "Copying files..."
 
-cp gpl-3.0.txt GPLsrc History lgpl-3.0.txt readme.txt                               $targetdir
+cp gpl-3.0.txt GPLsrc History lgpl-3.0.txt readme.txt LEGAL                         $targetdir
 
 cp main/.bin_i386-aros/Scalos                                                       $targetdir
 cp main/Scalos.info                                                                 $targetdir
