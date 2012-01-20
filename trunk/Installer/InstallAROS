@@ -24,7 +24,7 @@ EndIf
 
 
 MakeDir "$target" ALL
-Copy Scalos Scalos.info History readme.txt "$target"
+Copy Scalos Scalos.info History readme.txt LEGAL "$target"
 Copy IconDatatypes "$target/IconDatatypes" ALL
 Copy Libs "$target/Libs" ALL
 Copy Modules "$target/Modules" ALL
@@ -37,6 +37,10 @@ Copy Tools "$target/Tools" ALL
 
 ; Copy icons
 Copy Envarc:SYS/def_Drawer.info "$target//Scalos.info"
+
+Copy Envarc:SYS/def_Drawer.info "$target/Modules.info"
+Copy Envarc:SYS/def_Drawer.info "$target/Prefs.info"
+Copy Envarc:SYS/def_Drawer.info "$target/Tools.info"
 
 Copy Envarc:SYS/def_Tool.info "$target/Modules/Delete.module.info"
 Copy Envarc:SYS/def_Tool.info "$target/Modules/Empty_Trashcan.module.info"
@@ -93,5 +97,5 @@ EndIf
 Echo "$target" >ENVARC:SYS/Packages/Scalos
 
 
-RequestChoice "Information" "Done. After a resest you should be able to start Scalos" "OK" >NIL:
+RequestChoice "Information" "Done. After a reset you should be able to start Scalos." "OK" >NIL:
 
