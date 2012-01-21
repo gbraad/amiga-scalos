@@ -437,9 +437,15 @@ static void RemoveWindowPath(CONST_STRPTR Path)
 
 static void SetIconifyState_WindowTask(const struct ScaWindowTask *wt, BOOL Iconified)
 {
+	char Path[512];
 	struct OpenNode *OldNode;
 
 	ObtainSemaphoreShared(&PersistSema);
+
+	if (!NameFromLock(wt->mt_WindowStruct->ws_Lock, Path, sizeof(Path)))
+		{
+		*Path = '\0';
+		}
 
 	d(kprintf(__FUNC__ "/%ld: Path = <%s>\n", __LINE__, Path));
 
@@ -452,6 +458,15 @@ static void SetIconifyState_WindowTask(const struct ScaWindowTask *wt, BOOL Icon
 			{
 			OldNode->on_Iconified = Iconified;
 			break;
+			}
+		if (NULL == OldNode->on_WindowTask)
+			{
+			if (0 == Stricmp(OldNode->on_Path, Path))
+				{
+				OldNode->on_WindowTask = wt;
+				OldNode->on_Iconified = Iconified;
+				break;
+				}
 			}
 		}
 
