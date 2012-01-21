@@ -387,12 +387,25 @@ static struct OpenNode *AddWindowPath(const struct ScaWindowStruct *ws, CONST_ST
 			NewNode->on_BrowserMode = FALSE;
 			NewNode->on_Iconified = FALSE;
 			NewNode->on_Path = strdup(Path);
-			NewNode->on_WindowTask = ws->ws_WindowTask;
 
-			NewNode->on_Left = ws->ws_Left;
-			NewNode->on_Top = ws->ws_Top;
-			NewNode->on_Width = ws->ws_Width;
-			NewNode->on_Height = ws->ws_Height;
+			if (ws)
+				{
+				NewNode->on_WindowTask = ws->ws_WindowTask;
+
+				NewNode->on_Left = ws->ws_Left;
+				NewNode->on_Top = ws->ws_Top;
+				NewNode->on_Width = ws->ws_Width;
+				NewNode->on_Height = ws->ws_Height;
+				}
+			else
+				{
+				NewNode->on_WindowTask = NULL;
+
+				NewNode->on_Left = 0;
+				NewNode->on_Top = 0;
+				NewNode->on_Width = 0;
+				NewNode->on_Height = 0;
+				}
 
 			DeleteNamedNode(Path);
 			AddTail(&OpenList, &NewNode->on_Node);
