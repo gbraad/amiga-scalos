@@ -33,7 +33,7 @@ struct OpenNode
 	struct Node on_Node;
 	BOOL on_Iconified;
 	BOOL on_BrowserMode;
-	struct ScaWindowTask *on_WindowTask;
+	const struct ScaWindowTask *on_WindowTask;
 	char *on_Path;
 	WORD on_Left;		// Window LeftEdge
 	WORD on_Top;		// Window TopEdge
