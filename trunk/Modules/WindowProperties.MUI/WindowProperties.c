@@ -2211,7 +2211,7 @@ static BOOL ReadScalosPrefs(void)
 
 	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_InactiveWindowTransparency, &prefsInactiveWindowTransparency, sizeof(&prefsInactiveWindowTransparency)))
 		{
-		prefsActiveWindowTransparency = SCA_BE2WORD(prefsInactiveWindowTransparency);
+		prefsInactiveWindowTransparency	= SCA_BE2WORD(prefsInactiveWindowTransparency);
 		}
 
 	if (GetPreferences(MainPrefsHandle, ID_MAIN, SCP_IconSizeConstraints, &prefIconSizeConstraints, sizeof(prefIconSizeConstraints)))
