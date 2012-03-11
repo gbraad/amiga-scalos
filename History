@@ -8,7 +8,8 @@ NEXT VERSION TO RELEASE 41.8
 
 Additions/changes:
 
-41.8    20120121	jl	- Bugfix: resolved NULL pointer dereferencing w/ crash in persist plugin (only occurs with iconified windows).
+41.8    20120311        jl	- Improvement: Upgraded libpng to 1.5.9.
+	20120121	jl	- Bugfix: resolved NULL pointer dereferencing w/ crash in persist plugin (only occurs with iconified windows).
 	20111204	jl      - Improvement: Updated sqlite3.library to SQLite3 V3.7.9.
 	20111020	jl      - Improvement: File transfer class duration estimate now also displays hours.
 			        - Improvement: Updated memory allocator to dlmalloc 2.8.5.
