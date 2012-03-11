@@ -40,7 +40,10 @@ OBJDIR		= .sasobj
 #####################################################################
 
 CFLAGS		= optimize nostackcheck nochkabort strcons debug=s \
-		  strmer nover streq idir=sc:include/ idir=include: idir=//include
+		  IGNORE=73 strmer nover streq \
+		  idir=sc:include/ \
+		  idir=include: \
+		  idir=//include
 AFLAGS		= QUIET m=68020 linedebug opt=NRQB i=include:
 LNFLAGS		= quiet batch noicons stripdebug
 LNDBFLAGS 	= quiet batch noicons addsym

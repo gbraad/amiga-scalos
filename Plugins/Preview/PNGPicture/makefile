@@ -19,7 +19,8 @@ PRECOMP 	= Include:all.gst
 
 CC      	= sc
 CFLAGS  	= nostackcheck nochkabort strmer dbg=l nover streq data=far \
-		  idlen=64 idir=///include \
+		  IGNORE=73 idlen=64 \
+		  idir=///include \
 		  idir=///common/Plugin
 
 #############################################################

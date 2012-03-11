@@ -30,7 +30,7 @@ CFLAGS  	= nostkchk nochkabort strcons strmer opt dbg=f nover streq data=far \
                   idlen=64 \
                   define SVN_VERSION=$(SVNVERSION) \
                   define SCALOSLOCALE=$(SCALOS_LOCALE) \
-		  ERROR=87,88 IGNORE=306,316 
+		  ERROR=87,88 IGNORE=73,306,316 
 #define DEBUG_SEMAPHORES=1
 SPLAT		= sc:c/splat
 AS      	= phxass
