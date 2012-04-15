@@ -29,6 +29,12 @@
     </tr>
 
     <tr bgcolor="#88ff88">
+      <td><div class="cell"><div align="center">After lots of work, a first native <b>AROS</b> version of Scalos is available <a href="http://sourceforge.net/projects/scalos/files/latest/download?source=files" target="_blank">here</td>
+    </tr>
+    <tr bgcolor="#cccccc">
+      <td><div class="cell"><div align="center">Scalos goes <b>open source</b>!<br>Scalos source code has been released as open source under BSD license. We have created a Scalos project on <a href="http://sourceforge.net/projects/scalos" target="_blank">Sourceforge</a></div></div></td>
+    </tr>
+    <tr bgcolor="#88ff88">
       <td><div class="cell"><div align="center">After lots of improvements and bugfixes, Scalos V41.7 finally has been released!!<br>Major new features are <b>Undo/Redo</b> for most desktop and icon actions, and an <b>online updater</b> module.<br>Download archives for AmigaOS 3.x/68K, AmigaOS 4.x/PPC, and MorphOS are available on the <a href="downloads.php#beta"> Downloads page.</a></div></div></td>
     </tr>
     <tr bgcolor="#cccccc">

@@ -1,3 +1,9 @@
+15-04-2012
+status
+Scalos goes open source!<br>Scalos source code has been released as open source under BSD license. The Scalos project can not be found on Sourceforge at <a href="http://sourceforge.net/projects/scalos" target="_blank">http://sourceforge.net/projects/scalos/files/</a>
+15-04-2012
+status
+Scalos goes AROS!<br>Lots of work has been invested to port Scalos to AROS, and a first native buil is avalable <a href="http://sourceforge.net/projects/scalos/files/latest/download?source=files" target="_blank">here</a>
 05-05-2010
 bugfixes
 The hotfix 40.8.1 of Windowproperties.module has been released.<br>It resolves enforcer hits and crashes when saving changes.
