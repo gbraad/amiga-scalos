@@ -1409,14 +1409,12 @@ MSGID_COM_REDO
 Suivant
 ;Redo
 ;
-;+++translateme+++
 MSGID_FIND_HITCOUNT_FMT
-%ld Hits
+%ld Trouvés
 ;%ld Hits
 ;
-;+++translateme+++
 MSGID_COM_OPENBROWSERWINDOW
-Open in Browser Window
+Ouvrir dans une fenêtre en mode liste
 ;Open in Browser Window
 ;
 ;-----------------------------------------------------------
