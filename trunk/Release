@@ -13,17 +13,28 @@ address command
 os = GetOsName()
 
 /* system-specific language catalog names */
-if os = "AmigaOS4" then do
+select
+when os = "AmigaOS4" then do
 	/* Amiga OS4 */
 	LangGerman = "german";
 	LangFrench = "french";
+	BinDir = ".bin_os4/";
 	end
-else do
+when os = "AmigaOS3" then do
+	/* Amiga OS3 */
 	LangGerman = "Deutsch";
 	LangFrench = "français";
+	BinDir = ".bin_os3/";
+	end
+otherwise do
+	/* MorphOS */
+	LangGerman = "Deutsch";
+	LangFrench = "français";
+	BinDir = ".bin_mos/";
 	end;
-endif
+end
 
+say BinDir
 
 say "Deleting old directory tree..."
 "delete RAM:ScalosBeta all QUIET"
@@ -66,59 +77,59 @@ say "Copying History and Readme.txt..."
 
 say "Copying Scalos main executable..."
 
-"copy main/Scalos main/Scalos RAM:ScalosBeta/ clone quiet"
-"copy main/Scalos main/Scalos.info RAM:ScalosBeta/ clone quiet"
+"copy main/" || BinDir || "Scalos RAM:ScalosBeta/ clone quiet"
+"copy main/Scalos.info RAM:ScalosBeta/ clone quiet"
 
 say "Copying Preferences..."
 
-'copy Prefs/Menu/Scalos_Menu "RAM:ScalosBeta/Prefs/Scalos Menu" clone quiet'
+'copy Prefs/Menu/' || BinDir || 'Scalos_Menu "RAM:ScalosBeta/Prefs/Scalos Menu" clone quiet'
 'copy Prefs/Menu/Scalos_Menu.info "RAM:ScalosBeta/Prefs/Scalos Menu.info" clone quiet'
 
-'copy Prefs/Pattern/Scalos_Pattern "RAM:ScalosBeta/Prefs/Scalos Pattern" clone quiet'
+'copy Prefs/Pattern/' || BinDir || 'Scalos_Pattern "RAM:ScalosBeta/Prefs/Scalos Pattern" clone quiet'
 'copy Prefs/Pattern/Scalos_Pattern.info "RAM:ScalosBeta/Prefs/Scalos Pattern.info" clone quiet'
 
-'copy Prefs/Palette/Scalos_Palette "RAM:ScalosBeta/Prefs/Scalos Palette" clone quiet'
+'copy Prefs/Palette/' || BinDir || 'Scalos_Palette "RAM:ScalosBeta/Prefs/Scalos Palette" clone quiet'
 'copy Prefs/Palette/Scalos_Palette.info "RAM:ScalosBeta/Prefs/Scalos Palette.info" clone quiet'
 
-'copy Prefs/FileTypes/Scalos_FileTypes "RAM:ScalosBeta/Prefs/Scalos FileTypes" clone quiet'
+'copy Prefs/FileTypes/' || BinDir || 'Scalos_FileTypes "RAM:ScalosBeta/Prefs/Scalos FileTypes" clone quiet'
 'copy Prefs/FileTypes/Scalos_FileTypes.info "RAM:ScalosBeta/Prefs/Scalos FileTypes.info" clone quiet'
 
-'copy Prefs/MainPrefs/Scalos_Prefs "RAM:ScalosBeta/Prefs/Scalos Prefs" clone quiet'
+'copy Prefs/MainPrefs/' || BinDir || 'Scalos_Prefs "RAM:ScalosBeta/Prefs/Scalos Prefs" clone quiet'
 'copy Prefs/MainPrefs/Scalos_Prefs.info "RAM:ScalosBeta/Prefs/Scalos Prefs.info" clone quiet'
 
-'copy Plugins/Prefs/FileTypes/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
-'copy Plugins/Prefs/Palette/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
-'copy Plugins/Prefs/Pattern/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
-'copy Plugins/Prefs/Menu/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+'copy Plugins/Prefs/FileTypes/' || BinDir || '#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+'copy Plugins/Prefs/Palette/' || BinDir || '#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+'copy Plugins/Prefs/Pattern/' || BinDir || '#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+'copy Plugins/Prefs/Menu/' || BinDir || '#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
 if os ~= "AmigaOS4" then do
-	'copy Plugins/Prefs/Popupmenu/#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
+	'copy Plugins/Prefs/Popupmenu/' || BinDir || '#?.prefsplugin "RAM:ScalosBeta/Prefs/" clone quiet'
 end
 
 
 say "Copying Modules..."
 
-'copy Modules/IconProperties.MUI/IconProperties.module     "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/WindowProperties.MUI/WindowProperties.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Delete.MUI/Source/Delete.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Empty_Trashcan.MUI/Empty_Trashcan.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Exchange.MUI/Exchange.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Find.MUI/Find.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/FormatDisk.Gadtools/Format_Disk.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Execute_Command.MUI/Execute_Command.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Information.MUI/Information.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/NewDrawer.MUI/NewDrawer.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Rename.MUI/Rename.module "RAM:ScalosBeta/modules/" clone quiet'
-'copy Modules/Updater.MUI/Updater.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/IconProperties.MUI/' || BinDir || 'IconProperties.module     "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/WindowProperties.MUI/' || BinDir || 'WindowProperties.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Delete.MUI/Source/' || BinDir || 'Delete.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Empty_Trashcan.MUI/' || BinDir || 'Empty_Trashcan.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Exchange.MUI/' || BinDir || 'Exchange.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Find.MUI/' || BinDir || 'Find.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/FormatDisk.Gadtools/' || BinDir || 'Format_Disk.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Execute_Command.MUI/' || BinDir || 'Execute_Command.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Information.MUI/' || BinDir || 'Information.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/NewDrawer.MUI/' || BinDir || 'NewDrawer.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Rename.MUI/' || BinDir || 'Rename.module "RAM:ScalosBeta/modules/" clone quiet'
+'copy Modules/Updater.MUI/' || BinDir || 'Updater.module "RAM:ScalosBeta/modules/" clone quiet'
 
 
 say "Copying Libraries..."
 
-'copy libraries/iconobject/iconobject.library "RAM:ScalosBeta/libs/" clone quiet'
-'copy libraries/preferences/preferences.library "RAM:ScalosBeta/libs/" clone quiet'
-'copy libraries/sqlite/sqlite3.library "RAM:ScalosBeta/libs/" clone quiet'
-'copy libraries/scalosgfx/scalosgfx.library "RAM:ScalosBeta/libs/" clone quiet'
+'copy libraries/iconobject/' || BinDir || 'iconobject.library "RAM:ScalosBeta/libs/" clone quiet'
+'copy libraries/preferences/' || BinDir || 'preferences.library "RAM:ScalosBeta/libs/" clone quiet'
+'copy libraries/sqlite/' || BinDir || 'sqlite3.library "RAM:ScalosBeta/libs/" clone quiet'
+'copy libraries/scalosgfx/' || BinDir || 'scalosgfx.library "RAM:ScalosBeta/libs/" clone quiet'
 if os ~= "AmigaOS4" then do
-	'copy libraries/popupmenu/popupmenu.library "RAM:ScalosBeta/libs/" clone quiet'
+	'copy libraries/popupmenu/' || BinDir || 'popupmenu.library "RAM:ScalosBeta/libs/" clone quiet'
 end
 'copy libs/#?.library#? "RAM:ScalosBeta/libs/" clone quiet'
 'copy libs/OS4/#?.library "RAM:ScalosBeta/libs/OS4" clone quiet'
@@ -138,9 +149,9 @@ end
 
 'copy Default_Theme/#? "RAM:ScalosBeta/Themes/default" all clone quiet'
 
-'copy main/tools/LoadWB.Scalos "RAM:ScalosBeta/c/LoadWB" clone quiet'
+'copy main/tools/' || BinDir || 'LoadWB.Scalos "RAM:ScalosBeta/c/LoadWB" clone quiet'
 
-'copy main/tools/ScalosCtrl "RAM:ScalosBeta/Tools/" clone quiet'
+'copy main/tools/' || BinDir || 'ScalosCtrl "RAM:ScalosBeta/Tools/" clone quiet'
 
 say "Copying Extras..."
 
