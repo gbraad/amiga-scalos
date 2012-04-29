@@ -52,7 +52,7 @@ $(OBJDIR)/%.o : %.c
 
 #############################################################
 
-NAME 		= Delete.module
+NAME 		= .bin_os3/Delete.module
 NAMEDBG		= $(NAME).debug
 CAT_FILE	= Scalos/Delete.catalog
 DESTCAT		= Locale:Catalogs

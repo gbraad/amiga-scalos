@@ -32,7 +32,7 @@ SCALOS_LOCALE	= $(OBJDIR)/Exchange_Locale.h
 
 #############################################################
 
-NAME		= Exchange.module
+NAME		= .bin_os3/Exchange.module
 DBGNAME		= $(NAME).debug
 CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/

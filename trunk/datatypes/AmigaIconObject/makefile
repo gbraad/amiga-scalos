@@ -41,7 +41,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #####################################################################
 
-DTNAME		= amigaiconobject.datatype
+DTNAME		= .bin_os3/amigaiconobject.datatype
 DTDBGNAME	= $(DTNAME).debug
 
 #####################################################################

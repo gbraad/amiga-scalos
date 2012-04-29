@@ -44,7 +44,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
-NAME		= Scalos_Pattern
+NAME		= .bin_os3/Scalos_Pattern
 NAMEDBG		= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos Pattern
 CAT_FILE	= Scalos/ScalosPattern.catalog

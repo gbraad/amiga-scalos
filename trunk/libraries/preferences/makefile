@@ -49,7 +49,7 @@ $(OBJDIR)/%.o : %.asm
 
 ############################################################
 
-NAME    = preferences.library
+NAME    = .bin_os3/preferences.library
 DBGNAME = $(NAME).debug
 
 #############################################################

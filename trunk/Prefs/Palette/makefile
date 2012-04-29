@@ -43,7 +43,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
-NAME    	= Scalos_Palette
+NAME    	= .bin_os3/Scalos_Palette
 NAMEDBG 	= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos Palette
 CAT_FILE	= Scalos/ScalosPalette.catalog

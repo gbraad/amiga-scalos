@@ -55,7 +55,7 @@ $(OBJDIR)::
 
 #####################################################################
 
-DTNAME		= iconobject.datatype
+DTNAME		= .bin_os3/iconobject.datatype
 DTDBGNAME	= $(DTNAME).debug
 
 #####################################################################

@@ -47,7 +47,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #####################################################################
 
-DTNAME		= glowiconobject.datatype
+DTNAME		= .bin_os3/glowiconobject.datatype
 DTDBGNAME	= $(DTNAME).debug
 
 #####################################################################

@@ -32,7 +32,7 @@ SCALOS_LOCALE	= $(OBJDIR)/Execute_Command_Locale.h
 
 #####################################################################
 
-NAME		= Execute_Command.module
+NAME		= .bin_os3/Execute_Command.module
 DBGNAME		= $(NAME).debug
 CATCOMPH	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/Execute_Command.catalog

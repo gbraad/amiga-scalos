@@ -51,7 +51,7 @@ $(OBJDIR)/%.o : %.c
 
 ############################################################
 
-NAME    = scalosgfx.library
+NAME    = .bin_os3/scalosgfx.library
 DBGNAME = $(NAME).debug
 
 #############################################################

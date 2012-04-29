@@ -44,7 +44,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
-NAME		= Scalos_Menu
+NAME		= .bin_os3/Scalos_Menu
 NAMEDBG		= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos Menu
 CAT_FILE	= Scalos/ScalosMenu.catalog

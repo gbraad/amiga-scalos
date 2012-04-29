@@ -75,7 +75,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(XSRCS:%.c=$(OBJDIR)/$(notdir %).o)
 
 #############################################################
 
-NAME		= Scalos_Prefs
+NAME		= .bin_os3/Scalos_Prefs
 NAMEDBG		= $(NAME).debug
 CAT_FILE	= Scalos/Scalos_Prefs.catalog
 CATCOMPHEADER	= $(SCALOS_LOCALE)

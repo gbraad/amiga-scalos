@@ -43,7 +43,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #############################################################
 
-NAME		= Scalos_FileTypes
+NAME		= .bin_os3/Scalos_FileTypes
 DBGNAME		= $(NAME).debug
 DESTTOOL	= Scalos:Prefs/Scalos FileTypes
 CAT_FILE 	= Scalos/ScalosFileTypes.catalog

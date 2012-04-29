@@ -33,7 +33,7 @@ SCALOS_LOCALE	= $(OBJDIR)/Empty_Trashcan_Locale.h
 
 #####################################################################
 
-NAME		= Empty_Trashcan.module
+NAME		= .bin_os3/Empty_Trashcan.module
 DBGNAME		= $(NAME).debug
 CATCOMPH	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/Empty_Trashcan.catalog

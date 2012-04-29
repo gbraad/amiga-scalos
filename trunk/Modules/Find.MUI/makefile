@@ -32,7 +32,7 @@ SCALOS_LOCALE	= $(OBJDIR)/Find_Locale.h
 
 #############################################################
 
-NAME		= Find.module
+NAME		= .bin_os3/Find.module
 DBGNAME		= $(NAME).debug
 CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/

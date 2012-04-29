@@ -69,7 +69,7 @@ $(OBJDIR)/%.o : %.c
 
 ############################################################
 
-NAME    = popupmenu.library
+NAME    = .bin_os3/popupmenu.library
 DBGNAME = $(NAME).debug
 
 #############################################################

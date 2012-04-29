@@ -42,7 +42,7 @@ SCALOS_LOCALE	= $(OBJDIR)/WindowProperties_Locale.h
 
 #############################################################
 
-NAME		= WindowProperties.module
+NAME		= .bin_os3/WindowProperties.module
 DBGNAME		= $(NAME).debug
 CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/
