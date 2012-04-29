@@ -63,7 +63,7 @@ $(OBJDIR)/%.o : %.asm
 
 ############################################################
 
-NAME    = iconobject.library
+NAME    = .bin_os3/iconobject.library
 DBGNAME = $(NAME).debug
 
 #############################################################

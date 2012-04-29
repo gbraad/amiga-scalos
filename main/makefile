@@ -62,8 +62,8 @@ $(OBJDIR)::
 
 #############################################################
 
-APP		= Scalos
-APP_DBG		= Scalos.debug
+APP		= .bin_os3/Scalos
+APP_DBG		= .bin_os3/Scalos.debug
 CATHEADER	= $(SCALOS_LOCALE)
 MSG_NAMES 	= MsgIdNames.h
 DESTCAT		= Locale:Catalogs

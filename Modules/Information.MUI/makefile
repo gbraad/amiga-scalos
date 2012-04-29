@@ -43,7 +43,7 @@ SCALOS_LOCALE	= $(OBJDIR)/Information_Locale.h
 
 #############################################################
 
-NAME		= Information.module
+NAME		= .bin_os3/Information.module
 DBGNAME		= $(NAME).debug
 CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/

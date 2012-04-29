@@ -31,8 +31,8 @@ SCALOS_LOCALE	= $(OBJDIR)/NewDrawer_Locale.h
 
 #####################################################################
 
-NAME	= NewDrawer.module
-DBGNAME	= $(NAME).debug
+NAME		= .bin_os3/NewDrawer.module
+DBGNAME		= $(NAME).debug
 CATCOMPH	= $(SCALOS_LOCALE)
 FLEXCAT		= FlexCat
 CAT_FILE	= Scalos/NewDrawer.catalog

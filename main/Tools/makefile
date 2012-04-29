@@ -37,13 +37,13 @@ $(OBJDIR)::
 
 #############################################################
 
-CTRL	 = ScalosCtrl
+CTRL	 = .bin_os3/ScalosCtrl
 CTRLDBG	 = $(CTRL).debug
-SEMA	 = ScalosSema
+SEMA	 = .bin_os3/ScalosSema
 SEMADBG  = $(SEMA).debug
-LWB	 = LoadWB.Scalos
+LWB	 = .bin_os3/LoadWB.Scalos
 LWBDBG	 = $(LWB).debug
-GENMSGID = GenMsgIdNames
+GENMSGID = .bin_os3/GenMsgIdNames
 
 #############################################################
 

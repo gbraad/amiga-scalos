@@ -46,8 +46,8 @@ $(OBJDIR)::
 
 #############################################################
 
-NAME    	=  Format_Disk.module
-DBGNAME 	=  $(NAME).debug
+NAME    	= .bin_os3/Format_Disk.module
+DBGNAME 	= $(NAME).debug
 CATCOMPHEADER	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/FormatDisk.catalog
 DESTCAT		= Locale:Catalogs

@@ -55,7 +55,7 @@ OBJS = $(ASRCS:%.asm=$(OBJDIR)/%.o) $(CSRCS:%.c=$(OBJDIR)/%.o)
 
 #####################################################################
 
-DTNAME		= pngiconobject.datatype
+DTNAME		= .bin_os3/pngiconobject.datatype
 DTDBGNAME	= $(DTNAME).debug
 
 #####################################################################

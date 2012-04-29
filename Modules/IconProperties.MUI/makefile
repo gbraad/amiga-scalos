@@ -29,7 +29,7 @@ SCALOS_LOCALE	= $(OBJDIR)/IconProperties_Locale.h
 
 #############################################################
 
-NAME		= IconProperties.module
+NAME		= .bin_os3/IconProperties.module
 DBGNAME		= $(NAME).debug
 CATCOMPHEADER	= $(SCALOS_LOCALE)
 DESTTOOL	= Scalos:modules/

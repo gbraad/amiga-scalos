@@ -32,7 +32,7 @@ SCALOS_LOCALE	= $(OBJDIR)/Rename_Locale.h
 
 #####################################################################
 
-NAME		= Rename.module
+NAME		= .bin_os3/Rename.module
 DBGNAME		= $(NAME).debug
 CATCOMPH	= $(SCALOS_LOCALE)
 CAT_FILE	= Scalos/Rename.catalog
