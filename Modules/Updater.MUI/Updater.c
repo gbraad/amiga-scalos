@@ -1768,7 +1768,7 @@ static ULONG ComponentsDisplayHookFunc(struct Hook *hook, Object *obj, struct NL
 			{
 			// local version not available
 			msg->preparses[2] = msg->preparses[3] =
-				msg->preparses[4] = msg->preparses[4] = MUIX_I;
+				msg->preparses[4] = msg->preparses[5] = MUIX_I;
 			}
 		else if ( (cle->cle_LocalVersion < cle->cle_RemoteVersion) ||
 			(cle->cle_LocalVersion == cle->cle_RemoteVersion && cle->cle_LocalRevision < cle->cle_RemoteRevision) )
