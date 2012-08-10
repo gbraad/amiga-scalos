@@ -170,11 +170,11 @@ struct ScalosBase *sca_MakeLibrary(void)
 					      sizeof(struct ScalosBase), NULL);
 
 	newBase->lib_Node.ln_Type = NT_LIBRARY;
-	newBase->lib_Node.ln_Name = scalosLibName;
+	newBase->lib_Node.ln_Name = (STRPTR) scalosLibName;
 	newBase->lib_Flags = LIBF_SUMUSED | LIBF_CHANGED;
 	newBase->lib_Version = VERSION;
 	newBase->lib_Revision = REVISION;
-	newBase->lib_IdString = libIdString;
+	newBase->lib_IdString = (STRPTR) libIdString;
 	((struct ScalosBase *)newBase)->scb_Revision = ScalosRevision;
 
 	return (struct ScalosBase *)newBase;

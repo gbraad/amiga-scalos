@@ -552,19 +552,19 @@ ULONG ReadMenuPrefs(void)
 		InitIFFasDOS(iffHandle);
 
 		// first try to open 1.3 menu prefs
-		iffHandle->iff_Stream = Open("ENV:Scalos/Menu13.prefs", MODE_OLDFILE);
-		if (BNULL == iffHandle->iff_Stream)
+		iffHandle->iff_Stream = (IPTR) Open("ENV:Scalos/Menu13.prefs", MODE_OLDFILE);
+		if (0 == iffHandle->iff_Stream)
 			{
 			// then try to open old menu prefs
-			iffHandle->iff_Stream = Open("ENV:Scalos/Menu.prefs", MODE_OLDFILE);
+			iffHandle->iff_Stream = (IPTR) Open("ENV:Scalos/Menu.prefs", MODE_OLDFILE);
 			}
-		if (BNULL == iffHandle->iff_Stream)
+		if (0 == iffHandle->iff_Stream)
 			{
 			Error = IoErr();
 			break;	// no menu prefs found
 			}
 
-		MenuPrefsCRC = GetPrefsCRCFromFH(iffHandle->iff_Stream);
+		MenuPrefsCRC = GetPrefsCRCFromFH((BPTR) iffHandle->iff_Stream);
 
 		Error = OpenIFF(iffHandle, IFFF_READ);
 		if (RETURN_OK != Error)
@@ -746,7 +746,7 @@ ULONG ReadMenuPrefs(void)
 		if (iffOpened)
 			CloseIFF(iffHandle);
 		if (iffHandle->iff_Stream)
-			Close(iffHandle->iff_Stream);
+			Close((BPTR) iffHandle->iff_Stream);
 		FreeIFF(iffHandle);
 		}
 
@@ -1162,20 +1162,20 @@ static void AddAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
 		{
 		if (SCAMENUTYPE_Command == MenuTree->mtre_type)
 			{
-			MenuTree->MenuCombo.MenuCommand.mcom_name = SCA_BE2LONG(MenuTree->MenuCombo.MenuCommand.mcom_name);
+			MenuTree->MenuCombo.MenuCommand.mcom_name = (APTR) SCA_BE2LONG(MenuTree->MenuCombo.MenuCommand.mcom_name);
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
 				MenuTree->MenuCombo.MenuCommand.mcom_name += (ULONG) BaseAddr;
 			MenuTree->MenuCombo.MenuCommand.mcom_stack = SCA_BE2LONG(MenuTree->MenuCombo.MenuCommand.mcom_stack);
 			}
 		else
 			{
-			MenuTree->MenuCombo.MenuTree.mtre_name = SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_name);
+			MenuTree->MenuCombo.MenuTree.mtre_name = (APTR) SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_name);
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
 				MenuTree->MenuCombo.MenuTree.mtre_name += (ULONG) BaseAddr;
 
 			if (MenuTree->mtre_flags & MTREFLGF_IconNames)
 				{
-				MenuTree->MenuCombo.MenuTree.mtre_iconnames = SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_iconnames);
+				MenuTree->MenuCombo.MenuTree.mtre_iconnames = (APTR) SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_iconnames);
 				if (MenuTree->MenuCombo.MenuTree.mtre_iconnames)
 					{
 					MenuTree->MenuCombo.MenuTree.mtre_iconnames += (ULONG) BaseAddr;
@@ -1190,13 +1190,13 @@ static void AddAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
 				MenuTree->MenuCombo.MenuTree.mtre_iconnames = NULL;
 				}
 			}
-		MenuTree->mtre_tree = SCA_BE2LONG(MenuTree->mtre_tree);
+		MenuTree->mtre_tree = (APTR) SCA_BE2LONG(MenuTree->mtre_tree);
 		if (MenuTree->mtre_tree)
 			{
 			MenuTree->mtre_tree = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_tree) + (ULONG) BaseAddr);
 			AddAddresses(MenuTree->mtre_tree, BaseAddr);
 			}
-		MenuTree->mtre_Next = SCA_BE2LONG(MenuTree->mtre_Next);
+		MenuTree->mtre_Next = (APTR) SCA_BE2LONG(MenuTree->mtre_Next);
 		if (MenuTree->mtre_Next)
 			{
 			MenuTree->mtre_Next = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_Next) + (ULONG) BaseAddr);

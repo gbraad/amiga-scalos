@@ -416,7 +416,7 @@ static void ProcessRexxMessage(struct MainTask *mainTask, struct RexxMsg *RxMsg)
 
 	for (ace=ARexxCommandTable; !Found && ace->ace_CmdName; ace++)
 		{
-		if (0 == Stricmp(ace->ace_CmdName, RxMsg->rm_Args[0]))
+		if (0 == Stricmp(ace->ace_CmdName, (STRPTR) RxMsg->rm_Args[0]))
 			{
 			Found = TRUE;
 

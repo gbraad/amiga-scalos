@@ -1166,7 +1166,7 @@ static void TitleClassGetDiskInfo(struct InfoData *id)
 {
 	if (0 == id->id_DiskType)
 		{
-		if (!DoPkt(GetFileSysTask(), ACTION_DISK_INFO, MKBADDR(id), 0, 0, 0, 0))
+		if (!DoPkt(GetFileSysTask(), ACTION_DISK_INFO, (SIPTR) MKBADDR(id), 0, 0, 0, 0))
 			id->id_DiskType = ID_NO_DISK_PRESENT;
 		}
 }

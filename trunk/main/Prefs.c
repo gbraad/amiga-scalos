@@ -451,14 +451,14 @@ ULONG ReadPalettePrefs(void)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open("ENV:Scalos/Palette13.prefs", MODE_OLDFILE);
-		if (BNULL == iff->iff_Stream)
-			iff->iff_Stream = Open("ENV:Scalos/Palette.prefs", MODE_OLDFILE);
+		iff->iff_Stream = (IPTR) Open("ENV:Scalos/Palette13.prefs", MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
+			iff->iff_Stream = (IPTR) Open("ENV:Scalos/Palette.prefs", MODE_OLDFILE);
 
-		PalettePrefsCRC = GetPrefsCRCFromFH(iff->iff_Stream);
+		PalettePrefsCRC = GetPrefsCRCFromFH((BPTR) iff->iff_Stream);
 		d1(KPrintF("%s/%s/%ld: PalettePrefsCRC=%08lx\n", __FILE__, __FUNC__, __LINE__, PalettePrefsCRC));
 
-		if (BNULL == iff->iff_Stream)
+		if (0 == iff->iff_Stream)
 			{
 			Result = IoErr();
 			break;
@@ -579,7 +579,7 @@ ULONG ReadPalettePrefs(void)
 			CloseIFF(iff);
 
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR) iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -627,10 +627,10 @@ void ReadFontPrefs(void)
 		iff->iff_Stream = (ULONG) Open("ENV:sys/font.prefs", MODE_OLDFILE);
 
 		d1(KPrintF("%s/%s/%ld: iff_Stream=%08lx\n", __FILE__, __FUNC__, __LINE__, iff->iff_Stream));
-		if (BNULL == iff->iff_Stream)
+		if (0 == iff->iff_Stream)
 			break;
 
-		FontPrefsCRC = GetPrefsCRCFromFH(iff->iff_Stream);
+		FontPrefsCRC = GetPrefsCRCFromFH((BPTR) iff->iff_Stream);
 		d1(KPrintF("%s/%s/%ld: FontPrefsCRC=%08lx\n", __FILE__, __FUNC__, __LINE__, FontPrefsCRC));
 
 		if (RETURN_OK != OpenIFF(iff, IFFF_READ))
@@ -721,7 +721,7 @@ void ReadFontPrefs(void)
 		if (IffOpened)
 			CloseIFF(iff);
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR) iff->iff_Stream);
 		FreeIFF(iff);
 		}
 }
@@ -754,8 +754,8 @@ LONG WriteWBConfig(void)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open("ENVARC:sys/wbconfig.prefs", MODE_NEWFILE);
-		if (BNULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR) Open("ENVARC:sys/wbconfig.prefs", MODE_NEWFILE);
+		if (0 == iff->iff_Stream)
 			break;
 
 		d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
@@ -855,7 +855,7 @@ LONG WriteWBConfig(void)
 		if (IffOpen)
 			CloseIFF(iff);
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR) iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -885,8 +885,8 @@ LONG ReadWBConfig(void)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open("ENVARC:sys/wbconfig.prefs", MODE_OLDFILE);
-		if (BNULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR) Open("ENVARC:sys/wbconfig.prefs", MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			break;
 
 		d1(kprintf("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
@@ -936,7 +936,7 @@ LONG ReadWBConfig(void)
 		if (IffOpen)
 			CloseIFF(iff);
 		if (iff->iff_Stream)
-			Close(iff->iff_Stream);
+			Close((BPTR) iff->iff_Stream);
 
 		FreeIFF(iff);
 		}
@@ -1619,11 +1619,11 @@ LONG ReadPatternPrefs(void)
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open("ENV:Scalos/Pattern.prefs", MODE_OLDFILE);
-		if (BNULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR) Open("ENV:Scalos/Pattern.prefs", MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			break;
 
-		PatternPrefsCRC = GetPrefsCRCFromFH(iff->iff_Stream);
+		PatternPrefsCRC = GetPrefsCRCFromFH((BPTR) iff->iff_Stream);
 		d1(KPrintF("%s/%s/%ld: PatternPrefsCRC=%08lx\n", __FILE__, __FUNC__, __LINE__, PatternPrefsCRC));
 
 		Result = OpenIFF(iff, IFFF_READ);
@@ -1670,8 +1670,8 @@ LONG ReadPatternPrefs(void)
 
 		if (iff->iff_Stream)
 			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = BNULL;
+			Close((BPTR) iff->iff_Stream);
+			iff->iff_Stream = 0;
 			}
 		FreeIFF(iff);
 		}

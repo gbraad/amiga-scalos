@@ -445,7 +445,7 @@ BOOL TempName(STRPTR Buffer, size_t MaxLen)
 
 	stccpy(Buffer, CurrentPrefs.pref_ImageCacheDir, MaxLen);
 
-	snprintf(TimeBuffer, sizeof(TimeBuffer), "Scalos%08lx%08lx", tv.tv_secs, tv.tv_micro);
+	snprintf(TimeBuffer, sizeof(TimeBuffer), "Scalos%08lx%08lx", (unsigned long) tv.tv_secs, (unsigned long) tv.tv_micro);
 
 	return AddPart(Buffer, TimeBuffer, MaxLen);
 }

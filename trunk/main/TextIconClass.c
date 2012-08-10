@@ -925,8 +925,8 @@ static void SetAttributes(struct TextIClassInst *inst, struct opSet *ops)
 		dtm.dat_StrTime = (STRPTR)inst->txicl_time;
 		ClassFormatDate(&dtm, sizeof(inst->txicl_date), sizeof(inst->txicl_time));
 
-		snprintf((char *)inst->txicl_owner, sizeof(inst->txicl_owner), "%lu", (ULONG) inst->txicl_rild.rild_OwnerUID);
-		snprintf((char *)inst->txicl_group, sizeof(inst->txicl_group), "%lu", (ULONG) inst->txicl_rild.rild_OwnerGID);
+		snprintf((char *)inst->txicl_owner, sizeof(inst->txicl_owner), "%lu", (unsigned long) inst->txicl_rild.rild_OwnerUID);
+		snprintf((char *)inst->txicl_group, sizeof(inst->txicl_group), "%lu", (unsigned long) inst->txicl_rild.rild_OwnerGID);
 		snprintf((char *)inst->txicl_filetype, sizeof(inst->txicl_filetype), "TBD");
 		snprintf((char *)inst->txicl_version, sizeof(inst->txicl_version), "TBD");
 		snprintf((char *)inst->txicl_miniicon, sizeof(inst->txicl_miniicon), "M");

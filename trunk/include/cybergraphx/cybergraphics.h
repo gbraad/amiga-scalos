@@ -204,7 +204,9 @@ struct  CDrawMsg
 #define SHIFT_PIXFMT( fmt ) (((ULONG)(fmt)) << 24UL)
 
 
+#ifndef BMF_REQUESTVMEM
 #define BMF_REQUESTVMEM  (BMF_MINPLANES|BMF_DISPLAYABLE)
+#endif
 
 #ifndef BMB_ROOTMAP
 #define BMB_ROOTMAP (5UL)
