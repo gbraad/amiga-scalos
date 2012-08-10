@@ -3520,7 +3520,7 @@ static SAVEDS(ULONG) INTERRUPT TreeDisplayFunc(struct Hook *hook, APTR obj, stru
 				{
 				snprintf(fte->ftle_NameBuffer, sizeof(fte->ftle_NameBuffer),
 					 "\33o[%ld]" "%s" MUIX_I " NAME %.*s" MUIX_N,
-					fte->fte_ImageIndex, ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
+					(long) fte->fte_ImageIndex, ltdm->TreeNode->tn_Name, MAX_FTE_NAME, Line);
 				}
 			else
 				{
@@ -4751,8 +4751,11 @@ static SAVEDS(APTR) INTERRUPT ChangeAttributeHookFunc(struct Hook *hook, Object 
 				if (atd->atd_DefaultContents.avd_ConvertValueFromString)
 					ValueULong = (atd->atd_DefaultContents.avd_ConvertValueFromString)(ValueString);
 				else
-					sscanf(ValueString, "%lu", &ValueULong);
-
+					{
+					unsigned long ulong1;
+					sscanf(ValueString, "%lu", &ulong1);
+					ValueULong = ulong1;
+					}
 				// Remove attribute from fte's list
 				RemoveAttribute(fte,  atd->atd_Type);
 				AddAttribute(fte, atd->atd_Type, sizeof(ValueULong), &ValueULong);

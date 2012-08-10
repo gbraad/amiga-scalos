@@ -543,7 +543,7 @@ long _stack = 32768;		// minimum stack size, used by SAS/C startup code
 
 int main(int argc, char *argv[])
 {
-	LONG win_opened;
+	LONG win_opened = 0;
 	BPTR oldDir = (BPTR)NULL;
 	CONST_STRPTR IconName = "";
 	Object *iconObjFromScalos = NULL;
@@ -603,8 +603,10 @@ int main(int argc, char *argv[])
 		}
 	else
 		{
+		unsigned long ulong1;
 		d1(KPrintF("%s/%s/%ld: INFO_ICONPATH_ENV=<%s>\n", __FILE__, __FUNC__, __LINE__, Buffer));
-		sscanf(Buffer, "%lu", &ShowIconPath);
+		sscanf(Buffer, "%lu", &ulong1);
+		ShowIconPath = ulong1;
 		}
 
 	//--- InfoAutoGetSize variable ----
@@ -619,8 +621,10 @@ int main(int argc, char *argv[])
 		}
 	else
 		{
+		unsigned long long1;
 		d1(KPrintF("%s/%s/%ld: INFO_AUTOGETSIZE_ENV=<%s>\n", __FILE__, __FUNC__, __LINE__, Buffer));
-		sscanf(Buffer, "%lu", &AutoGetSize);
+		sscanf(Buffer, "%lu", &long1);
+		AutoGetSize = long1;
 		}
 
 	//------------------------------------------------------------------------------------------------------------
@@ -729,6 +733,7 @@ int main(int argc, char *argv[])
 		if (ToolTypesArray)
 			{
 			STRPTR ToolPriString;
+			long long1;
 
 			if (FindToolType(ToolTypesArray, "DONOTWAIT"))
 				WaitUntilFinished = FALSE;
@@ -737,12 +742,16 @@ int main(int argc, char *argv[])
 
 			ToolPriString = FindToolType(ToolTypesArray, "WAIT");
 			if (ToolPriString)
-				sscanf(ToolPriString, "%ld", &WaitTime);
-
+				{
+				sscanf(ToolPriString, "%ld", &long1);
+				WaitTime = long1;
+				}
 			ToolPriString = FindToolType(ToolTypesArray, "STARTPRI");
 			if (ToolPriString)
-				sscanf(ToolPriString, "%ld", &StartPri);
-
+				{
+				sscanf(ToolPriString, "%ld", &long1);
+				StartPri = long1;
+				}
 			if (FindToolType(ToolTypesArray, "CLI"))
 				StartFrom = STARTFROM_CLI;
 			else if (FindToolType(ToolTypesArray, "REXX"))
@@ -1755,7 +1764,7 @@ int main(int argc, char *argv[])
 			{
 			ULONG sigs = 0;
 			BOOL Run = TRUE;
-			struct Window *MainWin;
+			struct Window *MainWin = NULL;
 			ULONG AppMsgSignal;
 			ULONG DropZoneMsgSignal;
 			char VarBuffer[3];
@@ -2504,7 +2513,7 @@ static LONG GetElapsedTime(T_TIMEVAL *tv)
 
 static SAVEDS(LONG) INTERRUPT SelectFromButtonHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	LONG Sel;
+	LONG Sel = 0;
 
 	get(o, MUIA_Selected, &Sel);
 	if(!Sel)
@@ -2521,7 +2530,7 @@ static SAVEDS(LONG) INTERRUPT SelectFromButtonHookFunc(struct Hook *hook, Object
 
 static SAVEDS(void) INTERRUPT IconifyHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	ULONG Iconified, attr;
+	ULONG Iconified = 0, attr = 0;
 	struct DropZone *dz;
 	struct Window *MainWin = NULL;
 
@@ -2601,7 +2610,7 @@ static SAVEDS(void) INTERRUPT DefaultIconHookFunc(struct Hook *hook, Object *o, 
 
 static SAVEDS(void) INTERRUPT StringIntegerIncrementHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	LONG Value;
+	LONG Value = 0;
 
 	get(o, MUIA_String_Integer, &Value);
 	set(o, MUIA_String_Integer, Value + 1);
@@ -2610,7 +2619,7 @@ static SAVEDS(void) INTERRUPT StringIntegerIncrementHookFunc(struct Hook *hook, 
 
 static SAVEDS(void) INTERRUPT StringIntegerDecrementHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	LONG Value;
+	LONG Value = 0;
 
 	get(o, MUIA_String_Integer, &Value);
 	set(o, MUIA_String_Integer, Value - 1);
@@ -2621,7 +2630,7 @@ static SAVEDS(void) INTERRUPT StringIntegerDecrementHookFunc(struct Hook *hook, 
 static void HandleAppMessage(struct AppMessage *AppMsg, struct DefIconInfo *dii)
 {
 	struct DropZone *dz = (struct DropZone *) AppMsg->am_UserData;
-	ULONG Disabled;
+	ULONG Disabled = 0;
 
 	d1(KPrintF(__FILE__ "/%s/%ld: AppMsg=%08lx  am_NumArgs=%ld  am_Type=%ld\n", __FUNC__, __LINE__, AppMsg, AppMsg->am_NumArgs, AppMsg->am_Type));
 
@@ -2696,7 +2705,7 @@ static SAVEDS(ULONG) INTERRUPT AppWindowDropZoneHookFunc(struct Hook *hook,
 static void DropZoneMsgHandler(struct DropZoneMsg *dzm)
 {
 	struct DropZone *dz = (struct DropZone *) dzm->dzm_adzm.adzm_UserData;
-	ULONG Disabled;
+	ULONG Disabled = 0;
 
 	d1(KPrintF("%s/%ld: START dz=%08lx  o=%08lx  adzm_Action=%ld\n", __FUNC__, __LINE__, dz, dz->dz_Object, dzm->dzm_adzm.adzm_Action));
 	d1(KPrintF("%s/%ld: Task=<%s>\n", __FUNC__, __LINE__, FindTask(NULL)->tc_Node.ln_Name));
@@ -4710,8 +4719,8 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 	while (1)
 		{
-		ULONG ver;
-		ULONG rev;
+		ULONG ver = 0;
+		ULONG rev = 0;
 		struct Library *base;
 		char libname[256];
 
@@ -4947,7 +4956,7 @@ static void AddDropZoneForObject(Object *o, DropZoneHandler Handler)
 
 	// Now create new dropzone for this object
 	do	{
-		ULONG Left, Top, Width, Height;
+		ULONG Left = 0, Top = 0, Width = 0, Height = 0;
 
 		dz = malloc(sizeof(struct DropZone));
 		if (NULL == dz)

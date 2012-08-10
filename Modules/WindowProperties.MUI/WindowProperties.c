@@ -446,7 +446,7 @@ static struct PatternListEntry *AllPatterns[USHRT_MAX];
 
 int main(int argc, char *argv[])
 {
-	LONG win_opened;
+	LONG win_opened = 0;
 	BPTR oldDir = (BPTR)NULL;
 	CONST_STRPTR IconName = "";
 	Object *iconObj = NULL;
@@ -615,6 +615,7 @@ int main(int argc, char *argv[])
 			tt = NULL;
 			if (DoMethod(iconObj, IDTM_FindToolType, "SCALOS_ICONSIZECONSTRAINTS", &tt))
 				{
+				long long1, long2;
 				LONG IconSizeMin = 0, IconSizeMax = SHRT_MAX;
 
 				IconSizeConstraintsDefault = FALSE;
@@ -623,8 +624,11 @@ int main(int argc, char *argv[])
 				while (*tt && '=' !=  *tt)
 					tt++;
 
-				if (2 == sscanf(tt, "=%ld,%ld", &IconSizeMin, &IconSizeMax))
+				if (2 == sscanf(tt, "=%ld,%ld", &long1, &long2))
 					{
+					IconSizeMin = long1;
+					IconSizeMax = long2;
+
 					if ((IconSizeMax > 128) || (IconSizeMax < 0))
 						IconSizeMax = SHRT_MAX;
 					if ((IconSizeMin < 0) || (IconSizeMin >= IconSizeMax))
@@ -1654,15 +1658,15 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 {
 	if (IconObj)
 		{
-		ULONG HideStatusBar;
-		ULONG HideControlBar;
+		ULONG HideStatusBar = 0;
+		ULONG HideControlBar = 0;
 		ULONG NewCheckOverlap = 0;
 		ULONG NewThumbnailMode = 0;
 		ULONG ThumbnailLifetime = THUMBNAIL_LIFETIME_NOTSET;
-		ULONG NewActiveWindowTransparencyDefault;
-		ULONG NewInactiveWindowTransparencyDefault;
-		ULONG NewIconScaleFactorDefault;
-		ULONG NewIconSizeConstraintsDefault;
+		ULONG NewActiveWindowTransparencyDefault = 0;
+		ULONG NewInactiveWindowTransparencyDefault = 0;
+		ULONG NewIconScaleFactorDefault = 0;
+		ULONG NewIconSizeConstraintsDefault = 0;
 		APTR UndoStep = NULL;
 		CONST_STRPTR *ToolTypesArray;
 		STRPTR *OldToolTypesArray;
@@ -1891,7 +1895,7 @@ static void SaveSettings(Object *IconObj, struct ScaWindowStruct *ws)
 		if (ws)
 			{
 			CONST_STRPTR *NewToolTypeArray = NULL;
-			STRPTR iconName;
+			STRPTR iconName = NULL;
 			BPTR dirLock = CurrentDir((BPTR) NULL);
 
 			CurrentDir(dirLock);
@@ -2485,7 +2489,7 @@ static SAVEDS(void) INTERRUPT PatternPopupWindowHookFunc(struct Hook *hook, Obje
 static SAVEDS(void) INTERRUPT NewPatternHookFunc(struct Hook *hook, Object *o, Object *x)
 {
 	struct PatternListEntry *scp = NULL;
-	ULONG n;
+	ULONG n = 0;
 
 	get(NListPatterns, MUIA_NList_Active, &n);
 	DoMethod(PopObjectPatternNumber, MUIM_Popstring_Close, TRUE);
@@ -2506,7 +2510,7 @@ static SAVEDS(void) INTERRUPT TogglePathHookFunc(struct Hook *hook, Object *o, O
 {
 	if (strlen(PathName) > 0)
 		{
-		LONG selected;
+		LONG selected = 0;
 
 		get(Group_Virtual, MUIA_ShowMe, &selected);
 		set(Group_Virtual, MUIA_ShowMe, !selected);
@@ -2666,7 +2670,7 @@ static LONG ReadPatternPrefsFile(CONST_STRPTR Filename, BOOL Quiet)
 			else if (ID_PATT == cn->cn_ID)
 				{
 				struct PatternListEntry *scp = NULL;
-				ULONG nEntries;
+				ULONG nEntries = 0;
 
 				ped = CreatePatternEntryDef();
 				if (NULL == ped)
@@ -2911,7 +2915,7 @@ static void CreateThumbnailImages(void)
 {
 	T_TIMEVAL tvNow;
 	T_TIMEVAL tvStart;
-	ULONG n, nEntries;
+	ULONG n, nEntries = 0;
 	APTR prWindowPtr;
 	struct Process *MyProcess = (struct Process *) FindTask(NULL);
 
@@ -2987,7 +2991,7 @@ static void CreateThumbnailImages(void)
 					{
 					// it's more than 100ms since initial start
 					char TextLine[150];
-					ULONG WindowIsOpen;
+					ULONG WindowIsOpen = 0;
 
 					tvNow.tv_secs = 0;
 					tvNow.tv_micro = 100000;
@@ -3117,7 +3121,7 @@ static void CreateThumbnailImage(struct PatternEntryDef *ped)
 static void SelectPattern(ULONG PatternNumber)
 {
 	static char buffer[50];
-	ULONG n, nEntries;
+	ULONG n, nEntries = 0;
 	BOOL Found;
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -3168,7 +3172,7 @@ static void SelectPattern(ULONG PatternNumber)
 static void AddDefaultPatternEntry(void)
 {
 	struct PatternListEntry *scpDefault = NULL;
-	ULONG nEntries;
+	ULONG nEntries = 0;
 	BOOL Found;
 	ULONG n;
 	ULONG DefaultPatternNumber;
@@ -3309,7 +3313,7 @@ static void SetIconSizeConstraints(const struct Rectangle *SizeConstraints)
 
 static void GetIconSizeConstraints(struct Rectangle *SizeConstraints)
 {
-	ULONG MinSize, MaxSize;
+	ULONG MinSize = 0, MaxSize = 0;
 
 	get(CycleIconMinSize, MUIA_Cycle_Active, &MinSize);
 	get(CycleIconMaxSize, MUIA_Cycle_Active, &MaxSize);

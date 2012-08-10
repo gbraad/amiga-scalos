@@ -44,7 +44,7 @@ ifeq ($(MACHINE), i386-aros)
 
 INCLUDES	+=	-I$(MCPGFX_DIR)/
 
-LFLAGS	+=	-nostartfiles -lrom \
+LFLAGS	+=	-nostartfiles \
 
 else
 ###############################################################################

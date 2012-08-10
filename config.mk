@@ -154,13 +154,13 @@ ifeq ($(MACHINE), i386-aros)
 # i386-AROS
 ##############################################################################
 
-CC 		=	i386-aros-gcc
-AS 		=	i386-aros-as
-LD 		=	i386-aros-ld
-AR		=	i386-aros-ar
-RANLIB		=	i386-aros-ranlib
-STRIP		=	i386-aros-strip
-DUMP		=	i386-aros-objdump
+CC 		=	i386-linux-aros-gcc
+AS 		=	i386-linux-aros-as
+LD 		=	i386-linux-aros-ld
+AR		=	i386-linux-aros-ar
+RANLIB		=	i386-linux-aros-ranlib
+STRIP		=	i386-linux-aros-strip
+DUMP		=	i386-linux-aros-objdump
 
 CODETYPE	=
 
@@ -267,7 +267,7 @@ MKDIR		=	mkdir
 LN		=	ln
 SED		=	sed
 CATCOMP		=	CatComp
-FLEXCAT		=	FlexCat
+FLEXCAT		=	flexcat
 
 ##############################################################################
 

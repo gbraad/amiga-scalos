@@ -2203,8 +2203,8 @@ static SAVEDS(APTR) INTERRUPT ChangeEntry3HookFunc(struct Hook *hook, Object *o,
 		if (SCAMENUTYPE_Command == mle->llist_EntryType)
 			{
 			STRPTR string = NULL;
-			ULONG Value;
-			LONG sValue;
+			ULONG Value = 0;
+			LONG sValue = 0;
 
 			SetChangedFlag(inst, TRUE);
 
@@ -2496,7 +2496,7 @@ static SAVEDS(APTR) INTERRUPT PopButtonHookFunc(struct Hook *hook, Object *o, Ms
 	struct MenuListEntry *mle;
 	struct FileRequester *Req;
 	struct MUI_NListtree_TreeNode *TreeNode;
-	ULONG CommandType;
+	ULONG CommandType = 0;
 
 	TreeNode = (struct MUI_NListtree_TreeNode *) DoMethod(inst->mpb_Objects[OBJNDX_MainListTree], 
 		MUIM_NListtree_GetEntry, 
@@ -2515,7 +2515,7 @@ static SAVEDS(APTR) INTERRUPT PopButtonHookFunc(struct Hook *hook, Object *o, Ms
 		char FileName[512];
 		struct Window *win = NULL;
 		BOOL Result;
-		STRPTR p, path;
+		STRPTR p, path = NULL;
 		BOOL drawersOnly = FALSE;
 		ULONG AslTitle = MSGID_IMPORTNAME;
 
@@ -2597,7 +2597,11 @@ static SAVEDS(APTR) INTERRUPT PopButtonHookFunc(struct Hook *hook, Object *o, Ms
 
 				ToolString = FindToolType(icon->do_ToolTypes, "TOOLPRI");
 				if (ToolString)
-					sscanf(ToolString, "%ld", &ToolPri);
+					{
+					long long1;
+					sscanf(ToolString, "%ld", &long1);
+					ToolPri = long1;
+					}
 
 				set(inst->mpb_Objects[OBJNDX_SliderPriority], MUIA_Numeric_Value, (LONG) ToolPri);
 
@@ -3330,7 +3334,7 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
 				{
 				MenuTree->MenuCombo.MenuCommand.mcom_name -= (ULONG) BaseAddr;
-				MenuTree->MenuCombo.MenuCommand.mcom_name = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_name);
+				MenuTree->MenuCombo.MenuCommand.mcom_name = (APTR) SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_name);
 				}
 			MenuTree->MenuCombo.MenuCommand.mcom_stack = SCA_LONG2BE(MenuTree->MenuCombo.MenuCommand.mcom_stack);
 			}
@@ -3339,13 +3343,13 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
 				{
 				MenuTree->MenuCombo.MenuTree.mtre_name -= (ULONG) BaseAddr;
-				MenuTree->MenuCombo.MenuTree.mtre_name = SCA_LONG2BE(MenuTree->MenuCombo.MenuTree.mtre_name);
+				MenuTree->MenuCombo.MenuTree.mtre_name = (APTR) SCA_LONG2BE(MenuTree->MenuCombo.MenuTree.mtre_name);
 				}
 
 			if ((MenuTree->mtre_flags & MTREFLGF_IconNames) && MenuTree->MenuCombo.MenuTree.mtre_iconnames)
 				{
 				MenuTree->MenuCombo.MenuTree.mtre_iconnames -= (ULONG) BaseAddr;
-				MenuTree->MenuCombo.MenuTree.mtre_iconnames = SCA_LONG2BE(MenuTree->MenuCombo.MenuTree.mtre_iconnames);
+				MenuTree->MenuCombo.MenuTree.mtre_iconnames = (APTR) SCA_LONG2BE(MenuTree->MenuCombo.MenuTree.mtre_iconnames);
 				}
 
 			d1(KPrintF("%s/%s/%ld: mtre_name=<%s>  mtre_flags=%02lx  mtre_iconnames=%08lx\n", \
@@ -3356,12 +3360,12 @@ static void RemoveAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAd
 			{
 			RemoveAddresses(MenuTree->mtre_tree, BaseAddr);
 			MenuTree->mtre_tree = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_tree) - (ULONG) BaseAddr);
-			MenuTree->mtre_tree = SCA_LONG2BE(MenuTree->mtre_tree);
+			MenuTree->mtre_tree = (APTR)SCA_LONG2BE(MenuTree->mtre_tree);
 			}
 		if (MenuTree->mtre_Next)
 			{
 			MenuTree->mtre_Next = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_Next) - (ULONG) BaseAddr);
-			MenuTree->mtre_Next = SCA_LONG2BE(MenuTree->mtre_Next);
+			MenuTree->mtre_Next = (APTR)SCA_LONG2BE(MenuTree->mtre_Next);
 			}
 
 		MenuTree = MenuTreeNext;
@@ -3492,20 +3496,20 @@ static void AddAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
 		{
 		if (SCAMENUTYPE_Command == MenuTree->mtre_type)
 			{
-			MenuTree->MenuCombo.MenuCommand.mcom_name = SCA_BE2LONG(MenuTree->MenuCombo.MenuCommand.mcom_name);
+			MenuTree->MenuCombo.MenuCommand.mcom_name = (APTR) SCA_BE2LONG(MenuTree->MenuCombo.MenuCommand.mcom_name);
 			if (MenuTree->MenuCombo.MenuCommand.mcom_name)
 				MenuTree->MenuCombo.MenuCommand.mcom_name += (ULONG) BaseAddr;
 			MenuTree->MenuCombo.MenuCommand.mcom_stack = SCA_BE2LONG(MenuTree->MenuCombo.MenuCommand.mcom_stack);
 			}
 		else
 			{
-			MenuTree->MenuCombo.MenuTree.mtre_name = SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_name);
+			MenuTree->MenuCombo.MenuTree.mtre_name = (APTR) SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_name);
 			if (MenuTree->MenuCombo.MenuTree.mtre_name)
 				MenuTree->MenuCombo.MenuTree.mtre_name += (ULONG) BaseAddr;
 
 			if (MenuTree->mtre_flags & MTREFLGF_IconNames)
 				{
-				MenuTree->MenuCombo.MenuTree.mtre_iconnames = SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_iconnames);
+				MenuTree->MenuCombo.MenuTree.mtre_iconnames = (APTR) SCA_BE2LONG(MenuTree->MenuCombo.MenuTree.mtre_iconnames);
 				if (MenuTree->MenuCombo.MenuTree.mtre_iconnames)
 					{
 					MenuTree->MenuCombo.MenuTree.mtre_iconnames += (ULONG) BaseAddr;
@@ -3527,7 +3531,7 @@ static void AddAddresses(struct ScalosMenuTree *MenuTree, const UBYTE *BaseAddr)
 				__FILE__, __FUNC__, __LINE__, MenuTree->MenuCombo.MenuTree.mtre_iconnames \
 				? MenuTree->MenuCombo.MenuTree.mtre_iconnames : (STRPTR) ""));
 			}
-		MenuTree->mtre_tree = SCA_BE2LONG(MenuTree->mtre_tree);
+		MenuTree->mtre_tree = (APTR) SCA_BE2LONG(MenuTree->mtre_tree);
 		if (MenuTree->mtre_tree)
 			{
 			MenuTree->mtre_tree = (struct ScalosMenuTree *) (((UBYTE *) MenuTree->mtre_tree) + (ULONG) BaseAddr);
@@ -4544,7 +4548,7 @@ static SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, 
 static SAVEDS(void) INTERRUPT HideObsoleteHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct MenuPrefsInst *inst = (struct MenuPrefsInst *) hook->h_Data;
-	ULONG HideObsolete;
+	ULONG HideObsolete = 0;
 
 	//TODO
 	get(inst->mpb_Objects[OBJNDX_Menu_HideObsolete], MUIA_Menuitem_Checked, &HideObsolete);
@@ -5124,7 +5128,7 @@ static void SwitchPopButton(struct MenuPrefsInst *inst, UBYTE CommandType)
 
 DISPATCHER(myNListTree)
 {
-	struct MenuPrefsInst *inst;
+	struct MenuPrefsInst *inst = NULL;
 	ULONG Result;
 
 	d1(kprintf("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));

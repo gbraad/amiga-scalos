@@ -38,7 +38,9 @@ struct PrivateCxObj
 #endif
 
 // Special Value in pco_Flags
+#ifndef COF_ACTIVE
 #define COF_ACTIVE	0x02
+#endif
 
 #if !defined(__AROS__)
 

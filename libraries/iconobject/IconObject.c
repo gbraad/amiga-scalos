@@ -686,7 +686,7 @@ static struct Iconobject *InternalConvert2IconObjectA(
 		NULL == obj && in != (struct IconNode *) &IconObjectBase->iob_ClassList.lh_Tail;
 		in = (struct IconNode *) in->Node.ln_Succ)
 		{
-		obj = (struct Iconobject *) NewObject(in->in_Class, (ULONG) NULL,
+		obj = (struct Iconobject *) NewObject(in->in_Class, NULL,
 			AIDTA_Icon, (ULONG) diskobject,
 			DTA_Name, (ULONG) "",
 			TAG_MORE, (ULONG) TagList,

@@ -240,6 +240,7 @@ static const struct LeafCmd GAObjects[] =
 static void DoLeafCmd(const struct LeafCmd *lc, struct UData UserData, struct LeafData *lData, const char *ObjName, char *StemLeaf)
 {
 	BOOL NumFound = FALSE;
+	long long1;
 
 	d1(kprintf(__FUNC__ "/%ld: lc=<%s>  ObjName=<%s>  ArgPtr=<%s>  StemLeaf=<%s>\n", __LINE__, \
 		lc ? lc->lc_Name : "---",\
@@ -253,8 +254,10 @@ static void DoLeafCmd(const struct LeafCmd *lc, struct UData UserData, struct Le
 			{
 			// "WINDOW.0" or "KEYCOMMANDS.4.NAME"
 
-			if (1 == sscanf(ObjName, "%ld", &Index)) 
+			if (1 == sscanf(ObjName, "%ld", &long1)) 
 				NumFound = TRUE;
+
+			Index = long1; 
 
 			d1(kprintf(__FUNC__ "/%ld: lc=<%s>  Index=%08lx\n", __LINE__, lc->lc_Name, Index);)
 			}

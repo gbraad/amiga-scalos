@@ -164,7 +164,7 @@ static APTR MenuCollapseAll, MenuExpandAll;
 int main(int argc, char *argv[])
 {
 	LONG Action = Application_Return_EDIT;
-	LONG win_opened;
+	LONG win_opened = 0;
 	struct RDArgs *rdArgs = NULL;
 	CONST_STRPTR GivenFileName = NULL;
 	BPTR oldDir = (BPTR)NULL;
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 		}
 	else
 		{
-		LONG ArgArray[4];
+		SIPTR ArgArray[4];
 
 		ProgramName = argv[0];
 
@@ -840,8 +840,8 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 	while (1)
 		{
-		ULONG ver;
-		ULONG rev;
+		ULONG ver = 0;
+		ULONG rev = 0;
 		struct Library *base;
 		char libname[256];
 

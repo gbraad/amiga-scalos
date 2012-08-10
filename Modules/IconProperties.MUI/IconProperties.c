@@ -1001,7 +1001,7 @@ static void SaveSettings(Object *IconObj, CONST_STRPTR IconName)
 	if (IconObj)
 		{
 		IPTR  IconType;
-		ULONG Checked;
+		ULONG Checked = 0;
 		char CheckName[256];
 		ULONG Pos;
 		APTR UndoStep = NULL;

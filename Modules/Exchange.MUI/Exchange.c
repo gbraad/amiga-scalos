@@ -168,7 +168,7 @@ static Object *MenuAbout, *MenuAboutMUI, *MenuQuit;
 
 int main(int argc, char *argv[])
 {
-	LONG win_opened;
+	LONG win_opened = 0;
 	
 	init();
 
@@ -931,8 +931,8 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 	while (1)
 		{
-		ULONG ver;
-		ULONG rev;
+		ULONG ver = 0;
+		ULONG rev = 0;
 		struct Library *base;
 		char libname[256];
 

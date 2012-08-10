@@ -442,10 +442,9 @@ SAVEDS(void) INTERRUPT SaveAsFunc(struct Hook *hook, Object *o, Msg msg)
 
 			if (dirLock)
 				{
-				LONG Result;
 				BPTR oldDir = CurrentDir(dirLock);
 
-				Result = WriteScalosPrefs(app, Req->fr_File);
+				WriteScalosPrefs(app, Req->fr_File);
 
 				CurrentDir(oldDir);
 				UnLock(dirLock);
@@ -626,11 +625,11 @@ SAVEDS(void) INTERRUPT ScreenTtfPopOpenHookFunc(struct Hook *hook, Object *o, Ms
 
 	if (ttRequest)
 		{
-		struct Window *PrefsWindow;
+		struct Window *PrefsWindow = NULL;
 		struct TagItem *AttrList;
 		char FontName[MAX_TTFONTDESC];
 		ULONG FontStyle, FontWeight, FontSize;
-		STRPTR FontDesc;
+		STRPTR FontDesc = NULL;
 
 		set(app->Obj[WINDOW_MAIN], MUIA_Window_Sleep, TRUE);
 
@@ -697,11 +696,11 @@ SAVEDS(void) INTERRUPT IconTtfPopOpenHookFunc(struct Hook *hook, Object *o, Msg 
 
 	if (ttRequest)
 		{
-		struct Window *PrefsWindow;
+		struct Window *PrefsWindow = NULL;
 		struct TagItem *AttrList;
 		char FontName[MAX_TTFONTDESC];
 		ULONG FontStyle, FontWeight, FontSize;
-		STRPTR FontDesc;
+		STRPTR FontDesc = NULL;
 
 		set(app->Obj[WINDOW_MAIN], MUIA_Window_Sleep, TRUE);
 
@@ -771,11 +770,11 @@ SAVEDS(void) INTERRUPT TextWindowTtfPopOpenHookFunc(struct Hook *hook, Object *o
 
 	if (ttRequest)
 		{
-		struct Window *PrefsWindow;
+		struct Window *PrefsWindow = NULL;
 		struct TagItem *AttrList;
 		char FontName[MAX_TTFONTDESC];
 		ULONG FontStyle, FontWeight, FontSize;
-		STRPTR FontDesc;
+		STRPTR FontDesc = NULL;
 
 		set(app->Obj[WINDOW_MAIN], MUIA_Window_Sleep, TRUE);
 
@@ -838,7 +837,7 @@ SAVEDS(void) INTERRUPT TextWindowTtfPopCloseHookFunc(struct Hook *hook, Object *
 SAVEDS(void) INTERRUPT IconDragTransparencyHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
-	ULONG active;
+	ULONG active = 0;
 
 	// Disable DragnDrop Icon transparency if transparent dragging is not enabled
 
@@ -870,6 +869,7 @@ static BOOL ParseTTFontFromDesc(CONST_STRPTR FontDesc,
 	STRPTR FontName, size_t FontNameSize)
 {
 	CONST_STRPTR lp;
+	long long1,long2,long3;
 
 	strcpy(FontName, "");
 	*FontStyle = 0;
@@ -879,8 +879,12 @@ static BOOL ParseTTFontFromDesc(CONST_STRPTR FontDesc,
 	// Font Desc format:
 	// "style/weight/size/fontname"
 
-	if (3 != sscanf(FontDesc, "%ld/%ld/%ld", FontStyle, FontWeight, FontSize))
+	if (3 != sscanf(FontDesc, "%ld/%ld/%ld", &long1, &long2, &long3))
 		return FALSE;
+
+	*FontStyle = long1;
+	*FontWeight = long2;
+	*FontSize = long3;
 
 	lp = strchr(FontDesc, '/');	// Find "/" between style and weight
 	if (NULL == lp)
@@ -956,13 +960,13 @@ SAVEDS(void) INTERRUPT ThumbnailsShowModeHookFunc(struct Hook *hook, Object *o, 
 SAVEDS(void) INTERRUPT IconFrameHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
-	ULONG FrameTypeNormal;
-	ULONG FrameTypeSelected;
+	ULONG FrameTypeNormal = 0;
+	ULONG FrameTypeSelected = 0;
 	BOOL RecessedNormal;
 	BOOL RecessedSelected;
 	const struct FrameSize *fs;
 	ULONG BorderLeft, BorderRight, BorderTop, BorderBottom;
-	ULONG Border;
+	ULONG Border = 0;
 
 	get(app->Obj[FRAME_ICONNORMAL], MUIA_MCPFrame_FrameType, &FrameTypeNormal);
 	get(app->Obj[FRAME_ICONSELECTED], MUIA_MCPFrame_FrameType, &FrameTypeSelected);
@@ -1040,13 +1044,13 @@ SAVEDS(void) INTERRUPT IconFrameHookFunc(struct Hook *hook, Object *o, Msg msg)
 SAVEDS(void) INTERRUPT ThumbnailFrameHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct SCAModule *app = (struct SCAModule *) hook->h_Data;
-	ULONG FrameTypeNormal;
-	ULONG FrameTypeSelected;
+	ULONG FrameTypeNormal = 0;
+	ULONG FrameTypeSelected = 0;
 	BOOL RecessedNormal;
 	BOOL RecessedSelected;
 	const struct FrameSize *fs;
 	ULONG BorderLeft, BorderRight, BorderTop, BorderBottom;
-	ULONG Border;
+	ULONG Border = 0;
 
 	get(app->Obj[FRAME_ICON_THUMBNAIL_NORMAL], MUIA_MCPFrame_FrameType, &FrameTypeNormal);
 	get(app->Obj[FRAME_ICON_THUMBNAIL_SELECTED], MUIA_MCPFrame_FrameType, &FrameTypeSelected);
@@ -1187,7 +1191,7 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetBrowserChangedHookFunc(struct Hook *hook,
 
 	if (cgy && SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
 		{
-		STRPTR str;
+		STRPTR str = NULL;
 		ULONG Changed = 0;
 
 		get(app->Obj[STRING_CONTROLBARGADGETS_BROWSER_NORMALIMAGE], MUIA_String_Contents, &str);
@@ -1298,7 +1302,7 @@ SAVEDS(APTR) INTERRUPT ControlBarGadgetNormalChangedHookFunc(struct Hook *hook, 
 
 	if (cgy && SCPGadgetType_ActionButton == cgy->cgy_GadgetType)
 		{
-		STRPTR str;
+		STRPTR str = NULL;
 		ULONG Changed = 0;
 
 		get(app->Obj[STRING_CONTROLBARGADGETS_NORMAL_NORMALIMAGE], MUIA_String_Contents, &str);
@@ -1433,10 +1437,11 @@ SAVEDS(void) INTERRUPT CalculateMaxRadiusHookFunc(struct Hook *hook, Object *o, 
 
 static LONG TTFontHeightFromDesc(CONST_STRPTR FontDesc)
 {
-	LONG FontStyle;
-	LONG FontWeight;
+	// LONG FontStyle;
+	// LONG FontWeight;
 	LONG FontSize;
 	CONST_STRPTR lp;
+	long long1, long2, long3;
 
 	// Font Desc format:
 	// "style/weight/size/fontname"
@@ -1444,8 +1449,12 @@ static LONG TTFontHeightFromDesc(CONST_STRPTR FontDesc)
 	if (NULL == FontDesc)
 		return 0;
 
-	if (3 != sscanf(FontDesc, "%ld/%ld/%ld", &FontStyle, &FontWeight, &FontSize))
+	if (3 != sscanf(FontDesc, "%ld/%ld/%ld", &long1, &long2, &long3))
 		return 0;
+
+	// FontStyle = long1;
+	// FontWeight = long2;
+	FontSize = long3;
 
 	lp = strchr(FontDesc, '/');	// Find "/" between style and weight
 	if (NULL == lp)

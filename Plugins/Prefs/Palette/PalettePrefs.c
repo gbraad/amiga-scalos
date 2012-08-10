@@ -1280,7 +1280,7 @@ void _XCEXIT(long x)
 
 DISPATCHER(myNList)
 {
-	struct PalettePrefsInst *inst;
+	struct PalettePrefsInst *inst = NULL;
 	ULONG result;
 
 	d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: MethodID=%08lx\n", __LINE__, msg->MethodID));
@@ -1328,7 +1328,7 @@ DISPATCHER_END
 
 DISPATCHER(NewColorAdjust)
 {
-	struct PalettePrefsInst *inst;
+	struct PalettePrefsInst *inst = NULL;
 	ULONG Result;
 
 	d1(kprintf( "%s/%s/%ld: START MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));
@@ -1378,7 +1378,7 @@ DISPATCHER_END
 
 DISPATCHER(NewPalettePenList)
 {
-	struct PalettePrefsInst *inst;
+	struct PalettePrefsInst *inst = NULL;
 	ULONG Result;
 
 	switch (msg->MethodID)
@@ -1411,7 +1411,7 @@ DISPATCHER(NewPalettePenList)
 			}
 		else
 			{
-			LONG DropMark;
+			LONG DropMark = 0;
 			LONG Entry;
 
 			get(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIA_NList_DropMark, &DropMark);
@@ -1492,7 +1492,7 @@ DISPATCHER_END
 
 DISPATCHER(NewScalosPenList)
 {
-	struct PalettePrefsInst *inst;
+	struct PalettePrefsInst *inst = NULL;
 	ULONG Result;
 
 	switch (msg->MethodID)
@@ -1512,7 +1512,7 @@ DISPATCHER(NewScalosPenList)
 
 	case MUIM_DragDrop:
 		{
-		LONG DropMark;
+		LONG DropMark = 0;
 		struct MUIP_DragDrop *dd = (struct MUIP_DragDrop *) msg;
 
 		get(obj, MUIA_NList_PrivateData, &inst);
@@ -1524,7 +1524,7 @@ DISPATCHER(NewScalosPenList)
 			if (inst->ppb_Objects[OBJNDX_AllocatedPensList] == dd->obj)
 				{
 				struct ScalosPenListEntry *snle;
-				LONG Entry;
+				LONG Entry = 0;
 				ULONG OldPenNr;
 
 				d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: \n", __LINE__));
@@ -2158,7 +2158,7 @@ static void GetWBColorsFunc(struct Hook *hook, Object *pop, Object *win)
 static APTR AddPenFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PalettePrefsInst *inst = (struct PalettePrefsInst *) hook->h_Data;
-	ULONG *rgb;
+	ULONG *rgb = NULL;
 	struct PensListEntry sple;
 
 	sple.sple_Index = 0;
@@ -2222,7 +2222,7 @@ static APTR ChangePenColorFunc(struct Hook *hook, Object *o, ULONG **msg)
 	struct PalettePrefsInst *inst = (struct PalettePrefsInst *) hook->h_Data;
 	struct PensListEntry *sple = NULL;
 	ULONG *rgb = *msg;
-	LONG ActiveEntryNr;
+	LONG ActiveEntryNr = 0;
 
 	DoMethod(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &sple);
 	get(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIA_NList_Active, &ActiveEntryNr);
@@ -2231,7 +2231,7 @@ static APTR ChangePenColorFunc(struct Hook *hook, Object *o, ULONG **msg)
 		{
 		if (sple->sple_Red != rgb[0] || sple->sple_Green != rgb[1] || sple->sple_Blue != rgb[2])
 			{
-			ULONG n, nEntries;
+			ULONG n, nEntries = 0;
 
 			d1(kprintf(__FILE__ "/" __FUNC__ "/%ld: \n", __LINE__));
 			SetChangedFlag(inst, TRUE);
@@ -2442,7 +2442,7 @@ static APTR DeletePenFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PalettePrefsInst *inst = (struct PalettePrefsInst *) hook->h_Data;
 	LONG ActiveEntryNr = MUIV_NList_Active_Off;
-	LONG PenCount;
+	LONG PenCount = 0;
 
 	get(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIA_NList_Active, &ActiveEntryNr);
 	get(inst->ppb_Objects[OBJNDX_AllocatedPensList], MUIA_NList_Entries, &PenCount);
@@ -3020,7 +3020,7 @@ static LONG SaveIcon(struct PalettePrefsInst *inst, CONST_STRPTR IconName)
 
 static void UpdatePalettePenCount(struct PalettePrefsInst *inst)
 {
-	ULONG allocatedPens;
+	ULONG allocatedPens = 0;
 	UWORD availablePens;
 
 	availablePens = 1 + inst->ppb_WBScreen->ViewPort.ColorMap->PalExtra->pe_SharableColors;

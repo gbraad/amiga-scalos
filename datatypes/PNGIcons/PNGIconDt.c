@@ -285,7 +285,7 @@ static BOOL DtNew(Class *cl, Object *o, struct opSet *ops)
 				if ('\0' == *FileName)
 					break;
 
-				IconFh = GetTagData(DTA_Handle, BNULL, ops->ops_AttrList);
+				IconFh = GetTagData(DTA_Handle, 0, ops->ops_AttrList);
 
 				d1(KPrintF("%s/%s/%ld:  FileName=<%s>\n", __FILE__, __FUNC__, __LINE__, FileName));
 				TIMESTAMP_d1();

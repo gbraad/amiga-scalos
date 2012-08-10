@@ -19,7 +19,9 @@ typedef unsigned char uchar;
 
 #define MAX_COMMENT 2000
 
+#ifndef PATH_MAX
 #define PATH_MAX 1024
+#endif
 
 // prototypes for error messages
 void ErrFatal(char * msg);

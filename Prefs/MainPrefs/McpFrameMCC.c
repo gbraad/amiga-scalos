@@ -250,7 +250,7 @@ static ULONG mDragDrop(Class *cl, Object *o, struct MUIP_DragDrop *msg)
 
 	if (msg->obj != o)
 		{
-		ULONG FrameType;
+		ULONG FrameType = 0;
 
 		get(msg->obj, MUIA_MCPFrame_FrameType, &FrameType);
 		SetAttrs(o,
