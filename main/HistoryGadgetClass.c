@@ -1006,7 +1006,7 @@ static void HistoryGadgetOpenPopupWindow(struct ScaWindowTask *wt, APTR arg)
 	d1(KPrintF("%s/%s/%ld:  hgi_TextLineHeight=%ld\n", __FILE__, __FUNC__, __LINE__, inst->hgi_TextLineHeight));
 
 	inst->hgi_EntryRect.MinX = inst->hgi_EntryRect.MinY = SHRT_MAX;
-	inst->hgi_EntryRect.MaxY = inst->hgi_EntryRect.MaxY = SHRT_MIN;
+	inst->hgi_EntryRect.MaxX = inst->hgi_EntryRect.MaxY = SHRT_MIN;
 
 	d1(KPrintF("%s/%s/%ld:  GInfo=%08lx  gi_RastPort=%08lx\n", __FILE__, __FUNC__, __LINE__, GInfo, GInfo->gi_RastPort));
 
