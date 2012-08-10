@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 			PrintFault(IoErr(), "Error querying default stack size");
 
 		if (!fQuiet)
-			printf("Default stack size is now %ld bytes.\n", defStack);
+			printf("Default stack size is now %ld bytes.\n", (long) defStack);
 		}
 
 	if (ArgOpts[1])
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
 			PrintFault(IoErr(), "Error querying ToolTip Delay");
 
 		if (!fQuiet)
-			printf("ToolTip delay is now %ld s.\n", ttDelay);
+			printf("ToolTip delay is now %ld s.\n", (long) ttDelay);
 		}
 
 	if (ArgOpts[5])
@@ -343,7 +343,7 @@ int main(int argc, char *argv[])
 			PrintFault(IoErr(), "Error querying copy buffer size");
 
 		if (!fQuiet)
-			printf("Copy buffer size is now %ld Bytes.\n", BuffSize);
+			printf("Copy buffer size is now %ld Bytes.\n", (long) BuffSize);
 		}
 	if (ArgOpts[12])
 		{
@@ -354,13 +354,13 @@ int main(int argc, char *argv[])
 			SCALOSCTRLA_GetCopyBuffSize, (ULONG) &Enabled,
 			TAG_END);
 		if (Result >= 1)
-			printf("Copy Buffer size      : %lu bytes\n", Enabled);
+			printf("Copy Buffer size      : %lu bytes\n", (unsigned long) Enabled);
 
 		Result = SCA_ScalosControl(NULL,
 			SCALOSCTRLA_GetDefaultStackSize, (ULONG) &Enabled,
 			TAG_END);
 		if (Result >= 1)
-			printf("Default stack size    : %lu bytes\n", Enabled);
+			printf("Default stack size    : %lu bytes\n", (unsigned long) Enabled);
 
 		Result = SCA_ScalosControl(NULL,
 			SCALOSCTRLA_GetCloseWBDisabled, (ULONG) &Enabled,
@@ -384,7 +384,7 @@ int main(int argc, char *argv[])
 			SCALOSCTRLA_GetToolTipDelay, (ULONG) &Enabled,
 			TAG_END);
 		if (Result >= 1)
-			printf("ToolTip delay         : %lu s\n", Enabled);
+			printf("ToolTip delay         : %lu s\n", (unsigned long) Enabled);
 
 		Result = SCA_ScalosControl(NULL,
 			SCALOSCTRLA_GetOldDragIconMode, (ULONG) &Enabled,

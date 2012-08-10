@@ -549,7 +549,7 @@ static enum ScanDirResult BeginScan_ExAll(struct ReadIconListControl *rilc)
 		}
 
 	rilc->rilc_pkt->dp_Type = ACTION_EXAMINE_ALL;
-	rilc->rilc_pkt->dp_Arg1 = rilc->rilc_dirLock;
+	rilc->rilc_pkt->dp_Arg1 = (SIPTR) rilc->rilc_dirLock;
 	rilc->rilc_pkt->dp_Arg2 = (LONG) rilc->rilc_ExAllBuffer;	// Buffer to store results
 	rilc->rilc_pkt->dp_Arg3 = ExAllBuffer_SIZE;			// Length (in bytes) of buffer (ARG2)
 	rilc->rilc_pkt->dp_Arg4 = rilc->rilc_ExAllType;			// Type of request
@@ -760,14 +760,14 @@ static enum ScanDirResult BeginScan_Examine(struct ReadIconListControl *rilc)
 
 		rc = DoPkt2(rilc->rilc_FileSysPort,
 			ACTION_EXAMINE_OBJECT,
-			rilc->rilc_dirLock,
-			MKBADDR(rilc->rilc_Fib));
+			(SIPTR) rilc->rilc_dirLock,
+			(SIPTR) MKBADDR(rilc->rilc_Fib));
 		if (!rc)
 			return SCANDIR_FAIL_ABORT;
 
 		rilc->rilc_pkt->dp_Type = ACTION_EXAMINE_NEXT;
-		rilc->rilc_pkt->dp_Arg1 = rilc->rilc_dirLock;
-		rilc->rilc_pkt->dp_Arg2 = MKBADDR(rilc->rilc_Fib);
+		rilc->rilc_pkt->dp_Arg1 = (SIPTR) rilc->rilc_dirLock;
+		rilc->rilc_pkt->dp_Arg2 = (SIPTR) MKBADDR(rilc->rilc_Fib);
 
 		d1(KPrintF("%s/%s/%ld:\n", __FILE__, __FUNC__, __LINE__));
 		}
@@ -1723,8 +1723,8 @@ BOOL IsSoftLink(CONST_STRPTR Name)
 
 		Success = DoPkt(FileSysPort,
 				ACTION_LOCATE_OBJECT,
-				dirLock,
-				MKBADDR(Buffer),
+				(SIPTR) dirLock,
+				(SIPTR) MKBADDR(Buffer),
 				ACCESS_READ,
 				0, 0);
 

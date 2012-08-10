@@ -485,7 +485,7 @@ static void HandleRepliedPackets(Object *o, struct DevListClassInstance *inst, s
 					dle != (struct DevListEntry *) &inst->dlci_DleList.lh_Tail;
 					dle = (struct DevListEntry *) dle->dle_Node.ln_Succ)
 					{
-					if (pkt->sp_Pkt.dp_Arg1 == MKBADDR(dle->dle_InfoData))
+					if (pkt->sp_Pkt.dp_Arg1 == (IPTR) MKBADDR(dle->dle_InfoData))
 						{
 						d1(kprintf("%s/%s/%ld: di=%08lx  <%s>  disktype=%08lx\n", \
 							__FILE__, __FUNC__, __LINE__, dle, dle->dle_DeviceName, dle->dle_InfoData->id_DiskType));
@@ -731,7 +731,7 @@ static void SendInfoPacket(struct DevListClassInstance *inst, struct DevListEntr
 		dle->dle_DosPacket->dp_Port = inst->dlci_ReplyPort;
 		dle->dle_DosPacket->dp_Type = ACTION_DISK_INFO;
 		dle->dle_DosPacket->dp_Res1 = dle->dle_DosPacket->dp_Res2 = 0;
-		dle->dle_DosPacket->dp_Arg1 = MKBADDR(dle->dle_InfoData);
+		dle->dle_DosPacket->dp_Arg1 = (SIPTR) MKBADDR(dle->dle_InfoData);
 
 		SendPkt(dle->dle_DosPacket, dle->dle_Handler, inst->dlci_ReplyPort);
 

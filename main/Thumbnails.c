@@ -867,7 +867,7 @@ static BOOL GenerateThumbnailFromARGB(struct internalScaWindowTask *iwt,
 		sac = ScalosGfxMedianCutTags(argbDest, Depth,
 			SCALOSGFX_MedianCutFlags, SCALOSGFXFLAGF_MedianCut_FloydSteinberg,
 			SCALOSGFX_MedianCutReservedColors, 2,
-			SCALOSGFX_MedianCutFriendBitMap, NULL,
+			SCALOSGFX_MedianCutFriendBitMap, 0,
 			TAG_END);
 		d1(KPrintF("%s/%s/%ld:  sac=%08lx\n", __FILE__, __FUNC__, __LINE__, sac));
 

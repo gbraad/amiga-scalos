@@ -649,7 +649,7 @@ static void ScaReboot(struct Window *win_Parent)
 			ColdReboot();
 			break;
 		case 2:		// Shutdown
-			ShutdownA(NULL);
+			ShutdownA(0);
 			break;
 		default:	// Cancel
 			return;

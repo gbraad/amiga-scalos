@@ -1140,13 +1140,16 @@ void FunctionsGetSettingsFromIconObject(struct IconWindowProperties *iwp, Object
 	if (DoMethod(IconObj, IDTM_FindToolType, "SCALOS_ICONSIZECONSTRAINTS", &tt))
 		{
 		LONG IconSizeMin, IconSizeMax;
+		long long1, long2;
 
 		d1(KPrintF("%s/%s/%ld: tt=<%s>\n", __FILE__, __FUNC__, __LINE__, tt));
 		while (*tt && '=' !=  *tt)
 			tt++;
 
-		if (2 == sscanf(tt, "=%ld,%ld", &IconSizeMin, &IconSizeMax))
+		if (2 == sscanf(tt, "=%ld,%ld", &long1, &long2))
 			{
+			IconSizeMin = long1;
+			IconSizeMax = long2;
 			if ((IconSizeMax > 128) || (IconSizeMax < 0))
 				IconSizeMax = SHRT_MAX;
 			if ((IconSizeMin < 0) || (IconSizeMin >= IconSizeMax))

@@ -847,7 +847,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == name)
 			break;
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, 0, TagList);
 		if (BNULL == dirLock)
 			break;
 
@@ -860,7 +860,7 @@ static BOOL UndoAddCopyMoveEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == ucmed->ucmed_srcDirName)
 			break;
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_CopyDestDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_CopyDestDirLock, 0, TagList);
 		if (BNULL == dirLock)
 			break;
 
@@ -979,7 +979,7 @@ static BOOL AddChangeIconPosEvent(struct UndoEvent *uev, struct TagItem *TagList
 		if (NULL == name)
 			break;
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		if (BNULL == dirLock)
 			break;
 
@@ -1065,7 +1065,7 @@ static BOOL AddSnapshotEvent(struct UndoEvent *uev, struct TagItem *TagList)
 		if (NULL == name)
 			break;
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		if (BNULL == dirLock)
 			break;
 
@@ -1279,7 +1279,7 @@ static BOOL AddRenameEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, 0, TagList);
 		d1(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
 		if (BNULL == dirLock)
 			break;
@@ -1455,7 +1455,7 @@ static BOOL AddDeleteEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_CopySrcDirLock, 0, TagList);
 		d1(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
 		if (BNULL == dirLock)
 			break;
@@ -1629,7 +1629,7 @@ static BOOL AddNewDrawerEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		d1(kprintf("%s/%s/%ld: dirLock=%08lx\n", __FILE__, __FUNC__, __LINE__, dirLock));
 		if (BNULL == dirLock)
 			break;
@@ -1725,7 +1725,7 @@ static BOOL AddLeaveOutPutAwayEvent(struct UndoEvent *uev, struct TagItem *TagLi
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
@@ -1807,7 +1807,7 @@ static BOOL AddSetProtectionEvent(struct UndoEvent *uev, struct TagItem *TagList
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
@@ -1896,7 +1896,7 @@ static BOOL AddSetCommentEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
@@ -1999,7 +1999,7 @@ static BOOL AddSetToolTypesEvent(struct UndoEvent *uev, struct TagItem *TagList)
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;
@@ -2102,7 +2102,7 @@ static BOOL AddChangeIconObjectEvent(struct UndoEvent *uev, struct TagItem *TagL
 
 		d1(kprintf("%s/%s/%ld: name=%08lx\n", __FILE__, __FUNC__, __LINE__, name));
 
-		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, BNULL, TagList);
+		dirLock = (BPTR) GetTagData(UNDOTAG_IconDirLock, 0, TagList);
 		debugLock_d1(dirLock);
 		if (BNULL == dirLock)
 			break;

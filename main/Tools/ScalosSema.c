@@ -199,7 +199,7 @@ static void DoSema(const struct internalScaWindowTask *iwt,
 				Prefix = "";
 				}
 
-			printf("%sSemaphore <%s> %08lx\n", Prefix, SemaName, (ULONG) &xSema->Sema);
+			printf("%sSemaphore <%s> %08lx\n", Prefix, SemaName, (unsigned long) &xSema->Sema);
 			printf("%s   Owner:  ", Prefix);
 			if (IsListEmpty((struct List *) &xSema->OwnerList))
 				{
@@ -228,7 +228,7 @@ static void DoSema(const struct internalScaWindowTask *iwt,
 					printf("%s      [%s] %s/%s/%ld  <%s>\n", Prefix, 
 						OwnModeString,
 						Owner->FileName, 
-						Owner->Func, Owner->Line,
+						Owner->Func, (long) Owner->Line,
 						Owner->ProcName);
 					}
 
@@ -256,7 +256,7 @@ static void DoSema(const struct internalScaWindowTask *iwt,
 					printf("%s      [%s] %s/%s/%ld  <%s>\n", Prefix, 
 						(OWNMODE_EXCLUSIVE == Owner->OwnMode) ? "Ex" : "Sh",
 						Owner->FileName, 
-						Owner->Func, Owner->Line,
+						Owner->Func, (long) Owner->Line,
 						Owner->ProcName);
 					}
 
