@@ -2144,7 +2144,7 @@ static LONG MainLoop(LONG Action, struct SCAModule *app)
 int main(int argc, char *argv[])
 {
 	LONG Action = MUIV_Application_ReturnID_EDIT;
-	CONST_STRPTR GivenFileName = NULL;
+	// CONST_STRPTR GivenFileName = NULL; // not used
 	struct SCAModule app;
 	BPTR oldDir = (BPTR)NULL;
 	struct RDArgs *rdArgs = NULL;
@@ -2175,7 +2175,7 @@ int main(int argc, char *argv[])
 			if (WBenchMsg->sm_NumArgs > 1)
 				{
 				arg = &WBenchMsg->sm_ArgList[1];
-				GivenFileName = arg->wa_Name;
+				// GivenFileName = arg->wa_Name;
 				}
 			else
 				{
@@ -2234,7 +2234,9 @@ int main(int argc, char *argv[])
 			rdArgs = ReadArgs("FROM,EDIT/S,USE/S,SAVE/S", ArgArray, NULL);
 
 			if (ArgArray[0])
-				GivenFileName = (CONST_STRPTR) ArgArray[0];
+				{
+				// GivenFileName = (CONST_STRPTR) ArgArray[0];
+				}
 			if (ArgArray[1])
 				Action = MUIV_Application_ReturnID_EDIT;
 			if (ArgArray[2])
@@ -3072,8 +3074,8 @@ static ULONG TextWindowColumnsListDragDrop(struct IClass *cl,Object *obj,struct 
 		*/
 
 		LONG idArray[Sizeof(cTextWindowsColumns)];
-		LONG dropmark;
-		LONG sortable;
+		LONG dropmark = 0;
+		LONG sortable = 0;
 		LONG id = MUIV_NList_NextSelected_Start;
 		LONG ArrayIndex;
 
@@ -3204,7 +3206,7 @@ static ULONG ControlBarGadgetsListDragDrop(struct IClass *cl,Object *obj,struct 
 		** have become an active destination object otherwise.
 		*/
 
-		LONG dropmark;
+		LONG dropmark = 0;
 		LONG id = MUIV_NList_NextSelected_Start;
 		ULONG SourceIsDragSortable = FALSE;
 		ULONG DestIsDragSortable = FALSE;
@@ -4417,8 +4419,8 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 	while (1)
 		{
-		ULONG ver;
-		ULONG rev;
+		ULONG ver = 0;
+		ULONG rev = 0;
 		struct Library *base;
 		char libname[256];
 

@@ -175,7 +175,7 @@ static ULONG PrevInteger;	//+jmc+
 
 int main(int argc, char *argv[])
 {
-	LONG win_opened;
+	LONG win_opened = 0;
 	struct WBStartup *WBenchMsg =
 		(argc == 0) ? (struct WBStartup *)argv : NULL;
 
@@ -209,8 +209,8 @@ int main(int argc, char *argv[])
 
 	do	{
 		ULONG sigs = 0;
-		ULONG QuitSelected;
-		ULONG StackSelected;
+		ULONG QuitSelected = 0;
+		ULONG StackSelected = 0;
 
 		struct WBArg *arg = &WBenchMsg->sm_ArgList[1];
 
@@ -590,7 +590,7 @@ static void CloseLibraries(void)
 #endif
 	if (LocaleBase)
 		{
-		CloseLibrary(LocaleBase);
+		CloseLibrary((struct Library *) LocaleBase);
 		LocaleBase = NULL;
 		}
 #ifdef __amigaos4__
@@ -669,7 +669,7 @@ static void InitCurrent(struct WBArg *arg)
 	char xName[512];
 	char LabelText[512];
 	char SpaceName[256];
-	STRPTR LastContent;
+	STRPTR LastContent = NULL;
 
 	NameFromLock(arg->wa_Lock, xName, sizeof(xName));
 	sprintf(LabelText, GetLocString(MSGID_CURRENTDIR), xName);
@@ -703,8 +703,8 @@ static void InitCurrent(struct WBArg *arg)
 
 static LONG ExecuteCommand(struct WBArg *arg)
 {
-	STRPTR CommandString;
-	STRPTR StackDisabled;
+	STRPTR CommandString = NULL;
+	STRPTR StackDisabled = NULL;
 	BPTR oldDir;
 	LONG Result = RETURN_OK;
 	STRPTR conDef = "CON:////Execute_Command/AUTO/CLOSE/WAIT";
@@ -1077,7 +1077,7 @@ static SAVEDS(void) INTERRUPT OpenAboutHookFunc(struct Hook *hook, Object *o, Ms
 // +jmc+
 static SAVEDS(void) INTERRUPT StringMUIHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	STRPTR	defstring;
+	STRPTR	defstring = NULL;
 
 	get(StringName, MUIA_String_Contents, &defstring);
 	if(defstring && strlen(defstring) > 0)
@@ -1110,8 +1110,8 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 	while (1)
 		{
-		ULONG ver;
-		ULONG rev;
+		ULONG ver = 0;
+		ULONG rev = 0;
 		struct Library *base;
 		char libname[256];
 		Object *obj;

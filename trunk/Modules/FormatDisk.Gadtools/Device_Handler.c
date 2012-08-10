@@ -75,7 +75,7 @@ BOOL volumeToDevName(BPTR volumeLock, char *dev, DriveLayout *layout)
 			dosList->dol_misc.dol_handler.dol_Handler, dosList->dol_Type, dosList->dol_Task, dosList->dol_Lock));
 
 		// If the node in the list is a volume
-		if (dosList->dol_misc.dol_handler.dol_Startup > 1000 &&
+		if (dosList->dol_misc.dol_handler.dol_Startup > (APTR) 1000 &&
 			(dosList->dol_Task /* || dosList->dol_misc.dol_handler.dol_Handler */ || dosList->dol_misc.dol_handler.dol_SegList))
 			{
 			BOOL stat = FALSE;

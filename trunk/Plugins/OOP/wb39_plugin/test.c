@@ -74,14 +74,14 @@ int main()
 	Result = WorkbenchControl(NULL, 
 		WBCTRLA_GetDefaultStackSize, (ULONG) &stackSize,
 		TAG_END);
-	printf("WorkbenchControl(WBCTRLA_GetDefaultStackSize) returned %d  DefaultStackSize=%lu\n", Result, stackSize);
+	printf("WorkbenchControl(WBCTRLA_GetDefaultStackSize) returned %d  DefaultStackSize=%lu\n", Result, (unsigned long) stackSize);
 
 	printf("======================================================\n");
 
 	Result = WorkbenchControl(NULL, 
 		WBCTRLA_GetProgramList, (ULONG) &dList,
 		TAG_END);
-	printf("WorkbenchControl(WBCTRLA_GetProgramList) returned %d  List=%08lx\n", Result, (ULONG) dList);
+	printf("WorkbenchControl(WBCTRLA_GetProgramList) returned %d  List=%08lx\n", Result, (unsigned long) dList);
 
 	if (dList)
 		{
@@ -89,7 +89,7 @@ int main()
 
 		for (xNode=dList->lh_Head; xNode != (struct Node *) &dList->lh_Tail; xNode=xNode->ln_Succ)
 			{
-			printf("	Node=%08lx Type=%02x Name=<%s>\n", (ULONG) xNode, xNode->ln_Type, xNode->ln_Name);
+			printf("	Node=%08lx Type=%02x Name=<%s>\n", (unsigned long) xNode, xNode->ln_Type, xNode->ln_Name);
 			}
 
 		Result = WorkbenchControl(NULL, 
@@ -104,7 +104,7 @@ int main()
 	Result = WorkbenchControl(NULL, 
 		WBCTRLA_GetOpenDrawerList, (ULONG) &dList,
 		TAG_END);
-	printf("WorkbenchControl(WBCTRLA_GetOpenDrawerList) returned %d  List=%08lx\n", Result, (ULONG) dList);
+	printf("WorkbenchControl(WBCTRLA_GetOpenDrawerList) returned %d  List=%08lx\n", Result, (unsigned long) dList);
 
 	if (dList)
 		{
@@ -112,7 +112,7 @@ int main()
 
 		for (xNode=dList->lh_Head; xNode != (struct Node *) &dList->lh_Tail; xNode=xNode->ln_Succ)
 			{
-			printf("	Node=%08lx Type=%02x Name=<%s>\n", (ULONG) xNode, xNode->ln_Type, xNode->ln_Name);
+			printf("	Node=%08lx Type=%02x Name=<%s>\n", (unsigned long) xNode, xNode->ln_Type, xNode->ln_Name);
 			}
 
 		Result = WorkbenchControl(NULL, 
@@ -127,7 +127,7 @@ int main()
 	Result = WorkbenchControl(NULL, 
 		WBCTRLA_GetHiddenDeviceList, (ULONG) &dList,
 		TAG_END);
-	printf("WorkbenchControl(WBCTRLA_GetHiddenDeviceList) returned %d  List=%08lx\n", Result, (ULONG) dList);
+	printf("WorkbenchControl(WBCTRLA_GetHiddenDeviceList) returned %d  List=%08lx\n", Result, (unsigned long) dList);
 
 	if (dList)
 		{
@@ -135,7 +135,7 @@ int main()
 
 		for (xNode=dList->lh_Head; xNode != (struct Node *) &dList->lh_Tail; xNode=xNode->ln_Succ)
 			{
-			printf("	Node=%08lx Type=%02x Name=<%s>\n", (ULONG) xNode, xNode->ln_Type, xNode->ln_Name);
+			printf("	Node=%08lx Type=%02x Name=<%s>\n", (unsigned long) xNode, xNode->ln_Type, xNode->ln_Name);
 			}
 
 		Result = WorkbenchControl(NULL, 
@@ -150,7 +150,7 @@ int main()
 	Result = WorkbenchControl(NULL, 
 		WBCTRLA_GetSelectedIconList, (ULONG) &dList,
 		TAG_END);
-	printf("WorkbenchControl(WBCTRLA_GetSelectedIconList) returned %d  List=%08lx\n", Result, (ULONG) dList);
+	printf("WorkbenchControl(WBCTRLA_GetSelectedIconList) returned %d  List=%08lx\n", Result, (unsigned long) dList);
 
 	if (dList)
 		{
@@ -158,7 +158,7 @@ int main()
 
 		for (xNode=dList->lh_Head; xNode != (struct Node *) &dList->lh_Tail; xNode=xNode->ln_Succ)
 			{
-			printf("	Node=%08lx Type=%02x Name=<%s>\n", (ULONG) xNode, xNode->ln_Type, xNode->ln_Name);
+			printf("	Node=%08lx Type=%02x Name=<%s>\n", (unsigned long) xNode, xNode->ln_Type, xNode->ln_Name);
 			}
 
 		// WorkbenchControlA()
@@ -174,7 +174,7 @@ int main()
 	Result = WorkbenchControl(fName,
 		WBCTRLA_IsOpen, (ULONG) &Found,
 		TAG_END);
-	printf("WorkbenchControl(<%s>, WBCTRLA_IsOpen) returned %d, Open=%ld\n", fName, Result, Found);
+	printf("WorkbenchControl(<%s>, WBCTRLA_IsOpen) returned %d, Open=%ld\n", fName, Result, (long) Found);
 
 	printf("======================================================\n");
 
@@ -182,7 +182,7 @@ int main()
 	Result = WorkbenchControl(fName,
 		WBCTRLA_DuplicateSearchPath, (ULONG) &dList,
 		TAG_END);
-	printf("WorkbenchControl(WBCTRLA_DuplicateSearchPath) returned %d, List=%08lx\n", Result, (ULONG) dList);
+	printf("WorkbenchControl(WBCTRLA_DuplicateSearchPath) returned %d, List=%08lx\n", Result, (unsigned long) dList);
 
 	if (dList)
 		PrintPathList((BPTR) dList);

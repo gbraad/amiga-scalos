@@ -618,8 +618,8 @@ LIBFUNC_P3(void, LIBReadPrefsHandle,
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
 
-		iff->iff_Stream = Open(Filename, MODE_OLDFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR) Open(Filename, MODE_OLDFILE);
+		if (0 == iff->iff_Stream)
 			break;
 
 		d1(kprintf("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -726,8 +726,8 @@ LIBFUNC_P3(void, LIBReadPrefsHandle,
 			CloseIFF(iff);
 		if (iff->iff_Stream)
 			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = (BPTR)NULL;
+			Close((BPTR) iff->iff_Stream);
+			iff->iff_Stream = 0;
 			}
 		FreeIFF(iff);
 		}
@@ -770,8 +770,8 @@ LIBFUNC_P3(void, LIBWritePrefsHandle,
 
 		InitIFFasDOS(iff);
 
-		iff->iff_Stream = Open(Filename, MODE_NEWFILE);
-		if ((BPTR)NULL == iff->iff_Stream)
+		iff->iff_Stream = (IPTR) Open(Filename, MODE_NEWFILE);
+		if (0 == iff->iff_Stream)
 			break;
 
 		Result = OpenIFF(iff, IFFF_WRITE);
@@ -884,8 +884,8 @@ LIBFUNC_P3(void, LIBWritePrefsHandle,
 			CloseIFF(iff);
 		if (iff->iff_Stream)
 			{
-			Close(iff->iff_Stream);
-			iff->iff_Stream = (BPTR)NULL;
+			Close((BPTR) iff->iff_Stream);
+			iff->iff_Stream = 0;
 			}
 		FreeIFF(iff);
 		}

@@ -12,7 +12,7 @@
 #ifndef MISC_H
 #define MISC_H
 
-WORD USTextLength(STRPTR string, struct TextFont *tf);
+WORD USTextLength(CONST_STRPTR string, struct TextFont *tf);
 WORD MaxLen(int count, ...);
 
 extern int KPrintF(CONST_STRPTR fmt, ...);

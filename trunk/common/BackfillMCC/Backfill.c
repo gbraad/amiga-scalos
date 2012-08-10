@@ -207,7 +207,7 @@ static ULONG BackFillDraw(Class *cl, Object *o, Msg msg)
 {
 	struct BackFillInst *inst = INST_DATA(cl, o);
 	struct MUIP_Draw *mDraw = (struct MUIP_Draw *) msg;
-	ULONG ShowMe;
+	ULONG ShowMe = 0;
 
 	get(o, MUIA_ShowMe, &ShowMe);
 
@@ -276,14 +276,14 @@ static void CloneBitMapObject(Class *cl, Object *o, Object *NewBitMapObj)
 
 	if (NewBitMapObj)
 		{
-		ULONG Width;
+		ULONG Width = 0;
 
 		// check whether this is a BitmapObject by querying MUIA_Bitmap_Width
 		if (get(NewBitMapObj, MUIA_Bitmap_Width, &Width))
 			{
-			ULONG Height;
-			struct BitMap *NewBitMap;
-			ULONG *SourceColors;
+			ULONG Height = 0;
+			struct BitMap *NewBitMap = NULL;
+			ULONG *SourceColors = NULL;
 
 			inst->bfi_GenericBitMapObject = TRUE;
 
@@ -302,8 +302,8 @@ static void CloneBitMapObject(Class *cl, Object *o, Object *NewBitMapObj)
 			inst->bfi_BitMapObject = BitmapObject,
 				MUIA_Bitmap_Width, Width,
 				MUIA_Bitmap_Height, Height,
-				MUIA_Bitmap_Bitmap, (ULONG) NewBitMap,
-				MUIA_Bitmap_SourceColors, SourceColors,
+				MUIA_Bitmap_Bitmap, (IPTR) NewBitMap,
+				MUIA_Bitmap_SourceColors, (IPTR) SourceColors,
 				MUIA_Bitmap_UseFriend, TRUE,
 				MUIA_Bitmap_Precision, PRECISION_ICON,
 				End;
@@ -315,7 +315,7 @@ static void CloneBitMapObject(Class *cl, Object *o, Object *NewBitMapObj)
 			ULONG *ColorTable = NULL;
 			UBYTE *BitMapArray = NULL;
 			struct Screen *screen = NULL;
-			ULONG Height;
+			ULONG Height = 0;
 
 			inst->bfi_GenericBitMapObject = FALSE;
 
@@ -327,12 +327,12 @@ static void CloneBitMapObject(Class *cl, Object *o, Object *NewBitMapObj)
 			get(NewBitMapObj, MUIA_ScaBitMappic_Screen, &screen);
 
 			inst->bfi_BitMapObject = BitMapPicObject,
-				MUIA_ScaBitMappic_BitMap, bm,
-				MUIA_ScaBitMappic_ColorTable, ColorTable,
+				MUIA_ScaBitMappic_BitMap, (IPTR) bm,
+				MUIA_ScaBitMappic_ColorTable, (IPTR) ColorTable,
 				MUIA_ScaBitMappic_Width, Width,
 				MUIA_ScaBitMappic_Height, Height,
-				MUIA_ScaBitMappic_Screen, screen,
-				MUIA_ScaBitmappic_BitMapArray, BitMapArray,
+				MUIA_ScaBitMappic_Screen, (IPTR) screen,
+				MUIA_ScaBitmappic_BitMapArray, (IPTR) BitMapArray,
 				End;
 
 			d1(KPrintF(__FILE__ "/" __FUNC__ "/%ld: bfi_BitMapObject=%08lx\n", __LINE__, inst->bfi_BitMapObject));

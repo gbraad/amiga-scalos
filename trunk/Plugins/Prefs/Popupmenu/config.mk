@@ -51,7 +51,7 @@ ifeq ($(MACHINE), i386-aros)
 
 DEFINES +=      -DMUI_OBSOLETE
 
-LFLAGS  +=      -nostartfiles -lrom -lmui \
+LFLAGS  +=      -nostartfiles -lmui \
 #
 
 else

@@ -445,6 +445,7 @@ static APTR OpenTTFontFromDesc(CONST_STRPTR FontDesc)
 	char NameSpace[MAX_TTFONTDESC];
 	STRPTR FamilyTable[2];
 	APTR TTFont;
+	long long1, long2, long3;
 
 	// Font Desc format:
 	// "style/weight/size/fontname"
@@ -452,8 +453,12 @@ static APTR OpenTTFontFromDesc(CONST_STRPTR FontDesc)
 	if (NULL == FontDesc)
 		return NULL;
 
-	if (3 != sscanf(FontDesc, "%ld/%ld/%ld", &FontStyle, &FontWeight, &FontSize))
+	if (3 != sscanf(FontDesc, "%ld/%ld/%ld", &long1, &long2, &long3))
 		return NULL;
+
+	FontStyle = long1;
+	FontWeight = long2;
+	FontSize = long3;
 
 	lp = strchr(FontDesc, '/');	// Find "/" between style and weight
 	if (NULL == lp)

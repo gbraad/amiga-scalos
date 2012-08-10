@@ -798,7 +798,7 @@ static SAVEDS(APTR) INTERRUPT OpenAboutMUIHookFunc(struct Hook *hook, Object *o,
 
 static SAVEDS(void) INTERRUPT EnableTrashcanHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
-	ULONG UseTrashcan;
+	ULONG UseTrashcan = 0;
 
 	get(CM_TrashCan, MUIA_Selected, &UseTrashcan);
 
@@ -818,8 +818,8 @@ static BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 	while (1)
 		{
-		ULONG ver;
-		ULONG rev;
+		ULONG ver = 0;
+		ULONG rev = 0;
 		struct Library *base;
 		char libname[256];
 

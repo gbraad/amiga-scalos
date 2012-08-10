@@ -49,7 +49,7 @@ ifeq ($(MACHINE), i386-aros)
 ###############################################################################
 # i386-aros
 
-LFLAGS  +=      -nostartfiles -lrom -lmui \
+LFLAGS  +=      -nostartfiles -lmui \
 #
 
 

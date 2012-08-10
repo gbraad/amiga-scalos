@@ -58,7 +58,7 @@ ifeq ($(MACHINE), i386-aros)
 ###############################################################################
 # i386-aros
 
-LFLAGS	+=	-nostartfiles -lrom -larossupport
+LFLAGS	+=	-nostartfiles -larossupport
 
 else
 

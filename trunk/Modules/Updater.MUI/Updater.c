@@ -372,7 +372,7 @@ static struct NewMenu NewContextMenuComponents[] =
 int main(int argc, char *argv[])
 {
 	const struct MUIP_ScalosPrefs_MCCList *mcc;
-	LONG win_opened;
+	LONG win_opened = 0;
 	
 	WBenchMsg = (argc == 0) ? (struct WBStartup *)argv : NULL;
 
@@ -1395,8 +1395,8 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 
 	while (1)
 		{
-		ULONG ver;
-		ULONG rev;
+		ULONG ver = 0;
+		ULONG rev = 0;
 		struct Library *base;
 		char libname[256];
 
@@ -1507,7 +1507,7 @@ BOOL CheckMCCVersion(CONST_STRPTR name, ULONG minver, ULONG minrev)
 static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len)
 {
 	BOOL Success = FALSE;
-	ULONG ShowAllComponents;
+	ULONG ShowAllComponents = 0;
 	size_t TotalLen = len;
 
 	d1(KPrintF("%s/%s/%ld: Received data\n", __FILE__, __FUNC__, __LINE__));
@@ -1533,7 +1533,7 @@ static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len)
 			enum { ARG_DIR, ARG_FILE, ARG_VERSION, ARG_PKG, ARG_OS, ARG_HASH };
 			static CONST_STRPTR Template = "DIR/A/K,FILE/A/K,VERSION/A/K,PKG/K,OS/A/K,HASH/K";
 			struct RDArgs *ReadArgs;
-			LONG Args[6];
+			SIPTR Args[6];
 
 			memset(Args, 0, sizeof(Args));
 
@@ -1562,11 +1562,16 @@ static BOOL ProcessVersionFile(CONST_STRPTR text, size_t len)
 
 					if (0 == strcmp(OsName, (STRPTR) Args[ARG_OS]))
 						{
+						unsigned long ulong1, ulong2, ulong3;
 						cle.cle_RemoteVersion = cle.cle_RemoteRevision = cle.cle_RemotePatchLevel = 0;
 
-						if (sscanf((STRPTR) Args[ARG_VERSION], "%lu.%lu.%lu", &cle.cle_RemoteVersion, &cle.cle_RemoteRevision, &cle.cle_RemotePatchLevel) >= 2)
+						if (sscanf((STRPTR) Args[ARG_VERSION], "%lu.%lu.%lu", &ulong1, &ulong2, &ulong3) >= 2)
 							{
 							char VersionString[80];
+
+							cle.cle_RemoteVersion = ulong1;
+							cle.cle_RemoteRevision = ulong2;
+							cle.cle_RemotePatchLevel = ulong3;
 
 							if (':' == cle.cle_Dir[strlen(cle.cle_Dir) - 1])
 								GetAssignListVersionString(cle.cle_Dir, cle.cle_File, VersionString, sizeof(VersionString));
@@ -1703,16 +1708,16 @@ static APTR ComponentsConstructHookFunc(struct Hook *hook, Object *obj, struct N
 		DoMethod(obj, MUIM_NList_UseImage, cle->cle_CheckboxObject, cle->cle_CheckboxImageNr, 0);
 
 		if (cle->cle_LocalPatchLevel)
-			snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu.%lu", cle->cle_LocalVersion, cle->cle_LocalRevision, cle->cle_LocalPatchLevel);
+			snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu.%lu", (unsigned long) cle->cle_LocalVersion, (unsigned long) cle->cle_LocalRevision, (unsigned long) cle->cle_LocalPatchLevel);
 		else
-			snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu", cle->cle_LocalVersion, cle->cle_LocalRevision);
+			snprintf(cle->cle_LocalVersionString, sizeof(cle->cle_LocalVersionString), "%lu.%lu", (unsigned long) cle->cle_LocalVersion, (unsigned long) cle->cle_LocalRevision);
 		if (cle->cle_RemotePatchLevel)
-			snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu.%lu", cle->cle_RemoteVersion, cle->cle_RemoteRevision, cle->cle_RemotePatchLevel);
+			snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu.%lu", (unsigned long) cle->cle_RemoteVersion, (unsigned long) cle->cle_RemoteRevision, (unsigned long) cle->cle_RemotePatchLevel);
 		else
-			snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu", cle->cle_RemoteVersion, cle->cle_RemoteRevision);
+			snprintf(cle->cle_RemoteVersionString, sizeof(cle->cle_RemoteVersionString), "%lu.%lu", (unsigned long) cle->cle_RemoteVersion, (unsigned long) cle->cle_RemoteRevision);
 
-		snprintf(cle->cle_CheckboxImageNrString, sizeof(cle->cle_CheckboxImageNrString), "\33o[%ld@%ld|0]", cle->cle_CheckboxImageNr, cle->cle_CheckboxImageNr);
-		snprintf(cle->cle_LampImageNrString, sizeof(cle->cle_LampImageNrString), "\33o[%ld]", cle->cle_LampImageNr);
+		snprintf(cle->cle_CheckboxImageNrString, sizeof(cle->cle_CheckboxImageNrString), "\33o[%ld@%ld|0]", (long) cle->cle_CheckboxImageNr, (long) cle->cle_CheckboxImageNr);
+		snprintf(cle->cle_LampImageNrString, sizeof(cle->cle_LampImageNrString), "\33o[%ld]", (long) cle->cle_LampImageNr);
 		}
 
 	return cle;
@@ -1888,8 +1893,8 @@ static LONG ComponentsCompareHookFunc(struct Hook *hook, Object *obj, struct NLi
 
 static void ComponentToggleUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
-	ULONG ButtonNr;
-	ULONG Entries;
+	ULONG ButtonNr = 0;
+	ULONG Entries = 0;
 	ULONG n;
 
 	get(NListComponents, MUIA_NList_ButtonClick, &ButtonNr);
@@ -1927,8 +1932,8 @@ static void ComponentToggleUpdateHookFunc(struct Hook *hook, Object *obj, Msg *m
 
 static void ToggleShowAllHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
-	ULONG ShowAll;
-	ULONG Entries;
+	ULONG ShowAll = 0;
+	ULONG Entries = 0;
 
 	set(NListComponents, MUIA_NList_Quiet, TRUE);
 	set(NListHiddenComponents, MUIA_NList_Quiet, TRUE);
@@ -2167,6 +2172,8 @@ static STRPTR GetFileVersionString(CONST_STRPTR Dir, CONST_STRPTR Filename, STRP
 
 static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, ULONG *Version, ULONG *Revision, ULONG *PatchLevel)
 {
+	unsigned long ulong1, ulong2, ulong3;
+
 	*Version = *Revision = *PatchLevel = 0;
 
 	d1(KPrintF("%s/%s/%ld: VersionString=<%s>\n", __FILE__, __FUNC__, __LINE__, VersionString ));
@@ -2182,7 +2189,10 @@ static void ExtractVersionNumberFromVersionString(CONST_STRPTR VersionString, UL
 	if ('v' == ToLower(*VersionString))
 		VersionString++;
 
-	sscanf(VersionString, "%lu.%lu.%lu", Version, Revision, PatchLevel);
+	sscanf(VersionString, "%lu.%lu.%lu", &ulong1, &ulong2, &ulong3);
+	*Version = ulong1;
+	*Revision = ulong2;
+	*PatchLevel = ulong3;
 
 	d1(KPrintF("%s/%s/%ld: Version=%lu  Revision=%lu  PatchLevel=%lu\n", __FILE__, __FUNC__, __LINE__, *Version, *Revision, *PatchLevel));
 }
@@ -2248,7 +2258,7 @@ static void CheckForUpdatesHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
-	ULONG AskEveryUpdate;
+	ULONG AskEveryUpdate = 0;
 	STRPTR ScalosWebSite = "";
 	CURL *curl;
 
@@ -2266,7 +2276,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 		ULONG TotalUpdateCount = SelectedCount;
 		BOOL AbortUpdate = FALSE;
 		ULONG Count = 0;
-		ULONG Entries;
+		ULONG Entries = 0;
 		ULONG n;
 
 		get(NListComponents, MUIA_NList_Entries, &Entries);
@@ -2543,7 +2553,7 @@ static void StartUpdateUpdateHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 
 static void SelectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
-	ULONG Entries;
+	ULONG Entries = 0;
 	ULONG n;
 
 	get(NListComponents, MUIA_NList_Entries, &Entries);
@@ -2579,7 +2589,7 @@ static void SelectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *msg
 
 static void DeselectAllComponentsHookFunc(struct Hook *hook, Object *obj, Msg *msg)
 {
-	ULONG Entries;
+	ULONG Entries = 0;
 	ULONG n;
 
 	get(NListComponents, MUIA_NList_Entries, &Entries);
@@ -3139,14 +3149,14 @@ static BOOL SetProxyOptions(CURL *curl)
 	STRPTR ProxyName = NULL;
 
 	do	{
-		STRPTR ProxyAddr;
-		ULONG ProxyPort;
-		STRPTR ProxyUsername;
-		STRPTR ProxyPasswd;
+		STRPTR ProxyAddr = NULL;
+		ULONG ProxyPort = 0;
+		STRPTR ProxyUsername = NULL;
+		STRPTR ProxyPasswd = NULL;
 		size_t ProxyNameLen;
 		size_t ProxyUserPwdLen;
-		ULONG useProxy;
-		ULONG useProxyAuth;
+		ULONG useProxy = 0;
+		ULONG useProxyAuth = 0;
 
 		get(CheckUseProxy, MUIA_Selected, &useProxy);
 		if (!fUseProxy)
@@ -3169,7 +3179,7 @@ static BOOL SetProxyOptions(CURL *curl)
 		if (NULL == ProxyName)
 			break;
 
-		snprintf(ProxyName, ProxyNameLen, "%s:%ld", ProxyName, ProxyPort);
+		snprintf(ProxyName, ProxyNameLen, "%s:%ld", ProxyName, (long) ProxyPort);
 
 		curl_easy_setopt(curl, CURLOPT_PROXY, ProxyName);
 

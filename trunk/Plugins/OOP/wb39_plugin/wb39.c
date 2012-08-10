@@ -1448,7 +1448,8 @@ static LIBFUNC_P3(BOOL, myMakeWorkbenchObjectVisibleA,
 	A6, struct Library *, WorkbenchBase)
 {
 	struct Process *myProc;
-	BPTR fLock, dLock = (BPTR)NULL;
+	BPTR fLock;
+	// dLock = (BPTR)NULL; // unused
 	BOOL Result = FALSE;
 
 	/* Suppress warning */
@@ -1458,7 +1459,7 @@ static LIBFUNC_P3(BOOL, myMakeWorkbenchObjectVisibleA,
 	myProc = (struct Process *) FindTask(NULL);
 	if (NT_PROCESS == myProc->pr_Task.tc_Node.ln_Type)
 		{
-		dLock = myProc->pr_CurrentDir;
+		// dLock = myProc->pr_CurrentDir;
 		}
 
 	fLock = Lock(name, ACCESS_READ);

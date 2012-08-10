@@ -526,8 +526,8 @@ void ScalosDosPacketExamineDir(struct DosPacket *pkt, BPTR dirLock, T_ExamineDir
 	return;
 #else
 	pkt->dp_Type = ACTION_EXAMINE_NEXT;
-	pkt->dp_Arg1 = dirLock;
-	pkt->dp_Arg2 = MKBADDR(*edh);
+	pkt->dp_Arg1 = (IPTR) dirLock;
+	pkt->dp_Arg2 = (IPTR) MKBADDR(*edh);
 #endif
 }
 

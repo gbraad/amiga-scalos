@@ -1824,10 +1824,10 @@ static SAVEDS(ULONG) INTERRUPT ListDisplayHookFunc(struct Hook *hook, Object *ob
 		struct PatternListEntry *scp = (struct PatternListEntry *) ndm->entry;
 		static char Buffer[MAX_FILENAME];
 		STRPTR lp = Buffer;
-		ULONG DesktopPattern;
-		ULONG ScreenPattern;
-		ULONG IconWindowPattern;
-		ULONG TextWindowPattern;
+		ULONG DesktopPattern = 0;
+		ULONG ScreenPattern = 0;
+		ULONG IconWindowPattern = 0;
+		ULONG TextWindowPattern = 0;
 
 		n = 0;
 
@@ -2197,7 +2197,7 @@ static LONG ReadPrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename, 
 				}
 			else if (ID_PATT == cn->cn_ID)
 				{
-				ULONG nEntries;
+				ULONG nEntries = 0;
 
 				DoMethod(inst->ppb_Objects[OBJNDX_MainList], MUIM_NList_InsertSingle, "", MUIV_NList_Insert_Bottom);
 				get(inst->ppb_Objects[OBJNDX_MainList], MUIA_NList_Entries, &nEntries);
@@ -2445,7 +2445,7 @@ static LONG WritePrefsFile(struct PatternPrefsInst *inst, CONST_STRPTR Filename)
 	do	{
 		static const struct PrefHeader prefHeader = { 1, 0, 0L };
 		struct ScaPatternDefs pDefs;
-		ULONG n, Value;
+		ULONG n, Value = 0;
 
 		iff = AllocIFF();
 		if (NULL == iff)
@@ -3103,8 +3103,8 @@ static SAVEDS(void) INTERRUPT ListChangeEntry2HookFunc(struct Hook *hook, Object
 		DoMethod(inst->ppb_Objects[OBJNDX_MainList], MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &scp);
 		if (scp)
 			{
-			ULONG selected;
-			ULONG Value;
+			ULONG selected = 0;
+			ULONG Value = 0;
 
 			d1(kprintf("%s/%s/%ld: \n"));
 			SetChangedFlag(inst, TRUE);
@@ -3600,8 +3600,8 @@ static SAVEDS(APTR) INTERRUPT SettingsChangedHookFunc(struct Hook *hook, Object 
 static SAVEDS(void) INTERRUPT DesktopPatternChangedHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PatternPrefsInst *inst = (struct PatternPrefsInst *) hook->h_Data;
-	ULONG Pattern;
-	ULONG n, nEntries;
+	ULONG Pattern = 0;
+	ULONG n, nEntries = 0;
 	BOOL Found;
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -3637,8 +3637,8 @@ static SAVEDS(void) INTERRUPT DesktopPatternChangedHookFunc(struct Hook *hook, O
 static SAVEDS(void) INTERRUPT ScreenPatternChangedHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PatternPrefsInst *inst = (struct PatternPrefsInst *) hook->h_Data;
-	ULONG Pattern;
-	ULONG n, nEntries;
+	ULONG Pattern = 0;
+	ULONG n, nEntries = 0;
 	BOOL Found;
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -3674,8 +3674,8 @@ static SAVEDS(void) INTERRUPT ScreenPatternChangedHookFunc(struct Hook *hook, Ob
 static SAVEDS(void) INTERRUPT IconWindowPatternChangedHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PatternPrefsInst *inst = (struct PatternPrefsInst *) hook->h_Data;
-	ULONG Pattern;
-	ULONG n, nEntries;
+	ULONG Pattern = 0;
+	ULONG n, nEntries = 0;
 	BOOL Found;
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -3711,8 +3711,8 @@ static SAVEDS(void) INTERRUPT IconWindowPatternChangedHookFunc(struct Hook *hook
 static SAVEDS(void) INTERRUPT TextWindowPatternChangedHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PatternPrefsInst *inst = (struct PatternPrefsInst *) hook->h_Data;
-	ULONG Pattern;
-	ULONG n, nEntries;
+	ULONG Pattern = 0;
+	ULONG n, nEntries = 0;
 	BOOL Found;
 
 	d1(KPrintF("%s/%s/%ld: \n", __FILE__, __FUNC__, __LINE__));
@@ -3763,7 +3763,7 @@ static SAVEDS(void) INTERRUPT AslIntuiMsgHookFunc(struct Hook *hook, Object *o, 
 static SAVEDS(void) INTERRUPT ReloadThumbnailsHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct PatternPrefsInst *inst = (struct PatternPrefsInst *) hook->h_Data;
-	ULONG n, nEntries;
+	ULONG n, nEntries = 0;
 
 	set(inst->ppb_Objects[OBJNDX_WIN_Main], MUIA_Window_Sleep, TRUE);
 	get(inst->ppb_Objects[OBJNDX_MainList], MUIA_NList_Entries, &nEntries);
@@ -3880,7 +3880,7 @@ static void CreateThumbnailImages(struct PatternPrefsInst *inst)
 {
 	T_TIMEVAL tvNow;
 	T_TIMEVAL tvStart;
-	ULONG n, nEntries;
+	ULONG n, nEntries = 0;
 	APTR prWindowPtr;
 	struct Process *MyProcess = (struct Process *) FindTask(NULL);
 
@@ -3941,7 +3941,7 @@ static void CreateThumbnailImages(struct PatternPrefsInst *inst)
 				if (CmpTime(&tvStart, &tvNow) > 0)
 					{
 					// it's more than 100ms since initial start
-					ULONG WindowIsOpen;
+					ULONG WindowIsOpen = 0;
 					char TextLine[50];
 
 					tvNow.tv_secs = 0;
@@ -4129,7 +4129,7 @@ void _XCEXIT(long x)
 
 DISPATCHER(myNList)
 {
-	struct PatternPrefsInst *inst;
+	struct PatternPrefsInst *inst = NULL;
 	ULONG result;
 
 	d1(kprintf("%s/%s/%ld: MethodID=%08lx\n", __FILE__, __FUNC__, __LINE__, msg->MethodID));

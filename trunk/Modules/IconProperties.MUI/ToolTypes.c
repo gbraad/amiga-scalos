@@ -58,7 +58,7 @@ LONG SetToolType(Object *iconObj, CONST_STRPTR ToolTypeName, CONST_STRPTR ToolTy
 	do	{
 		STRPTR *ToolTypeArray = NULL;
 		STRPTR *ptt;
-		STRPTR iconName;
+		STRPTR iconName = NULL;
 
 		if (NULL == iconObj)
 			break;

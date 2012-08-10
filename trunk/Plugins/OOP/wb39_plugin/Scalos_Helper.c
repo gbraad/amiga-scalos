@@ -297,7 +297,7 @@ BOOL ParseWBPrefs(CONST_STRPTR filename)
 
 				CloseIFF( iff );
 				}
-			Close( iff->iff_Stream );
+			Close( (BPTR) iff->iff_Stream );
 			}
 		FreeIFF( iff );
 		}

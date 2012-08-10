@@ -201,7 +201,7 @@ SAVEDS(ULONG) INTERRUPT FileTypesActionDisplayFunc(struct Hook *hook, APTR obj, 
 			TranslateMatchStringToPrintable(TempString, sizeof(TempString),
 				fae->fae_ftale->ftale_Magic.str, abs(fae->fae_ftale->ftale_Magic.arg2));
 			sprintf(fae->fae_ActionAttrs, "%lu \"%s\"%s",
-				(ULONG) fae->fae_ftale->ftale_Magic.arg1,
+				(unsigned long) fae->fae_ftale->ftale_Magic.arg1,
 				TempString,
 				IS_CASE_SENSITIVE(&fae->fae_ftale->ftale_Magic) ? GetLocString(MSGID_FILETYPESACTION_CASE_SENSITIVE) : (STRPTR) "");
 			break;
@@ -435,7 +435,7 @@ void SetFileTypesIcon(struct FileTypesPrefsInst *inst, struct MUI_NListtree_Tree
 SAVEDS(ULONG) INTERRUPT SelectFileTypesEntryHookFunc(struct Hook *hook, Object *o, Msg msg)
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
-	struct MUI_NListtree_TreeNode *ln;
+	struct MUI_NListtree_TreeNode *ln = NULL;
 
 	// Make sure Popobject is closed
 	DoMethod(inst->fpb_Objects[OBJNDX_Popobject_FileTypes_Methods_Add],
@@ -682,7 +682,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionMatchMatchHookFunc(struct Hook *hoo
 	if (fae && ACT_MATCH == fae->fae_ftale->ftale_Magic.action)
 		{
 		char TempString[255];
-		CONST_STRPTR MatchString;
+		CONST_STRPTR MatchString = NULL;
 		size_t Length;
 
 		get(inst->fpb_Objects[OBJNDX_String_Filetypes_Actions_Match_Match], MUIA_String_Contents, &MatchString);
@@ -717,7 +717,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionMatchCaseHookFunc(struct Hook *hook
 	if (fae && ACT_MATCH == fae->fae_ftale->ftale_Magic.action)
 		{
 		size_t Length = abs(fae->fae_ftale->ftale_Magic.arg2);
-		ULONG MatchCase;
+		ULONG MatchCase = 0;
 
 		get(inst->fpb_Objects[OBJNDX_Checkmark_FileTypes_Action_Match_Case], MUIA_Selected, &MatchCase);
 
@@ -746,7 +746,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionMatchOffsetHookFunc(struct Hook *ho
 
 	if (fae && ACT_MATCH == fae->fae_ftale->ftale_Magic.action)
 		{
-		ULONG MatchOffset;
+		ULONG MatchOffset = 0;
 
 		get(inst->fpb_Objects[OBJNDX_String_Filetypes_Actions_Match_Offset], MUIA_String_Integer, &MatchOffset);
 
@@ -773,7 +773,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionSearchSearchHookFunc(struct Hook *h
 	if (fae && (ACT_SEARCH == fae->fae_ftale->ftale_Magic.action || ACT_SEARCHSKIPSPACES == fae->fae_ftale->ftale_Magic.action))
 		{
 		char TempString[255];
-		CONST_STRPTR SearchString;
+		CONST_STRPTR SearchString = NULL;
 		size_t Length;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Search_Search], MUIA_String_Contents, &SearchString);
@@ -807,7 +807,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionSearchCaseHookFunc(struct Hook *hoo
 
 	if (fae && (ACT_SEARCH == fae->fae_ftale->ftale_Magic.action || ACT_SEARCHSKIPSPACES == fae->fae_ftale->ftale_Magic.action))
 		{
-		ULONG SearchCaseSensitive;
+		ULONG SearchCaseSensitive = 0;
 		size_t Length = abs(fae->fae_ftale->ftale_Magic.arg2);
 
 		get(inst->fpb_Objects[OBJNDX_Checkmark_FileTypes_Action_Search_Case], MUIA_Selected, &SearchCaseSensitive);
@@ -837,7 +837,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionSearchSkipSpacesHookFunc(struct Hoo
 
 	if (fae && (ACT_SEARCH == fae->fae_ftale->ftale_Magic.action || ACT_SEARCHSKIPSPACES == fae->fae_ftale->ftale_Magic.action))
 		{
-		ULONG SkipSpaces;
+		ULONG SkipSpaces = 0;
 
 		get(inst->fpb_Objects[OBJNDX_Checkmark_FileTypes_Action_Search_SkipSpaces], MUIA_Selected, &SkipSpaces);
 
@@ -866,7 +866,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionFilesizeHookFunc(struct Hook *hook,
 
 	if (fae && ACT_FILESIZE == fae->fae_ftale->ftale_Magic.action)
 		{
-		ULONG FileSize;
+		ULONG FileSize = 0;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Filesize_Filesize], MUIA_String_Integer, &FileSize);
 
@@ -892,7 +892,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionMinSizeHookFunc(struct Hook *hook, 
 
 	if (fae && ACT_MINSIZEMB == fae->fae_ftale->ftale_Magic.action)
 		{
-		ULONG FileSize;
+		ULONG FileSize = 0;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_MinSizeMB_MinSize], MUIA_String_Integer, &FileSize);
 
@@ -917,7 +917,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionPatternHookFunc(struct Hook *hook, 
 
 	if (fae && ACT_NAMEPATTERN == fae->fae_ftale->ftale_Magic.action)
 		{
-		CONST_STRPTR Pattern;
+		CONST_STRPTR Pattern = NULL;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Pattern_Pattern], MUIA_String_Contents, &Pattern);
 
@@ -944,7 +944,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionDosDeviceHookFunc(struct Hook *hook
 
 	if (fae && ACT_DOSDEVICE == fae->fae_ftale->ftale_Magic.action)
 		{
-		CONST_STRPTR Pattern;
+		CONST_STRPTR Pattern = NULL;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DosDevice_Pattern], MUIA_String_Contents, &Pattern);
 
@@ -971,7 +971,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionDeviceNameHookFunc(struct Hook *hoo
 
 	if (fae && ACT_DEVICENAME == fae->fae_ftale->ftale_Magic.action)
 		{
-		CONST_STRPTR Pattern;
+		CONST_STRPTR Pattern = NULL;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DeviceName_Pattern], MUIA_String_Contents, &Pattern);
 
@@ -998,7 +998,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionContentsHookFunc(struct Hook *hook,
 
 	if (fae && ACT_CONTENTS == fae->fae_ftale->ftale_Magic.action)
 		{
-		CONST_STRPTR Pattern;
+		CONST_STRPTR Pattern = NULL;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_Contents_Pattern], MUIA_String_Contents, &Pattern);
 
@@ -1027,7 +1027,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionDosTypeHookFunc(struct Hook *hook, 
 		{
 		char TempString[255];
 		size_t Length;
-		CONST_STRPTR MatchString;
+		CONST_STRPTR MatchString = NULL;
 
 		get(inst->fpb_Objects[OBJNDX_String_FileTypes_Action_DosType_Pattern], MUIA_String_Contents, &MatchString);
 
@@ -1057,7 +1057,7 @@ SAVEDS(void) INTERRUPT ChangedFileTypesActionProtectionHookFunc(struct Hook *hoo
 
 	if (fae && ACT_PROTECTION == fae->fae_ftale->ftale_Magic.action)
 		{
-		ULONG Protect;
+		ULONG Protect = 0;
 
 		if (inst->fpb_Objects[OBJNDX_Cycle_Filetypes_Protection_R] == obj)
 			{
@@ -1189,14 +1189,14 @@ static void SetProtectionBits(struct FileTypesActionEntry *fae,
 SAVEDS(void) INTERRUPT RenameFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *msg)
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
-	struct MUI_NListtree_TreeNode *ln;
+	struct MUI_NListtree_TreeNode *ln = NULL;
 
 	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
 	if (ln)
 		{
 		struct FileTypesEntry *fte = (struct FileTypesEntry *) ln->tn_User;
-		CONST_STRPTR NewName;
+		CONST_STRPTR NewName = NULL;
 
 		CleanupFoundNodes(inst);
 
@@ -1253,7 +1253,7 @@ SAVEDS(void) INTERRUPT AddFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *msg
 SAVEDS(void) INTERRUPT RemoveFileTypeHookFunc(struct Hook *hook, APTR obj, Msg *msg)
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
-	struct MUI_NListtree_TreeNode *ln;
+	struct MUI_NListtree_TreeNode *ln = NULL;
 
 	CleanupFoundNodes(inst);
 	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
@@ -1273,7 +1273,7 @@ SAVEDS(void) INTERRUPT AddFileTypesMethodHookFunc(struct Hook *hook, APTR obj, M
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
 	struct FileTypesActionEntry *fae;
-	struct MUI_NListtree_TreeNode *ln;
+	struct MUI_NListtree_TreeNode *ln = NULL;
 
 	d1(KPrintF("%s/%s//%ld: inst=%08lx\n", __FILE__, __FUNC__, __LINE__, inst));
 
@@ -1591,8 +1591,8 @@ SAVEDS(void) INTERRUPT FileTypesActionDragDropSortHookFunc(struct Hook *hook, AP
 {
 	struct FileTypesPrefsInst *inst = (struct FileTypesPrefsInst *) hook->h_Data;
 	struct FileTypesActionEntry *fae;
-	struct MUI_NListtree_TreeNode *ln;
-	ULONG InsertPosition;
+	struct MUI_NListtree_TreeNode *ln = NULL;
+	ULONG InsertPosition = 0;
 
 	d1(KPrintF(__FUNC__ "/%ld: inst=%08lx\n", __FUNC__, __LINE__, inst));
 
@@ -1643,7 +1643,7 @@ SAVEDS(void) INTERRUPT LearnFileTypeHookFunc(struct Hook *hook, APTR obj, Msg ms
 	UBYTE *CompareFlags = NULL;
 	size_t BuffLength = 488;
 
-	struct MUI_NListtree_TreeNode *ln;
+	struct MUI_NListtree_TreeNode *ln = NULL;
 
 	get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
 
@@ -1655,7 +1655,7 @@ SAVEDS(void) INTERRUPT LearnFileTypeHookFunc(struct Hook *hook, APTR obj, Msg ms
 		ULONG n;
 		ULONG StartOffset, Count;
 		size_t MergedLength = BuffLength;
-		struct MUI_NListtree_TreeNode *ln;
+		struct MUI_NListtree_TreeNode *ln = NULL;
 		struct FileTypesEntry *fte;
 
 		get(inst->fpb_Objects[OBJNDX_NListtree_FileTypes], MUIA_NListtree_Active, &ln);
