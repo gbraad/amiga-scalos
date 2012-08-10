@@ -588,7 +588,7 @@ static ULONG CycleGadgetLayout(Class *cl, Object *o, Msg msg)
 	d1(KPrintF("%s/%s/%ld:  cgi_TextLineHeight=%ld\n", __FILE__, __FUNC__, __LINE__, inst->cgi_TextLineHeight));
 
 	inst->cgi_LabelRect.MinX = inst->cgi_LabelRect.MinY = SHRT_MAX;
-	inst->cgi_LabelRect.MaxY = inst->cgi_LabelRect.MaxY = SHRT_MIN;
+	inst->cgi_LabelRect.MaxX = inst->cgi_LabelRect.MaxY = SHRT_MIN;
 
 	d1(KPrintF("%s/%s/%ld:  gpl_GInfo=%08lx  gi_RastPort=%08lx\n", __FILE__, __FUNC__, __LINE__, gpl->gpl_GInfo, gpl->gpl_GInfo->gi_RastPort));
 	d1(KPrintF("%s/%s/%ld:  Font=%08lx\n", __FILE__, __FUNC__, __LINE__, rp.Font));
