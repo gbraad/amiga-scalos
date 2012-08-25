@@ -136,13 +136,13 @@ end
 
 say "Copying Datatypes..."
 
-'copy datatypes/AmigaIconObj3.5/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
-'copy datatypes/AmigaIconObject/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
-'copy datatypes/GlowIconObject/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
-'copy datatypes/IconObject/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
-'copy datatypes/PNGIcons/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/AmigaIconObj3.5/' || BinDir || '#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/AmigaIconObject/' || BinDir || '#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/GlowIconObject/' || BinDir || '#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/IconObject/' || BinDir || '#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+'copy datatypes/PNGIcons/' || BinDir || '#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
 if os ~= "AmigaOS4" then do
-	'copy datatypes/NewIcons/#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
+	'copy datatypes/NewIcons/' || BinDir || '#?.datatype "RAM:ScalosBeta/Icondatatypes/Datatypes/" clone quiet'
 end
 
 'copy main/envarc/#? "RAM:ScalosBeta/env-archive/" all clone quiet'
