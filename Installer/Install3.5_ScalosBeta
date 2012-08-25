@@ -2650,7 +2650,7 @@
 ;==================[ COPY LIBRARIES ]========================================
 
 (P_Copylib #copy-libs1 "Libs/iconobject.library" "Libs:")
-(P_Copylib #copy-libs4 "Icondatatypes/amigaiconobject.datatype" #defclasses)
+(P_Copylib #copy-libs4 "Icondatatypes/Datatypes/amigaiconobject.datatype" #defclasses)
 (P_Copylib #copy-libs4.1 "Icondatatypes/Datatypes/amigaiconobj35.datatype" #defclasses)
 (P_Copylib #copy-libs5 "Icondatatypes/Datatypes/iconobject.datatype" #defclasses)
 (if (= #OS4 0)
