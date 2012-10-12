@@ -1063,7 +1063,7 @@ Désirez-vous arrêter ou redémarrer ?
 ;Do you really want to Shutdown or Reboot?
 ;
 MSGID_ABOUT_CONFIRM_GADGETS
-Rredémarre | Arrêter | Annuler
+Redémarrer | Arrêter | Annuler
 ;Reboot|Shutdown|Cancel
 ;
 MSGID_LINKSNOTSUPPORTED_BODY
