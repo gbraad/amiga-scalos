@@ -1059,11 +1059,11 @@ offrant le redémarrage de votre ordinateur.
 ;offers to reboot your machine.
 ;
 MSGID_ABOUT_SHUTDOWN_REBOOT_CONFIRM
-Désirez-vous mettre en veille ou relancer ?
+Désirez-vous arrêter ou redémarrer ?
 ;Do you really want to Shutdown or Reboot?
 ;
 MSGID_ABOUT_CONFIRM_GADGETS
-Relancer | Mise en veille | Annuler
+Rredémarre | Arrêter | Annuler
 ;Reboot|Shutdown|Cancel
 ;
 MSGID_LINKSNOTSUPPORTED_BODY
