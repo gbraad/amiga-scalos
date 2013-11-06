@@ -171,7 +171,7 @@ long __priority = 5;				// The priority to run us at
 #endif
 #endif // !__amigaos4__
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__AROS__)
 struct ExecBase *SysBase;
 #endif
 

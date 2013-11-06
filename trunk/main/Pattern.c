@@ -700,7 +700,7 @@ static BOOL ReadBackFill_NoGuiGfx(struct internalScaWindowTask *iwt, struct Patt
 			{
 			struct BitMap *newBitMap = AllocBitMap(ptNode->ptn_width, 
 				ptNode->ptn_height,
-				scr->BitMap.Depth, 
+				scr->RastPort.BitMap->Depth, 
 				BMF_DISPLAYABLE | BMB_INTERLEAVED | BMB_MINPLANES,
 				scr->RastPort.BitMap);
 			d1(KPrintF("%s/%s/%ld: newBitMap=%08lx\n", __FILE__, __FUNC__, __LINE__, newBitMap));
