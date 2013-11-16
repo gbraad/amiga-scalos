@@ -1,7 +1,7 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.6.3 - July 18, 2013
+ * libpng version 1.6.7 - November 14, 2013
  *
  * Copyright (c) 1998-2013 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
@@ -21,7 +21,6 @@
 
 #ifndef PNGCONF_H
 #define PNGCONF_H
-
 
 // AMIGA BEGIN
 #undef  PNG_CONSOLE_IO_SUPPORTED
