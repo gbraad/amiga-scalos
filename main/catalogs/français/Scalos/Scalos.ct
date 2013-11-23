@@ -1137,27 +1137,23 @@ MSGID_FILETRANSFER_INSUFFICIENTSPACE_GADGETS
 Continuer quand même | Annuler
 ;Proceed anyway|Abort
 ;
-;+++translateme+++
 MSGID_OPENERRORGADGETS2
-Retry|Select different Tool|Use Standard Tool|Cancel
+Recommencer|Choisir un outil différent|Utiliser l'outil standard|Annuler
 ; Retry|Select different Tool|Use Standard Tool|Cancel
 ;
-;+++translateme+++
 ; File transfer dialog window
 MSGID_FILETRANSFER_MINUTE
 Minute
 ;Minute
 ;
-;+++translateme+++
 ; File transfer dialog window
 MSGID_FILETRANSFER_HOURS
-Hours
+Heures
 ;Hours
 ;
-;+++translateme+++
 ; File transfer dialog window
 MSGID_FILETRANSFER_HOUR
-Hour
+Heure
 ;Hour
 ;
 ; ==============================================
