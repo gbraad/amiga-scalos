@@ -1,7 +1,7 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.6.7 - November 14, 2013
+ * libpng version 1.6.8 - December 19, 2013
  *
  * Copyright (c) 1998-2013 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
@@ -36,6 +36,7 @@
 #define PNG_NO_PROGRESSIVE_READ
 #undef  PNG_WRITE_FLUSH_SUPPORTED
 // AMIGA END
+
 
 /* To do: Do all of this in scripts/pnglibconf.dfa */
 #ifdef PNG_SAFE_LIMITS_SUPPORTED
