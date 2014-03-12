@@ -238,7 +238,7 @@ LONG CreateLinkCommand(Class *cl, Object *o, BPTR SrcDirLock, BPTR DestDirLock,
 
 				d1(kprintf("%s/%s/%ld: SrcFileName=<%s> Buffer=<%s>\n", __FILE__, __FUNC__, __LINE__, SrcFileName, Buffer));
 
-				if (!MakeLink((STRPTR) DestFileName, Buffer, LINK_SOFT))
+				if (!MakeLink((STRPTR) DestFileName, (CPTR) Buffer, LINK_SOFT))
 					{
 					Result = RememberError(cl, o, DestFileName, ftta_CreateSoftLink, fto_MakeLink);
 					break;
@@ -1027,7 +1027,7 @@ static LONG CopyLink(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 		CurrentDir(DestParentLock);
 
-		if (!MakeLink((STRPTR) DestName, Buffer, LINK_SOFT))
+		if (!MakeLink((STRPTR) DestName, (CPTR) Buffer, LINK_SOFT))
 			{
 			Result = RememberError(cl, o, DestName, ftta_CreateSoftLink, fto_MakeLink);
 			d1(KPrintF("%s/%s/%ld: Result=%ld\n", __FILE__, __FUNC__, __LINE__, Result));
@@ -1049,7 +1049,7 @@ static LONG CopyLink(Class *cl, Object *o, struct GlobalCopyArgs *gca,
 
 				if (RETURN_OK == Result)
 					{
-					if (!MakeLink((STRPTR) DestName, Buffer, LINK_SOFT))
+					if (!MakeLink((STRPTR) DestName, (CPTR) Buffer, LINK_SOFT))
 						{
 						Result = RememberError(cl, o, DestName, ftta_CreateSoftLink, fto_MakeLink);
 						}
